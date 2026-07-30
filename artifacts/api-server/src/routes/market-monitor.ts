@@ -11,6 +11,7 @@
 import { Router, type IRouter } from "express";
 import { RunMarketAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
+import { filterSources } from "../lib/source-validator";
 
 const router: IRouter = Router();
 
@@ -26,6 +27,7 @@ NUMBERS: Only cite a specific figure if found in ≥2 independent sources; other
 
 OUTPUT RULES:
 - summary: ≤40 words, objective tone, no inflated language ("significant", "dramatic", "surge")
+- positiveFactors/negativeFactors: each item states the observation AND its market implication in one sentence (e.g. "Fed held rates steady, reducing near-term rate-hike risk for equities").
 - Each array: 1–3 items, most important only. Name sectors, not individual companies, unless a single company is the primary market driver.
 - No URLs or citation markers outside the sources array.
 - sources: 3–6 entries you actually retrieved, each {title, url, published: "YYYY-MM-DD or \\"\\""}.
@@ -95,7 +97,12 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
-      res.json({ ...parsed.data, _debug: debug });
+      // Strip sources from unapproved domains or outside the recency window
+      const { accepted, rejectedCount } = filterSources(parsed.data.sources, nowIso);
+      if (rejectedCount > 0) {
+        req.log.warn({ rejectedCount }, "Removed sources that failed domain/recency validation");
+      }
+      res.json({ ...parsed.data, sources: accepted, _debug: debug });
       return;
     }
 

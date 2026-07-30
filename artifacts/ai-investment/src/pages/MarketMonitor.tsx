@@ -16,6 +16,7 @@ import {
   Clock,
   Timer,
 } from "lucide-react"
+import type { MarketAnalysisSource } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -56,6 +57,7 @@ export default function MarketMonitor() {
   const [debugInfo, setDebugInfo] = useState<AiDebugInfo | null>(null)
   const [debugError, setDebugError] = useState<unknown>(null)
   const [debugOpen, setDebugOpen] = useState(false)
+  const [sourcesOpen, setSourcesOpen] = useState(false)
 
   const { mutate: runAnalysis, data: analysis, isPending, error } = useRunMarketAnalysis({
     mutation: {
@@ -210,6 +212,17 @@ export default function MarketMonitor() {
           <Button
             size="sm"
             variant="ghost"
+            className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground disabled:opacity-30"
+            onClick={() => setSourcesOpen(true)}
+            title="View sources used in this analysis"
+            disabled={!analysis.sources?.length}
+          >
+            <Globe className="h-3.5 w-3.5" />
+            <span className="text-xs">Sources</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
             className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
             onClick={() => setDebugOpen(true)}
             title="Show debug info — exact OpenAI request & response"
@@ -356,50 +369,11 @@ export default function MarketMonitor() {
 
       </div>
 
-      {/* ── Sources ── */}
-      {analysis.sources && analysis.sources.length > 0 && (
-        <Card className="border-border/40 bg-card/30">
-          <CardHeader className="py-3 px-4 border-b border-border/40">
-            <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-muted-foreground">
-              <Globe className="h-3.5 w-3.5" /> Sources — Live Web Research
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <ul className="divide-y divide-border/30">
-              {analysis.sources.map((source, i) => (
-                <li key={i} className="py-2 first:pt-0 last:pb-0">
-                  <a
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 group"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
-                    <div className="min-w-0">
-                      <p className="text-xs text-foreground/80 group-hover:text-foreground group-hover:underline underline-offset-2 transition-colors leading-snug truncate">
-                        {source.title}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {source.published && (
-                          <span className="text-[10px] text-muted-foreground/60 font-mono">
-                            {source.published}
-                          </span>
-                        )}
-                        {source.published && (
-                          <span className="text-muted-foreground/30 text-[10px]">·</span>
-                        )}
-                        <span className="text-[10px] text-muted-foreground/50 font-mono truncate">
-                          {(() => { try { return new URL(source.url).hostname } catch { return source.url } })()}
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      <SourcesDialog
+        open={sourcesOpen}
+        onClose={() => setSourcesOpen(false)}
+        sources={analysis.sources ?? []}
+      />
 
       <DebugDialog
         open={debugOpen}
@@ -588,5 +562,60 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-muted-foreground w-40 shrink-0">{label}:</span>
       <span className="text-foreground break-all">{value}</span>
     </div>
+  )
+}
+
+// ── Sources Dialog ────────────────────────────────────────────────────────────
+
+interface SourcesDialogProps {
+  open: boolean
+  onClose: () => void
+  sources: MarketAnalysisSource[]
+}
+
+function SourcesDialog({ open, onClose, sources }: SourcesDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-lg bg-[#0d1117] border-border text-foreground">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            Sources — Live Web Research
+          </DialogTitle>
+        </DialogHeader>
+        <ul className="divide-y divide-border/30 mt-1">
+          {sources.map((source, i) => (
+            <li key={i} className="py-3 first:pt-0 last:pb-0">
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2.5 group"
+              >
+                <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                <div className="min-w-0">
+                  <p className="text-sm text-foreground/80 group-hover:text-foreground group-hover:underline underline-offset-2 transition-colors leading-snug">
+                    {source.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {source.published && (
+                      <>
+                        <span className="text-[11px] text-muted-foreground/60 font-mono">
+                          {source.published}
+                        </span>
+                        <span className="text-muted-foreground/30 text-[11px]">·</span>
+                      </>
+                    )}
+                    <span className="text-[11px] text-muted-foreground/50 font-mono truncate">
+                      {(() => { try { return new URL(source.url).hostname } catch { return source.url } })()}
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </DialogContent>
+    </Dialog>
   )
 }
