@@ -1,0 +1,160 @@
+AI Investment
+
+Create a new web application called AI Investment.
+
+The application will become a modular AI-powered investment monitoring and decision support platform.
+
+Build the application gradually in small, controlled steps.
+
+Do not build the complete platform now.
+
+Architecture
+
+The application must be modular.
+
+Keep these areas separated:
+
+* Analysis modules
+* UI components
+* Services
+* Shared models
+* Configuration
+
+Choose the framework, language and folder structure that best fits a modern web application.
+
+Avoid large files with mixed responsibilities.
+
+Only create the files needed for this first version.
+
+Every future analysis module should be independent and easy to extend.
+
+Keep the code clean, readable and maintainable. Prefer maintainability over cleverness, as this project is expected to grow significantly over time.
+
+First Module
+
+Implement only one module:
+
+Market Monitor
+
+Its responsibility is to analyse the overall financial market.
+
+Do not implement any other modules yet.
+
+User Interface
+
+I will attach a reference image.
+
+Use it as inspiration for the overall layout.
+
+For this first version only create:
+
+* Application shell
+* Left sidebar
+* Top header
+* One dashboard panel named Market Monitor
+
+Do not create the remaining dashboard panels yet.
+
+The sidebar only needs:
+
+* Dashboard
+* Market Monitor
+* Settings
+
+The design should be clean, modern, dark, professional and responsive.
+
+AI Service
+
+Create one shared AI service.
+
+All future AI modules must communicate with OpenAI through this shared service.
+
+Modules must never call the OpenAI API directly.
+
+Store the OpenAI API key securely as an environment secret.
+
+For inspiration regarding the OpenAI integration you may inspect:
+
+https://github.com/Zenty1976/ai-trading
+
+Use it only as inspiration for establishing the OpenAI connection.
+
+Do not copy the architecture or implementation from that project.
+
+Prompt
+
+The Market Monitor should use a short and token-efficient prompt.
+
+Request only the information needed by the dashboard.
+
+Do not ask for long explanations.
+
+Require OpenAI to return only valid JSON.
+
+No markdown.
+
+No surrounding text.
+
+No explanations.
+
+The required JSON response is exactly:
+
+{
+“summary”: “”,
+“marketSentiment”: “Positive | Neutral | Negative”,
+“riskLevel”: “Low | Moderate | High”,
+“confidence”: 0,
+“positiveFactors”: [],
+“negativeFactors”: [],
+“strongSectors”: [],
+“weakSectors”: [],
+“keyRisks”: [],
+“timestamp”: “”
+}
+
+Validate the JSON before using it.
+
+Store the JSON model in one shared location so it can be reused and extended later.
+
+Every future AI module should define its own JSON schema and always communicate with the application using structured JSON rather than free text.
+
+Functionality
+
+The Market Monitor should:
+
+* Retrieve current market information.
+* Send a concise prompt to OpenAI.
+* Receive the JSON response.
+* Display the information in the Market Monitor panel.
+
+Add a Refresh Analysis button.
+
+Show a loading indicator while analysing.
+
+Show a user-friendly error message if the analysis fails.
+
+Do NOT Implement
+
+Do not implement:
+
+* Portfolio
+* Saxo Bank integration
+* Trading
+* Authentication
+* Database
+* Scheduled jobs
+* Notifications
+* Other AI modules
+* Other dashboard panels
+
+Goal
+
+The completed first version should only:
+
+1. Start the application.
+2. Display the application shell.
+3. Display the Market Monitor panel.
+4. Allow the user to manually refresh the market analysis.
+5. Display the structured JSON response returned by OpenAI.
+
+Stop after this first working version has been completed.
