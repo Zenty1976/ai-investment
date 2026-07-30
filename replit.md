@@ -1,36 +1,45 @@
-# [Project name]
+# AI Investment
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A modular AI-powered investment monitoring and decision support platform. First version implements the Market Monitor module — an AI-driven panel that analyses current market conditions and returns structured JSON via OpenAI.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/ai-investment run dev` — run the frontend (port assigned by workflow)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, TailwindCSS v4, shadcn/ui, wouter, TanStack Query
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
+- AI: OpenAI (`gpt-4o-mini`) via shared AI service
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/ai-investment/` — React + Vite frontend
+- `artifacts/api-server/` — Express API server
+- `artifacts/api-server/src/lib/ai-service.ts` — **Shared AI service** — all modules must call OpenAI through this, never directly
+- `artifacts/api-server/src/routes/market-monitor.ts` — Market Monitor route
+- `lib/api-spec/openapi.yaml` — OpenAPI spec (source of truth for API contracts)
+- `lib/api-client-react/src/generated/` — generated React Query hooks
+- `lib/api-zod/src/generated/` — generated Zod validation schemas
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **Shared AI service** (`ai-service.ts`): Every future module calls `callAi()` from the shared service. Modules never import `openai` directly. This centralises model config, logging, and future rate limiting.
+- **Structured JSON from OpenAI**: Every AI module defines its own Zod schema and uses `response_format: { type: "json_object" }`. Responses are validated with `.safeParse()` before use.
+- **OpenAPI-first**: The spec in `lib/api-spec/openapi.yaml` is the contract. After each spec change, run codegen.
+- **Dark-only UI**: The frontend always renders in dark mode (`dark` class added to `<html>` in `main.tsx`).
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Market Monitor**: AI-powered panel showing market sentiment (Positive/Neutral/Negative), risk level (Low/Moderate/High), confidence score, positive/negative factors, strong/weak sectors, and key risks. Refreshed manually via "Run Analysis" button.
 
 ## User preferences
 
@@ -38,7 +47,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Always run `pnpm --filter @workspace/api-spec run codegen` after changing `openapi.yaml`.
+- `@apply dark` is NOT valid in Tailwind v4 — add the `dark` class to `document.documentElement` in JS instead.
+- The shared AI service (`ai-service.ts`) lazily initialises the OpenAI client. `OPENAI_API_KEY` must be set as a Replit secret.
+- When adding a new AI module, define its JSON schema in a shared location, validate with Zod before use, and always go through `callAi()`.
 
 ## Pointers
 

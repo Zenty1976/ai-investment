@@ -3,13 +3,15 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AI Investment API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: market-monitor
+    description: Market Monitor analysis
 paths:
   /healthz:
     get:
@@ -24,6 +26,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /market-monitor/analyze:
+    post:
+      operationId: runMarketAnalysis
+      tags: [market-monitor]
+      summary: Run market analysis
+      description: Calls the AI service to analyze current market conditions and returns structured JSON
+      responses:
+        "200":
+          description: Market analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketAnalysis"
+        "500":
+          description: Analysis failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +54,58 @@ components:
           type: string
       required:
         - status
-
+    MarketAnalysis:
+      type: object
+      properties:
+        summary:
+          type: string
+        marketSentiment:
+          type: string
+          enum: [Positive, Neutral, Negative]
+        riskLevel:
+          type: string
+          enum: [Low, Moderate, High]
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+        positiveFactors:
+          type: array
+          items:
+            type: string
+        negativeFactors:
+          type: array
+          items:
+            type: string
+        strongSectors:
+          type: array
+          items:
+            type: string
+        weakSectors:
+          type: array
+          items:
+            type: string
+        keyRisks:
+          type: array
+          items:
+            type: string
+        timestamp:
+          type: string
+      required:
+        - summary
+        - marketSentiment
+        - riskLevel
+        - confidence
+        - positiveFactors
+        - negativeFactors
+        - strongSectors
+        - weakSectors
+        - keyRisks
+        - timestamp
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
