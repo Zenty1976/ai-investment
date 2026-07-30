@@ -10,6 +10,8 @@ import {
   ShieldAlert,
   BarChart3,
   Info,
+  ExternalLink,
+  Globe,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,14 +28,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { format } from "date-fns"
 
+// Matches AiDebugInfo from api-server/src/lib/ai-service.ts
 interface AiDebugInfo {
-  request: {
-    model: string
-    temperature: number
-    max_tokens: number
-    response_format: { type: string }
-    messages: Array<{ role: string; content: string }>
-  }
+  request: Record<string, unknown>
   rawResponse: string
   usage: {
     prompt_tokens: number | null
@@ -41,6 +38,7 @@ interface AiDebugInfo {
     total_tokens: number | null
   }
   calledAt: string
+  webSearchUsed: boolean
 }
 
 export default function MarketMonitor() {
@@ -66,12 +64,10 @@ export default function MarketMonitor() {
     },
   })
 
-  const handleRefresh = () => {
-    runAnalysis()
-  }
-
+  const handleRefresh = () => runAnalysis()
   const hasDebug = debugInfo !== null || debugError !== null
 
+  // ── Loading skeleton ──────────────────────────────────────────────────────
   if (isPending && !analysis) {
     return (
       <div className="space-y-4 animate-in fade-in duration-500">
@@ -87,10 +83,12 @@ export default function MarketMonitor() {
           <Skeleton className="h-56" />
           <Skeleton className="h-56" />
         </div>
+        <Skeleton className="h-32 w-full" />
       </div>
     )
   }
 
+  // ── Error state ───────────────────────────────────────────────────────────
   if (error && !analysis) {
     return (
       <div className="max-w-2xl mt-8 space-y-4">
@@ -129,6 +127,7 @@ export default function MarketMonitor() {
     )
   }
 
+  // ── Empty / initial state ─────────────────────────────────────────────────
   if (!analysis) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-lg mx-auto">
@@ -138,7 +137,7 @@ export default function MarketMonitor() {
         <h2 className="text-2xl font-bold tracking-tight mb-3 text-foreground">Market Intelligence</h2>
         <p className="text-muted-foreground mb-8 leading-relaxed">
           Initialize the AI investment engine to process real-time market sentiment,
-          sector strength, and emerging risks.
+          sector strength, and emerging risks using live web research.
         </p>
         <Button
           onClick={handleRefresh}
@@ -153,24 +152,22 @@ export default function MarketMonitor() {
     )
   }
 
+  // ── Badge variants ────────────────────────────────────────────────────────
   const sentimentVariant =
-    analysis.marketSentiment === "Positive"
-      ? "positive"
-      : analysis.marketSentiment === "Negative"
-      ? "negative"
-      : "warning"
+    analysis.marketSentiment === "Positive" ? "positive"
+    : analysis.marketSentiment === "Negative" ? "negative"
+    : "warning"
 
   const riskVariant =
-    analysis.riskLevel === "Low"
-      ? "positive"
-      : analysis.riskLevel === "High"
-      ? "negative"
-      : "warning"
+    analysis.riskLevel === "Low" ? "positive"
+    : analysis.riskLevel === "High" ? "negative"
+    : "warning"
 
+  // ── Analysis view ─────────────────────────────────────────────────────────
   return (
     <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-      {/* ── Page title + Refresh ── */}
+      {/* ── Page title + controls ── */}
       <div className="flex items-center justify-between mb-1">
         <div>
           <h2 className="text-base font-bold tracking-wide uppercase text-foreground">
@@ -194,7 +191,7 @@ export default function MarketMonitor() {
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
             onClick={() => setDebugOpen(true)}
             title="Show debug info — exact OpenAI request & response"
             disabled={!hasDebug}
@@ -206,7 +203,6 @@ export default function MarketMonitor() {
 
       {/* ── Top metric cards ── */}
       <div className="grid grid-cols-3 gap-3">
-        {/* Sentiment */}
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -226,7 +222,6 @@ export default function MarketMonitor() {
           </CardContent>
         </Card>
 
-        {/* Risk */}
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -241,7 +236,6 @@ export default function MarketMonitor() {
           </CardContent>
         </Card>
 
-        {/* Confidence */}
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-2">
@@ -275,7 +269,6 @@ export default function MarketMonitor() {
       {/* ── 2×2 detail grid ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-        {/* Positive factors */}
         <Card className="border-card-border/50">
           <CardHeader className="py-3 px-4 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -294,7 +287,6 @@ export default function MarketMonitor() {
           </CardContent>
         </Card>
 
-        {/* Negative factors */}
         <Card className="border-card-border/50">
           <CardHeader className="py-3 px-4 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -313,7 +305,6 @@ export default function MarketMonitor() {
           </CardContent>
         </Card>
 
-        {/* Sectors */}
         <Card className="border-card-border/50">
           <CardHeader className="py-3 px-4 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest">
@@ -348,7 +339,6 @@ export default function MarketMonitor() {
           </CardContent>
         </Card>
 
-        {/* Key risks */}
         <Card className="border-amber-500/20 bg-amber-500/5">
           <CardHeader className="py-3 px-4 border-b border-amber-500/10">
             <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-amber-400">
@@ -369,6 +359,37 @@ export default function MarketMonitor() {
 
       </div>
 
+      {/* ── Sources ── */}
+      {analysis.sources && analysis.sources.length > 0 && (
+        <Card className="border-border/40 bg-card/30">
+          <CardHeader className="py-3 px-4 border-b border-border/40">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-muted-foreground">
+              <Globe className="h-3.5 w-3.5" /> Sources — Live Web Research
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <ul className="space-y-1.5">
+              {analysis.sources.map((source, i) => (
+                <li key={i}>
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors group"
+                  >
+                    <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                    <span className="truncate group-hover:underline underline-offset-2">{source.title}</span>
+                    <span className="shrink-0 text-muted-foreground/40 font-mono text-[10px] truncate max-w-[200px] hidden lg:block">
+                      {(() => { try { return new URL(source.url).hostname } catch { return source.url } })()}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       <DebugDialog
         open={debugOpen}
         onClose={() => setDebugOpen(false)}
@@ -379,7 +400,7 @@ export default function MarketMonitor() {
   )
 }
 
-// ── Debug Dialog ─────────────────────────────────────────────────────────────
+// ── Debug Dialog ──────────────────────────────────────────────────────────────
 
 interface DebugDialogProps {
   open: boolean
@@ -389,13 +410,28 @@ interface DebugDialogProps {
 }
 
 function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
+  // Pull out messages/input from the request regardless of which API was used
+  const inputMessages: Array<{ role: string; content: string }> = (() => {
+    if (!debugInfo) return []
+    const req = debugInfo.request
+    // Chat completions shape: { messages: [...] }
+    if (Array.isArray(req.messages)) {
+      return req.messages as Array<{ role: string; content: string }>
+    }
+    // Responses API shape: { input: [...] }
+    if (Array.isArray(req.input)) {
+      return req.input as Array<{ role: string; content: string }>
+    }
+    return []
+  })()
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="max-w-3xl bg-[#0d1117] border-border text-foreground">
         <DialogHeader>
           <DialogTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
             <Info className="h-4 w-4 text-primary" />
-            OpenAI Debug — Request & Response
+            OpenAI Debug — Request &amp; Response
           </DialogTitle>
         </DialogHeader>
 
@@ -415,29 +451,44 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
             {debugInfo ? (
               <>
                 <Section label="📤 Sent to OpenAI" color="blue">
-                  <div className="space-y-2">
-                    <Row label="Model" value={debugInfo.request.model} />
-                    <Row label="Temperature" value={String(debugInfo.request.temperature)} />
-                    <Row label="Max tokens" value={String(debugInfo.request.max_tokens)} />
-                    <Row label="Response format" value={debugInfo.request.response_format.type} />
+                  <div className="space-y-1.5 mb-3">
+                    <Row label="API" value={debugInfo.webSearchUsed ? "Responses API + web_search_preview" : "Chat Completions"} />
+                    <Row label="Model" value={String(debugInfo.request.model ?? "—")} />
+                    <Row label="Temperature" value={String(debugInfo.request.temperature ?? "—")} />
+                    <Row label="Max tokens" value={String(
+                      debugInfo.request.max_tokens ??
+                      debugInfo.request.max_output_tokens ??
+                      "—"
+                    )} />
+                    {!!debugInfo.request.response_format && (
+                      <Row label="Response format" value={String((debugInfo.request.response_format as { type?: string })?.type ?? "—")} />
+                    )}
+                    {!!debugInfo.request.tools && (
+                      <Row label="Tools" value={JSON.stringify(debugInfo.request.tools)} />
+                    )}
                     <Row label="Called at" value={debugInfo.calledAt} />
                   </div>
-                  <div className="mt-3 space-y-2">
-                    {debugInfo.request.messages.map((m, i) => (
-                      <div key={i}>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
-                          [{m.role}]
-                        </p>
-                        <pre className="whitespace-pre-wrap text-foreground/80 bg-background/60 rounded p-2 border border-border/40 break-all">
-                          {m.content}
-                        </pre>
-                      </div>
-                    ))}
-                  </div>
+
+                  {inputMessages.map((m, i) => (
+                    <div key={i} className="mb-2">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
+                        [{m.role}]
+                      </p>
+                      <pre className="whitespace-pre-wrap text-foreground/80 bg-background/60 rounded p-2 border border-border/40 break-all">
+                        {m.content}
+                      </pre>
+                    </div>
+                  ))}
                 </Section>
 
                 <Section label="📥 Received from OpenAI" color="emerald">
-                  <div className="mb-2 flex gap-4 text-muted-foreground">
+                  <div className="mb-3 flex flex-wrap gap-4 text-muted-foreground">
+                    <span>
+                      Web search used:{" "}
+                      <span className={debugInfo.webSearchUsed ? "text-emerald-400" : "text-rose-400"}>
+                        {debugInfo.webSearchUsed ? "Yes ✓" : "No ✗"}
+                      </span>
+                    </span>
                     <span>Prompt tokens: <span className="text-foreground">{debugInfo.usage.prompt_tokens ?? "—"}</span></span>
                     <span>Completion tokens: <span className="text-foreground">{debugInfo.usage.completion_tokens ?? "—"}</span></span>
                     <span>Total: <span className="text-foreground">{debugInfo.usage.total_tokens ?? "—"}</span></span>
@@ -482,8 +533,8 @@ function Section({ label, color, children }: { label: string; color: string; chi
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-2">
-      <span className="text-muted-foreground w-32 shrink-0">{label}:</span>
-      <span className="text-foreground">{value}</span>
+      <span className="text-muted-foreground w-40 shrink-0">{label}:</span>
+      <span className="text-foreground break-all">{value}</span>
     </div>
   )
 }

@@ -9,6 +9,11 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface MarketAnalysisSource {
+  title: string;
+  url: string;
+}
+
 export type MarketAnalysisMarketSentiment = typeof MarketAnalysisMarketSentiment[keyof typeof MarketAnalysisMarketSentiment];
 
 
@@ -41,6 +46,7 @@ export interface MarketAnalysis {
   strongSectors: string[];
   weakSectors: string[];
   keyRisks: string[];
+  sources: MarketAnalysisSource[];
   timestamp: string;
 }
 

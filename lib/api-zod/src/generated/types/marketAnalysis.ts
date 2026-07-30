@@ -7,6 +7,7 @@
  */
 import type { MarketAnalysisMarketSentiment } from './marketAnalysisMarketSentiment';
 import type { MarketAnalysisRiskLevel } from './marketAnalysisRiskLevel';
+import type { MarketAnalysisSource } from './marketAnalysisSource';
 
 export interface MarketAnalysis {
   summary: string;
@@ -22,5 +23,6 @@ export interface MarketAnalysis {
   strongSectors: string[];
   weakSectors: string[];
   keyRisks: string[];
+  sources: MarketAnalysisSource[];
   timestamp: string;
 }

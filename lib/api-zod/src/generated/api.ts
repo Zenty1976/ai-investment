@@ -36,6 +36,10 @@ export const RunMarketAnalysisResponse = zod.object({
   "strongSectors": zod.array(zod.string()),
   "weakSectors": zod.array(zod.string()),
   "keyRisks": zod.array(zod.string()),
+  "sources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string()
+})),
   "timestamp": zod.string()
 })
 

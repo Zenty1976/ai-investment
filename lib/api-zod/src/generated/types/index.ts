@@ -11,3 +11,4 @@ export * from './healthStatus';
 export * from './marketAnalysis';
 export * from './marketAnalysisMarketSentiment';
 export * from './marketAnalysisRiskLevel';
+export * from './marketAnalysisSource';

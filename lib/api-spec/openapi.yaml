@@ -54,6 +54,16 @@ components:
           type: string
       required:
         - status
+    MarketAnalysisSource:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+      required:
+        - title
+        - url
     MarketAnalysis:
       type: object
       properties:
@@ -89,6 +99,10 @@ components:
           type: array
           items:
             type: string
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketAnalysisSource"
         timestamp:
           type: string
       required:
@@ -101,6 +115,7 @@ components:
         - strongSectors
         - weakSectors
         - keyRisks
+        - sources
         - timestamp
     ErrorResponse:
       type: object

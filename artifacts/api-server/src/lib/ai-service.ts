@@ -26,22 +26,24 @@ export interface AiServiceOptions {
   temperature?: number;
 }
 
+// ── Debug metadata ────────────────────────────────────────────────────────────
+
 /** Debug metadata returned alongside every AI call result. */
 export interface AiDebugInfo {
-  request: {
-    model: string;
-    temperature: number;
-    max_tokens: number;
-    response_format: { type: string };
-    messages: Array<{ role: string; content: string }>;
-  };
+  /** The full request payload sent to the API */
+  request: Record<string, unknown>;
+  /** Raw text string returned by the model */
   rawResponse: string;
+  /** Token usage reported by the API */
   usage: {
     prompt_tokens: number | null;
     completion_tokens: number | null;
     total_tokens: number | null;
   };
+  /** ISO 8601 timestamp of when the call was initiated */
   calledAt: string;
+  /** Whether a web search tool was used during this call */
+  webSearchUsed: boolean;
 }
 
 export interface AiCallResult<T> {
@@ -49,9 +51,22 @@ export interface AiCallResult<T> {
   debug: AiDebugInfo;
 }
 
+// ── Web-search result ─────────────────────────────────────────────────────────
+
+export interface WebSearchSource {
+  title: string;
+  url: string;
+}
+
+export interface WebSearchAiCallResult<T> extends AiCallResult<T> {
+  sources: WebSearchSource[];
+}
+
+// ── Standard chat completions (no web search) ─────────────────────────────────
+
 /**
- * Send a prompt to OpenAI and return parsed JSON + full debug metadata.
- * All modules should use this method and never call OpenAI directly.
+ * Call OpenAI via Chat Completions and return parsed JSON + debug metadata.
+ * The model must return valid JSON; enforce with response_format json_object.
  */
 export async function callAi<T>(
   systemPrompt: string,
@@ -59,7 +74,6 @@ export async function callAi<T>(
   options: AiServiceOptions = {}
 ): Promise<AiCallResult<T>> {
   const { model = "gpt-4o-mini", maxTokens = 512, temperature = 0.3 } = options;
-
   const client = getClient();
   const calledAt = new Date().toISOString();
 
@@ -74,14 +88,12 @@ export async function callAi<T>(
     ],
   };
 
-  logger.debug({ model }, "Calling OpenAI");
+  logger.debug({ model }, "Calling OpenAI (chat completions)");
 
   const response = await client.chat.completions.create(requestPayload);
 
   const raw = response.choices[0]?.message?.content;
-  if (!raw) {
-    throw new Error("OpenAI returned an empty response");
-  }
+  if (!raw) throw new Error("OpenAI returned an empty response");
 
   let parsed: unknown;
   try {
@@ -90,16 +102,121 @@ export async function callAi<T>(
     throw new Error(`OpenAI returned invalid JSON: ${raw.slice(0, 200)}`);
   }
 
+  return {
+    result: parsed as T,
+    debug: {
+      request: requestPayload as unknown as Record<string, unknown>,
+      rawResponse: raw,
+      usage: {
+        prompt_tokens: response.usage?.prompt_tokens ?? null,
+        completion_tokens: response.usage?.completion_tokens ?? null,
+        total_tokens: response.usage?.total_tokens ?? null,
+      },
+      calledAt,
+      webSearchUsed: false,
+    },
+  };
+}
+
+// ── Responses API with web search ─────────────────────────────────────────────
+
+/**
+ * Call OpenAI via the Responses API with web_search_preview enabled.
+ *
+ * IMPORTANT: This function throws a clear error if web search was not actually
+ * performed. Callers can never silently receive a response generated from
+ * model memory when live data was expected.
+ *
+ * The model is instructed to return a JSON object only. The server is
+ * responsible for setting any timestamp fields — do NOT ask the model to
+ * generate timestamps.
+ */
+export async function callAiWithWebSearch<T>(
+  systemPrompt: string,
+  userPrompt: string,
+  options: AiServiceOptions = {}
+): Promise<WebSearchAiCallResult<T>> {
+  const { model = "gpt-4o-mini", maxTokens = 1200, temperature = 0.3 } = options;
+  const client = getClient();
+  const calledAt = new Date().toISOString();
+
+  const requestPayload = {
+    model,
+    max_output_tokens: maxTokens,
+    temperature,
+    tools: [{ type: "web_search_preview" as const }],
+    input: [
+      { role: "system" as const, content: systemPrompt },
+      { role: "user" as const, content: userPrompt },
+    ],
+  };
+
+  logger.debug({ model }, "Calling OpenAI (Responses API + web search)");
+
+  const response = await client.responses.create(requestPayload);
+
+  // ── Enforce that web search was actually used ───────────────────────────
+  const webSearchItems = response.output.filter(
+    (item) => item.type === "web_search_call"
+  );
+  if (webSearchItems.length === 0) {
+    throw new Error(
+      "Web search was not performed. Market Monitor requires live web data and " +
+        "cannot generate an analysis from model memory alone."
+    );
+  }
+
+  // ── Extract text content and URL citation annotations ──────────────────
+  let rawText = "";
+  const sources: WebSearchSource[] = [];
+
+  for (const item of response.output) {
+    if (item.type === "message") {
+      for (const part of item.content) {
+        if (part.type === "output_text") {
+          rawText += part.text;
+          for (const ann of part.annotations) {
+            if (ann.type === "url_citation") {
+              // Deduplicate by URL
+              if (!sources.find((s) => s.url === ann.url)) {
+                sources.push({ title: ann.title, url: ann.url });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (!rawText) {
+    throw new Error("OpenAI Responses API returned no text content");
+  }
+
+  // ── Parse JSON — strip markdown fences if the model wrapped the JSON ───
+  let jsonStr = rawText.trim();
+  const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) jsonStr = fenceMatch[1].trim();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    throw new Error(
+      `OpenAI returned invalid JSON after web search: ${jsonStr.slice(0, 300)}`
+    );
+  }
+
   const debug: AiDebugInfo = {
-    request: requestPayload,
-    rawResponse: raw,
+    request: requestPayload as unknown as Record<string, unknown>,
+    rawResponse: rawText,
     usage: {
-      prompt_tokens: response.usage?.prompt_tokens ?? null,
-      completion_tokens: response.usage?.completion_tokens ?? null,
+      prompt_tokens: response.usage?.input_tokens ?? null,
+      completion_tokens: response.usage?.output_tokens ?? null,
       total_tokens: response.usage?.total_tokens ?? null,
     },
     calledAt,
+    webSearchUsed: true,
   };
 
-  return { result: parsed as T, debug };
+  return { result: parsed as T, debug, sources };
 }
