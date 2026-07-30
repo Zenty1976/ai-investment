@@ -20,4 +20,6 @@ export interface MarketAnalysis {
   keyRisks: string[];
   sources: MarketAnalysisSource[];
   timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
 }

@@ -13,6 +13,8 @@ import {
   Globe,
   Copy,
   Check,
+  Clock,
+  Timer,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -40,6 +42,15 @@ interface AiDebugInfo {
   calledAt: string
   webSearchUsed: boolean
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function MarketMonitor() {
   const [debugInfo, setDebugInfo] = useState<AiDebugInfo | null>(null)
@@ -74,16 +85,15 @@ export default function MarketMonitor() {
         <div className="flex gap-4">
           <Skeleton className="h-28 flex-1" />
           <Skeleton className="h-28 flex-1" />
-          <Skeleton className="h-28 flex-1" />
         </div>
         <Skeleton className="h-20 w-full" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Skeleton className="h-56" />
-          <Skeleton className="h-56" />
-          <Skeleton className="h-56" />
-          <Skeleton className="h-56" />
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
         </div>
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-40 w-full" />
       </div>
     )
   }
@@ -173,9 +183,18 @@ export default function MarketMonitor() {
           <h2 className="text-base font-bold tracking-wide uppercase text-foreground">
             Market Monitor
           </h2>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Updated: {format(new Date(analysis.timestamp), "HH:mm")}
-          </p>
+          {/* Metadata row */}
+          <div className="flex items-center gap-3 mt-1">
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {format(new Date(analysis.timestamp), "HH:mm 'UTC'")}
+            </span>
+            <span className="text-muted-foreground/30 text-[11px]">·</span>
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Timer className="h-3 w-3" />
+              {formatDuration(analysis.analysisDuration)}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           <Button
@@ -346,20 +365,34 @@ export default function MarketMonitor() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            <ul className="space-y-1.5">
+            <ul className="divide-y divide-border/30">
               {analysis.sources.map((source, i) => (
-                <li key={i}>
+                <li key={i} className="py-2 first:pt-0 last:pb-0">
                   <a
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors group"
+                    className="flex items-start gap-2 group"
                   >
-                    <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/50 group-hover:text-primary transition-colors" />
-                    <span className="truncate group-hover:underline underline-offset-2">{source.title}</span>
-                    <span className="shrink-0 text-muted-foreground/40 font-mono text-[10px] truncate max-w-[200px] hidden lg:block">
-                      {(() => { try { return new URL(source.url).hostname } catch { return source.url } })()}
-                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-foreground/80 group-hover:text-foreground group-hover:underline underline-offset-2 transition-colors leading-snug truncate">
+                        {source.title}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {source.published && (
+                          <span className="text-[10px] text-muted-foreground/60 font-mono">
+                            {source.published}
+                          </span>
+                        )}
+                        {source.published && (
+                          <span className="text-muted-foreground/30 text-[10px]">·</span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground/50 font-mono truncate">
+                          {(() => { try { return new URL(source.url).hostname } catch { return source.url } })()}
+                        </span>
+                      </div>
+                    </div>
                   </a>
                 </li>
               ))}
@@ -392,14 +425,8 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
   const inputMessages: Array<{ role: string; content: string }> = (() => {
     if (!debugInfo) return []
     const req = debugInfo.request
-    // Chat completions shape: { messages: [...] }
-    if (Array.isArray(req.messages)) {
-      return req.messages as Array<{ role: string; content: string }>
-    }
-    // Responses API shape: { input: [...] }
-    if (Array.isArray(req.input)) {
-      return req.input as Array<{ role: string; content: string }>
-    }
+    if (Array.isArray(req.messages)) return req.messages as Array<{ role: string; content: string }>
+    if (Array.isArray(req.input)) return req.input as Array<{ role: string; content: string }>
     return []
   })()
 
@@ -434,7 +461,7 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                   copyText={inputMessages.map(m => `[${m.role}]\n${m.content}`).join("\n\n")}
                 >
                   <div className="space-y-1.5 mb-3">
-                    <Row label="API" value={debugInfo.webSearchUsed ? "Responses API + web_search_preview" : "Chat Completions"} />
+                    <Row label="API" value={debugInfo.webSearchUsed ? "Responses API + web_search" : "Chat Completions"} />
                     <Row label="Model" value={String(debugInfo.request.model ?? "—")} />
                     <Row label="Temperature" value={String(debugInfo.request.temperature ?? "—")} />
                     <Row label="Max tokens" value={String(
@@ -473,7 +500,7 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                 >
                   <div className="mb-3 flex flex-wrap gap-4 text-muted-foreground">
                     <span>
-                      Web search used:{" "}
+                      Web search:{" "}
                       <span className={debugInfo.webSearchUsed ? "text-emerald-400" : "text-rose-400"}>
                         {debugInfo.webSearchUsed ? "Yes ✓" : "No ✗"}
                       </span>
@@ -500,6 +527,8 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
     </Dialog>
   )
 }
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 function Section({
   label,

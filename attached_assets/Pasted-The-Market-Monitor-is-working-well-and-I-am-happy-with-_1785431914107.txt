@@ -1,0 +1,72 @@
+The Market Monitor is working well and I am happy with the overall architecture. I would now like to improve the quality, consistency and trustworthiness of the analysis without changing the architecture.
+
+Please make the following improvements:
+
+1. Extend the JSON response with a new field called “sources”. It should contain the sources actually used during the web search.
+
+Example:
+
+“sources”: [
+{
+“title”: “…”,
+“url”: “…”,
+“published”: “…”
+}
+]
+
+Include between 3 and 6 recent sources.
+
+Do not include URLs or citations anywhere else in the response.
+
+2. Keep the summary short.
+
+Maximum 40 words.
+
+It should provide a quick executive overview that can be read in a few seconds.
+
+3. Prefer sectors over individual companies.
+
+Only mention specific companies if they are the primary reason for today’s market movement.
+
+4. Keep every array between 1 and 3 items.
+
+Only include the most important observations.
+
+5. Use objective language.
+
+Avoid words like “significant”, “dramatic” or “strong” unless today’s sources clearly support those descriptions.
+
+6. Continue using web search and prefer high-quality financial sources such as Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC, Yahoo Finance, official exchanges and central banks.
+
+Avoid using opinion articles or old market outlook reports as evidence for today’s market conditions.
+
+7. If the returned JSON does not exactly match the expected schema, reject it and retry once.
+
+Do not display partially parsed data.
+
+8. Display the sources at the bottom of the Market Monitor panel.
+
+Each source should show:
+
+* Title
+* Publication date
+* Clickable link
+
+9. Display additional information in the panel:
+
+* Last updated
+* Analysis duration
+
+10. Keep the existing architecture exactly as it is.
+
+Do not redesign the application.
+
+Do not add new modules.
+
+Do not add a database.
+
+Do not change the project structure.
+
+Only improve the existing Market Monitor.
+
+Finally, after completing these improvements, review the entire Market Monitor implementation as a senior software engineer and refactor only where it improves readability, maintainability and robustness without changing the functionality.

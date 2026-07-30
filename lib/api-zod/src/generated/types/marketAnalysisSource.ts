@@ -9,4 +9,5 @@
 export interface MarketAnalysisSource {
   title: string;
   url: string;
+  published?: string;
 }

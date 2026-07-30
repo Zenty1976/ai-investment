@@ -32,9 +32,11 @@ export const RunMarketAnalysisResponse = zod.object({
   "keyRisks": zod.array(zod.string()),
   "sources": zod.array(zod.object({
   "title": zod.string(),
-  "url": zod.string()
+  "url": zod.string(),
+  "published": zod.string().optional()
 })),
-  "timestamp": zod.string()
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
 })
 
 

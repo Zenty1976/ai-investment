@@ -61,6 +61,8 @@ components:
           type: string
         url:
           type: string
+        published:
+          type: string
       required:
         - title
         - url
@@ -101,6 +103,9 @@ components:
             $ref: "#/components/schemas/MarketAnalysisSource"
         timestamp:
           type: string
+        analysisDuration:
+          type: number
+          description: Time taken to complete the analysis in milliseconds
       required:
         - summary
         - marketSentiment
@@ -112,6 +117,7 @@ components:
         - keyRisks
         - sources
         - timestamp
+        - analysisDuration
     ErrorResponse:
       type: object
       properties:
