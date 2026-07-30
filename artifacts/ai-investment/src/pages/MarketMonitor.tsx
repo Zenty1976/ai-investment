@@ -12,6 +12,8 @@ import {
   Info,
   ExternalLink,
   Globe,
+  Copy,
+  Check,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -450,7 +452,11 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
 
             {debugInfo ? (
               <>
-                <Section label="📤 Sent to OpenAI" color="blue">
+                <Section
+                  label="📤 Sent to OpenAI"
+                  color="blue"
+                  copyText={inputMessages.map(m => `[${m.role}]\n${m.content}`).join("\n\n")}
+                >
                   <div className="space-y-1.5 mb-3">
                     <Row label="API" value={debugInfo.webSearchUsed ? "Responses API + web_search_preview" : "Chat Completions"} />
                     <Row label="Model" value={String(debugInfo.request.model ?? "—")} />
@@ -481,7 +487,14 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                   ))}
                 </Section>
 
-                <Section label="📥 Received from OpenAI" color="emerald">
+                <Section
+                  label="📥 Received from OpenAI"
+                  color="emerald"
+                  copyText={(() => {
+                    try { return JSON.stringify(JSON.parse(debugInfo.rawResponse), null, 2) }
+                    catch { return debugInfo.rawResponse }
+                  })()}
+                >
                   <div className="mb-3 flex flex-wrap gap-4 text-muted-foreground">
                     <span>
                       Web search used:{" "}
@@ -512,7 +525,27 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
   )
 }
 
-function Section({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
+function Section({
+  label,
+  color,
+  copyText,
+  children,
+}: {
+  label: string
+  color: string
+  copyText?: string
+  children: React.ReactNode
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    if (!copyText) return
+    navigator.clipboard.writeText(copyText).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    })
+  }
+
   const borderColor =
     color === "blue" ? "border-blue-500/30" :
     color === "emerald" ? "border-emerald-500/30" :
@@ -524,7 +557,21 @@ function Section({ label, color, children }: { label: string; color: string; chi
 
   return (
     <div className={`border ${borderColor} rounded p-3`}>
-      <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${labelColor}`}>{label}</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className={`text-[10px] font-bold uppercase tracking-widest ${labelColor}`}>{label}</p>
+        {copyText && (
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5 rounded hover:bg-white/5"
+            title="Copy as plain text"
+          >
+            {copied
+              ? <><Check className="h-3 w-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></>
+              : <><Copy className="h-3 w-3" /><span>Copy</span></>
+            }
+          </button>
+        )}
+      </div>
       {children}
     </div>
   )
