@@ -36,11 +36,6 @@ export interface MarketAnalysis {
   summary: string;
   marketSentiment: MarketAnalysisMarketSentiment;
   riskLevel: MarketAnalysisRiskLevel;
-  /**
-     * @minimum 0
-     * @maximum 100
-     */
-  confidence: number;
   positiveFactors: string[];
   negativeFactors: string[];
   strongSectors: string[];

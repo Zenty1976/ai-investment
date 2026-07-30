@@ -21,16 +21,10 @@ export const HealthCheckResponse = zod.object({
  * Calls the AI service to analyze current market conditions and returns structured JSON
  * @summary Run market analysis
  */
-export const runMarketAnalysisResponseConfidenceMin = 0;
-export const runMarketAnalysisResponseConfidenceMax = 100;
-
-
-
 export const RunMarketAnalysisResponse = zod.object({
   "summary": zod.string(),
   "marketSentiment": zod.enum(['Positive', 'Neutral', 'Negative']),
   "riskLevel": zod.enum(['Low', 'Moderate', 'High']),
-  "confidence": zod.number().min(runMarketAnalysisResponseConfidenceMin).max(runMarketAnalysisResponseConfidenceMax),
   "positiveFactors": zod.array(zod.string()),
   "negativeFactors": zod.array(zod.string()),
   "strongSectors": zod.array(zod.string()),

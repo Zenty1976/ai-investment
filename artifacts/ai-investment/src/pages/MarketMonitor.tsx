@@ -8,7 +8,6 @@ import {
   Activity,
   AlertTriangle,
   ShieldAlert,
-  BarChart3,
   Info,
   ExternalLink,
   Globe,
@@ -18,7 +17,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
@@ -204,7 +202,7 @@ export default function MarketMonitor() {
       </div>
 
       {/* ── Top metric cards ── */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -235,28 +233,6 @@ export default function MarketMonitor() {
                 {analysis.riskLevel}
               </Badge>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/60 border-card-border/50">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                <BarChart3 className="h-3.5 w-3.5" /> AI Confidence
-              </p>
-              <span className="text-xl font-bold">{analysis.confidence}%</span>
-            </div>
-            <Progress
-              value={analysis.confidence}
-              className="h-2 bg-secondary/50"
-              indicatorClassName={
-                analysis.confidence > 80
-                  ? "bg-emerald-500"
-                  : analysis.confidence > 50
-                  ? "bg-primary"
-                  : "bg-amber-500"
-              }
-            />
           </CardContent>
         </Card>
       </div>

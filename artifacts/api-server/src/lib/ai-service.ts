@@ -144,7 +144,7 @@ export async function callAiWithWebSearch<T>(
     model,
     max_output_tokens: maxTokens,
     temperature,
-    tools: [{ type: "web_search_preview" as const }],
+    tools: [{ type: "web_search" as const, search_context_size: "high" as const }],
     input: [
       { role: "system" as const, content: systemPrompt },
       { role: "user" as const, content: userPrompt },
