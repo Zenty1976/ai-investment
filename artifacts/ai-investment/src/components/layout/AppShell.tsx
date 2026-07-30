@@ -30,16 +30,16 @@ const TICKERS = [
 // All sidebar nav items.
 // enabled=true → clickable and navigates; enabled=false → greyed-out stub for future modules
 const NAV_ITEMS = [
-  { label: "OVERBLIK",     href: "/",          icon: LayoutGrid,   enabled: true  },
-  { label: "PORTEFØLJE",   href: "/portfolio", icon: Briefcase,    enabled: false },
-  { label: "AKTIER",       href: "/stocks",    icon: TrendingUp,   enabled: false },
-  { label: "MARKED",       href: "/",          icon: Activity,     enabled: true  },
-  { label: "NYHEDER",      href: "/news",      icon: Newspaper,    enabled: false },
-  { label: "EVENTS",       href: "/events",    icon: CalendarDays, enabled: false },
-  { label: "RISIKO",       href: "/risk",      icon: ShieldAlert,  enabled: false },
-  { label: "ANALYSER",     href: "/analyse",   icon: BarChart2,    enabled: false },
-  { label: "LOG & HIST.",  href: "/log",       icon: History,      enabled: false },
-  { label: "INDSTILLINGER",href: "/settings",  icon: Settings,     enabled: true  },
+  { label: "OVERVIEW",    href: "/",          icon: LayoutGrid,   enabled: true  },
+  { label: "PORTFOLIO",   href: "/portfolio", icon: Briefcase,    enabled: false },
+  { label: "STOCKS",      href: "/stocks",    icon: TrendingUp,   enabled: false },
+  { label: "MARKET",      href: "/",          icon: Activity,     enabled: true  },
+  { label: "NEWS",        href: "/news",      icon: Newspaper,    enabled: false },
+  { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: false },
+  { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: false },
+  { label: "ANALYSIS",    href: "/analyse",   icon: BarChart2,    enabled: false },
+  { label: "LOG & HIST.", href: "/log",       icon: History,      enabled: false },
+  { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]
 
 function LiveClock() {
@@ -140,7 +140,7 @@ export function AppShell({ children }: AppShellProps) {
                 </span>
               </div>
               <div className="text-[10px] text-muted-foreground tracking-wide mt-0.5">
-                Real-time investeringsintelligens
+                Real-time investment intelligence
               </div>
             </div>
 
@@ -156,7 +156,7 @@ export function AppShell({ children }: AppShellProps) {
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <Wifi className="h-3 w-3" />
                 <span>
-                  Sidst systemopd.:{" "}
+                  Last update:{" "}
                   {lastUpdated ? format(lastUpdated, "HH:mm:ss") : "--:--:--"}
                 </span>
               </div>

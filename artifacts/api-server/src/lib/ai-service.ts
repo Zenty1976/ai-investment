@@ -26,31 +26,57 @@ export interface AiServiceOptions {
   temperature?: number;
 }
 
+/** Debug metadata returned alongside every AI call result. */
+export interface AiDebugInfo {
+  request: {
+    model: string;
+    temperature: number;
+    max_tokens: number;
+    response_format: { type: string };
+    messages: Array<{ role: string; content: string }>;
+  };
+  rawResponse: string;
+  usage: {
+    prompt_tokens: number | null;
+    completion_tokens: number | null;
+    total_tokens: number | null;
+  };
+  calledAt: string;
+}
+
+export interface AiCallResult<T> {
+  result: T;
+  debug: AiDebugInfo;
+}
+
 /**
- * Send a prompt to OpenAI and return parsed JSON.
+ * Send a prompt to OpenAI and return parsed JSON + full debug metadata.
  * All modules should use this method and never call OpenAI directly.
  */
 export async function callAi<T>(
   systemPrompt: string,
   userPrompt: string,
   options: AiServiceOptions = {}
-): Promise<T> {
+): Promise<AiCallResult<T>> {
   const { model = "gpt-4o-mini", maxTokens = 512, temperature = 0.3 } = options;
 
   const client = getClient();
+  const calledAt = new Date().toISOString();
 
-  logger.debug({ model }, "Calling OpenAI");
-
-  const response = await client.chat.completions.create({
+  const requestPayload = {
     model,
     max_tokens: maxTokens,
     temperature,
-    response_format: { type: "json_object" },
+    response_format: { type: "json_object" } as const,
     messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
+      { role: "system" as const, content: systemPrompt },
+      { role: "user" as const, content: userPrompt },
     ],
-  });
+  };
+
+  logger.debug({ model }, "Calling OpenAI");
+
+  const response = await client.chat.completions.create(requestPayload);
 
   const raw = response.choices[0]?.message?.content;
   if (!raw) {
@@ -64,5 +90,16 @@ export async function callAi<T>(
     throw new Error(`OpenAI returned invalid JSON: ${raw.slice(0, 200)}`);
   }
 
-  return parsed as T;
+  const debug: AiDebugInfo = {
+    request: requestPayload,
+    rawResponse: raw,
+    usage: {
+      prompt_tokens: response.usage?.prompt_tokens ?? null,
+      completion_tokens: response.usage?.completion_tokens ?? null,
+      total_tokens: response.usage?.total_tokens ?? null,
+    },
+    calledAt,
+  };
+
+  return { result: parsed as T, debug };
 }

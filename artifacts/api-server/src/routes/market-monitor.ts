@@ -28,20 +28,23 @@ const USER_PROMPT = `Analyse current global financial market conditions as of to
 router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running market analysis");
 
-  const raw = await callAi<unknown>(SYSTEM_PROMPT, USER_PROMPT, {
+  const { result, debug } = await callAi<unknown>(SYSTEM_PROMPT, USER_PROMPT, {
     model: "gpt-4o-mini",
     maxTokens: 600,
     temperature: 0.3,
   });
 
-  const parsed = RunMarketAnalysisResponse.safeParse(raw);
+  const parsed = RunMarketAnalysisResponse.safeParse(result);
   if (!parsed.success) {
     req.log.error({ errors: parsed.error.message }, "Invalid AI response schema");
-    res.status(500).json({ error: "AI returned an invalid response structure. Please try again." });
+    res.status(500).json({
+      error: "AI returned an invalid response structure. Please try again.",
+      _debug: debug,
+    });
     return;
   }
 
-  res.json(parsed.data);
+  res.json({ ...parsed.data, _debug: debug });
 });
 
 export default router;

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useRunMarketAnalysis } from "@workspace/api-client-react"
 import {
   AlertCircle,
@@ -8,6 +9,7 @@ import {
   AlertTriangle,
   ShieldAlert,
   BarChart3,
+  Info,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,13 +17,51 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { format } from "date-fns"
 
+interface AiDebugInfo {
+  request: {
+    model: string
+    temperature: number
+    max_tokens: number
+    response_format: { type: string }
+    messages: Array<{ role: string; content: string }>
+  }
+  rawResponse: string
+  usage: {
+    prompt_tokens: number | null
+    completion_tokens: number | null
+    total_tokens: number | null
+  }
+  calledAt: string
+}
+
 export default function MarketMonitor() {
+  const [debugInfo, setDebugInfo] = useState<AiDebugInfo | null>(null)
+  const [debugError, setDebugError] = useState<unknown>(null)
+  const [debugOpen, setDebugOpen] = useState(false)
+
   const { mutate: runAnalysis, data: analysis, isPending, error } = useRunMarketAnalysis({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (data) => {
         window.dispatchEvent(new CustomEvent("market-updated", { detail: new Date() }))
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const d = (data as any)?._debug
+        if (d) setDebugInfo(d)
+        setDebugError(null)
+      },
+      onError: (err) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const d = (err as any)?._debug
+        if (d) setDebugInfo(d)
+        setDebugError(err)
       },
     },
   })
@@ -29,6 +69,8 @@ export default function MarketMonitor() {
   const handleRefresh = () => {
     runAnalysis()
   }
+
+  const hasDebug = debugInfo !== null || debugError !== null
 
   if (isPending && !analysis) {
     return (
@@ -60,10 +102,29 @@ export default function MarketMonitor() {
               "An unexpected error occurred while fetching market intelligence."}
           </AlertDescription>
         </Alert>
-        <Button onClick={handleRefresh} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Try Again
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+          {hasDebug && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              onClick={() => setDebugOpen(true)}
+              title="Show debug info"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <DebugDialog
+          open={debugOpen}
+          onClose={() => setDebugOpen(false)}
+          debugInfo={debugInfo}
+          error={debugError}
+        />
       </div>
     )
   }
@@ -116,19 +177,31 @@ export default function MarketMonitor() {
             Market Monitor
           </h2>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            Opdateret: {format(new Date(analysis.timestamp), "HH:mm")}
+            Updated: {format(new Date(analysis.timestamp), "HH:mm")}
           </p>
         </div>
-        <Button
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isPending}
-          className="h-8 gap-2"
-          data-testid="button-refresh"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
-          Opdater analyse
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isPending}
+            className="h-8 gap-2"
+            data-testid="button-refresh"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+            Update Analysis
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            onClick={() => setDebugOpen(true)}
+            title="Show debug info — exact OpenAI request & response"
+            disabled={!hasDebug}
+          >
+            <Info className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       {/* ── Top metric cards ── */}
@@ -137,7 +210,7 @@ export default function MarketMonitor() {
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5" /> Markedsstemning
+              <Activity className="h-3.5 w-3.5" /> Market Sentiment
             </p>
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold tracking-tight">{analysis.marketSentiment}</span>
@@ -157,7 +230,7 @@ export default function MarketMonitor() {
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <ShieldAlert className="h-3.5 w-3.5" /> Risikoniveau
+              <ShieldAlert className="h-3.5 w-3.5" /> Risk Level
             </p>
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold tracking-tight">{analysis.riskLevel}</span>
@@ -173,7 +246,7 @@ export default function MarketMonitor() {
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                <BarChart3 className="h-3.5 w-3.5" /> AI Konfidens
+                <BarChart3 className="h-3.5 w-3.5" /> AI Confidence
               </p>
               <span className="text-xl font-bold">{analysis.confidence}%</span>
             </div>
@@ -206,7 +279,7 @@ export default function MarketMonitor() {
         <Card className="border-card-border/50">
           <CardHeader className="py-3 px-4 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-500" /> Positive faktorer
+              <TrendingUp className="h-4 w-4 text-emerald-500" /> Positive Factors
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
@@ -225,7 +298,7 @@ export default function MarketMonitor() {
         <Card className="border-card-border/50">
           <CardHeader className="py-3 px-4 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-rose-500" /> Negative faktorer
+              <TrendingDown className="h-4 w-4 text-rose-500" /> Negative Factors
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
@@ -244,13 +317,13 @@ export default function MarketMonitor() {
         <Card className="border-card-border/50">
           <CardHeader className="py-3 px-4 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest">
-              Sektorrotation
+              Sector Rotation
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 grid grid-cols-2 gap-4">
             <div>
               <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                Stærke sektorer
+                Strong Sectors
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {analysis.strongSectors.map((s, i) => (
@@ -262,7 +335,7 @@ export default function MarketMonitor() {
             </div>
             <div>
               <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                Svage sektorer
+                Weak Sectors
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {analysis.weakSectors.map((s, i) => (
@@ -279,7 +352,7 @@ export default function MarketMonitor() {
         <Card className="border-amber-500/20 bg-amber-500/5">
           <CardHeader className="py-3 px-4 border-b border-amber-500/10">
             <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-amber-400">
-              <AlertTriangle className="h-4 w-4" /> Nøglerisici
+              <AlertTriangle className="h-4 w-4" /> Key Risks
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
@@ -295,6 +368,122 @@ export default function MarketMonitor() {
         </Card>
 
       </div>
+
+      <DebugDialog
+        open={debugOpen}
+        onClose={() => setDebugOpen(false)}
+        debugInfo={debugInfo}
+        error={debugError}
+      />
+    </div>
+  )
+}
+
+// ── Debug Dialog ─────────────────────────────────────────────────────────────
+
+interface DebugDialogProps {
+  open: boolean
+  onClose: () => void
+  debugInfo: AiDebugInfo | null
+  error: unknown
+}
+
+function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-3xl bg-[#0d1117] border-border text-foreground">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+            <Info className="h-4 w-4 text-primary" />
+            OpenAI Debug — Request & Response
+          </DialogTitle>
+        </DialogHeader>
+
+        <ScrollArea className="max-h-[70vh] pr-2">
+          <div className="space-y-4 text-xs font-mono">
+
+            {!!error && (
+              <Section label="❌ Error" color="rose">
+                <pre className="whitespace-pre-wrap text-rose-400 break-all">
+                  {error instanceof Error
+                    ? JSON.stringify({ message: error.message, stack: error.stack }, null, 2)
+                    : JSON.stringify(error, null, 2)}
+                </pre>
+              </Section>
+            )}
+
+            {debugInfo ? (
+              <>
+                <Section label="📤 Sent to OpenAI" color="blue">
+                  <div className="space-y-2">
+                    <Row label="Model" value={debugInfo.request.model} />
+                    <Row label="Temperature" value={String(debugInfo.request.temperature)} />
+                    <Row label="Max tokens" value={String(debugInfo.request.max_tokens)} />
+                    <Row label="Response format" value={debugInfo.request.response_format.type} />
+                    <Row label="Called at" value={debugInfo.calledAt} />
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {debugInfo.request.messages.map((m, i) => (
+                      <div key={i}>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
+                          [{m.role}]
+                        </p>
+                        <pre className="whitespace-pre-wrap text-foreground/80 bg-background/60 rounded p-2 border border-border/40 break-all">
+                          {m.content}
+                        </pre>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+
+                <Section label="📥 Received from OpenAI" color="emerald">
+                  <div className="mb-2 flex gap-4 text-muted-foreground">
+                    <span>Prompt tokens: <span className="text-foreground">{debugInfo.usage.prompt_tokens ?? "—"}</span></span>
+                    <span>Completion tokens: <span className="text-foreground">{debugInfo.usage.completion_tokens ?? "—"}</span></span>
+                    <span>Total: <span className="text-foreground">{debugInfo.usage.total_tokens ?? "—"}</span></span>
+                  </div>
+                  <pre className="whitespace-pre-wrap text-emerald-300/90 bg-background/60 rounded p-2 border border-emerald-500/20 break-all">
+                    {(() => {
+                      try { return JSON.stringify(JSON.parse(debugInfo.rawResponse), null, 2) }
+                      catch { return debugInfo.rawResponse }
+                    })()}
+                  </pre>
+                </Section>
+              </>
+            ) : (
+              <p className="text-muted-foreground">No debug data available yet. Run an analysis first.</p>
+            )}
+
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function Section({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
+  const borderColor =
+    color === "blue" ? "border-blue-500/30" :
+    color === "emerald" ? "border-emerald-500/30" :
+    "border-rose-500/30"
+  const labelColor =
+    color === "blue" ? "text-blue-400" :
+    color === "emerald" ? "text-emerald-400" :
+    "text-rose-400"
+
+  return (
+    <div className={`border ${borderColor} rounded p-3`}>
+      <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${labelColor}`}>{label}</p>
+      {children}
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-2">
+      <span className="text-muted-foreground w-32 shrink-0">{label}:</span>
+      <span className="text-foreground">{value}</span>
     </div>
   )
 }
