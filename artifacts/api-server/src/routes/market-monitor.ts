@@ -98,10 +98,11 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
 
     if (parsed.success) {
       // Strip sources from unapproved domains or outside the recency window
-      const { accepted, rejectedCount } = filterSources(parsed.data.sources, nowIso);
+      const { accepted, rejectedCount, rejectedUrls } = filterSources(parsed.data.sources, nowIso);
       if (rejectedCount > 0) {
-        req.log.warn({ rejectedCount }, "Removed sources that failed domain/recency validation");
+        req.log.warn({ rejectedCount, rejectedUrls }, "Removed sources that failed domain/recency validation");
       }
+      req.log.info({ acceptedCount: accepted.length }, "Sources after validation");
       res.json({ ...parsed.data, sources: accepted, _debug: debug });
       return;
     }

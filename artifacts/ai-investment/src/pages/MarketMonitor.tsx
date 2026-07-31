@@ -209,17 +209,18 @@ export default function MarketMonitor() {
             <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
             Update Analysis
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground disabled:opacity-30"
-            onClick={() => setSourcesOpen(true)}
-            title="View sources used in this analysis"
-            disabled={!analysis.sources?.length}
-          >
-            <Globe className="h-3.5 w-3.5" />
-            <span className="text-xs">Sources</span>
-          </Button>
+          {analysis.sources && analysis.sources.length > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
+              onClick={() => setSourcesOpen(true)}
+              title="View sources used in this analysis"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span className="text-xs">Sources ({analysis.sources.length})</span>
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"

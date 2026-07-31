@@ -67,14 +67,23 @@ export interface ValidatedSource {
 
 /**
  * Filter a sources array to approved domains and recent publications.
- * Returns the filtered list and the count of rejected entries for logging.
+ * Returns the filtered list, rejected count, and rejected URLs for logging.
  */
 export function filterSources(
   sources: ValidatedSource[],
   nowIso: string
-): { accepted: ValidatedSource[]; rejectedCount: number } {
-  const accepted = sources.filter(
-    (s) => isApprovedDomain(s.url) && isRecentPublication(s.published, nowIso)
-  );
-  return { accepted, rejectedCount: sources.length - accepted.length };
+): { accepted: ValidatedSource[]; rejectedCount: number; rejectedUrls: string[] } {
+  const rejected: ValidatedSource[] = [];
+  const accepted = sources.filter((s) => {
+    if (isApprovedDomain(s.url) && isRecentPublication(s.published, nowIso)) {
+      return true;
+    }
+    rejected.push(s);
+    return false;
+  });
+  return {
+    accepted,
+    rejectedCount: rejected.length,
+    rejectedUrls: rejected.map((s) => s.url),
+  };
 }
