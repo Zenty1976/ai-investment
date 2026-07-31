@@ -50,87 +50,115 @@
   "event-monitor": {
     "moduleName": "event-monitor",
     "result": {
-      "summary": "Key U.S. macroeconomic data releases and corporate earnings are scheduled between July 31 and August 14, 2026, including the Employment Situation, CPI, PPI, and several major company earnings. These events are likely to influence market sentiment amid ongoing inflation and geopolitical risks.",
+      "summary": "Key macroeconomic and central bank events are scheduled between July 31 and August 14, 2026, including major U.S. inflation and employment data, central bank policy meetings in Australia and Brazil, and the Czech National Bank’s decision. These events are likely to influence global interest rate expectations, inflation outlooks, and market sentiment.",
       "nextMajorEvent": {
-        "title": "U.S. Employment Situation (July 2026)",
+        "title": "U.S. Employment Report – July",
         "date": "2026-08-07",
         "countdownDays": 7
       },
       "events": [
         {
-          "title": "U.S. Employment Situation (July 2026)",
+          "title": "U.S. Employment Report – July",
           "date": "2026-08-07",
-          "category": "Employment Report",
+          "category": "Employment Data",
           "importance": "High",
-          "expectedVolatility": "High",
           "affectedMarkets": [
-            "Equities",
+            "U.S. equities",
             "Bonds",
-            "USD"
+            "Labor-sensitive sectors"
           ],
-          "expectedImpact": "July payrolls and unemployment data will influence Fed policy expectations and market direction.",
-          "reason": "Nonfarm payrolls and unemployment are key indicators of labor market strength and inflation pressure, directly affecting monetary policy outlook."
+          "expectedImpact": "Employment data will affect Fed rate path expectations and risk sentiment.",
+          "reason": "The July employment report is a critical indicator of labor market strength and will influence monetary policy outlook and market positioning."
         },
         {
-          "title": "U.S. Consumer Price Index (CPI) for July 2026",
+          "title": "Reserve Bank of Australia Monetary Policy Decision",
+          "date": "2026-08-11",
+          "category": "Central Bank Meeting",
+          "importance": "High",
+          "affectedMarkets": [
+            "AUD",
+            "Global rates",
+            "Commodities"
+          ],
+          "expectedImpact": "RBA decision will influence AUD and global rate expectations.",
+          "reason": "The RBA’s August policy decision is closely watched amid global inflation pressures and will impact currency and rate markets."
+        },
+        {
+          "title": "U.S. Consumer Price Index (CPI) – July",
           "date": "2026-08-12",
-          "category": "Inflation Report",
+          "category": "Inflation Data",
           "importance": "High",
-          "expectedVolatility": "High",
           "affectedMarkets": [
+            "U.S. equities",
             "Bonds",
-            "Equities",
-            "USD"
+            "FX"
           ],
-          "expectedImpact": "July CPI will provide updated inflation trajectory, shaping Fed rate path expectations.",
-          "reason": "CPI is the Fed’s preferred inflation gauge; a surprise could shift monetary policy outlook."
+          "expectedImpact": "CPI will influence Fed policy expectations and market inflation outlook.",
+          "reason": "As a key inflation gauge, July CPI will shape expectations for U.S. monetary policy and affect bond yields and equity valuations."
         },
         {
-          "title": "U.S. Producer Price Index (PPI) for July 2026",
-          "date": "2026-08-13",
-          "category": "Inflation Report",
+          "title": "Brazil COPOM Monetary Policy Meeting",
+          "date": "2026-08-04",
+          "category": "Central Bank Meeting",
           "importance": "Medium",
-          "expectedVolatility": "Medium",
           "affectedMarkets": [
-            "Commodities",
-            "Bonds",
-            "Equities"
+            "Emerging markets",
+            "BRL",
+            "Commodities"
           ],
-          "expectedImpact": "July PPI will signal upstream inflation trends that may feed into consumer prices.",
-          "reason": "PPI tracks wholesale price pressures; changes can foreshadow CPI movements and impact inflation expectations."
+          "expectedImpact": "COPOM decision will affect Brazilian rates and EM sentiment.",
+          "reason": "Brazil’s central bank meeting will guide monetary policy in a major emerging market, influencing FX and EM asset flows."
+        },
+        {
+          "title": "Czech National Bank Monetary Policy Meeting",
+          "date": "2026-08-06",
+          "category": "Central Bank Meeting",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "EUR",
+            "CEE markets",
+            "Rates"
+          ],
+          "expectedImpact": "CNB decision will influence regional rate expectations and EUR sentiment.",
+          "reason": "The CNB’s August meeting will set policy in a central European economy, affecting regional rates and the euro."
         }
       ],
       "sources": [
         {
-          "title": "Schedule of Selected Releases 2026",
-          "url": "https://www.bls.gov/schedule/2026/",
+          "title": "Economic Release Calendar - Consumer Price Index | FRED",
+          "url": "https://fred.stlouisfed.org/releases/calendar?rid=10&ve=2026-12-31&view=year&vs=2026-01-01",
           "published": ""
         },
         {
-          "title": "Current Employment Statistics - CES (National) : U.S. Bureau of Labor Statistics",
-          "url": "https://www.bls.gov/ces/",
+          "title": "Calendar of Economic Release Dates (August 2026) | Scotiabank",
+          "url": "https://www.scotiabank.com/ca/en/about/economics/economics-publications/post.other-publications.calendar-of-economic-release-dates.calendar-of-economic-release-dates--august-2026-.html",
           "published": ""
         },
         {
-          "title": "Schedule of Releases for the Consumer Price Index",
-          "url": "https://www.bls.gov/schedule/news_release/cpi.htm?force_isolation=true",
+          "title": "Coming Up | RBA",
+          "url": "https://www.rba.gov.au/coming-up/",
           "published": ""
         },
         {
-          "title": "Producer Price Index News Release - 2026 M06 Results",
-          "url": "https://www.bls.gov/news.release/ppi.htm",
+          "title": "Board Meeting Schedules | RBA",
+          "url": "https://www.rba.gov.au/schedules-events/board-meeting-schedules.html",
           "published": ""
         },
         {
-          "title": "Earnings Calendar — M7 & Major Company Earnings Dates | StockHub",
-          "url": "https://stockhub.kr/en/earnings-calendar",
+          "title": "BC publica calendário de reuniões do Copom em 2026",
+          "url": "https://www.bcb.gov.br/detalhenoticia/20739/nota/https%3A/www3.bcb.gov.br/sgspub",
+          "published": ""
+        },
+        {
+          "title": "Dates of the CNB Board’s meetings in 2026",
+          "url": "https://www.cnb.cz/en/cnb-news/news/Dates-of-the-CNB-Boards-meetings-in-2026-00001/",
           "published": ""
         }
       ],
-      "timestamp": "2026-07-31T10:30:14.553Z",
-      "analysisDuration": 10536
+      "timestamp": "2026-07-31T10:38:13.621Z",
+      "analysisDuration": 9465
     },
     "createdAt": "2026-07-31T10:21:03.481Z",
-    "updatedAt": "2026-07-31T10:30:25.090Z"
+    "updatedAt": "2026-07-31T10:38:23.087Z"
   }
 }

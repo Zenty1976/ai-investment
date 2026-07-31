@@ -157,7 +157,8 @@ export default function MarketMonitor({ initialExpanded = false }: { initialExpa
       )}
 
       {/* ── Summary card — always visible ── */}
-      <Card className="bg-card/60 border-card-border/50">
+      <Card className={`bg-card/60 overflow-hidden transition-colors duration-300 ${isPending ? "border-primary/30" : "border-card-border/50"}`}>
+        {isPending && <div className="h-0.5 bg-primary/70 animate-pulse" />}
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
 
@@ -185,8 +186,17 @@ export default function MarketMonitor({ initialExpanded = false }: { initialExpa
                   </Badge>
                 </div>
                 <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(analysis.timestamp), "HH:mm 'UTC'")}</span>
-                  <span className="flex items-center gap-1"><Timer className="h-3 w-3" />{formatDuration(analysis.analysisDuration)}</span>
+                  {isPending ? (
+                    <span className="flex items-center gap-1.5 text-primary/80 animate-pulse">
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      Fetching live data…
+                    </span>
+                  ) : (
+                    <>
+                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(analysis.timestamp), "HH:mm 'UTC'")}</span>
+                      <span className="flex items-center gap-1"><Timer className="h-3 w-3" />{formatDuration(analysis.analysisDuration)}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
