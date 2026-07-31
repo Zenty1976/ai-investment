@@ -242,7 +242,6 @@ export default function MarketMonitor() {
               <Activity className="h-3.5 w-3.5" /> Market Sentiment
             </p>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight">{analysis.marketSentiment}</span>
               <Badge variant={sentimentVariant} className="text-[10px] uppercase tracking-wider px-1.5 py-0.5">
                 {analysis.marketSentiment === "Positive" ? (
                   <TrendingUp className="h-3 w-3 mr-1" />
@@ -261,7 +260,6 @@ export default function MarketMonitor() {
               <ShieldAlert className="h-3.5 w-3.5" /> Risk Level
             </p>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight">{analysis.riskLevel}</span>
               <Badge variant={riskVariant} className="text-[10px] uppercase tracking-wider px-1.5 py-0.5">
                 {analysis.riskLevel}
               </Badge>
