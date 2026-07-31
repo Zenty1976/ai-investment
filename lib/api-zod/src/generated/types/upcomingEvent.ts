@@ -5,6 +5,7 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { UpcomingEventExpectedVolatility } from './upcomingEventExpectedVolatility';
 import type { UpcomingEventImportance } from './upcomingEventImportance';
 
 export interface UpcomingEvent {
@@ -13,6 +14,8 @@ export interface UpcomingEvent {
   date: string;
   category: string;
   importance: UpcomingEventImportance;
+  /** Expected price/market volatility for the markets most affected by this event */
+  expectedVolatility: UpcomingEventExpectedVolatility;
   affectedMarkets: string[];
   expectedImpact: string;
   reason: string;

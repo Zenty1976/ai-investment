@@ -64,12 +64,26 @@ export const UpcomingEventImportance = {
   Low: 'Low',
 } as const;
 
+/**
+ * Expected price/market volatility for the markets most affected by this event
+ */
+export type UpcomingEventExpectedVolatility = typeof UpcomingEventExpectedVolatility[keyof typeof UpcomingEventExpectedVolatility];
+
+
+export const UpcomingEventExpectedVolatility = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
 export interface UpcomingEvent {
   title: string;
   /** YYYY-MM-DD */
   date: string;
   category: string;
   importance: UpcomingEventImportance;
+  /** Expected price/market volatility for the markets most affected by this event */
+  expectedVolatility: UpcomingEventExpectedVolatility;
   affectedMarkets: string[];
   expectedImpact: string;
   reason: string;

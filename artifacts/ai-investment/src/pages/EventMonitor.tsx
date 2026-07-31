@@ -59,6 +59,14 @@ function importanceBadgeVariant(
   return "positive"
 }
 
+function volatilityBadgeVariant(
+  volatility: string
+): "negative" | "warning" | "outline" {
+  if (volatility === "High") return "negative"
+  if (volatility === "Medium") return "warning"
+  return "outline"
+}
+
 function countdownLabel(days: number): string {
   if (days === 0) return "Today"
   if (days === 1) return "Tomorrow"
@@ -324,6 +332,14 @@ export default function EventMonitor({ initialExpanded = false }: { initialExpan
                           <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider border border-border/40 rounded px-1">
                             {event.category}
                           </span>
+                          {event.expectedVolatility && (
+                            <Badge
+                              variant={volatilityBadgeVariant(event.expectedVolatility)}
+                              className="text-[10px] uppercase tracking-wider px-1.5 py-0 shrink-0"
+                            >
+                              {event.expectedVolatility} vol
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm font-medium text-foreground/90 leading-snug">
                           {event.title}
