@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   { label: "OVERVIEW",    href: "/",          icon: LayoutGrid,   enabled: true  },
   { label: "PORTFOLIO",   href: "/portfolio", icon: Briefcase,    enabled: false },
   { label: "STOCKS",      href: "/stocks",    icon: TrendingUp,   enabled: false },
-  { label: "MARKET",      href: "/",          icon: Activity,     enabled: true  },
+  { label: "MARKET",      href: "/market",    icon: Activity,     enabled: true  },
   { label: "NEWS",        href: "/news",      icon: Newspaper,    enabled: false },
   { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: true  },
   { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: false },

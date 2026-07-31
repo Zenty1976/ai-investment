@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { AppShell } from '@/components/layout/AppShell';
+import Dashboard from '@/pages/Dashboard';
 import MarketMonitor from '@/pages/MarketMonitor';
 import EventMonitor from '@/pages/EventMonitor';
 import Settings from '@/pages/Settings';
@@ -20,8 +21,9 @@ function Router() {
   return (
     <AppShell>
       <Switch>
-        <Route path="/" component={MarketMonitor} />
-        <Route path="/events" component={EventMonitor} />
+        <Route path="/" component={Dashboard} />
+        <Route path="/market" component={() => <MarketMonitor initialExpanded={true} />} />
+        <Route path="/events" component={() => <EventMonitor initialExpanded={true} />} />
         <Route path="/settings" component={Settings} />
         <Route component={SimpleNotFound} />
       </Switch>

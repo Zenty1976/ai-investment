@@ -55,12 +55,12 @@ function formatDuration(ms: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function MarketMonitor() {
+export default function MarketMonitor({ initialExpanded = false }: { initialExpanded?: boolean }) {
   const [debugInfo, setDebugInfo] = useState<AiDebugInfo | null>(null)
   const [debugError, setDebugError] = useState<unknown>(null)
   const [debugOpen, setDebugOpen] = useState(false)
   const [sourcesOpen, setSourcesOpen] = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(initialExpanded)
 
   const { mutate: runAnalysis, data: analysis, isPending, error } = useRunMarketAnalysis({
     mutation: {

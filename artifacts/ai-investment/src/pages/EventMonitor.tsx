@@ -67,12 +67,12 @@ function countdownLabel(days: number): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function EventMonitor() {
+export default function EventMonitor({ initialExpanded = false }: { initialExpanded?: boolean }) {
   const [debugInfo, setDebugInfo] = useState<AiDebugInfo | null>(null)
   const [debugError, setDebugError] = useState<unknown>(null)
   const [debugOpen, setDebugOpen] = useState(false)
   const [sourcesOpen, setSourcesOpen] = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(initialExpanded)
   const [expandedReasonIdx, setExpandedReasonIdx] = useState<number | null>(null)
 
   const { mutate: runAnalysis, data: analysis, isPending, error } = useRunEventAnalysis({
