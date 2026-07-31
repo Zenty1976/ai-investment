@@ -148,6 +148,66 @@ export interface NewsAnalysis {
   analysisDuration: number;
 }
 
+export type SectorRating = typeof SectorRating[keyof typeof SectorRating];
+
+export const SectorRating = {
+  Strong: 'Strong',
+  'Moderately Strong': 'Moderately Strong',
+  Neutral: 'Neutral',
+  'Moderately Weak': 'Moderately Weak',
+  Weak: 'Weak',
+} as const;
+
+export type SectorTrend = typeof SectorTrend[keyof typeof SectorTrend];
+
+export const SectorTrend = {
+  Improving: 'Improving',
+  Stable: 'Stable',
+  Weakening: 'Weakening',
+} as const;
+
+export type SectorConfidence = typeof SectorConfidence[keyof typeof SectorConfidence];
+
+export const SectorConfidence = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface SectorTopSector {
+  name: string;
+  /** ≤30 words explaining why this sector leads */
+  reason: string;
+}
+
+export interface Sector {
+  name: string;
+  rating: SectorRating;
+  trend: SectorTrend;
+  /** ≤35 words — current state and near-term thesis */
+  summary: string;
+  /** 2-4 specific factors supporting the thesis */
+  drivers: string[];
+  /** 1-3 specific risks that could invalidate the view */
+  risks: string[];
+  /** One sentence on the 1-3 month outlook */
+  outlook: string;
+  confidence: SectorConfidence;
+}
+
+export interface SectorAnalysis {
+  /** ≤80 words — key macro thesis driving sector allocation */
+  executiveSummary: string;
+  /** Broad market tone and what it means for sector rotation */
+  overallOutlook: string;
+  topSector: SectorTopSector;
+  /** Sectors ordered from strongest to weakest */
+  sectors: Sector[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 /**
  * The structured analysis result produced by the module
  */

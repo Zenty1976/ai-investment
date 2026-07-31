@@ -106,6 +106,32 @@ export const RunNewsAnalysisResponse = zod.object({
 
 
 /**
+ * Analyses major equity sectors and determines where institutional capital is flowing
+ * @summary Run sector monitor analysis
+ */
+export const RunSectorAnalysisResponse = zod.object({
+  "executiveSummary": zod.string(),
+  "overallOutlook": zod.string(),
+  "topSector": zod.object({
+    "name": zod.string(),
+    "reason": zod.string()
+  }),
+  "sectors": zod.array(zod.object({
+    "name": zod.string(),
+    "rating": zod.enum(['Strong', 'Moderately Strong', 'Neutral', 'Moderately Weak', 'Weak']),
+    "trend": zod.enum(['Improving', 'Stable', 'Weakening']),
+    "summary": zod.string(),
+    "drivers": zod.array(zod.string()),
+    "risks": zod.array(zod.string()),
+    "outlook": zod.string(),
+    "confidence": zod.enum(['High', 'Medium', 'Low'])
+  })),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
+/**
  * Returns every module's latest analysis result, ordered by most recently updated
  * @summary List all stored module results
  */

@@ -25,7 +25,8 @@ import type {
   HealthStatus,
   MarketAnalysis,
   NewsAnalysis,
-  RepositoryEntry
+  RepositoryEntry,
+  SectorAnalysis
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -347,6 +348,75 @@ export const useRunNewsAnalysis = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getRunNewsAnalysisMutationOptions(options));
+    }
+
+export const getRunSectorAnalysisUrl = () => {
+
+
+
+
+  return `/api/sector-monitor/analyze`
+}
+
+/**
+ * Analyses major equity sectors and determines where institutional capital is flowing
+ * @summary Run sector monitor analysis
+ */
+export const runSectorAnalysis = async ( options?: Parameters<typeof customFetch>[1]): Promise<SectorAnalysis> => {
+
+  return customFetch<SectorAnalysis>(getRunSectorAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRunSectorAnalysisMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runSectorAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runSectorAnalysis>>, TError,void, TContext> => {
+
+const mutationKey = ['runSectorAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runSectorAnalysis>>, void> = () => {
+
+
+          return  runSectorAnalysis(requestOptions)
+        }
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunSectorAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof runSectorAnalysis>>>
+
+    export type RunSectorAnalysisMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Run sector monitor analysis
+ */
+export const useRunSectorAnalysis = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runSectorAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runSectorAnalysis>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRunSectorAnalysisMutationOptions(options));
     }
 
 export const getListRepositoryEntriesUrl = () => {

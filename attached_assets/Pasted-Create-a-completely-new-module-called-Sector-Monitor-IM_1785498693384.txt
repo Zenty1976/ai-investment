@@ -1,0 +1,217 @@
+Create a completely new module called "Sector Monitor".
+
+IMPORTANT
+
+This must follow exactly the same architecture as the existing Market Monitor, Event Monitor and News Monitor modules.
+
+Do NOT redesign the architecture.
+
+Do NOT introduce new services or patterns.
+
+Reuse the existing architecture, shared OpenAI service, repository pattern and frontend layout.
+
+--------------------------------------------------
+Architecture
+--------------------------------------------------
+
+Create:
+
+- Backend route
+- Frontend page
+- Sidebar menu entry
+
+The module must be completely independent.
+
+It must not communicate directly with any other module.
+
+It may only read previously stored analyses from the shared Analysis Repository.
+
+Store its own analysis in the Analysis Repository using the key:
+
+sector-monitor
+
+Like the existing modules:
+
+- Load the latest stored analysis automatically when the page opens.
+- If no analysis exists, show "Not updated yet".
+- Never call OpenAI automatically.
+- OpenAI is only called when the user presses "Update Analysis".
+- If an update fails, keep showing the previous successful analysis.
+
+--------------------------------------------------
+OpenAI
+--------------------------------------------------
+
+Reuse the existing shared OpenAI service.
+
+Use:
+
+- OpenAI Responses API
+- OpenAI Web Search
+
+No other AI providers.
+
+No Jina.
+
+No additional APIs.
+
+--------------------------------------------------
+Context provided to OpenAI
+--------------------------------------------------
+
+Provide the following as context:
+
+- Latest Market Monitor analysis
+- Latest Event Monitor analysis
+- Latest News Monitor analysis
+- Current date and time
+
+These analyses are context only.
+
+The AI should use them to improve its reasoning.
+
+It must NOT simply repeat or summarize them.
+
+--------------------------------------------------
+Purpose
+--------------------------------------------------
+
+The purpose of Sector Monitor is NOT to summarize news.
+
+Its purpose is to determine where institutional money appears to be flowing.
+
+The AI should analyse:
+
+- macroeconomic environment
+- market sentiment
+- current news
+- scheduled events
+- earnings trends
+- interest rates
+- inflation
+- commodities
+- currencies
+- geopolitical developments
+
+and determine which sectors currently appear strongest and weakest.
+
+The focus is the next 1-3 months.
+
+The output should help investors understand:
+
+- Which sectors currently have momentum.
+- Which sectors appear weak.
+- Why.
+- What macro drivers support the conclusion.
+- Which sectors deserve attention during the coming months.
+
+--------------------------------------------------
+Sectors
+--------------------------------------------------
+
+Always analyse at least these sectors:
+
+- AI & Software
+- Semiconductors
+- Healthcare
+- Biotechnology
+- Financials
+- Industrials
+- Energy
+- Utilities
+- Consumer Discretionary
+- Consumer Staples
+- Communication Services
+- Materials
+- Real Estate
+
+The AI may include additional sectors if appropriate.
+
+--------------------------------------------------
+Structured JSON output
+--------------------------------------------------
+
+Return JSON only.
+
+No markdown.
+
+No explanations.
+
+No code fences.
+
+Use this structure:
+
+{
+  "executiveSummary": "...",
+  "overallOutlook": "...",
+  "topSector": {
+    "name": "...",
+    "reason": "..."
+  },
+  "sectors": [
+    {
+      "name": "...",
+      "rating": "Strong|Moderately Strong|Neutral|Moderately Weak|Weak",
+      "trend": "Improving|Stable|Weakening",
+      "summary": "...",
+      "drivers": [
+        "...",
+        "...",
+        "..."
+      ],
+      "risks": [
+        "...",
+        "..."
+      ],
+      "outlook": "...",
+      "confidence": "High|Medium|Low"
+    }
+  ]
+}
+
+Validate the JSON before storing it.
+
+Never store invalid JSON.
+
+--------------------------------------------------
+Frontend
+--------------------------------------------------
+
+Reuse exactly the same layout and visual style as the existing modules.
+
+The page should contain:
+
+Executive Summary
+
+Overall Outlook
+
+Top Sector
+
+Sector Cards
+
+Each sector card should display:
+
+- Sector name
+- Rating
+- Trend
+- Summary
+- Drivers
+- Risks
+- Outlook
+- Confidence
+
+Drivers and Risks should be collapsible in the same way "Why it matters" is implemented in News Monitor.
+
+Reuse existing components wherever possible.
+
+Do not introduce a different design language.
+
+--------------------------------------------------
+General goal
+--------------------------------------------------
+
+The purpose of this module is to answer one simple question:
+
+"Which sectors currently offer the most attractive opportunities over the next 1-3 months, and why?"
+
+The analysis should be concise, insightful and aimed at investors rather than simply summarizing financial news.
