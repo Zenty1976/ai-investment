@@ -301,8 +301,8 @@ function CompanyInput({
           type="submit"
           size="sm"
           variant="outline"
-          disabled={!ticker.trim() || isLoading}
-          className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 w-full sm:w-auto"
+          disabled={isLoading}
+          className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Search className="h-3.5 w-3.5 shrink-0" />
           Select company
