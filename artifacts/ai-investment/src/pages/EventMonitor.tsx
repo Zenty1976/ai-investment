@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useRunEventAnalysis } from "@workspace/api-client-react"
+import { useRunEventAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
 import type { EventMonitorAnalysis, EventMonitorSource } from "@workspace/api-client-react"
 import {
   AlertCircle,
@@ -75,7 +75,14 @@ export default function EventMonitor({ initialExpanded = false }: { initialExpan
   const [expanded, setExpanded] = useState(initialExpanded)
   const [expandedReasonIdx, setExpandedReasonIdx] = useState<number | null>(null)
 
-  const { mutate: runAnalysis, data: analysis, isPending, error } = useRunEventAnalysis({
+  // ── Persisted result (loaded from repository on mount) ────────────────────
+  const { data: repoEntry, isLoading: repoLoading } = useGetRepositoryEntry("event-monitor", {
+    query: { retry: false },
+  })
+  const storedAnalysis = repoEntry?.result as EventMonitorAnalysis | undefined
+
+  // ── Update mutation ───────────────────────────────────────────────────────
+  const { mutate: runAnalysis, data: mutationData, isPending, error: mutationError } = useRunEventAnalysis({
     mutation: {
       onSuccess: (data) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,96 +99,66 @@ export default function EventMonitor({ initialExpanded = false }: { initialExpan
     },
   })
 
+  // Active analysis: latest mutation result takes priority, fall back to stored
+  const typed = (mutationData ?? storedAnalysis) as EventMonitorAnalysis | undefined
+
   const handleRefresh = () => {
     setExpandedReasonIdx(null)
     runAnalysis()
   }
   const hasDebug = debugInfo !== null || debugError !== null
 
-  // ── Loading skeleton ──────────────────────────────────────────────────────
-  if (isPending && !analysis) {
+  // ── Loading skeleton (initial repository fetch only) ──────────────────────
+  if (repoLoading) {
+    return <Skeleton className="h-16 w-full animate-in fade-in duration-300" />
+  }
+
+  // ── Not updated yet ───────────────────────────────────────────────────────
+  if (!typed) {
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-20 w-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-14 w-full" />
-          <Skeleton className="h-14 w-full" />
-          <Skeleton className="h-14 w-full" />
-        </div>
+      <div className="space-y-3 pb-4 animate-in fade-in duration-500">
+        <Card className="bg-card/60 border-card-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground mb-1.5">
+                  Event Monitor
+                </h2>
+                <p className="text-sm text-muted-foreground/40 italic">Not updated yet</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleRefresh}
+                disabled={isPending}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                title="Update analysis"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
-
-  // ── Error state ───────────────────────────────────────────────────────────
-  if (error && !analysis) {
-    return (
-      <div className="max-w-2xl mt-8 space-y-4">
-        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Analysis Failed</AlertTitle>
-          <AlertDescription className="mt-1 text-destructive/80">
-            {(error as { error?: string })?.error ??
-              "An unexpected error occurred while fetching event intelligence."}
-          </AlertDescription>
-        </Alert>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleRefresh} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
-          {hasDebug && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-              onClick={() => setDebugOpen(true)}
-              title="Show debug info"
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <DebugDialog
-          open={debugOpen}
-          onClose={() => setDebugOpen(false)}
-          debugInfo={debugInfo}
-          error={debugError}
-        />
-      </div>
-    )
-  }
-
-  // ── Empty / initial state ─────────────────────────────────────────────────
-  if (!analysis) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-lg mx-auto">
-        <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 ring-1 ring-primary/20 shadow-[0_0_40px_rgba(37,99,235,0.2)]">
-          <CalendarDays className="h-10 w-10 text-primary" />
-        </div>
-        <h2 className="text-2xl font-bold tracking-tight mb-3 text-foreground">Event Intelligence</h2>
-        <p className="text-muted-foreground mb-8 leading-relaxed">
-          Identify the most important upcoming financial-market events in the
-          next 14 days using live web research and current market context.
-        </p>
-        <Button
-          onClick={handleRefresh}
-          size="lg"
-          className="h-11 px-8 font-medium"
-          data-testid="button-initialize"
-        >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Initialize Monitor
-        </Button>
-      </div>
-    )
-  }
-
-  const typed = analysis as EventMonitorAnalysis
 
   // ── Analysis view ─────────────────────────────────────────────────────────
   return (
     <div className="space-y-3 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+      {/* Inline update-failed banner — only shown when we still have data */}
+      {mutationError && (
+        <div className="flex items-center gap-2 text-xs text-destructive/80 bg-destructive/8 border border-destructive/20 rounded-md px-3 py-2">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>Update failed — showing last saved result.</span>
+          {hasDebug && (
+            <button onClick={() => setDebugOpen(true)} className="ml-auto text-muted-foreground hover:text-foreground underline underline-offset-2">
+              Details
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ── Summary card — always visible ── */}
       <Card className="bg-card/60 border-card-border/50">
