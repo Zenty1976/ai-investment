@@ -37,20 +37,12 @@ const APPROVED_DOMAINS: ReadonlySet<string> = new Set([
 /** Maximum age in days for a source with a known publication date. */
 const MAX_SOURCE_AGE_DAYS = 7;
 
-function rootDomain(hostname: string): string {
-  // Strip "www." and return the last two (or three for co.uk-style) segments
-  const parts = hostname.replace(/^www\./, "").split(".");
-  if (parts.length > 2 && parts[parts.length - 2].length <= 3) {
-    // e.g. bankofengland.co.uk → bankofengland.co.uk
-    return parts.slice(-3).join(".");
-  }
-  return parts.slice(-2).join(".");
-}
-
 export function isApprovedDomain(url: string): boolean {
   try {
-    const hostname = new URL(url).hostname;
-    return APPROVED_DOMAINS.has(rootDomain(hostname));
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    return [...APPROVED_DOMAINS].some(
+      (d) => hostname === d || hostname.endsWith(`.${d}`)
+    );
   } catch {
     return false;
   }
