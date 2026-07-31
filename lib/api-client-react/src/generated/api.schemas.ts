@@ -231,3 +231,158 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface CompanyInfo {
+  name: string;
+  ticker: string;
+  sector: string;
+  industry: string;
+}
+
+export type CompanyInvestmentRating = typeof CompanyInvestmentRating[keyof typeof CompanyInvestmentRating];
+
+export const CompanyInvestmentRating = {
+  'Strong Buy': 'Strong Buy',
+  'Buy': 'Buy',
+  'Watch': 'Watch',
+  'Avoid': 'Avoid',
+  'Strong Avoid': 'Strong Avoid',
+} as const;
+
+export type CompanyOutlook = typeof CompanyOutlook[keyof typeof CompanyOutlook];
+
+export const CompanyOutlook = {
+  'Bullish': 'Bullish',
+  'Moderately Bullish': 'Moderately Bullish',
+  'Neutral': 'Neutral',
+  'Moderately Bearish': 'Moderately Bearish',
+  'Bearish': 'Bearish',
+} as const;
+
+export interface CompanyInvestmentView {
+  rating: CompanyInvestmentRating;
+  outlook: CompanyOutlook;
+  reason: string;
+}
+
+export type CompanyCatalystTimeframe = typeof CompanyCatalystTimeframe[keyof typeof CompanyCatalystTimeframe];
+
+export const CompanyCatalystTimeframe = {
+  'Immediate': 'Immediate',
+  'Within 1 month': 'Within 1 month',
+  'Within 3 months': 'Within 3 months',
+} as const;
+
+export type CompanyCatalystImpact = typeof CompanyCatalystImpact[keyof typeof CompanyCatalystImpact];
+
+export const CompanyCatalystImpact = {
+  'High': 'High',
+  'Medium': 'Medium',
+  'Low': 'Low',
+} as const;
+
+export interface CompanyCatalyst {
+  title: string;
+  description: string;
+  timeframe: CompanyCatalystTimeframe;
+  impact: CompanyCatalystImpact;
+}
+
+export type CompanyRiskImpact = typeof CompanyRiskImpact[keyof typeof CompanyRiskImpact];
+
+export const CompanyRiskImpact = {
+  'High': 'High',
+  'Medium': 'Medium',
+  'Low': 'Low',
+} as const;
+
+export interface CompanyRisk {
+  title: string;
+  description: string;
+  impact: CompanyRiskImpact;
+}
+
+export type CompanyEarningsTrend = typeof CompanyEarningsTrend[keyof typeof CompanyEarningsTrend];
+
+export const CompanyEarningsTrend = {
+  'Improving': 'Improving',
+  'Stable': 'Stable',
+  'Weakening': 'Weakening',
+} as const;
+
+export interface CompanyEarningsAndGuidance {
+  summary: string;
+  trend: CompanyEarningsTrend;
+  nextKnownEvent: string;
+  nextKnownEventDate: string;
+}
+
+export type CompanyCompetitiveAssessment = typeof CompanyCompetitiveAssessment[keyof typeof CompanyCompetitiveAssessment];
+
+export const CompanyCompetitiveAssessment = {
+  'Strong': 'Strong',
+  'Moderate': 'Moderate',
+  'Weak': 'Weak',
+} as const;
+
+export interface CompanyCompetitivePosition {
+  assessment: CompanyCompetitiveAssessment;
+  summary: string;
+}
+
+export type CompanyMarketSentiment = typeof CompanyMarketSentiment[keyof typeof CompanyMarketSentiment];
+
+export const CompanyMarketSentiment = {
+  'Positive': 'Positive',
+  'Mixed': 'Mixed',
+  'Negative': 'Negative',
+} as const;
+
+export type CompanyValuationLevel = typeof CompanyValuationLevel[keyof typeof CompanyValuationLevel];
+
+export const CompanyValuationLevel = {
+  'Attractive': 'Attractive',
+  'Reasonable': 'Reasonable',
+  'Expensive': 'Expensive',
+  'Unclear': 'Unclear',
+} as const;
+
+export interface CompanyValuationAssessment {
+  level: CompanyValuationLevel;
+  summary: string;
+}
+
+export type CompanyConfidence = typeof CompanyConfidence[keyof typeof CompanyConfidence];
+
+export const CompanyConfidence = {
+  'High': 'High',
+  'Medium': 'Medium',
+  'Low': 'Low',
+} as const;
+
+export interface CompanyAnalysis {
+  company: CompanyInfo;
+  executiveSummary: string;
+  investmentView: CompanyInvestmentView;
+  currentSituation: string;
+  catalysts: CompanyCatalyst[];
+  risks: CompanyRisk[];
+  earningsAndGuidance: CompanyEarningsAndGuidance;
+  competitivePosition: CompanyCompetitivePosition;
+  sectorContext: string;
+  marketSentiment: CompanyMarketSentiment;
+  valuationAssessment: CompanyValuationAssessment;
+  bullCase: string;
+  baseCase: string;
+  bearCase: string;
+  keyThingsToWatch: string[];
+  confidence: CompanyConfidence;
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
+export interface CompanyAnalysisBody {
+  ticker: string;
+  companyName?: string;
+}
+

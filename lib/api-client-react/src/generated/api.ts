@@ -20,6 +20,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CompanyAnalysis,
+  CompanyAnalysisBody,
   ErrorResponse,
   EventMonitorAnalysis,
   HealthStatus,
@@ -417,6 +419,76 @@ export const useRunSectorAnalysis = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getRunSectorAnalysisMutationOptions(options));
+    }
+
+export const getRunCompanyAnalysisUrl = () => {
+
+
+
+
+  return `/api/company-monitor/analyze`
+}
+
+/**
+ * Evaluates a single company as a possible investment over the next 1-3 months
+ * @summary Run company monitor analysis
+ */
+export const runCompanyAnalysis = async (companyAnalysisBody: CompanyAnalysisBody, options?: Parameters<typeof customFetch>[1]): Promise<CompanyAnalysis> => {
+
+  return customFetch<CompanyAnalysis>(getRunCompanyAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(companyAnalysisBody),
+
+
+  }
+);}
+
+
+
+
+export const getRunCompanyAnalysisMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError, CompanyAnalysisBody, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError, CompanyAnalysisBody, TContext> => {
+
+const mutationKey = ['runCompanyAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runCompanyAnalysis>>, CompanyAnalysisBody> = (companyAnalysisBody) => {
+
+
+          return  runCompanyAnalysis(companyAnalysisBody, requestOptions)
+        }
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunCompanyAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof runCompanyAnalysis>>>
+
+    export type RunCompanyAnalysisMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Run company monitor analysis
+ */
+export const useRunCompanyAnalysis = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError, CompanyAnalysisBody, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runCompanyAnalysis>>,
+        TError,
+        CompanyAnalysisBody,
+        TContext
+      > => {
+      return useMutation(getRunCompanyAnalysisMutationOptions(options));
     }
 
 export const getListRepositoryEntriesUrl = () => {

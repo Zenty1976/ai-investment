@@ -132,6 +132,61 @@ export const RunSectorAnalysisResponse = zod.object({
 
 
 /**
+ * Evaluates a single company as a possible investment over the next 1-3 months
+ * @summary Run company monitor analysis
+ */
+export const RunCompanyAnalysisResponse = zod.object({
+  "company": zod.object({
+    "name": zod.string(),
+    "ticker": zod.string(),
+    "sector": zod.string(),
+    "industry": zod.string()
+  }),
+  "executiveSummary": zod.string(),
+  "investmentView": zod.object({
+    "rating": zod.enum(['Strong Buy', 'Buy', 'Watch', 'Avoid', 'Strong Avoid']),
+    "outlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),
+    "reason": zod.string()
+  }),
+  "currentSituation": zod.string(),
+  "catalysts": zod.array(zod.object({
+    "title": zod.string(),
+    "description": zod.string(),
+    "timeframe": zod.enum(['Immediate', 'Within 1 month', 'Within 3 months']),
+    "impact": zod.enum(['High', 'Medium', 'Low'])
+  })).max(5),
+  "risks": zod.array(zod.object({
+    "title": zod.string(),
+    "description": zod.string(),
+    "impact": zod.enum(['High', 'Medium', 'Low'])
+  })).max(5),
+  "earningsAndGuidance": zod.object({
+    "summary": zod.string(),
+    "trend": zod.enum(['Improving', 'Stable', 'Weakening']),
+    "nextKnownEvent": zod.string(),
+    "nextKnownEventDate": zod.string()
+  }),
+  "competitivePosition": zod.object({
+    "assessment": zod.enum(['Strong', 'Moderate', 'Weak']),
+    "summary": zod.string()
+  }),
+  "sectorContext": zod.string(),
+  "marketSentiment": zod.enum(['Positive', 'Mixed', 'Negative']),
+  "valuationAssessment": zod.object({
+    "level": zod.enum(['Attractive', 'Reasonable', 'Expensive', 'Unclear']),
+    "summary": zod.string()
+  }),
+  "bullCase": zod.string(),
+  "baseCase": zod.string(),
+  "bearCase": zod.string(),
+  "keyThingsToWatch": zod.array(zod.string()),
+  "confidence": zod.enum(['High', 'Medium', 'Low']),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
+/**
  * Returns every module's latest analysis result, ordered by most recently updated
  * @summary List all stored module results
  */

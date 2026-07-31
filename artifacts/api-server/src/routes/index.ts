@@ -4,6 +4,7 @@ import marketMonitorRouter from "./market-monitor";
 import eventMonitorRouter from "./event-monitor";
 import newsMonitorRouter from "./news-monitor";
 import sectorMonitorRouter from "./sector-monitor";
+import companyMonitorRouter from "./company-monitor";
 import repositoryRouter from "./repository";
 
 const router: IRouter = Router();
@@ -13,6 +14,7 @@ router.use(marketMonitorRouter);
 router.use(eventMonitorRouter);
 router.use(newsMonitorRouter);
 router.use(sectorMonitorRouter);
+router.use(companyMonitorRouter);
 router.use(repositoryRouter);
 
 export default router;

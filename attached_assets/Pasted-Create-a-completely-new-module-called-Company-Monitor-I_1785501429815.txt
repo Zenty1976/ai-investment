@@ -1,0 +1,265 @@
+Create a completely new module called "Company Monitor".
+
+IMPORTANT
+
+Follow exactly the same architecture, visual style and implementation pattern as the existing Market Monitor, Event Monitor, News Monitor and Sector Monitor modules.
+
+Do not redesign the application.
+Do not introduce new services, APIs or storage systems.
+
+--------------------------------------------------
+Architecture
+--------------------------------------------------
+
+Create:
+
+- A new backend route
+- A new frontend page
+- A new sidebar menu item called "Companies"
+
+The module must be independent.
+
+It must not communicate directly with other modules.
+
+It may only read stored analyses through the shared Analysis Repository.
+
+Store each company analysis using this key format:
+
+company-monitor:<ticker>
+
+Examples:
+
+company-monitor:NVO
+company-monitor:MSFT
+company-monitor:NVDA
+
+Load the latest stored analysis automatically when a company is selected.
+
+Never call OpenAI automatically.
+
+Only run an analysis when the user presses:
+
+Update Analysis
+
+If an update fails, keep showing the previous successful analysis.
+
+--------------------------------------------------
+User input
+--------------------------------------------------
+
+Add an input where the user can enter:
+
+- Company name
+- Ticker symbol
+
+Examples:
+
+Novo Nordisk / NVO
+Microsoft / MSFT
+
+The ticker must be required and normalized to uppercase.
+
+--------------------------------------------------
+OpenAI
+--------------------------------------------------
+
+Reuse the existing shared OpenAI service.
+
+Use:
+
+- OpenAI Responses API
+- OpenAI Web Search
+
+Do not use Jina.
+Do not use another AI provider.
+Do not add new financial data APIs yet.
+
+--------------------------------------------------
+Context sent to OpenAI
+--------------------------------------------------
+
+Send one prompt containing:
+
+- Company name
+- Ticker symbol
+- Current date and time
+- Latest Market Monitor analysis
+- Latest News Monitor analysis
+- Latest Sector Monitor analysis
+- Latest Event Monitor analysis
+
+These stored analyses are context only.
+
+OpenAI must not simply repeat them.
+
+It must perform a fresh company-specific web search and analysis.
+
+--------------------------------------------------
+Purpose
+--------------------------------------------------
+
+Company Monitor must evaluate one company as a possible investment over the next 1-3 months.
+
+It should analyse:
+
+- Recent company news
+- Latest earnings and guidance
+- Revenue and profit trends
+- Important products and business segments
+- Competitive position
+- Sector conditions
+- Analyst and market expectations
+- Upcoming company-specific events
+- Catalysts
+- Risks
+- Valuation concerns
+- Market sentiment
+- Likely short-term direction
+
+This must be an investment analysis, not just a company description or news summary.
+
+--------------------------------------------------
+Prompt instruction
+--------------------------------------------------
+
+Tell OpenAI:
+
+"You are a senior equity analyst evaluating the company for an investor with a 1-3 month investment horizon.
+
+Use current web search results and the supplied market context.
+
+Focus on what could materially move the share price during the next 1-3 months.
+
+Distinguish clearly between confirmed facts, market expectations and your own analytical conclusions.
+
+Do not invent financial figures, dates, guidance or events.
+
+If reliable information is unavailable, state this clearly.
+
+Return structured JSON only."
+
+--------------------------------------------------
+Structured JSON output
+--------------------------------------------------
+
+Return JSON only.
+
+No markdown.
+No code fences.
+No additional text.
+
+Use this exact structure:
+
+{
+  "company": {
+    "name": "...",
+    "ticker": "...",
+    "sector": "...",
+    "industry": "..."
+  },
+  "executiveSummary": "...",
+  "investmentView": {
+    "rating": "Strong Buy|Buy|Watch|Avoid|Strong Avoid",
+    "outlook": "Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish",
+    "reason": "..."
+  },
+  "currentSituation": "...",
+  "catalysts": [
+    {
+      "title": "...",
+      "description": "...",
+      "timeframe": "Immediate|Within 1 month|Within 3 months",
+      "impact": "High|Medium|Low"
+    }
+  ],
+  "risks": [
+    {
+      "title": "...",
+      "description": "...",
+      "impact": "High|Medium|Low"
+    }
+  ],
+  "earningsAndGuidance": {
+    "summary": "...",
+    "trend": "Improving|Stable|Weakening",
+    "nextKnownEvent": "...",
+    "nextKnownEventDate": "..."
+  },
+  "competitivePosition": {
+    "assessment": "Strong|Moderate|Weak",
+    "summary": "..."
+  },
+  "sectorContext": "...",
+  "marketSentiment": "Positive|Mixed|Negative",
+  "valuationAssessment": {
+    "level": "Attractive|Reasonable|Expensive|Unclear",
+    "summary": "..."
+  },
+  "bullCase": "...",
+  "baseCase": "...",
+  "bearCase": "...",
+  "keyThingsToWatch": [
+    "...",
+    "...",
+    "..."
+  ],
+  "confidence": "High|Medium|Low"
+}
+
+Limit catalysts to a maximum of 5.
+
+Limit risks to a maximum of 5.
+
+Validate the JSON before storing it.
+
+Never store invalid output.
+
+The backend must set the analysis timestamp itself.
+
+--------------------------------------------------
+Frontend
+--------------------------------------------------
+
+Use the same layout and design language as the other modules.
+
+At the top show:
+
+- Company name and ticker
+- Update Analysis button
+- Investment rating
+- Outlook
+
+Then show:
+
+- Executive Summary
+- Current Situation
+- Earnings and Guidance
+- Catalysts
+- Risks
+- Competitive Position
+- Sector Context
+- Valuation Assessment
+- Bull Case
+- Base Case
+- Bear Case
+- Key Things to Watch
+
+Catalysts and risks should be collapsible.
+
+Use badges for:
+
+- Rating
+- Outlook
+- Impact
+- Trend
+- Confidence
+
+Reuse existing components wherever possible.
+
+--------------------------------------------------
+General goal
+--------------------------------------------------
+
+The module must answer:
+
+"Is this company currently an attractive investment for the next 1-3 months, what could move the share price, and what are the most important risks?"
