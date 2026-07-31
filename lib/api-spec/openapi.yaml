@@ -213,10 +213,6 @@ components:
         importance:
           type: string
           enum: [High, Medium, Low]
-        expectedVolatility:
-          type: string
-          enum: [High, Medium, Low]
-          description: Expected price/market volatility for the markets most affected by this event
         affectedMarkets:
           type: array
           items:
@@ -230,7 +226,6 @@ components:
         - date
         - category
         - importance
-        - expectedVolatility
         - affectedMarkets
         - expectedImpact
         - reason

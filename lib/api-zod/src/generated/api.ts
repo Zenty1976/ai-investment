@@ -56,7 +56,6 @@ export const RunEventAnalysisResponse = zod.object({
   "date": zod.string().describe('YYYY-MM-DD'),
   "category": zod.string(),
   "importance": zod.enum(['High', 'Medium', 'Low']),
-  "expectedVolatility": zod.enum(['High', 'Medium', 'Low']).describe('Expected price\/market volatility for the markets most affected by this event'),
   "affectedMarkets": zod.array(zod.string()),
   "expectedImpact": zod.string(),
   "reason": zod.string()

@@ -50,85 +50,87 @@
   "event-monitor": {
     "moduleName": "event-monitor",
     "result": {
-      "summary": "Key U.S. macroeconomic data and central bank meetings are scheduled between July 31 and August 14, 2026, including GDP, employment, inflation, and central bank decisions. These events are likely to influence market expectations for monetary policy amid persistent inflation and geopolitical risks.",
+      "summary": "Key U.S. macroeconomic data releases and corporate earnings are scheduled between July 31 and August 14, 2026, including the Employment Situation, CPI, PPI, and several major company earnings. These events are likely to influence market sentiment amid ongoing inflation and geopolitical risks.",
       "nextMajorEvent": {
-        "title": "U.S. Employment Situation (July)",
+        "title": "U.S. Employment Situation (July 2026)",
         "date": "2026-08-07",
         "countdownDays": 7
       },
       "events": [
         {
-          "title": "U.S. Employment Situation (July)",
+          "title": "U.S. Employment Situation (July 2026)",
           "date": "2026-08-07",
-          "category": "Employment",
+          "category": "Employment Report",
           "importance": "High",
+          "expectedVolatility": "High",
           "affectedMarkets": [
             "Equities",
             "Bonds",
-            "FX"
+            "USD"
           ],
-          "expectedImpact": "Jobs data will influence Fed rate path expectations and market sentiment on labor market strength.",
-          "reason": "The monthly employment report is a key indicator of labor market health and inflationary pressure, guiding monetary policy."
+          "expectedImpact": "July payrolls and unemployment data will influence Fed policy expectations and market direction.",
+          "reason": "Nonfarm payrolls and unemployment are key indicators of labor market strength and inflation pressure, directly affecting monetary policy outlook."
         },
         {
-          "title": "U.S. CPI and Real Earnings (July)",
+          "title": "U.S. Consumer Price Index (CPI) for July 2026",
           "date": "2026-08-12",
-          "category": "Inflation",
+          "category": "Inflation Report",
           "importance": "High",
+          "expectedVolatility": "High",
           "affectedMarkets": [
-            "Equities",
             "Bonds",
-            "FX"
-          ],
-          "expectedImpact": "Inflation readings will affect expectations for Fed tightening or easing.",
-          "reason": "CPI and real earnings data are central to assessing inflation trends and real income, influencing monetary policy decisions."
-        },
-        {
-          "title": "Reserve Bank of Australia Monetary Policy Decision",
-          "date": "2026-08-11",
-          "category": "Central Bank",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "FX",
-            "Commodities"
-          ],
-          "expectedImpact": "RBA decision may shift AUD and commodity-linked asset prices.",
-          "reason": "As a major central bank, RBA’s policy decision influences global risk sentiment and commodity markets."
-        },
-        {
-          "title": "U.S. Producer Price Index (July)",
-          "date": "2026-08-13",
-          "category": "Inflation",
-          "importance": "Medium",
-          "affectedMarkets": [
             "Equities",
-            "Bonds"
+            "USD"
           ],
-          "expectedImpact": "PPI offers insight into upstream inflation pressures that may feed into consumer prices.",
-          "reason": "Producer prices signal cost pressures in the pipeline, informing inflation outlook and policy expectations."
+          "expectedImpact": "July CPI will provide updated inflation trajectory, shaping Fed rate path expectations.",
+          "reason": "CPI is the Fed’s preferred inflation gauge; a surprise could shift monetary policy outlook."
+        },
+        {
+          "title": "U.S. Producer Price Index (PPI) for July 2026",
+          "date": "2026-08-13",
+          "category": "Inflation Report",
+          "importance": "Medium",
+          "expectedVolatility": "Medium",
+          "affectedMarkets": [
+            "Commodities",
+            "Bonds",
+            "Equities"
+          ],
+          "expectedImpact": "July PPI will signal upstream inflation trends that may feed into consumer prices.",
+          "reason": "PPI tracks wholesale price pressures; changes can foreshadow CPI movements and impact inflation expectations."
         }
       ],
       "sources": [
         {
-          "title": "Release Schedule | U.S. Bureau of Economic Analysis",
-          "url": "https://www.bea.gov/news/schedule/full",
+          "title": "Schedule of Selected Releases 2026",
+          "url": "https://www.bls.gov/schedule/2026/",
           "published": ""
         },
         {
-          "title": "Schedule of Selected Releases 2026 (BLS)",
-          "url": "https://www.bls.gov/schedule/2026/home.htm",
+          "title": "Current Employment Statistics - CES (National) : U.S. Bureau of Labor Statistics",
+          "url": "https://www.bls.gov/ces/",
           "published": ""
         },
         {
-          "title": "Coming Up | RBA",
-          "url": "https://www.rba.gov.au/coming-up/",
+          "title": "Schedule of Releases for the Consumer Price Index",
+          "url": "https://www.bls.gov/schedule/news_release/cpi.htm?force_isolation=true",
+          "published": ""
+        },
+        {
+          "title": "Producer Price Index News Release - 2026 M06 Results",
+          "url": "https://www.bls.gov/news.release/ppi.htm",
+          "published": ""
+        },
+        {
+          "title": "Earnings Calendar — M7 & Major Company Earnings Dates | StockHub",
+          "url": "https://stockhub.kr/en/earnings-calendar",
           "published": ""
         }
       ],
-      "timestamp": "2026-07-31T10:20:53.705Z",
-      "analysisDuration": 9776
+      "timestamp": "2026-07-31T10:30:14.553Z",
+      "analysisDuration": 10536
     },
     "createdAt": "2026-07-31T10:21:03.481Z",
-    "updatedAt": "2026-07-31T10:21:03.481Z"
+    "updatedAt": "2026-07-31T10:30:25.090Z"
   }
 }

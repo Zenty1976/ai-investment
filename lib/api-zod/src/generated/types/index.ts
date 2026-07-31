@@ -18,5 +18,4 @@ export * from './nextMajorEvent';
 export * from './repositoryEntry';
 export * from './repositoryEntryResult';
 export * from './upcomingEvent';
-export * from './upcomingEventExpectedVolatility';
 export * from './upcomingEventImportance';

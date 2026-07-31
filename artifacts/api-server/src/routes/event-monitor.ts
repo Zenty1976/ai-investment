@@ -56,14 +56,14 @@ OUTPUT RULES:
 - Return at most 5 events. Prioritise by importance, then by date.
 - No duplicate events.
 - summary: ≤4 short sentences, objective tone, no inflated language.
-- Each event: a short title, the exact date (YYYY-MM-DD), a category, importance (High/Medium/Low), expectedVolatility (High/Medium/Low — your assessment of the expected price/market volatility for the markets most affected by this event), affectedMarkets (1–3 markets or sectors), expectedImpact (one sentence), reason (one to two sentences explaining why the event matters to markets).
+- Each event: a short title, the exact date (YYYY-MM-DD), a category, importance (High/Medium/Low), affectedMarkets (1–3 markets or sectors), expectedImpact (one sentence), reason (one to two sentences explaining why the event matters to markets).
 - sources: 2–5 entries you actually retrieved, each {title, url, published: "YYYY-MM-DD or \\"\\""}.
 - Do NOT include a countdownDays field anywhere — the server calculates it.
 - No URLs or citation markers outside the sources array.
 
 {"data_unavailable":true,"reason":"..."} — ONLY if the web search returns absolutely no financial event data. Never use it because a source was hard to verify.
 Otherwise return exactly:
-{"summary":"...","events":[{"title":"...","date":"YYYY-MM-DD","category":"...","importance":"High|Medium|Low","expectedVolatility":"High|Medium|Low","affectedMarkets":["..."],"expectedImpact":"...","reason":"..."}],"sources":[{"title":"...","url":"...","published":"..."}]}`;
+{"summary":"...","events":[{"title":"...","date":"YYYY-MM-DD","category":"...","importance":"High|Medium|Low","affectedMarkets":["..."],"expectedImpact":"...","reason":"..."}],"sources":[{"title":"...","url":"...","published":"..."}]}`;
 
 function buildUserPrompt(
   nowIso: string,
@@ -162,7 +162,6 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       date?: string;
       category?: string;
       importance?: string;
-      expectedVolatility?: string;
       affectedMarkets?: string[];
       expectedImpact?: string;
       reason?: string;
