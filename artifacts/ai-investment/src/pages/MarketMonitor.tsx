@@ -221,13 +221,14 @@ export default function MarketMonitor() {
             <div className="flex items-center gap-1 shrink-0">
               <Button
                 size="sm"
+                variant="ghost"
                 onClick={handleRefresh}
                 disabled={isPending}
-                className="h-8 gap-2"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                title="Update analysis"
                 data-testid="button-refresh"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
-                Update
               </Button>
               {analysis.sources && analysis.sources.length > 0 && (
                 <Button
