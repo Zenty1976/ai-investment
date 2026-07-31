@@ -88,13 +88,14 @@ export const RunNewsAnalysisResponse = zod.object({
   "importance": zod.enum(['High', 'Medium', 'Low'])
 }),
   "news": zod.array(zod.object({
+  "id": zod.string().describe('Stable kebab-case identifier, e.g. "fed-rate-cut-2026-07-31"'),
   "title": zod.string(),
   "summary": zod.string(),
   "category": zod.string(),
   "importance": zod.enum(['High', 'Medium', 'Low']),
   "affectedMarkets": zod.array(zod.string()),
   "whyItMatters": zod.string(),
-  "likelyDirection": zod.enum(['Bullish', 'Bearish', 'Neutral', 'Mixed']),
+  "marketImpact": zod.string().describe('Short sentence describing the market impact, e.g. "Positive for AI stocks"'),
   "confidence": zod.number().min(runNewsAnalysisResponseNewsItemConfidenceMin).max(runNewsAnalysisResponseNewsItemConfidenceMax),
   "source": zod.string(),
   "publishedAt": zod.string().describe('ISO 8601 date or datetime')

@@ -309,6 +309,9 @@ components:
     NewsItem:
       type: object
       properties:
+        id:
+          type: string
+          description: Stable kebab-case identifier, e.g. "fed-rate-cut-2026-07-31"
         title:
           type: string
         summary:
@@ -324,9 +327,9 @@ components:
             type: string
         whyItMatters:
           type: string
-        likelyDirection:
+        marketImpact:
           type: string
-          enum: [Bullish, Bearish, Neutral, Mixed]
+          description: Short sentence describing the market impact, e.g. "Positive for AI stocks" or "Negative for government bonds"
         confidence:
           type: number
           minimum: 0
@@ -337,13 +340,14 @@ components:
           type: string
           description: ISO 8601 date or datetime
       required:
+        - id
         - title
         - summary
         - category
         - importance
         - affectedMarkets
         - whyItMatters
-        - likelyDirection
+        - marketImpact
         - confidence
         - source
         - publishedAt

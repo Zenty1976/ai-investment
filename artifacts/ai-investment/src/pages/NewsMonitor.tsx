@@ -21,10 +21,6 @@ import {
   Clock,
   Timer,
   Newspaper,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  ArrowLeftRight,
   Copy,
   Check,
 } from "lucide-react"
@@ -39,7 +35,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { format, parseISO, isValid } from "date-fns"
+import { format, parseISO, isValid, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns"
 
 // Matches AiDebugInfo from api-server/src/lib/ai-service.ts
 interface AiDebugInfo {
@@ -61,12 +57,21 @@ function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`
 }
 
-function formatPublishedAt(dateStr: string): string {
+function formatRelativeTime(dateStr: string): string {
   try {
     const d = parseISO(dateStr)
     if (!isValid(d)) return dateStr.slice(0, 10)
-    const hasTime = dateStr.includes("T")
-    return hasTime ? format(d, "MMM d, HH:mm") : format(d, "MMM d")
+    const now = new Date()
+    const mins = differenceInMinutes(now, d)
+    if (mins < 1) return "Just now"
+    if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`
+    const hrs = differenceInHours(now, d)
+    if (hrs < 24) return `${hrs} hour${hrs === 1 ? "" : "s"} ago`
+    const days = differenceInDays(now, d)
+    if (days === 1) return "Yesterday"
+    if (days < 7) return `${days} days ago`
+    // Fall back to a readable date for older items
+    return format(d, "MMM d")
   } catch {
     return dateStr.slice(0, 10)
   }
@@ -78,23 +83,6 @@ function importanceBadgeVariant(
   if (importance === "High") return "negative"
   if (importance === "Medium") return "warning"
   return "positive"
-}
-
-function directionBadgeVariant(
-  direction: string
-): "positive" | "negative" | "warning" | "outline" {
-  if (direction === "Bullish") return "positive"
-  if (direction === "Bearish") return "negative"
-  if (direction === "Mixed") return "warning"
-  return "outline"
-}
-
-function DirectionIcon({ direction }: { direction: string }) {
-  const cls = "h-3 w-3 mr-0.5"
-  if (direction === "Bullish") return <TrendingUp className={cls} />
-  if (direction === "Bearish") return <TrendingDown className={cls} />
-  if (direction === "Mixed") return <ArrowLeftRight className={cls} />
-  return <Minus className={cls} />
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -350,8 +338,8 @@ export default function NewsMonitor({ initialExpanded = false }: { initialExpand
               <CardContent className="p-0">
                 <ul className="divide-y divide-border/40">
                   {analysis.news.map((item, i) => (
-                    <li key={i} className="px-4 py-3">
-                      {/* Row: importance | badges | title */}
+                    <li key={item.id ?? i} className="px-4 py-3">
+                      {/* Row: importance | title */}
                       <div className="flex items-start gap-2.5">
                         <Badge
                           variant={importanceBadgeVariant(item.importance)}
@@ -360,21 +348,19 @@ export default function NewsMonitor({ initialExpanded = false }: { initialExpand
                           {item.importance}
                         </Badge>
                         <div className="min-w-0 flex-1">
-                          {/* Meta row: date · category · direction */}
+                          {/* Meta row: relative time · category · market impact */}
                           <div className="flex items-center gap-2 flex-wrap mb-0.5">
                             <span className="text-[11px] font-mono text-muted-foreground/60 shrink-0">
-                              {formatPublishedAt(item.publishedAt)}
+                              {formatRelativeTime(item.publishedAt)}
                             </span>
                             <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider border border-border/40 rounded px-1">
                               {item.category}
                             </span>
-                            <Badge
-                              variant={directionBadgeVariant(item.likelyDirection)}
-                              className="text-[10px] uppercase tracking-wider px-1.5 py-0 shrink-0 flex items-center"
-                            >
-                              <DirectionIcon direction={item.likelyDirection} />
-                              {item.likelyDirection}
-                            </Badge>
+                            {item.marketImpact && (
+                              <span className="text-[11px] text-muted-foreground/70 italic">
+                                {item.marketImpact}
+                              </span>
+                            )}
                           </div>
                           {/* Title */}
                           <p className="text-sm font-medium text-foreground/90 leading-snug">

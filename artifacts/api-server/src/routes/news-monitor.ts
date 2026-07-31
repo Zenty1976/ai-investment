@@ -1,8 +1,8 @@
 /**
  * News Monitor Route
  *
- * Searches for the most important market-moving financial news from the last
- * 24-72 hours using the shared AI service with live web search.
+ * Searches for the most important market-moving financial news. Prefers the
+ * last 48 hours; older stories are included only when still dominant.
  *
  * Reads market-monitor and event-monitor context from the Analysis Repository
  * to better prioritise and explain the news. Never communicates directly with
@@ -34,9 +34,13 @@ type ImportanceKey = keyof typeof IMPORTANCE_ORDER;
 // Prompts
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You are a financial news analyst. Search the web for the most important market-moving financial news from approximately the last 24-72 hours. Return JSON only — no markdown, no surrounding text.
+const SYSTEM_PROMPT = `You are a financial news analyst. Search the web for the most important market-moving financial news. Return JSON only — no markdown, no surrounding text.
 
 GOAL: Produce an AI-curated summary of only the most important stories affecting financial markets. This is NOT a news feed — ignore routine, repetitive and low-impact news.
+
+TIME WINDOW: Prefer news from the last 48 hours. Only include older stories when the event is still the dominant market-moving story (e.g. an ongoing geopolitical crisis or a central bank decision whose effects are still unfolding).
+
+DEDUPLICATION: If multiple news articles describe the same underlying event, combine them into a single news item instead of listing them separately. Use the most authoritative or detailed source.
 
 RELEVANT SECTORS: Equities, Bonds, Interest Rates, Inflation, Commodities, Energy, FX, Technology, AI, Healthcare, Industrials, Global Macro.
 
@@ -63,25 +67,26 @@ OUTPUT RULES:
 - topStory: the single most market-significant story {title (≤12 words), summary (≤30 words), importance "High|Medium|Low"}
 - news: up to 8 items, ordered by importance (High→Medium→Low) then recency (most recent first)
 - Each news item:
+  - id: stable kebab-case identifier derived from the story topic and date, e.g. "fed-rate-cut-2026-07-31"
   - title: concise headline ≤12 words
   - summary: ≤30 words, factual, no inflated language
   - category: exactly one of Equities|Bonds|Rates|Inflation|Commodities|Energy|FX|Technology|AI|Healthcare|Industrials|Macro
   - importance: High|Medium|Low
   - affectedMarkets: 1-3 markets or sectors most affected
   - whyItMatters: one sentence explaining specific market significance
-  - likelyDirection: Bullish|Bearish|Neutral|Mixed — for the primarily affected markets
-  - confidence: 0.0–1.0 — your confidence in the direction assessment
+  - marketImpact: a short sentence naming the directional effect on specific assets, e.g. "Positive for AI stocks", "Negative for government bonds", "Positive for oil", "Mixed market impact"
+  - confidence: 0.0–1.0 — your confidence in the market impact assessment
   - source: publication name only (e.g. "Reuters", "Bloomberg", "FT", "WSJ", "CNBC")
   - publishedAt: ISO 8601 — as precise as found (YYYY-MM-DDThh:mm:ssZ or YYYY-MM-DD)
 
 No URLs anywhere in the output.
 
 Return exactly:
-{"executiveSummary":"...","overallMarketImpact":"...","topStory":{"title":"...","summary":"...","importance":"High"},"news":[{"title":"...","summary":"...","category":"...","importance":"High|Medium|Low","affectedMarkets":["..."],"whyItMatters":"...","likelyDirection":"Bullish|Bearish|Neutral|Mixed","confidence":0.85,"source":"...","publishedAt":"..."}]}`;
+{"executiveSummary":"...","overallMarketImpact":"...","topStory":{"title":"...","summary":"...","importance":"High"},"news":[{"id":"topic-slug-YYYY-MM-DD","title":"...","summary":"...","category":"...","importance":"High|Medium|Low","affectedMarkets":["..."],"whyItMatters":"...","marketImpact":"Positive for AI stocks","confidence":0.85,"source":"...","publishedAt":"..."}]}`;
 
 function buildUserPrompt(nowIso: string, marketContext: string | null, eventContext: string | null): string {
   const blocks: string[] = [`UTC: ${nowIso}`, ""];
-  blocks.push("Search for the most important market-moving financial news from the last 24-72 hours.");
+  blocks.push("Search for the most important market-moving financial news. Prefer the last 48 hours; include older stories only if still dominant.");
 
   if (marketContext) {
     blocks.push(

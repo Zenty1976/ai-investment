@@ -117,24 +117,17 @@ export const NewsItemImportance = {
   Low: 'Low',
 } as const;
 
-export type NewsItemLikelyDirection = typeof NewsItemLikelyDirection[keyof typeof NewsItemLikelyDirection];
-
-
-export const NewsItemLikelyDirection = {
-  Bullish: 'Bullish',
-  Bearish: 'Bearish',
-  Neutral: 'Neutral',
-  Mixed: 'Mixed',
-} as const;
-
 export interface NewsItem {
+  /** Stable kebab-case identifier, e.g. "fed-rate-cut-2026-07-31" */
+  id: string;
   title: string;
   summary: string;
   category: string;
   importance: NewsItemImportance;
   affectedMarkets: string[];
   whyItMatters: string;
-  likelyDirection: NewsItemLikelyDirection;
+  /** Short sentence describing the market impact, e.g. "Positive for AI stocks" or "Negative for government bonds" */
+  marketImpact: string;
   /**
      * @minimum 0
      * @maximum 1

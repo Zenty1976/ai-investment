@@ -17,7 +17,6 @@ export * from './marketAnalysisSource';
 export * from './newsAnalysis';
 export * from './newsItem';
 export * from './newsItemImportance';
-export * from './newsItemLikelyDirection';
 export * from './newsTopStory';
 export * from './newsTopStoryImportance';
 export * from './nextMajorEvent';
