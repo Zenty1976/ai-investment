@@ -171,13 +171,15 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       ? (resultObj.events as RawEvent[])
       : [];
 
-    // 1. Filter out events that fall before today (UTC)
+    // 1. Filter events to the exact 14-day window [today, endDateStr] (UTC)
+    const windowEndMs = new Date(endDateStr).setUTCHours(23, 59, 59, 999);
     const futureEvents = rawEvents.filter((e) => {
       if (!e.date) return false;
       const d = new Date(e.date);
       if (isNaN(d.getTime())) return false;
       d.setUTCHours(0, 0, 0, 0);
-      return d.getTime() >= todayMs;
+      const ms = d.getTime();
+      return ms >= todayMs && ms <= windowEndMs;
     });
 
     // 2. Deduplicate by title (case-insensitive)
