@@ -15,6 +15,8 @@ import {
   Check,
   Clock,
   Timer,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import type { MarketAnalysisSource } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
@@ -58,6 +60,7 @@ export default function MarketMonitor() {
   const [debugError, setDebugError] = useState<unknown>(null)
   const [debugOpen, setDebugOpen] = useState(false)
   const [sourcesOpen, setSourcesOpen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   const { mutate: runAnalysis, data: analysis, isPending, error } = useRunMarketAnalysis({
     mutation: {
@@ -177,96 +180,94 @@ export default function MarketMonitor() {
 
   // ── Analysis view ─────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-3 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-      {/* ── Page title + controls ── */}
-      <div className="flex items-center justify-between mb-1">
-        <div>
-          <h2 className="text-base font-bold tracking-wide uppercase text-foreground">
-            Market Monitor
-          </h2>
-          {/* Metadata row */}
-          <div className="flex items-center gap-3 mt-1">
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              {format(new Date(analysis.timestamp), "HH:mm 'UTC'")}
-            </span>
-            <span className="text-muted-foreground/30 text-[11px]">·</span>
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-              <Timer className="h-3 w-3" />
-              {formatDuration(analysis.analysisDuration)}
-            </span>
+      {/* ── Summary card — always visible ── */}
+      <Card className="bg-card/60 border-card-border/50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-4">
+
+            {/* Left: title + metadata */}
+            <div className="min-w-0">
+              <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground mb-1.5">
+                Market Monitor
+              </h2>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest">Sentiment</span>
+                  <Badge variant={sentimentVariant} className="text-sm uppercase tracking-wider px-2 py-0.5">
+                    {analysis.marketSentiment === "Positive" ? (
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                    ) : analysis.marketSentiment === "Negative" ? (
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                    ) : null}
+                    {analysis.marketSentiment}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest">Risk</span>
+                  <Badge variant={riskVariant} className="text-sm uppercase tracking-wider px-2 py-0.5">
+                    {analysis.riskLevel}
+                  </Badge>
+                </div>
+                <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(analysis.timestamp), "HH:mm 'UTC'")}</span>
+                  <span className="flex items-center gap-1"><Timer className="h-3 w-3" />{formatDuration(analysis.analysisDuration)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: action buttons + expand toggle */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isPending}
+                className="h-8 gap-2"
+                data-testid="button-refresh"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+                Update
+              </Button>
+              {analysis.sources && analysis.sources.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setSourcesOpen(true)}
+                  title="View sources"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  <span className="text-xs hidden sm:inline">Sources ({analysis.sources.length})</span>
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                onClick={() => setDebugOpen(true)}
+                title="Show debug info"
+                disabled={!hasDebug}
+              >
+                <Info className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                onClick={() => setExpanded((v) => !v)}
+                title={expanded ? "Collapse" : "Expand details"}
+              >
+                {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Button
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isPending}
-            className="h-8 gap-2"
-            data-testid="button-refresh"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
-            Update Analysis
-          </Button>
-          {analysis.sources && analysis.sources.length > 0 && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSourcesOpen(true)}
-              title="View sources used in this analysis"
-            >
-              <Globe className="h-3.5 w-3.5" />
-              <span className="text-xs">Sources ({analysis.sources.length})</span>
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
-            onClick={() => setDebugOpen(true)}
-            title="Show debug info — exact OpenAI request & response"
-            disabled={!hasDebug}
-          >
-            <Info className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* ── Top metric cards ── */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="bg-card/60 border-card-border/50">
-          <CardContent className="p-4">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5" /> Market Sentiment
-            </p>
-            <div className="flex items-center gap-2">
-              <Badge variant={sentimentVariant} className="text-sm uppercase tracking-wider px-2 py-0.5">
-                {analysis.marketSentiment === "Positive" ? (
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                ) : analysis.marketSentiment === "Negative" ? (
-                  <TrendingDown className="h-3 w-3 mr-1" />
-                ) : null}
-                {analysis.marketSentiment}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/60 border-card-border/50">
-          <CardContent className="p-4">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <ShieldAlert className="h-3.5 w-3.5" /> Risk Level
-            </p>
-            <div className="flex items-center gap-2">
-              <Badge variant={riskVariant} className="text-sm uppercase tracking-wider px-2 py-0.5">
-                {analysis.riskLevel}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* ── Expanded detail sections ── */}
+      {expanded && (
+        <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
 
       {/* ── Summary ── */}
       <Card className="border-primary/20 bg-primary/5">
@@ -367,6 +368,9 @@ export default function MarketMonitor() {
         </Card>
 
       </div>
+
+        </div>
+      )}
 
       <SourcesDialog
         open={sourcesOpen}
