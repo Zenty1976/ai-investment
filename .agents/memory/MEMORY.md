@@ -1,0 +1,1 @@
+- [Analysis Repository](analysis-repository.md) — in-memory shared store; every module saves via analysisRepository.save(), reads via .get()/.getAll(); never direct module-to-module calls.

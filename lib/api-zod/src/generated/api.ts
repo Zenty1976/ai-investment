@@ -40,3 +40,31 @@ export const RunMarketAnalysisResponse = zod.object({
 })
 
 
+/**
+ * Returns every module's latest analysis result, ordered by most recently updated
+ * @summary List all stored module results
+ */
+export const ListRepositoryEntriesResponseItem = zod.object({
+  "moduleName": zod.string().describe('Stable identifier for the module, e.g. \"market-monitor\"'),
+  "result": zod.record(zod.string(), zod.unknown()).describe('The structured analysis result produced by the module'),
+  "createdAt": zod.string().describe('ISO 8601 — when this module first saved a result'),
+  "updatedAt": zod.string().describe('ISO 8601 — when this module last saved a result')
+}).describe('A module\'s latest stored analysis result with metadata')
+export const ListRepositoryEntriesResponse = zod.array(ListRepositoryEntriesResponseItem)
+
+
+/**
+ * @summary Get a specific module's latest result
+ */
+export const GetRepositoryEntryParams = zod.object({
+  "module": zod.coerce.string().describe('Module identifier, e.g. \"market-monitor\"')
+})
+
+export const GetRepositoryEntryResponse = zod.object({
+  "moduleName": zod.string().describe('Stable identifier for the module, e.g. \"market-monitor\"'),
+  "result": zod.record(zod.string(), zod.unknown()).describe('The structured analysis result produced by the module'),
+  "createdAt": zod.string().describe('ISO 8601 — when this module first saved a result'),
+  "updatedAt": zod.string().describe('ISO 8601 — when this module last saved a result')
+}).describe('A module\'s latest stored analysis result with metadata')
+
+

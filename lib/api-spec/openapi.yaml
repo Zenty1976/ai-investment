@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: market-monitor
     description: Market Monitor analysis
+  - name: repository
+    description: Analysis Repository — shared read interface for all module results
 paths:
   /healthz:
     get:
@@ -41,6 +43,46 @@ paths:
                 $ref: "#/components/schemas/MarketAnalysis"
         "500":
           description: Analysis failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /repository:
+    get:
+      operationId: listRepositoryEntries
+      tags: [repository]
+      summary: List all stored module results
+      description: Returns every module's latest analysis result, ordered by most recently updated
+      responses:
+        "200":
+          description: All stored entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RepositoryEntry"
+  /repository/{module}:
+    get:
+      operationId: getRepositoryEntry
+      tags: [repository]
+      summary: Get a specific module's latest result
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Module identifier, e.g. "market-monitor"
+      responses:
+        "200":
+          description: The module's latest stored entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepositoryEntry"
+        "404":
+          description: No result stored for this module
           content:
             application/json:
               schema:
@@ -118,6 +160,28 @@ components:
         - sources
         - timestamp
         - analysisDuration
+    RepositoryEntry:
+      type: object
+      description: A module's latest stored analysis result with metadata
+      properties:
+        moduleName:
+          type: string
+          description: Stable identifier for the module, e.g. "market-monitor"
+        result:
+          type: object
+          description: The structured analysis result produced by the module
+          additionalProperties: true
+        createdAt:
+          type: string
+          description: ISO 8601 — when this module first saved a result
+        updatedAt:
+          type: string
+          description: ISO 8601 — when this module last saved a result
+      required:
+        - moduleName
+        - result
+        - createdAt
+        - updatedAt
     ErrorResponse:
       type: object
       properties:

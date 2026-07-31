@@ -11,6 +11,7 @@
 import { Router, type IRouter } from "express";
 import { RunMarketAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
+import { analysisRepository } from "../lib/analysis-repository";
 
 const router: IRouter = Router();
 
@@ -96,6 +97,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
+      analysisRepository.save("market-monitor", parsed.data);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

@@ -12,3 +12,5 @@ export * from './marketAnalysis';
 export * from './marketAnalysisMarketSentiment';
 export * from './marketAnalysisRiskLevel';
 export * from './marketAnalysisSource';
+export * from './repositoryEntry';
+export * from './repositoryEntryResult';

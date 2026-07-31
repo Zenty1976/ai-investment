@@ -48,6 +48,25 @@ export interface MarketAnalysis {
   analysisDuration: number;
 }
 
+/**
+ * The structured analysis result produced by the module
+ */
+export type RepositoryEntryResult = { [key: string]: unknown };
+
+/**
+ * A module's latest stored analysis result with metadata
+ */
+export interface RepositoryEntry {
+  /** Stable identifier for the module, e.g. "market-monitor" */
+  moduleName: string;
+  /** The structured analysis result produced by the module */
+  result: RepositoryEntryResult;
+  /** ISO 8601 — when this module first saved a result */
+  createdAt: string;
+  /** ISO 8601 — when this module last saved a result */
+  updatedAt: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }

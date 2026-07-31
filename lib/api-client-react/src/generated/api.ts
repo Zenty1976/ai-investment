@@ -22,7 +22,8 @@ import type {
 import type {
   ErrorResponse,
   HealthStatus,
-  MarketAnalysis
+  MarketAnalysis,
+  RepositoryEntry
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -201,4 +202,159 @@ export const useRunMarketAnalysis = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getRunMarketAnalysisMutationOptions(options));
     }
+
+export const getListRepositoryEntriesUrl = () => {
+
+
+
+
+  return `/api/repository`
+}
+
+/**
+ * Returns every module's latest analysis result, ordered by most recently updated
+ * @summary List all stored module results
+ */
+export const listRepositoryEntries = async ( options?: Parameters<typeof customFetch>[1]): Promise<RepositoryEntry[]> => {
+
+  return customFetch<RepositoryEntry[]>(getListRepositoryEntriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRepositoryEntriesQueryKey = () => {
+    return [
+    `/api/repository`
+    ] as const;
+    }
+
+
+export const getListRepositoryEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listRepositoryEntries>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRepositoryEntries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRepositoryEntriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRepositoryEntries>>> = ({ signal }) => listRepositoryEntries({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRepositoryEntries>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRepositoryEntriesQueryResult = NonNullable<Awaited<ReturnType<typeof listRepositoryEntries>>>
+export type ListRepositoryEntriesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all stored module results
+ */
+
+export function useListRepositoryEntries<TData = Awaited<ReturnType<typeof listRepositoryEntries>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRepositoryEntries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRepositoryEntriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRepositoryEntryUrl = (module: string,) => {
+
+
+
+
+  return `/api/repository/${module}`
+}
+
+/**
+ * @summary Get a specific module's latest result
+ */
+export const getRepositoryEntry = async (module: string, options?: Parameters<typeof customFetch>[1]): Promise<RepositoryEntry> => {
+
+  return customFetch<RepositoryEntry>(getGetRepositoryEntryUrl(module),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRepositoryEntryQueryKey = (module: string,) => {
+    return [
+    `/api/repository/${module}`
+    ] as const;
+    }
+
+
+export const getGetRepositoryEntryQueryOptions = <TData = Awaited<ReturnType<typeof getRepositoryEntry>>, TError = ErrorType<ErrorResponse>>(module: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRepositoryEntry>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRepositoryEntryQueryKey(module);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRepositoryEntry>>> = ({ signal }) => getRepositoryEntry(module, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: module !== null && module !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRepositoryEntry>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRepositoryEntryQueryResult = NonNullable<Awaited<ReturnType<typeof getRepositoryEntry>>>
+export type GetRepositoryEntryQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a specific module's latest result
+ */
+
+export function useGetRepositoryEntry<TData = Awaited<ReturnType<typeof getRepositoryEntry>>, TError = ErrorType<ErrorResponse>>(
+ module: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRepositoryEntry>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRepositoryEntryQueryOptions(module,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
