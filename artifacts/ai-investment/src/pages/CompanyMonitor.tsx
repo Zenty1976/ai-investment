@@ -11,7 +11,11 @@
  * only calls OpenAI when the user explicitly presses "Update Analysis".
  */
 import { useState, useRef, useEffect } from "react"
-import { useRunCompanyAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
+import {
+  useRunCompanyAnalysis,
+  useGetRepositoryEntry,
+  useListRepositoryEntries,
+} from "@workspace/api-client-react"
 import type {
   CompanyAnalysis,
   CompanyCatalyst,
@@ -61,6 +65,12 @@ interface AiDebugInfo {
   webSearchUsed: boolean
 }
 
+interface RecentCompany {
+  ticker: string
+  name: string
+  updatedAt: string
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDuration(ms: number): string {
@@ -91,7 +101,7 @@ function outlookBadgeVariant(
   if (outlook === "Moderately Bullish") return "positive"
   if (outlook === "Neutral") return "outline"
   if (outlook === "Moderately Bearish") return "warning"
-  return "negative" // Bearish
+  return "negative"
 }
 
 function impactBadgeVariant(
@@ -182,11 +192,10 @@ function CollapsibleItem({
   itemKey,
 }: CollapsibleItemProps) {
   const isOpen = expandedKey === itemKey
-  const border = accentColor === "primary" ? "border-primary/20" : "border-destructive/20"
   const accent = accentColor === "primary" ? "text-primary/50" : "text-destructive/50"
 
   return (
-    <li className={`px-4 py-3 border-b border-border/40 last:border-b-0`}>
+    <li className="px-4 py-3 border-b border-border/40 last:border-b-0">
       <button
         className="w-full text-left flex items-start gap-2.5"
         onClick={() => onToggle(itemKey)}
@@ -228,11 +237,20 @@ function CollapsibleItem({
 interface CompanyInputProps {
   onLoad: (ticker: string, companyName: string) => void
   isLoading?: boolean
+  initialTicker?: string
+  initialCompanyName?: string
+  compact?: boolean
 }
 
-function CompanyInput({ onLoad, isLoading }: CompanyInputProps) {
-  const [ticker, setTicker] = useState("")
-  const [companyName, setCompanyName] = useState("")
+function CompanyInput({
+  onLoad,
+  isLoading,
+  initialTicker = "",
+  initialCompanyName = "",
+  compact = false,
+}: CompanyInputProps) {
+  const [ticker, setTicker] = useState(initialTicker)
+  const [companyName, setCompanyName] = useState(initialCompanyName)
   const tickerRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -243,47 +261,114 @@ function CompanyInput({ onLoad, isLoading }: CompanyInputProps) {
   }
 
   useEffect(() => {
-    tickerRef.current?.focus()
-  }, [])
+    if (!compact) tickerRef.current?.focus()
+  }, [compact])
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end gap-2 flex-wrap">
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-          Ticker <span className="text-destructive">*</span>
-        </label>
-        <Input
-          ref={tickerRef}
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value.toUpperCase())}
-          placeholder="e.g. NVDA"
-          className="h-8 w-28 font-mono text-sm uppercase bg-background/60 border-border/60 focus:border-primary/50"
-          maxLength={10}
-          required
-        />
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+        {/* Ticker */}
+        <div className="flex flex-col gap-1 w-full sm:w-auto">
+          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+            Ticker symbol <span className="text-destructive">*</span>
+          </label>
+          <Input
+            ref={tickerRef}
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+            placeholder="NVDA"
+            className="h-8 w-full sm:w-28 font-mono text-sm uppercase bg-background/60 border-border/60 focus:border-primary/50"
+            maxLength={10}
+            required
+          />
+        </div>
+
+        {/* Company name */}
+        <div className="flex flex-col gap-1 w-full sm:w-auto">
+          <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+            Company name (optional)
+          </label>
+          <Input
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            placeholder="Nvidia"
+            className="h-8 w-full sm:w-48 text-sm bg-background/60 border-border/60 focus:border-primary/50"
+          />
+        </div>
+
+        {/* Submit */}
+        <Button
+          type="submit"
+          size="sm"
+          variant="outline"
+          disabled={!ticker.trim() || isLoading}
+          className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 w-full sm:w-auto"
+        >
+          <Search className="h-3.5 w-3.5 shrink-0" />
+          Select company
+        </Button>
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-          Company name
-        </label>
-        <Input
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          placeholder="e.g. Nvidia"
-          className="h-8 w-44 text-sm bg-background/60 border-border/60 focus:border-primary/50"
-        />
-      </div>
-      <Button
-        type="submit"
-        size="sm"
-        variant="outline"
-        disabled={!ticker.trim() || isLoading}
-        className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
-      >
-        <Search className="h-3.5 w-3.5" />
-        Load
-      </Button>
+
+      {/* Helper text — only show on the main (non-compact) form */}
+      {!compact && (
+        <p className="text-[11px] text-muted-foreground/50 leading-snug">
+          Enter the ticker symbol. The company name is optional but helps OpenAI verify the correct company.
+        </p>
+      )}
     </form>
+  )
+}
+
+// ── Recently analyzed list ────────────────────────────────────────────────────
+
+interface RecentCompaniesProps {
+  onSelect: (ticker: string, name: string) => void
+  activeTicker: string | null
+}
+
+function RecentCompanies({ onSelect, activeTicker }: RecentCompaniesProps) {
+  const { data: entries } = useListRepositoryEntries({ query: { retry: false } })
+
+  const recent: RecentCompany[] = (entries ?? [])
+    .filter((e) => e.moduleName.startsWith("company-monitor:"))
+    .map((e) => {
+      const ticker = e.moduleName.replace("company-monitor:", "")
+      const result = e.result as Record<string, unknown>
+      const company = result?.company as Record<string, unknown> | undefined
+      const name = typeof company?.name === "string" ? company.name : ticker
+      return { ticker, name, updatedAt: e.updatedAt }
+    })
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 10)
+
+  if (recent.length === 0) return null
+
+  return (
+    <Card className="bg-card/40 border-card-border/40">
+      <CardContent className="p-4">
+        <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground mb-2">
+          Recently analyzed
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {recent.map((c) => (
+            <button
+              key={c.ticker}
+              onClick={() => onSelect(c.ticker, c.name)}
+              className={`flex items-center gap-1.5 text-xs rounded px-2 py-1 border transition-colors ${
+                activeTicker === c.ticker
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border/40 bg-background/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+              }`}
+            >
+              <span className="font-mono font-semibold">{c.ticker}</span>
+              {c.name !== c.ticker && (
+                <span className="text-muted-foreground/60 hidden sm:inline">{c.name}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -325,7 +410,13 @@ export default function CompanyMonitor() {
   const storedAnalysis = repoEntry?.result as CompanyAnalysis | undefined
 
   // ── Update mutation ───────────────────────────────────────────────────────
-  const { mutate: runAnalysis, data: mutationData, isPending, error: mutationError } = useRunCompanyAnalysis({
+  const {
+    mutate: runAnalysis,
+    data: mutationData,
+    isPending,
+    error: mutationError,
+    reset: resetMutation,
+  } = useRunCompanyAnalysis({
     mutation: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSuccess: (data: any) => {
@@ -342,15 +433,18 @@ export default function CompanyMonitor() {
     },
   })
 
-  // Active analysis: latest mutation result takes priority, fall back to stored
+  // Active analysis: latest mutation result takes priority, fall back to stored.
+  // When switching companies the mutation is reset immediately so mutationData
+  // never bleeds through from the previous company.
   const analysis = (mutationData ?? storedAnalysis) as CompanyAnalysis | undefined
 
   const handleLoad = (ticker: string, companyName: string) => {
+    // Reset mutation state immediately so previous company's result never shows
+    resetMutation()
     setActiveTicker(ticker)
     setActiveCompanyName(companyName)
     setExpandedCatalyst(null)
     setExpandedRisk(null)
-    // Reset mutation data when switching companies
     setDebugInfo(null)
     setDebugError(null)
   }
@@ -377,15 +471,13 @@ export default function CompanyMonitor() {
       <div className="space-y-3 pb-4 animate-in fade-in duration-500">
         <Card className="bg-card/60 border-card-border/50">
           <CardContent className="p-4">
-            <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground mb-3">
+            <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground mb-4">
               Company Monitor
             </h2>
-            <p className="text-sm text-muted-foreground/60 mb-4 leading-relaxed">
-              Enter a ticker symbol to load or run an investment analysis.
-            </p>
             <CompanyInput onLoad={handleLoad} />
           </CardContent>
         </Card>
+        <RecentCompanies onSelect={handleLoad} activeTicker={activeTicker} />
       </div>
     )
   }
@@ -400,35 +492,34 @@ export default function CompanyMonitor() {
     return (
       <div className="space-y-3 pb-4 animate-in fade-in duration-500">
         <Card className="bg-card/60 border-card-border/50">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground mb-1.5">
-                  Company Monitor
-                </h2>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                  <span className="text-sm font-mono font-semibold text-foreground/80">{activeTicker}</span>
-                  {activeCompanyName && (
-                    <span className="text-sm text-muted-foreground/60">{activeCompanyName}</span>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground/40 italic mt-1">Not updated yet</p>
+          <CardContent className="p-4 space-y-4">
+            <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground">
+              Company Monitor
+            </h2>
+            <CompanyInput onLoad={handleLoad} initialTicker={activeTicker} initialCompanyName={activeCompanyName} />
+            <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/30">
+              <div className="flex items-center gap-2 min-w-0">
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                <span className="text-sm font-mono font-semibold text-foreground/80">{activeTicker}</span>
+                {activeCompanyName && (
+                  <span className="text-sm text-muted-foreground/60 truncate">{activeCompanyName}</span>
+                )}
+                <span className="text-sm text-muted-foreground/40 italic">— Not updated yet</span>
               </div>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 onClick={handleRefresh}
                 disabled={isPending}
-                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                title="Update analysis"
+                className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 shrink-0"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+                Update Analysis
               </Button>
             </div>
-            <CompanyInput onLoad={handleLoad} />
           </CardContent>
         </Card>
+        <RecentCompanies onSelect={handleLoad} activeTicker={activeTicker} />
       </div>
     )
   }
@@ -453,18 +544,22 @@ export default function CompanyMonitor() {
       {/* ── Summary card — always visible ── */}
       <Card className={`bg-card/60 overflow-hidden transition-colors duration-300 ${isPending ? "border-primary/30" : "border-card-border/50"}`}>
         {isPending && <div className="h-0.5 bg-primary/70 animate-pulse" />}
-        <CardContent className="p-4">
+        <CardContent className="p-4 space-y-3">
 
-          {/* Company input (always accessible) */}
-          <div className="mb-3">
-            <CompanyInput onLoad={handleLoad} isLoading={repoLoading} />
-          </div>
+          {/* Company input — always accessible for switching */}
+          <CompanyInput
+            onLoad={handleLoad}
+            isLoading={repoLoading}
+            initialTicker={activeTicker ?? ""}
+            initialCompanyName={activeCompanyName}
+            compact
+          />
 
-          <div className="flex items-center justify-between gap-4">
-
-            {/* Left: company + rating + metadata */}
+          {/* Analysis header row */}
+          <div className="flex items-start justify-between gap-3 pt-1 border-t border-border/30">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
+              {/* Badges */}
+              <div className="flex items-center gap-2 flex-wrap mb-1.5">
                 <Badge
                   variant={ratingBadgeVariant(analysis.investmentView.rating)}
                   className={`text-[10px] uppercase tracking-wider px-1.5 py-0 shrink-0 ${ratingOpacity(analysis.investmentView.rating)}`}
@@ -485,6 +580,7 @@ export default function CompanyMonitor() {
                 </Badge>
               </div>
 
+              {/* Company name + ticker */}
               <div className="flex items-center gap-2 flex-wrap">
                 <Building2 className="h-3.5 w-3.5 text-primary/70 shrink-0" />
                 <span className="text-sm font-semibold text-foreground/90">
@@ -495,6 +591,7 @@ export default function CompanyMonitor() {
                 </span>
               </div>
 
+              {/* Timestamp row */}
               <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50 mt-1">
                 {isPending ? (
                   <span className="flex items-center gap-1.5 text-primary/80 animate-pulse">
@@ -517,19 +614,18 @@ export default function CompanyMonitor() {
               </div>
             </div>
 
-            {/* Right: action buttons + expand toggle */}
+            {/* Action buttons */}
             <div className="flex items-center gap-1 shrink-0">
               <Button
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 onClick={handleRefresh}
                 disabled={isPending}
-                className="h-8 px-2 gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
-                title="Update analysis"
+                className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 disabled:opacity-30"
                 data-testid="button-refresh"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">Update Analysis</span>
+                <span className="hidden sm:inline text-xs">Update Analysis</span>
               </Button>
               <Button
                 size="sm"
@@ -558,6 +654,9 @@ export default function CompanyMonitor() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Recently analyzed ── */}
+      <RecentCompanies onSelect={handleLoad} activeTicker={activeTicker} />
 
       {/* ── Expanded content ── */}
       {expanded && (
@@ -627,7 +726,7 @@ export default function CompanyMonitor() {
           {/* Earnings & Guidance */}
           <Card className="bg-card/40 border-card-border/40">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
                 <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
                   Earnings &amp; Guidance
                 </p>
@@ -724,7 +823,7 @@ export default function CompanyMonitor() {
           {/* Competitive Position */}
           <Card className="bg-card/40 border-card-border/40">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
                 <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
                   Competitive Position
                 </p>
@@ -749,7 +848,7 @@ export default function CompanyMonitor() {
           {/* Valuation Assessment */}
           <Card className="bg-card/40 border-card-border/40">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
                 <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
                   Valuation Assessment
                 </p>

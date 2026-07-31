@@ -245,6 +245,52 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
+      // ── Identity verification — never save an analysis for the wrong company ──
+
+      const returnedTicker = parsed.data.company.ticker.toUpperCase().trim();
+      if (returnedTicker !== ticker) {
+        req.log.warn(
+          { requestedTicker: ticker, returnedTicker },
+          "AI returned analysis for wrong ticker — rejecting"
+        );
+        if (attempt < MAX_ATTEMPTS) {
+          req.log.info("Retrying after wrong-ticker response");
+          continue;
+        }
+        res.status(500).json({
+          error: `AI returned an analysis for ${returnedTicker} instead of ${ticker}. Please try again.`,
+          _debug: lastDebug,
+        });
+        return;
+      }
+
+      // Loose company name check: at least one significant word must appear in the returned name
+      if (companyName) {
+        const returnedName = parsed.data.company.name.toLowerCase();
+        const requestedWords = companyName
+          .toLowerCase()
+          .split(/\s+/)
+          .filter((w) => w.length > 3);
+        const nameMatches =
+          requestedWords.length === 0 ||
+          requestedWords.some((w) => returnedName.includes(w));
+        if (!nameMatches) {
+          req.log.warn(
+            { requestedName: companyName, returnedName },
+            "AI returned analysis for a different company name — rejecting"
+          );
+          if (attempt < MAX_ATTEMPTS) {
+            req.log.info("Retrying after wrong-company-name response");
+            continue;
+          }
+          res.status(500).json({
+            error: `AI returned an analysis for "${parsed.data.company.name}" instead of "${companyName}". Please verify the ticker and company name.`,
+            _debug: lastDebug,
+          });
+          return;
+        }
+      }
+
       analysisRepository.save(repositoryKey, parsed.data);
       res.json({ ...parsed.data, _debug: debug });
       return;

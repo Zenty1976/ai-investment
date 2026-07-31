@@ -1,0 +1,108 @@
+Keep the current Company Monitor architecture.
+
+Do not add a new external ticker search API.
+Do not use OpenAI for autocomplete.
+Keep the existing manual ticker and optional company name input.
+
+Please make the following improvements:
+
+1. Make the input flow clearer
+
+Change the labels to:
+
+Ticker symbol *
+Company name (optional)
+
+Change the placeholders to:
+
+Ticker symbol: NVDA
+Company name: Nvidia
+
+Add a short helper text below the fields:
+
+"Enter the ticker symbol. The company name is optional but helps OpenAI verify the correct company."
+
+2. Rename the Load button
+
+Change:
+
+Load
+
+to:
+
+Select company
+
+The button should only load a previously stored analysis for that ticker.
+
+It must not call OpenAI.
+
+3. Add a clear Update Analysis button
+
+After a company has been selected, show a visible text button:
+
+Update Analysis
+
+Do not rely only on the refresh icon.
+
+The refresh icon may remain, but the main action should be clearly labelled.
+
+OpenAI must only be called when the user presses Update Analysis.
+
+4. Verify the company identity before saving
+
+When OpenAI returns the analysis, verify that the returned ticker matches the requested ticker.
+
+If the user also entered a company name, verify that the returned company reasonably matches that name.
+
+If the result appears to describe a different company, reject the result and do not save it.
+
+Do not silently save an analysis for the wrong company.
+
+5. Improve switching between companies
+
+When the user selects a different ticker:
+
+- Clear the currently displayed mutation result immediately.
+- Load only the stored result for the newly selected ticker.
+- Do not temporarily display the previous company's analysis.
+- Keep the current error handling and previous saved result behaviour for failed updates.
+
+6. Add a simple recent companies section without external APIs
+
+Maintain a small list called:
+
+Recently analyzed
+
+Derive it from stored Company Monitor repository entries if possible.
+
+Otherwise store the latest 5-10 successfully analyzed companies locally in the browser.
+
+Each entry should show:
+
+- Company name
+- Ticker
+
+Selecting an entry should only load its stored analysis.
+
+It must not call OpenAI automatically.
+
+7. Improve the mobile layout
+
+On narrow screens:
+
+- Place Ticker symbol and Company name fields on separate full-width rows.
+- Make the Select company button full width.
+- Keep badges from becoming cramped or cut off.
+- Keep the same visual style as the other modules.
+
+Do not change the backend architecture, Analysis Repository key format or OpenAI analysis JSON structure.
+
+Continue storing analyses as:
+
+company-monitor:<UPPERCASE_TICKER>
+
+Examples:
+
+company-monitor:NVO
+company-monitor:NVDA
+company-monitor:MSFT
