@@ -1,0 +1,167 @@
+Create the next module: News Monitor.
+
+This is a completely new module.
+
+Follow exactly the same architecture, coding style and UI design as Market Monitor and Event Monitor.
+
+Requirements
+
+- Create News Monitor as its own backend and frontend module.
+- Add a new "News Monitor" menu item to the sidebar.
+- Use exactly the same page layout and styling as the existing modules.
+- Do not modify any existing modules.
+
+AI
+
+Reuse the existing shared OpenAI service.
+
+Use exactly the same OpenAI Responses API implementation already used by Market Monitor and Event Monitor.
+
+Use OpenAI Web Search.
+
+Do NOT introduce any other AI provider, search provider or SDK.
+
+Do NOT use Jina.
+
+Do NOT create another AI abstraction.
+
+Reuse the existing OpenAI implementation.
+
+Architecture
+
+Read previous analyses only from the Analysis Repository.
+
+Read:
+
+- market-monitor
+- event-monitor
+
+Never communicate directly with another module.
+
+All shared information must go through the Analysis Repository.
+
+After a successful analysis, save the validated result back into the Analysis Repository using the key:
+
+news-monitor
+
+Behaviour
+
+When the page opens:
+
+- Load the latest stored News Monitor analysis from the Analysis Repository.
+- If none exists, display "Not updated yet".
+
+Never call OpenAI automatically.
+
+Only run a new analysis when the user presses "Update Analysis".
+
+If the analysis fails, keep displaying the previously stored result.
+
+Purpose
+
+Find the most important market-moving news from approximately the last 24-72 hours.
+
+The goal is NOT to build a news feed.
+
+The goal is to produce an AI-curated summary of only the most important stories affecting financial markets.
+
+Ignore routine, repetitive and low-impact news.
+
+Focus on news affecting:
+
+- Equities
+- Bonds
+- Interest Rates
+- Inflation
+- Commodities
+- Energy
+- FX
+- Technology
+- AI
+- Healthcare
+- Industrials
+- Global Macro
+
+OpenAI Input
+
+Build a single request to OpenAI.
+
+Provide:
+
+1. Latest Market Monitor analysis from the Analysis Repository.
+
+2. Latest Event Monitor analysis from the Analysis Repository.
+
+3. Current date and time.
+
+4. Instructions to use OpenAI Web Search.
+
+The previous analyses are only context.
+
+The AI must NOT repeat Market Monitor or Event Monitor.
+
+Instead it must use them to better prioritise and explain the news.
+
+OpenAI Output
+
+Require structured JSON only.
+
+Do not allow markdown.
+
+Do not allow plain text.
+
+Validate the JSON before returning it.
+
+Only save validated JSON into the Analysis Repository.
+
+Return this JSON structure:
+
+{
+  "executiveSummary": "...",
+  "overallMarketImpact": "...",
+  "topStory": {
+    "title": "...",
+    "summary": "...",
+    "importance": "High"
+  },
+  "news": [
+    {
+      "title": "...",
+      "summary": "...",
+      "category": "...",
+      "importance": "High | Medium | Low",
+      "affectedMarkets": [],
+      "whyItMatters": "...",
+      "likelyDirection": "Bullish | Bearish | Neutral | Mixed",
+      "confidence": 0.0,
+      "source": "...",
+      "publishedAt": "ISO 8601 date"
+    }
+  ]
+}
+
+Limit the result to a maximum of 8 news items.
+
+UI
+
+Display:
+
+- Executive Summary
+- Overall Market Impact
+- Top Story
+- News cards
+
+Each news card must display:
+
+- Importance
+- Category
+- Published time
+- Title
+- Summary
+- Affected markets
+
+"Why it matters" must be collapsed by default exactly like Event Monitor.
+
+Keep the UI compact and consistent with the existing modules.
+
+Do not change the existing architecture.

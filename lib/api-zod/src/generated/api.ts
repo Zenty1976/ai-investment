@@ -71,6 +71,40 @@ export const RunEventAnalysisResponse = zod.object({
 
 
 /**
+ * Searches for the most important market-moving news from the last 24-72 hours and returns a curated structured JSON result
+ * @summary Run news monitor analysis
+ */
+export const runNewsAnalysisResponseNewsItemConfidenceMin = 0;
+export const runNewsAnalysisResponseNewsItemConfidenceMax = 1;
+
+
+
+export const RunNewsAnalysisResponse = zod.object({
+  "executiveSummary": zod.string(),
+  "overallMarketImpact": zod.string(),
+  "topStory": zod.object({
+  "title": zod.string(),
+  "summary": zod.string(),
+  "importance": zod.enum(['High', 'Medium', 'Low'])
+}),
+  "news": zod.array(zod.object({
+  "title": zod.string(),
+  "summary": zod.string(),
+  "category": zod.string(),
+  "importance": zod.enum(['High', 'Medium', 'Low']),
+  "affectedMarkets": zod.array(zod.string()),
+  "whyItMatters": zod.string(),
+  "likelyDirection": zod.enum(['Bullish', 'Bearish', 'Neutral', 'Mixed']),
+  "confidence": zod.number().min(runNewsAnalysisResponseNewsItemConfidenceMin).max(runNewsAnalysisResponseNewsItemConfidenceMax),
+  "source": zod.string(),
+  "publishedAt": zod.string().describe('ISO 8601 date or datetime')
+})),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
+/**
  * Returns every module's latest analysis result, ordered by most recently updated
  * @summary List all stored module results
  */

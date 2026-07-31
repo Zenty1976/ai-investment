@@ -24,6 +24,7 @@ import type {
   EventMonitorAnalysis,
   HealthStatus,
   MarketAnalysis,
+  NewsAnalysis,
   RepositoryEntry
 } from './api.schemas';
 
@@ -274,6 +275,78 @@ export const useRunEventAnalysis = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getRunEventAnalysisMutationOptions(options));
+    }
+
+export const getRunNewsAnalysisUrl = () => {
+
+
+
+
+  return `/api/news-monitor/analyze`
+}
+
+/**
+ * Searches for the most important market-moving news from the last 24-72 hours and returns a curated structured JSON result
+ * @summary Run news monitor analysis
+ */
+export const runNewsAnalysis = async ( options?: Parameters<typeof customFetch>[1]): Promise<NewsAnalysis> => {
+
+  return customFetch<NewsAnalysis>(getRunNewsAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRunNewsAnalysisMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runNewsAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runNewsAnalysis>>, TError,void, TContext> => {
+
+const mutationKey = ['runNewsAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runNewsAnalysis>>, void> = () => {
+
+
+          return  runNewsAnalysis(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunNewsAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof runNewsAnalysis>>>
+
+    export type RunNewsAnalysisMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Run news monitor analysis
+ */
+export const useRunNewsAnalysis = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runNewsAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runNewsAnalysis>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRunNewsAnalysisMutationOptions(options));
     }
 
 export const getListRepositoryEntriesUrl = () => {

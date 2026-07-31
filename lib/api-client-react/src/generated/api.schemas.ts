@@ -93,6 +93,68 @@ export interface EventMonitorAnalysis {
   analysisDuration: number;
 }
 
+export type NewsTopStoryImportance = typeof NewsTopStoryImportance[keyof typeof NewsTopStoryImportance];
+
+
+export const NewsTopStoryImportance = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface NewsTopStory {
+  title: string;
+  summary: string;
+  importance: NewsTopStoryImportance;
+}
+
+export type NewsItemImportance = typeof NewsItemImportance[keyof typeof NewsItemImportance];
+
+
+export const NewsItemImportance = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export type NewsItemLikelyDirection = typeof NewsItemLikelyDirection[keyof typeof NewsItemLikelyDirection];
+
+
+export const NewsItemLikelyDirection = {
+  Bullish: 'Bullish',
+  Bearish: 'Bearish',
+  Neutral: 'Neutral',
+  Mixed: 'Mixed',
+} as const;
+
+export interface NewsItem {
+  title: string;
+  summary: string;
+  category: string;
+  importance: NewsItemImportance;
+  affectedMarkets: string[];
+  whyItMatters: string;
+  likelyDirection: NewsItemLikelyDirection;
+  /**
+     * @minimum 0
+     * @maximum 1
+     */
+  confidence: number;
+  source: string;
+  /** ISO 8601 date or datetime */
+  publishedAt: string;
+}
+
+export interface NewsAnalysis {
+  executiveSummary: string;
+  overallMarketImpact: string;
+  topStory: NewsTopStory;
+  news: NewsItem[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 /**
  * The structured analysis result produced by the module
  */

@@ -2,27 +2,27 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices mixed: U.S. markets modestly higher, Japan weaker; volatility easing. Central banks held rates amid inflation and energy shocks. Sentiment cautious amid geopolitical and inflation risks.",
+      "summary": "Global equity indices mixed: US markets modestly higher, Japan weaker; volatility easing. Central banks held rates amid inflation and energy shocks; geopolitical tensions persist.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. and European central banks held rates steady, reducing immediate tightening risk for equities",
-        "Equity markets in U.S. and UK showing modest gains, supporting sentiment"
+        "US and UK equities rising modestly, supporting risk appetite",
+        "Central banks holding rates steady, reducing immediate policy uncertainty"
       ],
       "negativeFactors": [
-        "Middle East conflict driving energy price volatility, sustaining inflation concerns",
-        "Japanese equities under pressure, reflecting regional weakness and risk aversion"
+        "Middle East conflict and energy volatility weighing on inflation outlook",
+        "Elevated VIX and geopolitical risks increasing caution"
       ],
       "strongSectors": [
         "Real Estate",
-        "Financials"
+        "Materials"
       ],
       "weakSectors": [
         "Technology"
       ],
       "keyRisks": [
-        "Geopolitical tensions in Middle East impacting energy prices and inflation",
-        "Persistent inflation keeping central banks cautious"
+        "Middle East conflict disrupting energy markets",
+        "Persistent inflation undermining central bank credibility"
       ],
       "sources": [
         {
@@ -31,134 +31,117 @@
           "published": "2026-07-26"
         },
         {
-          "title": "Fed leaves interest rate unchanged but with 3 dissents as Warsh praises 'good family fight'",
-          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
-          "published": "2026-07-28"
+          "title": "Bank of England keeps key rate at 3.75% for the fifth time this year",
+          "url": "https://apnews.com/article/4c1858032eb701ae776d286db674d994",
+          "published": "2026-07-30"
         },
         {
-          "title": "Monetary policy decisions",
+          "title": "Fed leaves rates steady, with internal dissent",
+          "url": "https://www.axios.com/2026/07/29/fed-warsh-rates-inflation",
+          "published": "2026-07-29"
+        },
+        {
+          "title": "Monetary policy decisions (ECB)",
           "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260723~29f24d99bc.en.html",
           "published": "2026-07-23"
+        },
+        {
+          "title": "Bank of Russia cuts the key rate by 25 bp to 14.00% p.a.",
+          "url": "https://www.cbr.ru/eng/press/pr/?file=24072026_133000key_e.htm",
+          "published": "2026-07-24"
+        },
+        {
+          "title": "America In Focus: US inflation cooled in June, but AI build‑out poses latest threat",
+          "url": "https://apnews.com/article/c8ed0b54d80fe1bdaa5edcef671e6608",
+          "published": "2026-07-17"
         }
       ],
-      "timestamp": "2026-07-31T10:16:42.081Z",
-      "analysisDuration": 5518
+      "timestamp": "2026-07-31T10:41:16.630Z",
+      "analysisDuration": 6312
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-07-31T10:16:47.600Z"
+    "updatedAt": "2026-07-31T10:41:22.942Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
     "result": {
-      "summary": "Key macroeconomic and central bank events are scheduled between July 31 and August 14, 2026, including major U.S. inflation and employment data, central bank policy meetings in Australia and Brazil, and the Czech National Bank’s decision. These events are likely to influence global interest rate expectations, inflation outlooks, and market sentiment.",
+      "summary": "Key U.S. macroeconomic data releases and central bank decisions are scheduled in early August 2026, including employment, inflation, and GDP updates, alongside a major central bank policy meeting in Australia.",
       "nextMajorEvent": {
-        "title": "U.S. Employment Report – July",
+        "title": "U.S. Employment Situation (July 2026)",
         "date": "2026-08-07",
         "countdownDays": 7
       },
       "events": [
         {
-          "title": "U.S. Employment Report – July",
+          "title": "U.S. Employment Situation (July 2026)",
           "date": "2026-08-07",
-          "category": "Employment Data",
+          "category": "Employment Report",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. equities",
+            "Equities",
             "Bonds",
-            "Labor-sensitive sectors"
+            "FX"
           ],
-          "expectedImpact": "Employment data will affect Fed rate path expectations and risk sentiment.",
-          "reason": "The July employment report is a critical indicator of labor market strength and will influence monetary policy outlook and market positioning."
+          "expectedImpact": "Provides fresh insight into labor market strength, influencing Fed policy expectations.",
+          "reason": "Nonfarm payrolls and unemployment data are critical for assessing economic momentum and guiding monetary policy decisions."
         },
         {
-          "title": "Reserve Bank of Australia Monetary Policy Decision",
-          "date": "2026-08-11",
-          "category": "Central Bank Meeting",
-          "importance": "High",
-          "affectedMarkets": [
-            "AUD",
-            "Global rates",
-            "Commodities"
-          ],
-          "expectedImpact": "RBA decision will influence AUD and global rate expectations.",
-          "reason": "The RBA’s August policy decision is closely watched amid global inflation pressures and will impact currency and rate markets."
-        },
-        {
-          "title": "U.S. Consumer Price Index (CPI) – July",
+          "title": "U.S. Consumer Price Index (CPI) – July 2026",
           "date": "2026-08-12",
           "category": "Inflation Data",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. equities",
             "Bonds",
+            "Equities",
             "FX"
           ],
-          "expectedImpact": "CPI will influence Fed policy expectations and market inflation outlook.",
-          "reason": "As a key inflation gauge, July CPI will shape expectations for U.S. monetary policy and affect bond yields and equity valuations."
+          "expectedImpact": "Key gauge of inflation trends, likely to influence Fed rate path expectations.",
+          "reason": "CPI is the primary measure of consumer inflation and heavily watched by markets for monetary policy signals."
         },
         {
-          "title": "Brazil COPOM Monetary Policy Meeting",
-          "date": "2026-08-04",
-          "category": "Central Bank Meeting",
+          "title": "U.S. Producer Price Index (PPI) – July 2026",
+          "date": "2026-08-13",
+          "category": "Inflation Data",
           "importance": "Medium",
           "affectedMarkets": [
-            "Emerging markets",
-            "BRL",
-            "Commodities"
+            "Bonds",
+            "Equities"
           ],
-          "expectedImpact": "COPOM decision will affect Brazilian rates and EM sentiment.",
-          "reason": "Brazil’s central bank meeting will guide monetary policy in a major emerging market, influencing FX and EM asset flows."
-        },
-        {
-          "title": "Czech National Bank Monetary Policy Meeting",
-          "date": "2026-08-06",
-          "category": "Central Bank Meeting",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "EUR",
-            "CEE markets",
-            "Rates"
-          ],
-          "expectedImpact": "CNB decision will influence regional rate expectations and EUR sentiment.",
-          "reason": "The CNB’s August meeting will set policy in a central European economy, affecting regional rates and the euro."
+          "expectedImpact": "Offers insight into upstream inflation pressures that may feed into consumer prices.",
+          "reason": "PPI tracks wholesale price changes and can signal future CPI movements."
         }
       ],
       "sources": [
         {
-          "title": "Economic Release Calendar - Consumer Price Index | FRED",
-          "url": "https://fred.stlouisfed.org/releases/calendar?rid=10&ve=2026-12-31&view=year&vs=2026-01-01",
+          "title": "Current Employment Statistics - CES (National) : U.S. Bureau of Labor Statistics",
+          "url": "https://www.bls.gov/ces/",
           "published": ""
         },
         {
-          "title": "Calendar of Economic Release Dates (August 2026) | Scotiabank",
-          "url": "https://www.scotiabank.com/ca/en/about/economics/economics-publications/post.other-publications.calendar-of-economic-release-dates.calendar-of-economic-release-dates--august-2026-.html",
+          "title": "CPI Home : U.S. Bureau of Labor Statistics",
+          "url": "https://www.bls.gov/cpi/",
           "published": ""
         },
         {
-          "title": "Coming Up | RBA",
-          "url": "https://www.rba.gov.au/coming-up/",
+          "title": "US PPI",
+          "url": "https://www.mtsinsights.com/events/4407/",
           "published": ""
         },
         {
-          "title": "Board Meeting Schedules | RBA",
-          "url": "https://www.rba.gov.au/schedules-events/board-meeting-schedules.html",
+          "title": "2026 Producer Price Index (PPI) - US/BLS- Released JUST NOW",
+          "url": "https://fred.stlouisfed.org/releases/calendar?rid=46&y=2026",
           "published": ""
         },
         {
-          "title": "BC publica calendário de reuniões do Copom em 2026",
-          "url": "https://www.bcb.gov.br/detalhenoticia/20739/nota/https%3A/www3.bcb.gov.br/sgspub",
-          "published": ""
-        },
-        {
-          "title": "Dates of the CNB Board’s meetings in 2026",
-          "url": "https://www.cnb.cz/en/cnb-news/news/Dates-of-the-CNB-Boards-meetings-in-2026-00001/",
+          "title": "Release Schedule | U.S. Bureau of Economic Analysis (BEA)",
+          "url": "https://www.bea.gov/news/schedule/full",
           "published": ""
         }
       ],
-      "timestamp": "2026-07-31T10:38:13.621Z",
-      "analysisDuration": 9465
+      "timestamp": "2026-07-31T10:41:04.983Z",
+      "analysisDuration": 8590
     },
     "createdAt": "2026-07-31T10:21:03.481Z",
-    "updatedAt": "2026-07-31T10:38:23.087Z"
+    "updatedAt": "2026-07-31T10:41:13.573Z"
   }
 }
