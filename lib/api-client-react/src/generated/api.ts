@@ -21,6 +21,7 @@ import type {
 
 import type {
   ErrorResponse,
+  EventMonitorAnalysis,
   HealthStatus,
   MarketAnalysis,
   RepositoryEntry
@@ -201,6 +202,78 @@ export const useRunMarketAnalysis = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getRunMarketAnalysisMutationOptions(options));
+    }
+
+export const getRunEventAnalysisUrl = () => {
+
+
+
+
+  return `/api/event-monitor/analyze`
+}
+
+/**
+ * Searches for upcoming financial-market events in the next 14 days and returns structured JSON
+ * @summary Run event monitor analysis
+ */
+export const runEventAnalysis = async ( options?: Parameters<typeof customFetch>[1]): Promise<EventMonitorAnalysis> => {
+
+  return customFetch<EventMonitorAnalysis>(getRunEventAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRunEventAnalysisMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runEventAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runEventAnalysis>>, TError,void, TContext> => {
+
+const mutationKey = ['runEventAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runEventAnalysis>>, void> = () => {
+
+
+          return  runEventAnalysis(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunEventAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof runEventAnalysis>>>
+
+    export type RunEventAnalysisMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Run event monitor analysis
+ */
+export const useRunEventAnalysis = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runEventAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runEventAnalysis>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRunEventAnalysisMutationOptions(options));
     }
 
 export const getListRepositoryEntriesUrl = () => {

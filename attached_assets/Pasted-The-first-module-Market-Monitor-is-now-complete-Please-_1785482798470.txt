@@ -1,0 +1,166 @@
+The first module, Market Monitor, is now complete.
+
+Please create the second analysis module called Event Monitor.
+
+Follow the same architecture, coding style and visual design as Market Monitor.
+
+Create Event Monitor as a separate backend module and a separate frontend dashboard card. Do not place the Event Monitor logic inside the Market Monitor files.
+
+Register a separate API endpoint for Event Monitor.
+
+Use the existing shared OpenAI service and the OpenAI Responses API with web search. Do not create a new OpenAI integration.
+
+Use the existing Analysis Repository. After a successful and validated analysis, store the complete Event Monitor result under the module key:
+
+event-monitor
+
+Do not store invalid, incomplete or failed results.
+
+Event Monitor must also read the latest Market Monitor result from the Analysis Repository before creating its analysis. Use that result only as context to help prioritize relevant upcoming events. Do not simply repeat the Market Monitor analysis.
+
+The purpose of Event Monitor is to identify the most important upcoming events that are likely to affect financial markets during the next 14 days.
+
+It is not a general news summary.
+
+It should search for and evaluate events such as:
+
+Central bank meetings and interest-rate decisions
+Inflation releases
+Employment reports
+GDP releases
+Major company earnings
+Trade-policy announcements
+Tariff decisions
+Important regulatory decisions
+Geopolitical events with a known or likely date
+Other significant scheduled market catalysts
+
+Prefer official sources whenever possible, such as central banks, government statistics agencies, stock exchanges, company investor-relations pages and official institutions.
+
+Reputable financial news sources may be used for context and expected market impact.
+
+Return only structured JSON from OpenAI.
+
+Use this data structure:
+
+{
+“summary”: “”,
+“nextMajorEvent”: {
+“title”: “”,
+“date”: “YYYY-MM-DD”,
+“countdownDays”: 0
+},
+“events”: [
+{
+“title”: “”,
+“date”: “YYYY-MM-DD”,
+“category”: “”,
+“importance”: “High | Medium | Low”,
+“affectedMarkets”: [
+“”
+],
+“expectedImpact”: “”,
+“reason”: “”
+}
+],
+“sources”: [
+{
+“title”: “”,
+“url”: “”,
+“published”: “YYYY-MM-DD”
+}
+]
+}
+
+The summary must contain no more than four short sentences.
+
+Return a maximum of five events.
+
+Sort the events first by importance and then by date.
+
+Do not return duplicate events.
+
+Each event must contain:
+
+A short title
+The event date
+A category
+An importance level
+The main affected markets or sectors
+A short expected-impact description
+A short explanation of why the event matters
+
+Keep all text concise and suitable for display in a dashboard card.
+
+The nextMajorEvent field must point to the most important upcoming event from the events list.
+
+countdownDays must be calculated by the server based on the current date, not trusted directly from the AI response.
+
+Validate the complete response with a shared schema before saving or displaying it.
+
+Create a new Event Monitor card on the existing dashboard.
+
+Use the same overall layout, spacing, typography, card style, loading state, error state and update-button behaviour as Market Monitor.
+
+The Event Monitor card should display:
+
+Last update time
+Analysis duration
+Summary
+Next Major Event
+Upcoming Events
+Sources button
+
+For Next Major Event, display:
+
+Event title
+Date
+Number of days until the event
+
+For each event in Upcoming Events, display:
+
+Date
+Importance
+Category
+Title
+Expected Impact
+
+The full reason text may be shown in a compact expandable area or tooltip if needed, but do not make the card overly large.
+
+Do not display the source list permanently inside the card.
+
+Use the same Sources popup or modal pattern as Market Monitor. The popup should show source title, publication date and clickable link.
+
+The Event Monitor card must be a separate GUI component and must not change the existing Market Monitor card.
+
+Do not add:
+
+A database
+Automatic scheduling
+Notifications
+Calendar integration
+Historical views
+Portfolio functionality
+Live stock prices
+Saxo Bank integration
+New navigation pages
+Other analysis modules
+
+Only implement Event Monitor using the existing architecture.
+
+After implementation, test:
+
+Successful Event Monitor analysis
+Reading Market Monitor context from the Analysis Repository
+Missing Market Monitor data
+Invalid OpenAI JSON
+No events found
+Duplicate events
+Past event dates
+More than five returned events
+Correct event sorting
+Correct server-calculated countdown
+Saving the validated result under event-monitor
+Loading and error states
+Sources popup
+Desktop and mobile dashboard layout

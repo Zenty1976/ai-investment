@@ -41,6 +41,36 @@ export const RunMarketAnalysisResponse = zod.object({
 
 
 /**
+ * Searches for upcoming financial-market events in the next 14 days and returns structured JSON
+ * @summary Run event monitor analysis
+ */
+export const RunEventAnalysisResponse = zod.object({
+  "summary": zod.string(),
+  "nextMajorEvent": zod.object({
+  "title": zod.string(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "countdownDays": zod.number().describe('Days until the event — always calculated by the server')
+}),
+  "events": zod.array(zod.object({
+  "title": zod.string(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "category": zod.string(),
+  "importance": zod.enum(['High', 'Medium', 'Low']),
+  "affectedMarkets": zod.array(zod.string()),
+  "expectedImpact": zod.string(),
+  "reason": zod.string()
+})),
+  "sources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string(),
+  "published": zod.string().optional().describe('YYYY-MM-DD or empty string')
+})),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
+/**
  * Returns every module's latest analysis result, ordered by most recently updated
  * @summary List all stored module results
  */

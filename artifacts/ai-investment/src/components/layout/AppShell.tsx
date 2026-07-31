@@ -35,7 +35,7 @@ const NAV_ITEMS = [
   { label: "STOCKS",      href: "/stocks",    icon: TrendingUp,   enabled: false },
   { label: "MARKET",      href: "/",          icon: Activity,     enabled: true  },
   { label: "NEWS",        href: "/news",      icon: Newspaper,    enabled: false },
-  { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: false },
+  { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: true  },
   { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: false },
   { label: "ANALYSIS",    href: "/analyse",   icon: BarChart2,    enabled: false },
   { label: "LOG & HIST.", href: "/log",       icon: History,      enabled: false },

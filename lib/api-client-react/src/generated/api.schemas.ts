@@ -48,6 +48,51 @@ export interface MarketAnalysis {
   analysisDuration: number;
 }
 
+export interface EventMonitorSource {
+  title: string;
+  url: string;
+  /** YYYY-MM-DD or empty string */
+  published?: string;
+}
+
+export type UpcomingEventImportance = typeof UpcomingEventImportance[keyof typeof UpcomingEventImportance];
+
+
+export const UpcomingEventImportance = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface UpcomingEvent {
+  title: string;
+  /** YYYY-MM-DD */
+  date: string;
+  category: string;
+  importance: UpcomingEventImportance;
+  affectedMarkets: string[];
+  expectedImpact: string;
+  reason: string;
+}
+
+export interface NextMajorEvent {
+  title: string;
+  /** YYYY-MM-DD */
+  date: string;
+  /** Days until the event — always calculated by the server */
+  countdownDays: number;
+}
+
+export interface EventMonitorAnalysis {
+  summary: string;
+  nextMajorEvent: NextMajorEvent;
+  events: UpcomingEvent[];
+  sources: EventMonitorSource[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 /**
  * The structured analysis result produced by the module
  */

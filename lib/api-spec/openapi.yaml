@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: market-monitor
     description: Market Monitor analysis
+  - name: event-monitor
+    description: Event Monitor — upcoming financial-market events in the next 14 days
   - name: repository
     description: Analysis Repository — shared read interface for all module results
 paths:
@@ -43,6 +45,31 @@ paths:
                 $ref: "#/components/schemas/MarketAnalysis"
         "500":
           description: Analysis failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /event-monitor/analyze:
+    post:
+      operationId: runEventAnalysis
+      tags: [event-monitor]
+      summary: Run event monitor analysis
+      description: Searches for upcoming financial-market events in the next 14 days and returns structured JSON
+      responses:
+        "200":
+          description: Event monitor analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventMonitorAnalysis"
+        "500":
+          description: Analysis failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: No event data available
           content:
             application/json:
               schema:
@@ -157,6 +184,90 @@ components:
         - strongSectors
         - weakSectors
         - keyRisks
+        - sources
+        - timestamp
+        - analysisDuration
+    EventMonitorSource:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        published:
+          type: string
+          description: YYYY-MM-DD or empty string
+      required:
+        - title
+        - url
+    UpcomingEvent:
+      type: object
+      properties:
+        title:
+          type: string
+        date:
+          type: string
+          description: YYYY-MM-DD
+        category:
+          type: string
+        importance:
+          type: string
+          enum: [High, Medium, Low]
+        affectedMarkets:
+          type: array
+          items:
+            type: string
+        expectedImpact:
+          type: string
+        reason:
+          type: string
+      required:
+        - title
+        - date
+        - category
+        - importance
+        - affectedMarkets
+        - expectedImpact
+        - reason
+    NextMajorEvent:
+      type: object
+      properties:
+        title:
+          type: string
+        date:
+          type: string
+          description: YYYY-MM-DD
+        countdownDays:
+          type: number
+          description: Days until the event — always calculated by the server
+      required:
+        - title
+        - date
+        - countdownDays
+    EventMonitorAnalysis:
+      type: object
+      properties:
+        summary:
+          type: string
+        nextMajorEvent:
+          $ref: "#/components/schemas/NextMajorEvent"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpcomingEvent"
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventMonitorSource"
+        timestamp:
+          type: string
+        analysisDuration:
+          type: number
+          description: Time taken to complete the analysis in milliseconds
+      required:
+        - summary
+        - nextMajorEvent
+        - events
         - sources
         - timestamp
         - analysisDuration

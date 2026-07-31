@@ -7,10 +7,15 @@
  */
 
 export * from './errorResponse';
+export * from './eventMonitorAnalysis';
+export * from './eventMonitorSource';
 export * from './healthStatus';
 export * from './marketAnalysis';
 export * from './marketAnalysisMarketSentiment';
 export * from './marketAnalysisRiskLevel';
 export * from './marketAnalysisSource';
+export * from './nextMajorEvent';
 export * from './repositoryEntry';
 export * from './repositoryEntryResult';
+export * from './upcomingEvent';
+export * from './upcomingEventImportance';

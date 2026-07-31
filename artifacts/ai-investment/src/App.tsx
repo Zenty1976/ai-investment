@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { AppShell } from '@/components/layout/AppShell';
 import MarketMonitor from '@/pages/MarketMonitor';
+import EventMonitor from '@/pages/EventMonitor';
 import Settings from '@/pages/Settings';
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ function Router() {
     <AppShell>
       <Switch>
         <Route path="/" component={MarketMonitor} />
+        <Route path="/events" component={EventMonitor} />
         <Route path="/settings" component={Settings} />
         <Route component={SimpleNotFound} />
       </Switch>
