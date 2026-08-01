@@ -32,6 +32,7 @@ function saxoBaseUrl(env: "sim" | "live"): string {
 interface SaxoAccount {
   AccountKey?: string;
   AccountId?: string;
+  ClientKey?: string;
   DisplayName?: string;
   AccountType?: string;
   Currency?: string;
@@ -254,12 +255,11 @@ async function buildSnapshot(
       const key = acct.AccountKey ?? "";
       if (!key) return {};
       try {
-        const bal = await saxoGet<SaxoBalance>(
-          `${base}/port/v1/balances?AccountKey=${encodeURIComponent(key)}`,
-          accessToken
-        );
-        logger.info({ accountKey: key, rawBalance: bal }, "[portfolio-manager] Raw balance response from Saxo");
-        return bal;
+        const clientKey = acct.ClientKey ?? "";
+        const balUrl = clientKey
+          ? `${base}/port/v1/balances?AccountKey=${encodeURIComponent(key)}&ClientKey=${encodeURIComponent(clientKey)}`
+          : `${base}/port/v1/balances?AccountKey=${encodeURIComponent(key)}`;
+        return await saxoGet<SaxoBalance>(balUrl, accessToken);
       } catch (err) {
         logger.warn({ err, accountKey: key }, "[portfolio-manager] Failed to fetch balance for account");
         return {};
