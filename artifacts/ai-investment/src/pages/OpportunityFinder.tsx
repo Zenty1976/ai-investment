@@ -489,8 +489,8 @@ export default function OpportunityFinder() {
                   </span>
                 ) : (
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50 ml-1">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Clock className="h-3 w-3 shrink-0" />
                       {format(new Date(analysis.timestamp), "d. MMM HH:mm")}
                     </span>
                     <span className="flex items-center gap-1">
