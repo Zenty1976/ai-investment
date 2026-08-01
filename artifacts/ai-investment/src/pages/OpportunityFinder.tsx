@@ -237,17 +237,19 @@ function OpportunityCard({ opp }: { opp: OpportunityFinderOpportunity }) {
               <BulletSection label="Why This Portfolio" items={opp.whyThisPortfolio} />
             )}
 
-            {/* Catalyst + date */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
-                  Main Catalyst
-                </p>
-                <p className="text-xs text-foreground/80 leading-relaxed">{opp.mainCatalyst}</p>
-                {opp.catalystDate && (
-                  <p className="text-[11px] text-primary/60 mt-0.5 font-mono">{opp.catalystDate}</p>
-                )}
-              </div>
+            {/* Catalyst + date / Main Risk */}
+            <div className={`grid gap-3 ${opp.mainCatalyst ? "grid-cols-2" : "grid-cols-1"}`}>
+              {opp.mainCatalyst && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                    Main Catalyst
+                  </p>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{opp.mainCatalyst}</p>
+                  {opp.catalystDate && (
+                    <p className="text-[11px] text-primary/60 mt-0.5 font-mono">{opp.catalystDate}</p>
+                  )}
+                </div>
+              )}
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
                   Main Risk
