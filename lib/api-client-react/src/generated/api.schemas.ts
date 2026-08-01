@@ -543,17 +543,39 @@ export interface PortfolioAnalysis {
 
 // ── Opportunity Finder ────────────────────────────────────────────────────────
 
+export interface OpportunityFinderSource {
+  title: string;
+  url: string;
+  published: string;
+}
+
 export interface OpportunityFinderOpportunity {
+  rank: number;
   company: string;
   ticker: string;
+  exchange: string;
   sector: string;
   country: string;
-  summary: string;
-  whyItFits: string;
+  overallScore: number;
+  portfolioFit: number;
+  diversificationBenefit: number;
+  sectorMacroFit: number;
+  timing: number;
+  riskReward: number;
+  scoreReason: string;
+  investmentThesis: string[];
+  whyNow: string[];
+  whyThisPortfolio: string[];
   mainCatalyst: string;
+  catalystDate: string;
   mainRisk: string;
   confidence: 'High' | 'Medium' | 'Low';
   priority: 'High' | 'Medium' | 'Low';
+  positionSizeSuitability: 'Small' | 'Medium' | 'Large';
+  positionSizeReason: string;
+  companyAnalysisAvailable: boolean;
+  sources: OpportunityFinderSource[];
+  status?: 'New' | 'Up' | 'Down' | 'Unchanged';
 }
 
 export interface OpportunityFinderSectorIdea {

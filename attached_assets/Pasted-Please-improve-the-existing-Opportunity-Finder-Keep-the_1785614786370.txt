@@ -1,0 +1,286 @@
+Please improve the existing Opportunity Finder. Keep the current architecture, UI style, OpenAI debug dialog, repository behaviour and manual Update Analysis flow.
+
+Do not create another independent module.
+
+PURPOSE
+
+Opportunity Finder must identify and rank opportunities that improve this specific portfolio over the next 1–3 months.
+
+It must not merely list companies from currently strong sectors.
+
+Each candidate must be evaluated for:
+
+* Portfolio fit
+* Diversification benefit
+* Sector and macro fit
+* Timing and catalysts
+* Risk/reward
+* Evidence quality
+
+OPENAI INPUT AND COMPANY DATA
+
+Continue reading data only through the Analysis Repository.
+
+Use:
+
+* Portfolio Manager
+* Portfolio Analyzer
+* Sector Monitor
+* Event Monitor
+* Market Monitor
+* News Monitor
+
+For existing portfolio holdings, resolve Company Monitor analyses through the shared company identity service.
+
+Do not use the current exact ticker comparison in Opportunity Finder, because Saxo symbols such as “NOVO B” may not match Company Monitor keys such as “NVO”.
+
+Reuse the same company identity service already used by Portfolio Analyzer.
+
+The current prompt says Company Monitor data is available for mentioned candidate companies, but candidate companies are not known until OpenAI returns them. Correct this wording.
+
+During the initial search, Company Monitor context is only available for current holdings and previously analysed companies.
+
+CANDIDATE COMPANY ANALYSIS
+
+Do not automatically run five additional Company Monitor OpenAI analyses inside the Opportunity Finder request. That would make one update slow, expensive and difficult to debug.
+
+After candidates are returned:
+
+* Check whether each candidate already has a Company Monitor analysis through the shared company identity service.
+* Add a field showing whether deep company analysis is available.
+* Add an “Analyze company” action for candidates without one.
+* This action should open or trigger the existing Company Monitor flow for that company.
+* After a Company Monitor analysis exists, Opportunity Finder may use it during the next update.
+* Do not duplicate Company Monitor logic inside Opportunity Finder.
+
+CURRENT-DATE VALIDATION
+
+The current result included a catalyst described as “earnings expected July 28” even though the supplied date was August 1.
+
+Strengthen the prompt with these rules:
+
+* Never describe a past date as an upcoming catalyst.
+* Compare every event date with the supplied current UTC date.
+* If an event has already occurred, use the published result rather than calling it upcoming.
+* Omit a catalyst when its date cannot be verified.
+* Do not invent earnings dates, guidance, dividends or corporate events.
+* Prefer official company investor-relations pages, exchange announcements and reputable financial sources.
+* Verify ticker, company name and exchange before returning a candidate.
+
+If a returned event date is earlier than the analysis timestamp, reject or remove it during backend validation.
+
+SOURCE EVIDENCE
+
+Add source evidence for every candidate.
+
+Each candidate must include 1–3 sources actually retrieved through web search:
+
+“sources”: [
+{
+“title”: “…”,
+“url”: “…”,
+“published”: “YYYY-MM-DD or empty string”
+}
+]
+
+At least one source should directly support the main catalyst.
+
+Do not accept a candidate without usable source evidence.
+
+Display sources collapsed by default in each opportunity card.
+
+SCORING AND RANKING
+
+Rank candidates explicitly.
+
+Add these fields to every opportunity:
+
+* rank
+* overallScore: integer 0–100
+* portfolioFit: integer 1–5
+* diversificationBenefit: integer 1–5
+* sectorMacroFit: integer 1–5
+* timing: integer 1–5
+* riskReward: integer 1–5
+* scoreReason: short explanation
+* positionSizeSuitability: “Small|Medium|Large”
+* positionSizeReason: short explanation
+
+The size field is only an indication of how suitable the opportunity is for a smaller or larger portfolio allocation. It must not be presented as an order or exact buy instruction.
+
+Order candidates by overallScore from highest to lowest.
+
+Do not let confidence and priority act as unexplained duplicate ratings. Keep:
+
+* confidence = evidence quality and reliability
+* priority = how urgently the candidate deserves further research
+
+STRUCTURED CONTENT
+
+Replace the long free-text fields with more readable structures.
+
+For each candidate return:
+
+* company
+* ticker
+* exchange
+* sector
+* country
+* investmentThesis: 2–3 short items
+* whyNow: 1–3 short items
+* whyThisPortfolio: 1–3 short items
+* mainCatalyst
+* catalystDate: ISO date or empty string
+* mainRisk
+* scores
+* confidence
+* priority
+* positionSizeSuitability
+* positionSizeReason
+* companyAnalysisAvailable
+* sources
+
+Keep the Executive Summary concise.
+
+Update the JSON schema approximately as follows:
+
+{
+“executiveSummary”: “…”,
+“overallOpportunityLevel”: “High|Medium|Low”,
+“topOpportunities”: [
+{
+“rank”: 1,
+“company”: “…”,
+“ticker”: “…”,
+“exchange”: “…”,
+“sector”: “…”,
+“country”: “…”,
+“overallScore”: 0,
+“portfolioFit”: 1,
+“diversificationBenefit”: 1,
+“sectorMacroFit”: 1,
+“timing”: 1,
+“riskReward”: 1,
+“scoreReason”: “…”,
+“investmentThesis”: [”…”],
+“whyNow”: [”…”],
+“whyThisPortfolio”: [”…”],
+“mainCatalyst”: “…”,
+“catalystDate”: “YYYY-MM-DD or empty string”,
+“mainRisk”: “…”,
+“confidence”: “High|Medium|Low”,
+“priority”: “High|Medium|Low”,
+“positionSizeSuitability”: “Small|Medium|Large”,
+“positionSizeReason”: “…”,
+“companyAnalysisAvailable”: false,
+“sources”: [
+{
+“title”: “…”,
+“url”: “…”,
+“published”: “YYYY-MM-DD or empty string”
+}
+]
+}
+],
+“sectorIdeas”: [
+{
+“sector”: “…”,
+“reason”: “…”
+}
+],
+“thingsToResearch”: [”…”]
+}
+
+Update OpenAPI, generated types, Zod validation, backend and frontend together.
+
+UI
+
+Keep the compact collapsed cards.
+
+In the collapsed card show:
+
+* Rank
+* Company and ticker
+* Overall score
+* Priority
+* Confidence
+* Sector and country
+
+In the expanded card show:
+
+* Component scores
+* Investment thesis
+* Why now
+* Why this portfolio
+* Main catalyst and verified date
+* Main risk
+* Position-size suitability
+* Source evidence
+* Company-analysis status
+* Analyze company action when needed
+
+Make the badge labels clear in the UI. Do not show two unexplained “Medium” badges without labels or tooltips.
+
+CANDIDATE HISTORY
+
+Keep the latest Opportunity Finder result under:
+
+opportunity-finder
+
+Also maintain a compact history under:
+
+opportunity-finder-history
+
+Keep the latest 20 analyses only.
+
+For each history entry store:
+
+* timestamp
+* overallOpportunityLevel
+* candidate ticker
+* company
+* rank
+* overallScore
+* priority
+* confidence
+
+Do not duplicate complete prompts, responses or all descriptive text in history.
+
+This will later allow the application to show whether a candidate:
+
+* is new
+* remains recommended
+* moved up
+* moved down
+* disappeared from the list
+
+For now, add a small status badge where possible:
+
+* New
+* Up
+* Down
+* Unchanged
+
+SYSTEM LOG
+
+Keep logging concise.
+
+Log:
+
+* User manually started opportunity analysis
+* Warning when mock portfolio data is used
+* Warning when required context is unavailable
+* Opportunity analysis completed
+* Highest-ranked candidate, overall score and main portfolio-fit reason
+* Candidate changes since the previous analysis, for example “AMAT entered the list at rank 1”
+* Analysis failure
+
+Do not log every source, every candidate field, complete prompts or complete responses.
+
+CODE CLEANUP
+
+Remove the unused index parameter from OpportunityCard unless it is now used to show the candidate rank.
+
+Continue preserving the previous stored result when an update fails.
+
+Keep the existing debug icon and popup exactly as they are, including the complete OpenAI request, response and processing information.

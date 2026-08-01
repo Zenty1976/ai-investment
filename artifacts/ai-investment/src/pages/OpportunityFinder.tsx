@@ -2,13 +2,11 @@
  * Opportunity Finder Page
  *
  * Identifies the best investment opportunities for a 1–3 month horizon that
- * complement the existing portfolio. Calls OpenAI with web search enabled.
- *
- * Data flow: loads stored result from the Analysis Repository on mount.
- * Only calls OpenAI when the user explicitly presses "Update Analysis".
- * If an update fails, the previous successful result remains visible.
+ * complement and strengthen the existing portfolio. Ranked and scored across
+ * five dimensions. Includes source evidence and candidate history tracking.
  */
 import { useState } from "react"
+import { useLocation } from "wouter"
 import { useRunOpportunityAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
 import type { OpportunityAnalysis, OpportunityFinderOpportunity } from "@workspace/api-client-react"
 import {
@@ -21,8 +19,10 @@ import {
   Lightbulb,
   Search,
   TrendingUp,
+  ExternalLink,
   Copy,
   Check,
+  ArrowUpRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -75,58 +75,270 @@ function confidenceBadgeVariant(c: string): BadgeVariant {
   return "outline"
 }
 
+function scoreColor(score: number): string {
+  if (score >= 75) return "text-emerald-400"
+  if (score >= 55) return "text-blue-400"
+  if (score >= 35) return "text-amber-400"
+  return "text-rose-400"
+}
+
+function statusBadgeClass(status: string | undefined): string {
+  switch (status) {
+    case "New": return "bg-primary/15 text-primary"
+    case "Up": return "bg-emerald-500/15 text-emerald-400"
+    case "Down": return "bg-rose-500/15 text-rose-400"
+    case "Unchanged": return "bg-muted/30 text-muted-foreground/60"
+    default: return "hidden"
+  }
+}
+
+function statusLabel(status: string | undefined): string {
+  switch (status) {
+    case "Up": return "↑ Up"
+    case "Down": return "↓ Down"
+    default: return status ?? ""
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Score dots visualisation
+// ---------------------------------------------------------------------------
+
+function ScoreDots({ value, max = 5 }: { value: number; max?: number }) {
+  return (
+    <span className="flex items-center gap-0.5">
+      {Array.from({ length: max }, (_, i) => (
+        <span
+          key={i}
+          className={`h-1.5 w-1.5 rounded-full ${i < value ? "bg-primary/70" : "bg-muted/30"}`}
+        />
+      ))}
+    </span>
+  )
+}
+
+function ScoreRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[11px] text-muted-foreground/60 min-w-0">{label}</span>
+      <div className="flex items-center gap-1.5 shrink-0">
+        <ScoreDots value={value} />
+        <span className="text-[11px] font-mono text-foreground/50 w-3 text-right">{value}</span>
+      </div>
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Opportunity Card
 // ---------------------------------------------------------------------------
 
-function OpportunityCard({ opp, index }: { opp: OpportunityFinderOpportunity; index: number }) {
+function OpportunityCard({ opp }: { opp: OpportunityFinderOpportunity }) {
+  const [, navigate] = useLocation()
   const [expanded, setExpanded] = useState(false)
+  const [sourcesOpen, setSourcesOpen] = useState(false)
 
   return (
     <Card className="bg-card/40 border-card-border/40 overflow-hidden">
       <CardContent className="p-0">
-        {/* ── Header ── */}
+        {/* ── Collapsed header ── */}
         <button
           className="w-full text-left p-4 hover:bg-white/[0.02] transition-colors"
           onClick={() => setExpanded((v) => !v)}
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
+          <div className="flex items-start gap-3">
+            {/* Rank */}
+            <div className="shrink-0 mt-0.5">
+              <span className="text-[11px] font-mono font-bold text-muted-foreground/40">
+                #{opp.rank}
+              </span>
+            </div>
+
+            {/* Main info */}
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
+                {opp.status && opp.status !== "Unchanged" && (
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${statusBadgeClass(opp.status)}`}>
+                    {statusLabel(opp.status)}
+                  </span>
+                )}
                 <span className="text-sm font-bold text-foreground">{opp.company}</span>
-                <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted/30 px-1.5 py-0.5 rounded">
+                <span className="text-[11px] font-mono text-muted-foreground/50 bg-muted/20 px-1.5 py-0.5 rounded">
                   {opp.ticker}
                 </span>
+                {opp.exchange && (
+                  <span className="text-[10px] text-muted-foreground/40">{opp.exchange}</span>
+                )}
               </div>
-              <div className="flex items-center gap-2 flex-wrap text-[11px] text-muted-foreground/60">
+              <div className="flex items-center gap-2 flex-wrap text-[11px] text-muted-foreground/50">
                 <span>{opp.sector}</span>
                 <span className="text-muted-foreground/30">·</span>
                 <span>{opp.country}</span>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Badge variant={priorityBadgeVariant(opp.priority)} className="text-[10px]">
-                {opp.priority}
-              </Badge>
-              <Badge variant={confidenceBadgeVariant(opp.confidence)} className="text-[10px]">
-                {opp.confidence}
-              </Badge>
-              <ChevronRight
-                className={`h-3.5 w-3.5 text-muted-foreground/40 transition-transform duration-150 ${
-                  expanded ? "rotate-90" : ""
-                }`}
-              />
+
+            {/* Score + badges */}
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <span className={`text-lg font-bold font-mono tabular-nums leading-none ${scoreColor(opp.overallScore)}`}>
+                {opp.overallScore}
+              </span>
+              <div className="flex items-center gap-1">
+                <Badge variant={priorityBadgeVariant(opp.priority)} className="text-[10px] px-1.5">
+                  {opp.priority}
+                </Badge>
+                <Badge variant={confidenceBadgeVariant(opp.confidence)} className="text-[10px] px-1.5">
+                  {opp.confidence}
+                </Badge>
+                <ChevronRight
+                  className={`h-3.5 w-3.5 text-muted-foreground/30 transition-transform duration-150 ml-0.5 ${
+                    expanded ? "rotate-90" : ""
+                  }`}
+                />
+              </div>
             </div>
           </div>
         </button>
 
         {/* ── Expanded detail ── */}
         {expanded && (
-          <div className="border-t border-border/20 px-4 pb-4 pt-3 space-y-3">
-            <DetailRow label="Summary" value={opp.summary} />
-            <DetailRow label="Why it fits" value={opp.whyItFits} accent />
-            <DetailRow label="Main catalyst" value={opp.mainCatalyst} />
-            <DetailRow label="Main risk" value={opp.mainRisk} />
+          <div className="border-t border-border/20 px-4 pb-4 pt-3 space-y-4">
+
+            {/* Score breakdown */}
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-2">
+                Component Scores
+              </p>
+              <div className="space-y-1.5">
+                <ScoreRow label="Portfolio fit" value={opp.portfolioFit} />
+                <ScoreRow label="Diversification" value={opp.diversificationBenefit} />
+                <ScoreRow label="Sector / macro fit" value={opp.sectorMacroFit} />
+                <ScoreRow label="Timing" value={opp.timing} />
+                <ScoreRow label="Risk / reward" value={opp.riskReward} />
+              </div>
+              {opp.scoreReason && (
+                <p className="text-[11px] text-muted-foreground/55 mt-2 leading-relaxed italic">
+                  {opp.scoreReason}
+                </p>
+              )}
+            </div>
+
+            {/* Investment thesis */}
+            {opp.investmentThesis.length > 0 && (
+              <BulletSection label="Investment Thesis" items={opp.investmentThesis} accent />
+            )}
+
+            {/* Why now */}
+            {opp.whyNow.length > 0 && (
+              <BulletSection label="Why Now" items={opp.whyNow} />
+            )}
+
+            {/* Why this portfolio */}
+            {opp.whyThisPortfolio.length > 0 && (
+              <BulletSection label="Why This Portfolio" items={opp.whyThisPortfolio} />
+            )}
+
+            {/* Catalyst + date */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                  Main Catalyst
+                </p>
+                <p className="text-xs text-foreground/80 leading-relaxed">{opp.mainCatalyst}</p>
+                {opp.catalystDate && (
+                  <p className="text-[11px] text-primary/60 mt-0.5 font-mono">{opp.catalystDate}</p>
+                )}
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                  Main Risk
+                </p>
+                <p className="text-xs text-foreground/70 leading-relaxed">{opp.mainRisk}</p>
+              </div>
+            </div>
+
+            {/* Position size */}
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                Position Size Indication
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs font-semibold text-foreground/80">
+                  {opp.positionSizeSuitability}
+                </span>
+                <span className="text-[11px] text-muted-foreground/55 leading-relaxed">
+                  — {opp.positionSizeReason}
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/35 mt-0.5 italic">
+                Indication only — not a buy instruction.
+              </p>
+            </div>
+
+            {/* Sources */}
+            {opp.sources.length > 0 && (
+              <div>
+                <button
+                  onClick={() => setSourcesOpen((v) => !v)}
+                  className="flex items-center gap-1 text-[11px] text-muted-foreground/60 hover:text-foreground transition-colors"
+                >
+                  <ChevronRight
+                    className={`h-3 w-3 transition-transform duration-150 ${sourcesOpen ? "rotate-90" : ""}`}
+                  />
+                  Sources ({opp.sources.length})
+                </button>
+                {sourcesOpen && (
+                  <ul className="mt-2 space-y-1.5">
+                    {opp.sources.map((src, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-[11px]">
+                        <ExternalLink className="h-3 w-3 text-muted-foreground/30 shrink-0 mt-0.5" />
+                        <div className="min-w-0">
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary/70 hover:text-primary underline underline-offset-2 break-all"
+                          >
+                            {src.title}
+                          </a>
+                          {src.published && (
+                            <span className="text-muted-foreground/40 ml-1.5">{src.published}</span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {/* Company analysis status */}
+            <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/15">
+              {opp.companyAnalysisAvailable ? (
+                <p className="text-[11px] text-emerald-400/80 flex items-center gap-1">
+                  <Check className="h-3 w-3" />
+                  Company analysis available
+                </p>
+              ) : (
+                <p className="text-[11px] text-muted-foreground/50 flex items-center gap-1">
+                  <Info className="h-3 w-3" />
+                  No saved company analysis
+                </p>
+              )}
+              {!opp.companyAnalysisAvailable && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11px] gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(`/companies?ticker=${encodeURIComponent(opp.ticker)}`)
+                  }}
+                >
+                  Analyze company
+                  <ArrowUpRight className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </CardContent>
@@ -134,23 +346,22 @@ function OpportunityCard({ opp, index }: { opp: OpportunityFinderOpportunity; in
   )
 }
 
-function DetailRow({
-  label,
-  value,
-  accent,
-}: {
-  label: string
-  value: string
-  accent?: boolean
-}) {
+function BulletSection({ label, items, accent }: { label: string; items: string[]; accent?: boolean }) {
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-0.5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1.5">
         {label}
       </p>
-      <p className={`text-xs leading-relaxed ${accent ? "text-foreground/90" : "text-foreground/70"}`}>
-        {value}
-      </p>
+      <ul className="space-y-1">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-1.5">
+            <span className="text-muted-foreground/30 shrink-0 mt-0.5 text-xs">•</span>
+            <span className={`text-xs leading-relaxed ${accent ? "text-foreground/85" : "text-foreground/70"}`}>
+              {item}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -217,21 +428,16 @@ export default function OpportunityFinder() {
             Opportunity Finder
           </h1>
           <p className="text-xs text-muted-foreground/60">
-            Identifies investment opportunities that complement your portfolio for the next 1–3 months.
+            Identifies and ranks investment opportunities that complement your portfolio for the next 1–3 months.
           </p>
         </div>
         <Card className="bg-card/40 border-card-border/40">
           <CardContent className="p-6 flex flex-col items-center text-center gap-3">
             <Lightbulb className="h-8 w-8 text-muted-foreground/20" />
             <p className="text-sm text-muted-foreground/60">
-              No analysis yet. Run the opportunity finder to identify what your portfolio is missing.
+              No analysis yet. Run the opportunity finder to identify ranked candidates with evidence and scoring.
             </p>
-            <Button
-              size="sm"
-              onClick={() => runAnalysis()}
-              disabled={isPending}
-              className="mt-2"
-            >
+            <Button size="sm" onClick={() => runAnalysis()} disabled={isPending} className="mt-2">
               <RefreshCw className={`h-3.5 w-3.5 mr-2 ${isPending ? "animate-spin" : ""}`} />
               {isPending ? "Analysing…" : "Find Opportunities"}
             </Button>
@@ -262,11 +468,7 @@ export default function OpportunityFinder() {
       )}
 
       {/* ── Header card ── */}
-      <Card
-        className={`bg-card/60 overflow-hidden transition-colors duration-300 ${
-          isPending ? "border-primary/30" : "border-card-border/50"
-        }`}
-      >
+      <Card className={`bg-card/60 overflow-hidden transition-colors duration-300 ${isPending ? "border-primary/30" : "border-card-border/50"}`}>
         {isPending && <div className="h-0.5 bg-primary/70 animate-pulse" />}
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
@@ -333,20 +535,23 @@ export default function OpportunityFinder() {
         </CardContent>
       </Card>
 
-      {/* ── Top Opportunities ── */}
+      {/* ── Badge legend ── */}
       {analysis.topOpportunities.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground px-1">
-            Top Opportunities
-            <span className="text-muted-foreground/40 ml-1.5 font-normal">
-              — click to expand
-            </span>
-          </p>
-          {analysis.topOpportunities.map((opp, i) => (
-            <OpportunityCard key={i} opp={opp} index={i} />
-          ))}
+        <div className="flex items-center gap-3 px-1 text-[10px] text-muted-foreground/40">
+          <span className="font-bold uppercase tracking-widest">Top Opportunities</span>
+          <span className="flex items-center gap-1">
+            score <span className="font-mono">0–100</span>
+          </span>
+          <span>Priority badge</span>
+          <span>Confidence badge</span>
+          <span className="ml-auto italic">click card to expand</span>
         </div>
       )}
+
+      {/* ── Opportunity cards ── */}
+      {analysis.topOpportunities.map((opp) => (
+        <OpportunityCard key={opp.ticker} opp={opp} />
+      ))}
 
       {/* ── Sector Ideas ── */}
       {analysis.sectorIdeas.length > 0 && (
@@ -358,10 +563,10 @@ export default function OpportunityFinder() {
             <div className="space-y-2.5">
               {analysis.sectorIdeas.map((idea, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mt-0.5" />
+                  <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 mt-0.5" />
                   <div>
                     <span className="text-xs font-semibold text-foreground/80">{idea.sector}</span>
-                    <span className="text-xs text-muted-foreground/60"> — {idea.reason}</span>
+                    <span className="text-xs text-muted-foreground/55"> — {idea.reason}</span>
                   </div>
                 </div>
               ))}
@@ -379,9 +584,9 @@ export default function OpportunityFinder() {
             </p>
             <ul className="space-y-2">
               {analysis.thingsToResearch.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                  <Search className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mt-0.5" />
-                  {item}
+                <li key={i} className="flex items-start gap-2">
+                  <Search className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 mt-0.5" />
+                  <span className="text-xs text-foreground/75">{item}</span>
                 </li>
               ))}
             </ul>
@@ -399,7 +604,9 @@ export default function OpportunityFinder() {
   )
 }
 
-// ── Debug Dialog ──────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Debug Dialog (identical pattern to all other modules)
+// ---------------------------------------------------------------------------
 
 interface DebugDialogProps {
   open: boolean
@@ -445,23 +652,15 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                   copyText={inputMessages.map((m) => `[${m.role}]\n${m.content}`).join("\n\n")}
                 >
                   <div className="space-y-1.5 mb-3">
-                    <DebugRow
-                      label="API"
-                      value={debugInfo.webSearchUsed ? "Responses API + web_search" : "Chat Completions"}
-                    />
+                    <DebugRow label="API" value={debugInfo.webSearchUsed ? "Responses API + web_search" : "Chat Completions"} />
                     <DebugRow label="Model" value={String(debugInfo.request.model ?? "—")} />
                     <DebugRow label="Temperature" value={String(debugInfo.request.temperature ?? "—")} />
-                    <DebugRow
-                      label="Max tokens"
-                      value={String(debugInfo.request.max_tokens ?? debugInfo.request.max_output_tokens ?? "—")}
-                    />
+                    <DebugRow label="Max tokens" value={String(debugInfo.request.max_tokens ?? debugInfo.request.max_output_tokens ?? "—")} />
                     <DebugRow label="Called at" value={debugInfo.calledAt} />
                   </div>
                   {inputMessages.map((m, i) => (
                     <div key={i} className="mb-2">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
-                        [{m.role}]
-                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">[{m.role}]</p>
                       <pre className="whitespace-pre-wrap text-foreground/80 bg-background/60 rounded p-2 border border-border/40 break-all">
                         {m.content}
                       </pre>
@@ -477,12 +676,7 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                   })()}
                 >
                   <div className="mb-3 flex flex-wrap gap-4 text-muted-foreground">
-                    <span>
-                      Web search:{" "}
-                      <span className={debugInfo.webSearchUsed ? "text-emerald-400" : "text-rose-400"}>
-                        {debugInfo.webSearchUsed ? "Yes ✓" : "No ✗"}
-                      </span>
-                    </span>
+                    <span>Web search: <span className={debugInfo.webSearchUsed ? "text-emerald-400" : "text-rose-400"}>{debugInfo.webSearchUsed ? "Yes ✓" : "No ✗"}</span></span>
                     <span>Prompt tokens: <span className="text-foreground">{debugInfo.usage.prompt_tokens ?? "—"}</span></span>
                     <span>Completion tokens: <span className="text-foreground">{debugInfo.usage.completion_tokens ?? "—"}</span></span>
                     <span>Total: <span className="text-foreground">{debugInfo.usage.total_tokens ?? "—"}</span></span>
@@ -505,47 +699,22 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
   )
 }
 
-function DebugSection({
-  label,
-  color,
-  copyText,
-  children,
-}: {
-  label: string
-  color: string
-  copyText?: string
-  children: React.ReactNode
+function DebugSection({ label, color, copyText, children }: {
+  label: string; color: string; copyText?: string; children: React.ReactNode
 }) {
   const [copied, setCopied] = useState(false)
-  const handleCopy = () => {
-    if (!copyText) return
-    navigator.clipboard.writeText(copyText).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1800)
-    })
-  }
-  const border =
-    color === "blue" ? "border-blue-500/30"
-    : color === "emerald" ? "border-emerald-500/30"
-    : "border-rose-500/30"
-  const text =
-    color === "blue" ? "text-blue-400"
-    : color === "emerald" ? "text-emerald-400"
-    : "text-rose-400"
+  const border = color === "blue" ? "border-blue-500/30" : color === "emerald" ? "border-emerald-500/30" : "border-rose-500/30"
+  const text = color === "blue" ? "text-blue-400" : color === "emerald" ? "text-emerald-400" : "text-rose-400"
   return (
     <div className={`border ${border} rounded p-3`}>
       <div className="flex items-center justify-between mb-2">
         <p className={`text-[10px] font-bold uppercase tracking-widest ${text}`}>{label}</p>
         {copyText && (
           <button
-            onClick={handleCopy}
+            onClick={() => { navigator.clipboard.writeText(copyText).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800) }) }}
             className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-white/5"
           >
-            {copied ? (
-              <><Check className="h-3 w-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></>
-            ) : (
-              <><Copy className="h-3 w-3" /><span>Copy</span></>
-            )}
+            {copied ? <><Check className="h-3 w-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></> : <><Copy className="h-3 w-3" /><span>Copy</span></>}
           </button>
         )}
       </div>

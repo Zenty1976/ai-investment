@@ -11,6 +11,7 @@
  * only calls OpenAI when the user explicitly presses "Update Analysis".
  */
 import { useState, useRef, useEffect } from "react"
+import { useSearch } from "wouter"
 import {
   useRunCompanyAnalysis,
   useGetRepositoryEntry,
@@ -390,9 +391,18 @@ function SectionCard({ title, children }: { title: string; children: React.React
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CompanyMonitor() {
+  // Pre-fill ticker from URL param (e.g. /companies?ticker=AAPL from Opportunity Finder)
+  const search = useSearch()
+  const urlTicker = new URLSearchParams(search).get("ticker")?.toUpperCase() ?? null
+
   // Company selection state
-  const [activeTicker, setActiveTicker] = useState<string | null>(null)
+  const [activeTicker, setActiveTicker] = useState<string | null>(urlTicker)
   const [activeCompanyName, setActiveCompanyName] = useState<string>("")
+
+  useEffect(() => {
+    if (urlTicker && !activeTicker) setActiveTicker(urlTicker)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTicker])
 
   // UI state
   const [debugInfo, setDebugInfo] = useState<AiDebugInfo | null>(null)
