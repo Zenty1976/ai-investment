@@ -254,10 +254,12 @@ async function buildSnapshot(
       const key = acct.AccountKey ?? "";
       if (!key) return {};
       try {
-        return await saxoGet<SaxoBalance>(
+        const bal = await saxoGet<SaxoBalance>(
           `${base}/port/v1/balances?AccountKey=${encodeURIComponent(key)}`,
           accessToken
         );
+        logger.info({ accountKey: key, rawBalance: bal }, "[portfolio-manager] Raw balance response from Saxo");
+        return bal;
       } catch (err) {
         logger.warn({ err, accountKey: key }, "[portfolio-manager] Failed to fetch balance for account");
         return {};
