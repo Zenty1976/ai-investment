@@ -1,0 +1,129 @@
+Create a new shared Settings module for external integrations.
+
+This should be implemented before Portfolio Manager because the Saxo Bank connection will later be used by several modules.
+
+Use the existing application architecture and visual style.
+
+Create:
+
+* A separate backend settings/integration service
+* A separate frontend Settings page
+* A Settings menu item in the existing sidebar
+* A dedicated Saxo Bank section inside Settings
+
+Do not place Saxo authentication logic inside Portfolio Manager or another analysis module.
+
+SAXO BANK INTEGRATION
+
+Implement Saxo Bank OpenAPI authentication using the OAuth Authorization Code flow.
+
+For technical inspiration, inspect the previous public project:
+
+https://github.com/Zenty1976/ai-trading
+
+Reuse useful Saxo authentication ideas from that project, but adapt them cleanly to the current architecture.
+
+Do not copy unrelated trading or dashboard code.
+
+CONFIGURATION
+
+The Saxo settings page should contain:
+
+* Environment: Simulation or Live
+* App Key
+* App Secret
+* Redirect URL
+* Connection status
+* Login button
+* Logout button
+
+App Secret and tokens must only be handled by the backend and must never be exposed in frontend code or logs.
+
+Store App Key and App Secret using server-side environment secrets when possible.
+
+The UI may show whether they are configured, but must never display the complete secret.
+
+REDIRECT URL
+
+Automatically detect the application’s current browser origin and use a dedicated callback path, for example:
+
+/api/saxo/callback
+
+Display the detected redirect URL in the Settings page.
+
+Allow the user to manually override it because Saxo requires the redirect URL to match a URL registered for the Saxo application.
+
+Clearly show this message beside the field:
+
+“This exact redirect URL must also be registered in the Saxo developer portal.”
+
+Do not assume that Saxo will accept a newly generated Replit URL automatically.
+
+Use the configured redirect URL consistently for both the authorization request and the token exchange.
+
+LOGIN FLOW
+
+When the user presses Login to Saxo:
+
+* Generate a secure random OAuth state value on the backend.
+* Store it temporarily.
+* Redirect the browser to the correct Saxo authorization URL.
+* Include client_id, response_type=code, state and redirect_uri.
+* After Saxo redirects back, verify the state value.
+* Exchange the authorization code for access and refresh tokens on the backend.
+* Never expose the App Secret or refresh token to the browser.
+* Redirect the user back to the Settings page after completion.
+* Show whether the connection succeeded or failed.
+
+TOKEN HANDLING
+
+Store the access token, refresh token and expiry information securely on the server.
+
+Automatically refresh the access token when possible before it expires.
+
+If refreshing fails, mark the connection as disconnected and require login again.
+
+Never write tokens to frontend storage, source files, Git or debug output.
+
+PERSISTENCE
+
+Use a separate Saxo connection store for configuration and tokens.
+
+Do not store Saxo credentials or tokens inside the Analysis Repository because they are not analysis results.
+
+For this first version, simple file-backed server-side persistence is acceptable, consistent with the project’s current lightweight persistence approach.
+
+The credential/token file must be excluded from Git.
+
+UI
+
+Follow the same dark layout and component style as the existing modules.
+
+The Saxo section should show:
+
+* Current environment
+* Detected redirect URL
+* Configured redirect URL
+* Connected or disconnected status
+* Token expiry time, without displaying tokens
+* Login to Saxo button when disconnected
+* Logout button when connected
+* A short error message if authentication fails
+
+SCOPE
+
+Do not create Portfolio Manager yet.
+
+Do not fetch positions, balances or prices yet.
+
+Do not place trades.
+
+Do not add OpenAI to this module.
+
+Do not add another external provider.
+
+This step should only establish a reusable and secure Saxo Bank connection that future modules can use.
+
+Ensure the existing analysis modules remain unchanged.
+
+One practical note: during development, changing Replit URLs will continue to be awkward because Saxo validates redirect URLs. A stable deployment URL or custom domain will eventually make authentication substantially easier. Saxo also provides developer endpoints for managing redirect URIs, but I would not automate that in this first version; it adds permissions and complexity to what should initially be a simple login integration.
