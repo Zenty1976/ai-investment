@@ -433,6 +433,8 @@ export interface PortfolioPosition {
 export interface PortfolioSnapshot {
   updatedAt: string;
   environment: SaxoEnvironment;
+  /** Base currency of the account (e.g. "DKK"), for future Portfolio Analyzer use */
+  baseCurrency: string;
   positions: PortfolioPosition[];
 }
 

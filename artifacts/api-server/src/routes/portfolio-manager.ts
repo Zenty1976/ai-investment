@@ -92,7 +92,28 @@ export interface PortfolioPosition {
 export interface PortfolioSnapshot {
   updatedAt: string;
   environment: "sim" | "live";
+  /** Base currency of the account (e.g. "DKK"), for future Portfolio Analyzer use */
+  baseCurrency: string;
   positions: PortfolioPosition[];
+}
+
+// ── Fetch account base currency ───────────────────────────────────────────────
+
+async function fetchBaseCurrency(
+  accessToken: string,
+  env: "sim" | "live"
+): Promise<string> {
+  try {
+    const base = saxoBaseUrl(env);
+    const res = await fetch(`${base}/port/v1/accounts/me`, {
+      headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
+    });
+    if (!res.ok) return "";
+    const data = (await res.json()) as { Data?: Array<{ Currency?: string }> };
+    return data.Data?.[0]?.Currency ?? "";
+  } catch {
+    return "";
+  }
 }
 
 // ── Fetch all pages from Saxo ─────────────────────────────────────────────────
@@ -140,7 +161,14 @@ function normalise(raw: SaxoNetPosition): PortfolioPosition {
 
   const quantity = base.Amount ?? 0;
   const currentPrice = view.CurrentPrice ?? 0;
-  const exposure = view.ExposureInBaseCurrency ?? view.Exposure ?? quantity * currentPrice;
+  // Prefer Exposure (in instrument currency) if available, otherwise calculate
+  const marketValue =
+    view.Exposure !== undefined ? view.Exposure : quantity * currentPrice;
+  // Prefer ExposureInBaseCurrency if available, otherwise fall back to marketValue
+  const marketValueBaseCurrency =
+    view.ExposureInBaseCurrency !== undefined
+      ? view.ExposureInBaseCurrency
+      : marketValue;
 
   return {
     id: raw.NetPositionId ?? crypto.randomUUID(),
@@ -154,8 +182,8 @@ function normalise(raw: SaxoNetPosition): PortfolioPosition {
     direction: base.OpeningDirection ?? "",
     averageOpenPrice: view.AverageOpenPrice ?? 0,
     currentPrice,
-    marketValue: view.Exposure ?? quantity * currentPrice,
-    marketValueBaseCurrency: exposure,
+    marketValue,
+    marketValueBaseCurrency,
     profitLoss: view.ProfitLossOnTrade ?? 0,
     dayChangePercent: view.InstrumentPriceDayPercentChange ?? 0,
     priceDelayMinutes: view.CurrentPriceDelayMinutes ?? 0,
@@ -194,13 +222,17 @@ portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
   const env = saxoStore.getEnvironment();
 
   try {
-    const rawPositions = await fetchAllNetPositions(accessToken, env);
-    logger.info({ count: rawPositions.length, env }, "[portfolio-manager] Fetched positions from Saxo");
+    const [rawPositions, baseCurrency] = await Promise.all([
+      fetchAllNetPositions(accessToken, env),
+      fetchBaseCurrency(accessToken, env),
+    ]);
+    logger.info({ count: rawPositions.length, env, baseCurrency }, "[portfolio-manager] Fetched positions from Saxo");
 
     const positions = rawPositions.map(normalise);
     const snapshot: PortfolioSnapshot = {
       updatedAt: new Date().toISOString(),
       environment: env,
+      baseCurrency,
       positions,
     };
 

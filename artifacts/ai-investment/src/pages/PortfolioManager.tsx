@@ -104,7 +104,7 @@ function SummaryStrip({ snapshot }: { snapshot: PortfolioSnapshot }) {
           mono: false,
         },
         {
-          label: "Total market value",
+          label: "Total value (base currency)",
           value: fmt(totalValue),
           mono: true,
         },
@@ -192,7 +192,9 @@ function PositionsTable({ snapshot }: { snapshot: PortfolioSnapshot }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
-            {snapshot.positions.map((pos) => (
+            {[...snapshot.positions]
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((pos) => (
               <tr
                 key={pos.id}
                 className="hover:bg-muted/20 transition-colors"
@@ -280,12 +282,15 @@ function PositionsTable({ snapshot }: { snapshot: PortfolioSnapshot }) {
 
                 {/* Market open */}
                 <td className="px-3 py-2.5 text-center">
-                  <span
-                    className={`inline-block w-1.5 h-1.5 rounded-full ${
-                      pos.isMarketOpen ? "bg-emerald-400" : "bg-muted-foreground/30"
-                    }`}
-                    title={pos.isMarketOpen ? "Market open" : "Market closed"}
-                  />
+                  {pos.isMarketOpen ? (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-400/25 rounded px-1.5 py-0.5">
+                      Open
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/40 bg-muted/20 border border-border/20 rounded px-1.5 py-0.5">
+                      Closed
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

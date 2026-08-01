@@ -231,6 +231,7 @@ export const PortfolioPosition = zod.object({
 export const PortfolioSnapshot = zod.object({
   "updatedAt": zod.string(),
   "environment": zod.enum(['sim', 'live']),
+  "baseCurrency": zod.string(),
   "positions": zod.array(PortfolioPosition),
 })
 
