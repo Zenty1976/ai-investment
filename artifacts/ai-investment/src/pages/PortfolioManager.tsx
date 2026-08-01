@@ -113,7 +113,7 @@ function SummaryStrip({
             Total value (base currency)
           </p>
           <p className="text-lg font-bold leading-tight font-mono tabular-nums text-foreground">
-            {fmt(snapshot.totalValue ?? 0)}
+            {snapshot.totalValue != null ? fmt(snapshot.totalValue) : <span className="text-muted-foreground/40 font-sans text-sm">—</span>}
           </p>
         </CardContent>
       </Card>
@@ -151,7 +151,7 @@ function SummaryStrip({
               : <ChevronDown className="h-3 w-3 text-muted-foreground/30" />}
           </div>
           <p className="text-lg font-bold leading-tight font-mono tabular-nums text-foreground">
-            {fmt(snapshot.totalAvailableCash ?? 0)}
+            {snapshot.totalAvailableCash != null ? fmt(snapshot.totalAvailableCash) : <span className="text-muted-foreground/40 font-sans text-sm">—</span>}
           </p>
           <p className="text-[10px] text-muted-foreground/40 mt-0.5">
             Click to {cashExpanded ? "collapse" : "expand"} accounts
