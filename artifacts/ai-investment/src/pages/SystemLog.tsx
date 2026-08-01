@@ -53,6 +53,7 @@ export default function SystemLog() {
   const [search, setSearch] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [confirmClear, setConfirmClear] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const userScrolledUpRef = useRef(false);
@@ -109,6 +110,25 @@ export default function SystemLog() {
     el.scrollTop = el.scrollHeight;
   }, [filtered]);
 
+  const copyLogs = () => {
+    const lines = filtered.map((e) => {
+      const ts = formatTimestamp(e.timestamp);
+      const lvl = (LEVEL_CONFIG[e.level]?.label ?? e.level).toUpperCase().padEnd(5);
+      let line = `[${ts}] [${lvl}] [${e.module}] ${e.message}`;
+      if (e.details != null) {
+        const detail = typeof e.details === 'string'
+          ? e.details
+          : JSON.stringify(e.details, null, 2);
+        line += '\n' + detail.split('\n').map((l) => '  ' + l).join('\n');
+      }
+      return line;
+    });
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const toggleLevel = (level: SystemLogLevel) => {
     setLevelFilter((prev) =>
       prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level]
@@ -155,12 +175,22 @@ export default function SystemLog() {
             </button>
           </div>
         ) : (
-          <button
-            className="px-3 py-1.5 rounded text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors"
-            onClick={() => setConfirmClear(true)}
-          >
-            Clear log
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-3 py-1.5 rounded text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors"
+              onClick={copyLogs}
+              disabled={filtered.length === 0}
+              title="Copy visible log lines to clipboard"
+            >
+              {copied ? '✓ Copied' : 'Copy logs'}
+            </button>
+            <button
+              className="px-3 py-1.5 rounded text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors"
+              onClick={() => setConfirmClear(true)}
+            >
+              Clear log
+            </button>
+          </div>
         )}
       </div>
 
