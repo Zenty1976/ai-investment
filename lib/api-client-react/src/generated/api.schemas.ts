@@ -450,8 +450,10 @@ export interface PortfolioSnapshot {
   environment: SaxoEnvironment;
   /** Base currency of the primary account */
   baseCurrency: string;
-  totalValue: number;
-  totalAvailableCash: number;
+  /** null when the client-level field was absent (never a cross-currency sum) */
+  totalValue: number | null;
+  /** null when the client-level field was absent */
+  totalAvailableCash: number | null;
   totalUnrealizedProfitLoss: number;
   accounts: PortfolioAccount[];
   /** True when this snapshot was built from mock data, not the real Saxo API */

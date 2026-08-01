@@ -137,11 +137,17 @@ export interface PortfolioSnapshot {
   environment: "sim" | "live";
   /** Base currency of the primary account */
   baseCurrency: string;
-  /** Sum of accountValue across all accounts */
-  totalValue: number;
-  /** Sum of availableCash across all accounts */
-  totalAvailableCash: number;
-  /** Sum of unrealizedProfitLoss across all accounts */
+  /**
+   * Client-level total value in base currency, taken from the Saxo client-level
+   * balance. null when the field was absent — never a cross-currency sum.
+   */
+  totalValue: number | null;
+  /**
+   * Client-level available cash in base currency, taken from the Saxo
+   * client-level balance. null when the field was absent.
+   */
+  totalAvailableCash: number | null;
+  /** Sum of per-position P/L converted to base currency via the FX ratio. */
   totalUnrealizedProfitLoss: number;
   accounts: PortfolioAccount[];
   /** True when this snapshot was built from mock data, not the real Saxo API */
@@ -172,7 +178,7 @@ async function saxoGetAll<T>(
   const all: T[] = [];
   let url: string | undefined = firstUrl;
   while (url) {
-    const data = await saxoGet<SaxoListResponse<T>>(url, accessToken);
+    const data: SaxoListResponse<T> = await saxoGet<SaxoListResponse<T>>(url, accessToken);
     if (Array.isArray(data.Data)) all.push(...data.Data);
     url = data.__next ?? undefined;
   }
@@ -310,20 +316,25 @@ async function buildSnapshot(
 
   // 3. Portfolio totals come from the client-level balance (Fix 2):
   //    cross-currency account values must not be summed directly.
-  const baseCurrency      = clientBalance.Currency ?? saxoAccounts[0]?.Currency ?? "";
-  const totalValue        = clientBalance.TotalValue ?? accounts.reduce((s, a) => s + a.accountValue, 0);
-  const totalAvailableCash =
+  const baseCurrency       = clientBalance.Currency ?? saxoAccounts[0]?.Currency ?? "";
+  // Use client-level fields only — summing across accounts is wrong when
+  // accounts are denominated in different currencies.
+  const totalValue: number | null         = clientBalance.TotalValue ?? null;
+  const totalAvailableCash: number | null =
     clientBalance.CashAvailableForTrading ??
     clientBalance.MarginAvailableForTrading ??
     clientBalance.CashBalance ??
-    accounts.reduce((s, a) => s + a.availableCash, 0);
+    null;
   // Roll up P/L to base currency by using the implied FX rate Saxo already
   // provides: ExposureInBaseCurrency / Exposure gives the rate for each position.
   // Summing account.unrealizedProfitLoss directly is wrong when accounts are in
   // different currencies — it would mix DKK and USD (or any other pair).
   const totalUnrealizedProfitLoss = accounts.reduce((total, acct) => {
     return total + acct.positions.reduce((sum, pos) => {
-      if (pos.marketValue === 0) return sum + pos.profitLoss;
+      // marketValue === 0 means no FX ratio can be derived; exclude this
+      // position rather than adding an account-currency value to a base-currency
+      // total. The position-level profitLoss stays unchanged in its own currency.
+      if (pos.marketValue === 0) return sum;
       const fxRate = pos.marketValueBaseCurrency / pos.marketValue;
       return sum + pos.profitLoss * fxRate;
     }, 0);
@@ -441,12 +452,12 @@ portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
 
     const snapshot = mockMode
       ? buildSnapshotFromMock(env)
-      : await buildSnapshot(accessToken, env);
+      : await buildSnapshot(accessToken!, env);
     const totalPositions = snapshot.accounts.reduce((s, a) => s + a.positions.length, 0);
     if (totalPositions === 0) {
       systemLog.logWarning("Portfolio Manager", "Saxo returned no open positions");
     }
-    const cashStr = snapshot.totalAvailableCash.toLocaleString("da-DK", { maximumFractionDigits: 0 });
+    const cashStr = (snapshot.totalAvailableCash ?? 0).toLocaleString("da-DK", { maximumFractionDigits: 0 });
     if (mockMode) {
       systemLog.logInfo("Portfolio Manager", `Mock portfolio loaded: ${snapshot.accounts.length} account${snapshot.accounts.length !== 1 ? "s" : ""}, ${totalPositions} position${totalPositions !== 1 ? "s" : ""}`);
     } else {
