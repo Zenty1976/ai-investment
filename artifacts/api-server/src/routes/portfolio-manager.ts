@@ -46,6 +46,8 @@ interface SaxoBalance {
   UnrealizedPositionsValue?: number;
   /** Some Saxo environments expose this instead */
   InitialMarginAvailable?: number;
+  /** Base currency of the account/client (present on client-level balance) */
+  Currency?: string;
 }
 
 interface SaxoNetPosition {
@@ -217,95 +219,105 @@ async function buildSnapshot(
   const base = saxoBaseUrl(env);
   const fieldGroups = "NetPositionBase,NetPositionView,DisplayAndFormat,ExchangeInfo";
 
-  // 1. Fetch all accounts
-  const saxoAccounts = await saxoGetAll<SaxoAccount>(
-    `${base}/port/v1/accounts/me`,
-    accessToken
-  );
+  // 1. Fetch all accounts + client-level balance in parallel
+  const [saxoAccounts, clientBalance] = await Promise.all([
+    saxoGetAll<SaxoAccount>(`${base}/port/v1/accounts/me`, accessToken),
+    saxoGet<SaxoBalance>(`${base}/port/v1/balances/me`, accessToken).catch((err) => {
+      logger.warn({ err }, "[portfolio-manager] Failed to fetch client-level balance");
+      return {} as SaxoBalance;
+    }),
+  ]);
 
   if (saxoAccounts.length === 0) {
     return {
       updatedAt: new Date().toISOString(),
       environment: env,
-      baseCurrency: "",
-      totalValue: 0,
-      totalAvailableCash: 0,
+      baseCurrency: clientBalance.Currency ?? "",
+      totalValue: clientBalance.TotalValue ?? 0,
+      totalAvailableCash:
+        clientBalance.CashAvailableForTrading ??
+        clientBalance.MarginAvailableForTrading ??
+        clientBalance.CashBalance ??
+        0,
       totalUnrealizedProfitLoss: 0,
       accounts: [],
     };
   }
 
-  // 2. Fetch all net positions once (one call, then group by accountKey)
-  const allRawPositions = await saxoGetAll<SaxoNetPosition>(
-    `${base}/port/v1/netpositions/me?FieldGroups=${encodeURIComponent(fieldGroups)}`,
-    accessToken
-  );
+  // 2. For each account, fetch its positions and balance in parallel.
+  //    Positions are fetched per-account using AccountKey + ClientKey so
+  //    they are directly assigned — no post-hoc grouping by AccountId.
+  const accounts: PortfolioAccount[] = await Promise.all(
+    saxoAccounts.map(async (acct): Promise<PortfolioAccount> => {
+      const accountKey = acct.AccountKey ?? "";
+      const clientKey  = acct.ClientKey  ?? "";
 
-  // Group positions by the AccountId stored on the position (= AccountKey of the account)
-  const positionsByAccountKey = new Map<string, SaxoNetPosition[]>();
-  for (const p of allRawPositions) {
-    const key = p.NetPositionBase?.AccountId ?? "";
-    if (!positionsByAccountKey.has(key)) positionsByAccountKey.set(key, []);
-    positionsByAccountKey.get(key)!.push(p);
-  }
+      const positionsUrl = new URL(`${base}/port/v1/netpositions/me`);
+      positionsUrl.searchParams.set("FieldGroups", fieldGroups);
+      if (accountKey) positionsUrl.searchParams.set("AccountKey", accountKey);
+      if (clientKey)  positionsUrl.searchParams.set("ClientKey",  clientKey);
 
-  // 3. Fetch balance for each account in parallel
-  const balances = await Promise.all(
-    saxoAccounts.map(async (acct): Promise<SaxoBalance> => {
-      const key = acct.AccountKey ?? "";
-      if (!key) return {};
-      try {
-        const clientKey = acct.ClientKey ?? "";
-        const balUrl = clientKey
-          ? `${base}/port/v1/balances?AccountKey=${encodeURIComponent(key)}&ClientKey=${encodeURIComponent(clientKey)}`
-          : `${base}/port/v1/balances?AccountKey=${encodeURIComponent(key)}`;
-        return await saxoGet<SaxoBalance>(balUrl, accessToken);
-      } catch (err) {
-        logger.warn({ err, accountKey: key }, "[portfolio-manager] Failed to fetch balance for account");
-        return {};
-      }
+      const balUrl = new URL(`${base}/port/v1/balances`);
+      if (accountKey) balUrl.searchParams.set("AccountKey", accountKey);
+      if (clientKey)  balUrl.searchParams.set("ClientKey",  clientKey);
+
+      const [rawPositions, bal] = await Promise.all([
+        saxoGetAll<SaxoNetPosition>(positionsUrl.toString(), accessToken).catch((err) => {
+          logger.warn({ err, accountKey }, "[portfolio-manager] Failed to fetch positions for account");
+          return [] as SaxoNetPosition[];
+        }),
+        saxoGet<SaxoBalance>(balUrl.toString(), accessToken).catch((err) => {
+          logger.warn({ err, accountKey }, "[portfolio-manager] Failed to fetch balance for account");
+          return {} as SaxoBalance;
+        }),
+      ]);
+
+      const positions = rawPositions.map((p) => normalisePosition(p, accountKey));
+
+      // Fix 3: unrealizedProfitLoss = sum of positions' ProfitLossOnTrade only —
+      // UnrealizedPositionsValue includes position market value, not just P/L.
+      const unrealizedProfitLoss = positions.reduce((s, p) => s + p.profitLoss, 0);
+
+      const availableCash =
+        bal.CashAvailableForTrading ??
+        bal.MarginAvailableForTrading ??
+        bal.CashBalance ??
+        0;
+
+      return {
+        accountKey,
+        accountId:           acct.AccountId ?? "",
+        accountName:         acct.DisplayName ?? acct.AccountId ?? accountKey,
+        accountType:         acct.AccountType ?? "",
+        currency:            acct.Currency ?? "",
+        availableCash,
+        accountValue:        bal.TotalValue ?? 0,
+        unrealizedProfitLoss,
+        positions,
+      };
     })
   );
 
-  // 4. Assemble per-account objects
-  const accounts: PortfolioAccount[] = saxoAccounts.map((acct, i) => {
-    const accountKey = acct.AccountKey ?? "";
-    const bal = balances[i];
+  // 3. Portfolio totals come from the client-level balance (Fix 2):
+  //    cross-currency account values must not be summed directly.
+  const baseCurrency      = clientBalance.Currency ?? saxoAccounts[0]?.Currency ?? "";
+  const totalValue        = clientBalance.TotalValue ?? accounts.reduce((s, a) => s + a.accountValue, 0);
+  const totalAvailableCash =
+    clientBalance.CashAvailableForTrading ??
+    clientBalance.MarginAvailableForTrading ??
+    clientBalance.CashBalance ??
+    accounts.reduce((s, a) => s + a.availableCash, 0);
+  // Sum ProfitLossOnTrade across all positions for the aggregate P/L total
+  // (consistent with Fix 3; Saxo converts each position to base currency in ExposureInBaseCurrency,
+  //  but ProfitLossOnTrade is already in base currency for the client-level roll-up).
+  const totalUnrealizedProfitLoss = accounts.reduce(
+    (s, a) => s + a.unrealizedProfitLoss,
+    0
+  );
 
-    const rawPositions = positionsByAccountKey.get(accountKey) ?? [];
-    const positions = rawPositions.map((p) => normalisePosition(p, accountKey));
-
-    const availableCash =
-      bal.CashAvailableForTrading ??
-      bal.MarginAvailableForTrading ??
-      bal.CashBalance ??
-      0;
-
-    const unrealizedProfitLoss =
-      bal.UnrealizedPositionsValue ??
-      positions.reduce((s, p) => s + p.profitLoss, 0);
-
-    return {
-      accountKey,
-      accountId:            acct.AccountId ?? "",
-      accountName:          acct.DisplayName ?? acct.AccountId ?? accountKey,
-      accountType:          acct.AccountType ?? "",
-      currency:             acct.Currency ?? "",
-      availableCash,
-      accountValue:         bal.TotalValue ?? 0,
-      unrealizedProfitLoss,
-      positions,
-    };
-  });
-
-  // 5. Compute portfolio totals
-  const totalValue               = accounts.reduce((s, a) => s + a.accountValue, 0);
-  const totalAvailableCash       = accounts.reduce((s, a) => s + a.availableCash, 0);
-  const totalUnrealizedProfitLoss = accounts.reduce((s, a) => s + a.unrealizedProfitLoss, 0);
-  const baseCurrency             = saxoAccounts[0]?.Currency ?? "";
-
+  const totalPositions = accounts.reduce((s, a) => s + a.positions.length, 0);
   logger.info(
-    { accounts: accounts.length, positions: allRawPositions.length, env },
+    { accounts: accounts.length, positions: totalPositions, env },
     "[portfolio-manager] Snapshot built"
   );
 
