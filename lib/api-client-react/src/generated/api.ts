@@ -29,6 +29,7 @@ import type {
   NewsAnalysis,
   OpportunityAnalysis,
   PortfolioAnalysis,
+  RiskAnalysis,
   PortfolioRepositoryEntry,
   RepositoryEntry,
   SaxoConfigBody,
@@ -975,6 +976,28 @@ export const useRunPortfolioAnalysis = (options?: {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {};
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof runPortfolioAnalysis>>, void> = () =>
     runPortfolioAnalysis(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── Risk Analyzer ─────────────────────────────────────────────────────────────
+
+export const runRiskAnalysis = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<RiskAnalysis>('/api/risk-analyzer/analyze', {
+    method: 'POST',
+    ...options,
+  });
+
+export const useRunRiskAnalysis = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof runRiskAnalysis>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof runRiskAnalysis>>, ErrorType<unknown>, void> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runRiskAnalysis>>, void> = () =>
+    runRiskAnalysis(requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 

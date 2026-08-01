@@ -594,6 +594,40 @@ export interface OpportunityAnalysis {
   analysisDuration: number;
 }
 
+export interface RiskScoreDriver {
+  factor: string;
+  impact: 'Positive' | 'Negative';
+  reason: string;
+}
+
+export interface RiskItem {
+  title: string;
+  category: 'Company' | 'Sector' | 'Macro' | 'Currency' | 'Liquidity' | 'Event' | 'Geopolitical' | 'Diversification';
+  probability: 'Low' | 'Medium' | 'High';
+  severity: 'Low' | 'Medium' | 'High';
+  timeHorizon: 'Immediate' | 'Weeks' | 'Months';
+  reason: string;
+  monitor: string;
+}
+
+export interface RiskAnalysis {
+  executiveSummary: string;
+  overallRiskLevel: 'Low' | 'Moderate' | 'High';
+  mainConclusion: {
+    title: string;
+    reason: string;
+  };
+  riskScore: number;
+  scoreDrivers: RiskScoreDriver[];
+  topRisks: RiskItem[];
+  portfolioWeaknesses: string[];
+  portfolioStrengths: string[];
+  watchClosely: string[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SaxoConfigBody {

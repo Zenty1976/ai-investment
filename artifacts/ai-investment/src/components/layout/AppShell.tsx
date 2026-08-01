@@ -41,7 +41,7 @@ const NAV_ITEMS = [
   { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: true  },
   { label: "SECTORS",     href: "/sectors",   icon: PieChart,     enabled: true  },
   { label: "COMPANIES",  href: "/companies", icon: Building2,    enabled: true  },
-  { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: false },
+  { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: true  },
   { label: "ANALYZER",    href: "/analyse",      icon: BarChart2,  enabled: true  },
   { label: "OPPORTUNITY", href: "/opportunities", icon: Lightbulb,  enabled: true  },
   { label: "LOG & HIST.", href: "/log",           icon: History,    enabled: true  },

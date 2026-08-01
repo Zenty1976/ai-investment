@@ -1,0 +1,298 @@
+Create a new module called "Risk Analyzer".
+
+Follow exactly the same architecture, layout and coding style as the existing modules.
+
+Create:
+
+- A separate backend module
+- A separate frontend page
+- A new sidebar menu item called "Risk Analyzer"
+
+Reuse:
+
+- Shared OpenAI service
+- Shared Analysis Repository
+- Shared System Log
+- Existing persistence model
+
+IMPORTANT
+
+Reuse exactly the same OpenAI debug dialog used by Portfolio Analyzer and Opportunity Finder.
+
+The user must be able to inspect:
+
+- complete prompt
+- complete OpenAI response
+- processing information
+
+using the same debug icon and popup.
+
+--------------------------------------------------
+Purpose
+--------------------------------------------------
+
+The purpose of this module is to identify, explain and prioritize the risks affecting the current portfolio over the next 1-3 months.
+
+This module must focus on risk.
+
+It must not recommend trades.
+
+It must explain:
+
+- what could happen
+- why it matters
+- how likely it is
+- how severe it could become
+
+--------------------------------------------------
+Data
+--------------------------------------------------
+
+Read the latest stored data from:
+
+- Portfolio Manager
+- Portfolio Analyzer
+- Opportunity Finder
+- Market Monitor
+- Event Monitor
+- News Monitor
+- Sector Monitor
+
+Use Company Monitor analyses for held companies whenever available.
+
+Only use the Analysis Repository.
+
+Never call Saxo.
+
+Never communicate directly with other modules.
+
+--------------------------------------------------
+OpenAI
+--------------------------------------------------
+
+Use the existing OpenAI Responses API with Web Search enabled.
+
+Use the stored analyses as the primary analytical context.
+
+Use web search only to verify recent developments or identify important new information.
+
+--------------------------------------------------
+Prompt
+--------------------------------------------------
+
+Tell OpenAI:
+
+You are an experienced institutional portfolio risk manager.
+
+Analyse the current portfolio over the next 1-3 months.
+
+Identify and prioritize the most important risks.
+
+Evaluate:
+
+- concentration risk
+- company-specific risk
+- sector risk
+- macroeconomic risk
+- geopolitical risk
+- event risk
+- liquidity risk
+- currency risk
+- opportunity cost
+- portfolio diversification
+- correlation between holdings
+
+For every important risk explain:
+
+- why it exists
+- probability
+- potential impact
+- what should be monitored
+
+Do not recommend buying or selling.
+
+Use language such as:
+
+Monitor
+Review
+Prepare for
+Watch
+
+Clearly distinguish:
+
+- facts
+- expectations
+- analytical judgement
+
+Avoid generic investment language.
+
+Return JSON only.
+
+--------------------------------------------------
+JSON
+--------------------------------------------------
+
+Return:
+
+{
+  "executiveSummary":"...",
+  "overallRiskLevel":"Low|Moderate|High",
+
+  "mainConclusion":{
+    "title":"...",
+    "reason":"..."
+  },
+
+  "riskScore":0,
+
+  "scoreDrivers":[
+    {
+      "factor":"...",
+      "impact":"Positive|Negative",
+      "reason":"..."
+    }
+  ],
+
+  "topRisks":[
+    {
+      "title":"...",
+      "category":"Company|Sector|Macro|Currency|Liquidity|Event|Geopolitical|Diversification",
+      "probability":"Low|Medium|High",
+      "severity":"Low|Medium|High",
+      "timeHorizon":"Immediate|Weeks|Months",
+      "reason":"...",
+      "monitor":"..."
+    }
+  ],
+
+  "portfolioWeaknesses":[
+    "..."
+  ],
+
+  "portfolioStrengths":[
+    "..."
+  ],
+
+  "watchClosely":[
+    "..."
+  ]
+}
+
+Return approximately five top risks.
+
+Validate JSON before storing.
+
+Store under:
+
+risk-analyzer
+
+--------------------------------------------------
+Frontend
+--------------------------------------------------
+
+Reuse the existing layout.
+
+Display:
+
+Main Conclusion
+
+Executive Summary
+
+Overall Risk Level
+
+Risk Score
+
+Score Drivers
+
+Top Risks
+
+Portfolio Strengths
+
+Portfolio Weaknesses
+
+Watch Closely
+
+Each risk should be shown as a card.
+
+Show:
+
+- Title
+- Category
+- Probability
+- Severity
+- Time Horizon
+
+Expand to show:
+
+- Reason
+- What should be monitored
+
+Use badges for:
+
+- Probability
+- Severity
+- Time Horizon
+
+--------------------------------------------------
+History
+--------------------------------------------------
+
+Create:
+
+risk-analyzer-history
+
+Keep the latest 20 analyses.
+
+Store:
+
+- timestamp
+- overallRiskLevel
+- riskScore
+- top three risks
+- overall conclusion
+
+--------------------------------------------------
+System Log
+--------------------------------------------------
+
+Keep logging concise.
+
+Examples:
+
+user:
+"User manually started risk analysis"
+
+warning:
+"Risk analysis performed using mock portfolio data"
+
+warning:
+"Company Monitor analysis missing for one or more holdings"
+
+info:
+"Risk analysis completed"
+
+internal:
+"Highest current risk: Novo Nordisk earnings guidance"
+
+internal:
+"Risk score increased from 42 to 56 because upcoming company events increased short-term uncertainty."
+
+internal:
+"New macro risk detected: Higher probability of energy-driven inflation."
+
+error:
+"Risk analysis failed"
+
+Do not log technical processing steps.
+
+Do not log prompts or complete OpenAI responses.
+
+--------------------------------------------------
+Goal
+--------------------------------------------------
+
+This module should answer:
+
+"What are the biggest risks facing this portfolio over the next 1-3 months, how likely are they, how serious could they become, and what should I monitor?"
+
+It should explain risk clearly and objectively without making trading decisions.

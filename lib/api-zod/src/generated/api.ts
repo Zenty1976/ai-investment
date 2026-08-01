@@ -379,6 +379,35 @@ export const RunOpportunityFinderResponse = zod.object({
 })
 
 
+export const RunRiskAnalyzerResponse = zod.object({
+  "executiveSummary": zod.string(),
+  "overallRiskLevel": zod.enum(['Low', 'Moderate', 'High']),
+  "mainConclusion": zod.object({
+    "title": zod.string(),
+    "reason": zod.string()
+  }),
+  "riskScore": zod.number().int().min(0).max(100),
+  "scoreDrivers": zod.array(zod.object({
+    "factor": zod.string(),
+    "impact": zod.enum(['Positive', 'Negative']),
+    "reason": zod.string()
+  })).min(1),
+  "topRisks": zod.array(zod.object({
+    "title": zod.string(),
+    "category": zod.enum(['Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
+    "probability": zod.enum(['Low', 'Medium', 'High']),
+    "severity": zod.enum(['Low', 'Medium', 'High']),
+    "timeHorizon": zod.enum(['Immediate', 'Weeks', 'Months']),
+    "reason": zod.string(),
+    "monitor": zod.string()
+  })).min(1),
+  "portfolioWeaknesses": zod.array(zod.string()),
+  "portfolioStrengths": zod.array(zod.string()),
+  "watchClosely": zod.array(zod.string()),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
 /**
  * @summary Get a specific module's latest result
  */
