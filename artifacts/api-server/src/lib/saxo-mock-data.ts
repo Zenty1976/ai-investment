@@ -21,7 +21,8 @@
 const CLIENT_KEY  = "MOCK-CLIENT-0001";
 const ACCT_DKK    = "MOCK-DK-00001";
 const ACCT_USD    = "MOCK-US-00001";
-const FX_USD_DKK  = 6.85;   // approximate 1 USD → DKK for ExposureInBaseCurrency
+/** Approximate 1 USD → DKK rate used for ExposureInBaseCurrency and client-level roll-ups */
+export const FX_USD_DKK = 6.85;
 
 // ── Account list ─────────────────────────────────────────────────────────────
 
@@ -48,11 +49,16 @@ export const mockAccounts = [
 
 // ── Client-level balance (DKK base) ──────────────────────────────────────────
 //
-// 446 000 DKK account + 27 969 USD × 6.85 ≈ 641 726 DKK  → rounded to 642 000
+// DKK account TotalValue:   446 000 DKK
+// USD account TotalValue:    28 000 USD × 6.85 = 191 800 DKK
+// ─────────────────────────────────────────────────────────
+// TotalValue:               637 800 DKK
+//
+// Cash:  305 000 DKK + 5 000 USD × 6.85 = 339 250 DKK
 
 export const mockClientBalance = {
-  TotalValue:               642_000,
-  CashAvailableForTrading:  339_250,   // 305 000 DKK + 5 000 USD × 6.85
+  TotalValue:               637_800,
+  CashAvailableForTrading:  339_250,
   CashBalance:              339_250,
   Currency:                 "DKK",
 };

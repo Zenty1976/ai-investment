@@ -20,6 +20,7 @@ import {
   mockClientBalance,
   mockAccountBalances,
   mockAccountPositions,
+  FX_USD_DKK,
 } from "../lib/saxo-mock-data.js";
 
 const portfolioRouter = Router();
@@ -374,10 +375,17 @@ function buildSnapshotFromMock(env: "sim" | "live"): PortfolioSnapshot {
     };
   });
 
-  const baseCurrency           = mockClientBalance.Currency;
-  const totalValue             = mockClientBalance.TotalValue;
-  const totalAvailableCash     = mockClientBalance.CashAvailableForTrading;
-  const totalUnrealizedProfitLoss = accounts.reduce((s, a) => s + a.unrealizedProfitLoss, 0);
+  const baseCurrency       = mockClientBalance.Currency;
+  const totalValue         = mockClientBalance.TotalValue;
+  const totalAvailableCash = mockClientBalance.CashAvailableForTrading;
+
+  // Convert each account's unrealised P/L to the client base currency (DKK)
+  // before summing — never add DKK and USD directly.
+  const totalUnrealizedProfitLoss = accounts.reduce((s, a) => {
+    const acctCurrency = mockAccounts.find((m) => m.AccountKey === a.accountKey)?.Currency ?? baseCurrency;
+    const rate = acctCurrency === baseCurrency ? 1 : FX_USD_DKK;
+    return s + a.unrealizedProfitLoss * rate;
+  }, 0);
 
   return {
     updatedAt:               new Date().toISOString(),
@@ -401,21 +409,25 @@ portfolioRouter.get("/portfolio-manager", (_req, res) => {
 // ── POST /portfolio-manager/update ────────────────────────────────────────────
 
 portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
-  if (!saxoStore.isConnected()) {
-    res.status(401).json({
-      error: "Not connected to Saxo Bank. Go to Settings and log in first.",
-    });
-    return;
+  const mockMode = saxoStore.isMockMode();
+
+  // Saxo authentication is only required when not using mock data.
+  if (!mockMode) {
+    if (!saxoStore.isConnected()) {
+      res.status(401).json({
+        error: "Not connected to Saxo Bank. Go to Settings and log in first.",
+      });
+      return;
+    }
+    const token = saxoStore.getAccessToken();
+    if (!token) {
+      res.status(401).json({ error: "No access token available." });
+      return;
+    }
   }
 
   const accessToken = saxoStore.getAccessToken();
-  if (!accessToken) {
-    res.status(401).json({ error: "No access token available." });
-    return;
-  }
-
   const env = saxoStore.getEnvironment();
-  const mockMode = saxoStore.isMockMode();
   systemLog.logUser("Portfolio Manager", "User manually started portfolio update");
 
   try {

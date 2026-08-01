@@ -644,27 +644,98 @@
   "portfolio-manager": {
     "moduleName": "portfolio-manager",
     "result": {
-      "updatedAt": "2026-08-01T16:33:14.056Z",
+      "updatedAt": "2026-08-01T16:59:04.951Z",
       "environment": "sim",
-      "baseCurrency": "EUR",
-      "totalValue": 1000000,
-      "totalAvailableCash": 1000000,
-      "totalUnrealizedProfitLoss": 0,
+      "baseCurrency": "DKK",
+      "totalValue": 637800,
+      "totalAvailableCash": 339250,
+      "totalUnrealizedProfitLoss": 17100.65,
       "accounts": [
         {
-          "accountKey": "cnIeRMLftzcSxezCR8cipQ==",
-          "accountId": "20885406",
-          "accountName": "20885406",
+          "accountKey": "MOCK-DK-00001",
+          "accountId": "12345678",
+          "accountName": "Aktiekonto (DKK)",
           "accountType": "Normal",
-          "currency": "EUR",
-          "availableCash": 1000000,
-          "accountValue": 1000000,
-          "unrealizedProfitLoss": 0,
-          "positions": []
+          "currency": "DKK",
+          "availableCash": 305000,
+          "accountValue": 446000,
+          "unrealizedProfitLoss": 5120,
+          "positions": [
+            {
+              "id": "MOCK-POS-NOVO-001",
+              "name": "Novo Nordisk B",
+              "symbol": "NOVO B",
+              "assetType": "Stock",
+              "exchange": "Copenhagen Stock Exchange",
+              "currency": "DKK",
+              "accountKey": "MOCK-DK-00001",
+              "quantity": 200,
+              "direction": "Buy",
+              "averageOpenPrice": 680,
+              "currentPrice": 705.6,
+              "marketValue": 141120,
+              "marketValueBaseCurrency": 141120,
+              "profitLoss": 5120,
+              "dayChangePercent": 1.23,
+              "priceDelayMinutes": 0,
+              "isMarketOpen": true
+            }
+          ]
+        },
+        {
+          "accountKey": "MOCK-US-00001",
+          "accountId": "12345679",
+          "accountName": "Foreign Securities (USD)",
+          "accountType": "Normal",
+          "currency": "USD",
+          "availableCash": 5000,
+          "accountValue": 28000,
+          "unrealizedProfitLoss": 1749,
+          "positions": [
+            {
+              "id": "MOCK-POS-MSFT-001",
+              "name": "Microsoft Corp",
+              "symbol": "MSFT",
+              "assetType": "Stock",
+              "exchange": "NASDAQ",
+              "currency": "USD",
+              "accountKey": "MOCK-US-00001",
+              "quantity": 50,
+              "direction": "Buy",
+              "averageOpenPrice": 381.2,
+              "currentPrice": 420.5,
+              "marketValue": 21025,
+              "marketValueBaseCurrency": 144021,
+              "profitLoss": 1965,
+              "dayChangePercent": 0.87,
+              "priceDelayMinutes": 0,
+              "isMarketOpen": true
+            },
+            {
+              "id": "MOCK-POS-SERV-001",
+              "name": "Serve Robotics Inc",
+              "symbol": "SERV",
+              "assetType": "Stock",
+              "exchange": "NASDAQ",
+              "currency": "USD",
+              "accountKey": "MOCK-US-00001",
+              "quantity": 300,
+              "direction": "Buy",
+              "averageOpenPrice": 7.2,
+              "currentPrice": 6.48,
+              "marketValue": 1944,
+              "marketValueBaseCurrency": 13316,
+              "profitLoss": -216,
+              "dayChangePercent": -2.15,
+              "priceDelayMinutes": 15,
+              "isMarketOpen": false
+            }
+          ]
         }
-      ]
+      ],
+      "isMockData": true
     },
     "createdAt": "2026-08-01T15:14:57.937Z",
-    "updatedAt": "2026-08-01T16:33:14.093Z"
+    "updatedAt": "2026-08-01T16:59:04.968Z"
   }
 }
