@@ -178,7 +178,13 @@ class CompanyIdentityStore {
     // ── 3. Explicit saved alias ───────────────────────────────────────────────
     const saved = this.data.aliases[symUpper];
     if (saved) {
-      return { key: saved.companyMonitorKey, method: saved.matchedBy };
+      const stillExists = candidates.some((c) => c.key === saved.companyMonitorKey);
+      if (stillExists) {
+        return { key: saved.companyMonitorKey, method: saved.matchedBy };
+      }
+      // Target no longer exists — remove stale alias and fall through
+      delete this.data.aliases[symUpper];
+      this.persist();
     }
 
     // ── 4. Exact normalised ticker ────────────────────────────────────────────
