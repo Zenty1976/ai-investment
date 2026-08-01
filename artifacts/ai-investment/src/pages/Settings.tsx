@@ -435,13 +435,15 @@ function SaxoBankSection() {
               }
             })()}
           </div>
-          <a
-            href={debugAuthUrl}
-            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline mt-1"
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { window.location.href = debugAuthUrl }}
+            className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 mt-1"
           >
-            <ExternalLink className="h-3 w-3" />
-            Åbn Saxo-login
-          </a>
+            <LogIn className="h-3.5 w-3.5" />
+            Gå til Saxo-login
+          </Button>
         </div>
       )}
 
