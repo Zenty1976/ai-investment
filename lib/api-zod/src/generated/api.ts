@@ -187,6 +187,41 @@ export const RunCompanyAnalysisResponse = zod.object({
 
 
 /**
+ * @summary Get Saxo Bank connection status
+ */
+export const GetSaxoStatusResponse = zod.object({
+  "configured": zod.boolean(),
+  "appKeyConfigured": zod.boolean(),
+  "appSecretConfigured": zod.boolean(),
+  "connected": zod.boolean(),
+  "environment": zod.enum(['sim', 'live']),
+  "redirectUrlOverride": zod.string().optional(),
+  "expiresAt": zod.string().optional(),
+  "connectedAt": zod.string().optional(),
+  "error": zod.string().optional(),
+})
+
+/**
+ * @summary Save non-secret Saxo config (redirect URL override)
+ */
+export const SaxoConfigBody = zod.object({
+  "redirectUrlOverride": zod.string().optional(),
+})
+
+/**
+ * @summary Initiate Saxo OAuth login
+ */
+export const SaxoLoginBody = zod.object({
+  "redirectUrl": zod.string(),
+  "returnUrl": zod.string(),
+})
+
+export const SaxoLoginResponse = zod.object({
+  "authUrl": zod.string(),
+})
+
+
+/**
  * Returns every module's latest analysis result, ordered by most recently updated
  * @summary List all stored module results
  */

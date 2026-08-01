@@ -6,6 +6,7 @@ import newsMonitorRouter from "./news-monitor";
 import sectorMonitorRouter from "./sector-monitor";
 import companyMonitorRouter from "./company-monitor";
 import repositoryRouter from "./repository";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(newsMonitorRouter);
 router.use(sectorMonitorRouter);
 router.use(companyMonitorRouter);
 router.use(repositoryRouter);
+router.use(settingsRouter);
 
 export default router;

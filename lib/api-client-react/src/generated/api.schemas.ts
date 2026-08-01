@@ -386,3 +386,32 @@ export interface CompanyAnalysisBody {
   companyName?: string;
 }
 
+// ── Saxo Bank connection ─────────────────────────────────────────────────────
+
+export type SaxoEnvironment = 'sim' | 'live';
+
+export interface SaxoStatus {
+  configured: boolean;
+  appKeyConfigured: boolean;
+  appSecretConfigured: boolean;
+  connected: boolean;
+  environment: SaxoEnvironment;
+  redirectUrlOverride?: string;
+  expiresAt?: string;
+  connectedAt?: string;
+  error?: string;
+}
+
+export interface SaxoConfigBody {
+  redirectUrlOverride?: string;
+}
+
+export interface SaxoLoginBody {
+  redirectUrl: string;
+  returnUrl: string;
+}
+
+export interface SaxoLoginResponse {
+  authUrl: string;
+}
+

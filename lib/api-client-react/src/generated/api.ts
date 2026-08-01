@@ -28,6 +28,10 @@ import type {
   MarketAnalysis,
   NewsAnalysis,
   RepositoryEntry,
+  SaxoConfigBody,
+  SaxoLoginBody,
+  SaxoLoginResponse,
+  SaxoStatus,
   SectorAnalysis
 } from './api.schemas';
 
@@ -641,8 +645,152 @@ export function useGetRepositoryEntry<TData = Awaited<ReturnType<typeof getRepos
 }
 
 
+// ── Saxo Bank settings ────────────────────────────────────────────────────────
 
+export const getSaxoStatus = (
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<SaxoStatus>(`/api/settings/saxo/status`, {
+    method: 'GET',
+    ...options,
+    signal,
+  });
+};
 
+export const getGetSaxoStatusQueryKey = () => [`/api/settings/saxo/status`] as const;
+
+export const getGetSaxoStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSaxoStatus>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getSaxoStatus>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetSaxoStatusQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSaxoStatus>>> = ({ signal }) =>
+    getSaxoStatus(requestOptions, signal);
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSaxoStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSaxoStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getSaxoStatus>>>;
+export type GetSaxoStatusQueryError = ErrorType<unknown>;
+
+export function useGetSaxoStatus<
+  TData = Awaited<ReturnType<typeof getSaxoStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getSaxoStatus>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSaxoStatusQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+// ── useSaxoSaveConfig ─────────────────────────────────────────────────────────
+
+export const saxoSaveConfig = (
+  saxoConfigBody: SaxoConfigBody,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<SaxoStatus>(`/api/settings/saxo/config`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(saxoConfigBody),
+    ...options,
+  });
+};
+
+export const useSaxoSaveConfig = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saxoSaveConfig>>,
+    ErrorType<unknown>,
+    SaxoConfigBody
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saxoSaveConfig>>,
+  ErrorType<unknown>,
+  SaxoConfigBody
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saxoSaveConfig>>,
+    SaxoConfigBody
+  > = (vars) => saxoSaveConfig(vars, requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── useSaxoLogin ──────────────────────────────────────────────────────────────
+
+export const saxoLogin = (
+  saxoLoginBody: SaxoLoginBody,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<SaxoLoginResponse>(`/api/settings/saxo/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(saxoLoginBody),
+    ...options,
+  });
+};
+
+export const useSaxoLogin = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saxoLogin>>,
+    ErrorType<unknown>,
+    SaxoLoginBody
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saxoLogin>>,
+  ErrorType<unknown>,
+  SaxoLoginBody
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saxoLogin>>,
+    SaxoLoginBody
+  > = (vars) => saxoLogin(vars, requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── useSaxoLogout ─────────────────────────────────────────────────────────────
+
+export const saxoLogout = (options?: SecondParameter<typeof customFetch>) => {
+  return customFetch<SaxoStatus>(`/api/settings/saxo/logout`, {
+    method: 'POST',
+    ...options,
+  });
+};
+
+export const useSaxoLogout = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saxoLogout>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saxoLogout>>,
+  ErrorType<unknown>,
+  void
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saxoLogout>>,
+    void
+  > = () => saxoLogout(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
 
 
 

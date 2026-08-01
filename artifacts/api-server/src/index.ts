@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { maybeSaxoRefresh } from "./routes/settings";
 
 const rawPort = process.env["PORT"];
 
@@ -23,3 +24,11 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
 });
+
+// Check every 5 minutes whether the Saxo access token needs refreshing.
+// Does nothing when not connected or when the token is not yet close to expiry.
+setInterval(() => {
+  maybeSaxoRefresh().catch((err) => {
+    logger.error({ err }, "[settings/saxo] Unexpected error in refresh interval");
+  });
+}, 5 * 60 * 1000);
