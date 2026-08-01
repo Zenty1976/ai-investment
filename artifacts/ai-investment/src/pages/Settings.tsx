@@ -112,6 +112,7 @@ function SaxoBankSection() {
   // Redirect URL override — local edit state, saved explicitly
   const [redirectOverride, setRedirectOverride] = useState("")
   const [overrideSaved, setOverrideSaved] = useState(false)
+  const [debugAuthUrl, setDebugAuthUrl] = useState<string | null>(null)
 
   // Populate from server on first load
   useEffect(() => {
@@ -146,10 +147,11 @@ function SaxoBankSection() {
   }
 
   const handleLogin = () => {
+    setDebugAuthUrl(null)
     const returnUrl = window.location.href.split("?")[0]
     loginMutation.mutate(
       { redirectUrl: activeRedirectUrl, returnUrl },
-      { onSuccess: (data) => { window.location.href = data.authUrl } }
+      { onSuccess: (data) => { setDebugAuthUrl(data.authUrl) } }
     )
   }
 
@@ -387,6 +389,61 @@ function SaxoBankSection() {
           </span>
         )}
       </div>
+
+      {/* Debug: show generated auth URL before redirecting */}
+      {loginMutation.isError && (
+        <div className="flex items-start gap-2 text-xs text-destructive/80 bg-destructive/8 border border-destructive/20 rounded-md px-3 py-2 mt-2">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+          <span>Login-fejl: {String((loginMutation.error as Error)?.message ?? loginMutation.error)}</span>
+        </div>
+      )}
+      {debugAuthUrl && (
+        <div className="mt-2 space-y-2 bg-muted/20 border border-border/40 rounded-md p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            Debug — genereret auth-URL
+          </p>
+          <p className="text-[11px] text-muted-foreground/50 leading-snug">
+            Klik på linket for at åbne Saxo-login, eller kopiér URL'en og inspicér parametrene.
+          </p>
+          <div className="flex items-start gap-2 min-w-0">
+            <code className="text-[10px] text-primary/70 bg-background/60 border border-border/30 rounded px-2 py-1.5 break-all flex-1 leading-relaxed">
+              {debugAuthUrl}
+            </code>
+            <CopyButton text={debugAuthUrl} />
+          </div>
+          {/* Parse and show individual params for easier debugging */}
+          <div className="space-y-1 pt-1 border-t border-border/20">
+            {(() => {
+              try {
+                const u = new URL(debugAuthUrl)
+                const params = Array.from(u.searchParams.entries())
+                return (
+                  <>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/40 mb-1">
+                      Parametre
+                    </p>
+                    {params.map(([k, v]) => (
+                      <div key={k} className="flex gap-2 text-[10px]">
+                        <span className="text-muted-foreground/50 w-28 shrink-0">{k}</span>
+                        <span className="text-foreground/60 break-all">{v}</span>
+                      </div>
+                    ))}
+                  </>
+                )
+              } catch {
+                return null
+              }
+            })()}
+          </div>
+          <a
+            href={debugAuthUrl}
+            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline mt-1"
+          >
+            <ExternalLink className="h-3 w-3" />
+            Åbn Saxo-login
+          </a>
+        </div>
+      )}
 
     </SectionCard>
   )
