@@ -438,6 +438,33 @@ export const RunRiskAnalyzerResponse = zod.object({
   "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
 })
 
+// ── Market Alerts ─────────────────────────────────────────────────────────────
+
+export const RunMarketAlertsResponse = zod.object({
+  "overallAlertLevel": zod.enum(['High', 'Medium', 'Low']),
+  "executiveSummary": zod.string(),
+  "headline": zod.string(),
+  "alerts": zod.array(zod.object({
+    "title": zod.string(),
+    "category": zod.enum(['Portfolio', 'Company', 'Macro', 'Sector', 'Event', 'Geopolitical', 'Currency']),
+    "importance": zod.enum(['High', 'Medium', 'Low']),
+    "isNew": zod.boolean(),
+    "requiresAttention": zod.boolean(),
+    "affectedHoldings": zod.array(zod.string()),
+    "summary": zod.string(),
+    "whyItMatters": zod.string(),
+    "recommendedAttention": zod.enum(['Monitor', 'Review', 'Prepare', 'Watch']),
+    "sourceType": zod.enum(['Web', 'NewsMonitor', 'CompanyMonitor', 'EventMonitor']),
+    /** Server-populated: change status vs previous analysis */
+    "status": zod.enum(['New', 'Updated', 'Unchanged']).optional()
+  })).max(8),
+  "thingsToWatch": zod.array(zod.string()),
+  "nothingImportantChanged": zod.boolean(),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
 /**
  * @summary Get a specific module's latest result
  */

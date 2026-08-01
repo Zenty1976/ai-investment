@@ -672,6 +672,42 @@ export interface RiskAnalysis {
   analysisDuration: number;
 }
 
+// ── Market Alerts ─────────────────────────────────────────────────────────────
+
+export type AlertCategory = 'Portfolio' | 'Company' | 'Macro' | 'Sector' | 'Event' | 'Geopolitical' | 'Currency';
+export type AlertImportance = 'High' | 'Medium' | 'Low';
+export type AlertStatus = 'New' | 'Updated' | 'Unchanged';
+export type AlertAttention = 'Monitor' | 'Review' | 'Prepare' | 'Watch';
+export type AlertSourceType = 'Web' | 'NewsMonitor' | 'CompanyMonitor' | 'EventMonitor';
+export type AlertLevel = 'High' | 'Medium' | 'Low';
+
+export interface MarketAlert {
+  title: string;
+  category: AlertCategory;
+  importance: AlertImportance;
+  isNew: boolean;
+  requiresAttention: boolean;
+  affectedHoldings: string[];
+  summary: string;
+  whyItMatters: string;
+  recommendedAttention: AlertAttention;
+  sourceType: AlertSourceType;
+  /** Server-populated: change status vs previous analysis */
+  status?: AlertStatus;
+}
+
+export interface MarketAlertsAnalysis {
+  overallAlertLevel: AlertLevel;
+  executiveSummary: string;
+  headline: string;
+  alerts: MarketAlert[];
+  thingsToWatch: string[];
+  nothingImportantChanged: boolean;
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SaxoConfigBody {

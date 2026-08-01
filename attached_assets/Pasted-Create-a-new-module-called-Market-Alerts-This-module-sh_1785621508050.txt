@@ -1,0 +1,246 @@
+Create a new module called:
+
+Market Alerts
+
+This module should not replace News Monitor or Event Monitor.
+
+Instead it acts as the user's "attention manager".
+
+Its only purpose is to identify important developments that require attention since the previous update.
+
+Keep the same architecture as the other modules:
+
+- Repository persistence
+- Manual Update Analysis button
+- History (latest 20 analyses)
+- Same OpenAI debug icon and popup
+- Same OpenAI request/response viewer
+- Same processing information dialog
+- Same retry behaviour
+- Same repository logging style
+
+--------------------------------------------------
+PURPOSE
+--------------------------------------------------
+
+The module should answer one question:
+
+"What has changed since I last looked?"
+
+Do NOT summarize the market.
+
+Do NOT repeat yesterday's news.
+
+Do NOT provide a daily newsletter.
+
+Only surface information that is likely to require attention.
+
+--------------------------------------------------
+OPENAI INPUT
+--------------------------------------------------
+
+Supply:
+
+Current UTC time
+
+Current Portfolio
+
+Portfolio Analyzer summary
+
+Risk Analyzer summary
+
+Opportunity Finder summary
+
+Market Monitor
+
+Sector Monitor
+
+Event Monitor
+
+News Monitor
+
+Company Monitor for held positions
+
+Recent alert history (latest 20)
+
+Web search
+
+The backend should also calculate:
+
+- hours since previous alert analysis
+- which earnings have occurred since previous analysis
+- which scheduled events have passed
+- newly added news compared with previous run
+
+--------------------------------------------------
+PROMPT
+--------------------------------------------------
+
+Tell OpenAI:
+
+Identify only meaningful NEW developments.
+
+Ignore stories already reported unless they materially changed.
+
+Think like an institutional morning briefing.
+
+Prefer quality over quantity.
+
+Avoid repeating the same topic under different wording.
+
+If nothing important has changed:
+
+Return:
+
+overallAlertLevel = Low
+
+and explain why.
+
+--------------------------------------------------
+OUTPUT
+
+Return JSON:
+
+{
+  "overallAlertLevel":"High|Medium|Low",
+
+  "executiveSummary":"...",
+
+  "headline":"...",
+
+  "alerts":[
+    {
+      "title":"...",
+      "category":"Portfolio|Company|Macro|Sector|Event|Geopolitical|Currency",
+
+      "importance":"High|Medium|Low",
+
+      "isNew":true,
+
+      "requiresAttention":true,
+
+      "affectedHoldings":["..."],
+
+      "summary":"...",
+
+      "whyItMatters":"...",
+
+      "recommendedAttention":"Monitor|Review|Prepare|Watch",
+
+      "sourceType":"Web|NewsMonitor|CompanyMonitor|EventMonitor"
+    }
+  ],
+
+  "thingsToWatch":[ "..."],
+
+  "nothingImportantChanged":false
+}
+
+Return approximately 3–8 alerts.
+
+--------------------------------------------------
+BACKEND
+--------------------------------------------------
+
+Before saving:
+
+Compare with previous Market Alerts.
+
+If an alert already exists and nothing material changed:
+
+Do not mark it as New.
+
+Track:
+
+New
+
+Updated
+
+Unchanged
+
+Resolved
+
+Store compact history only.
+
+--------------------------------------------------
+FRONTEND
+--------------------------------------------------
+
+Top card:
+
+Overall Alert Level
+
+Headline
+
+Executive Summary
+
+Below:
+
+Alert cards.
+
+Collapsed:
+
+- title
+
+- category
+
+- importance
+
+- status badge
+
+Expanded:
+
+Summary
+
+Why it matters
+
+Affected holdings
+
+Recommended attention
+
+Source
+
+At the bottom:
+
+Things To Watch
+
+If nothing important changed:
+
+Show a calm green information card:
+
+"No significant developments since the previous update."
+
+--------------------------------------------------
+SYSTEM LOG
+--------------------------------------------------
+
+Log only:
+
+Manual update started
+
+New alerts detected
+
+Resolved alerts
+
+Highest priority alert
+
+Analysis completed
+
+Failure
+
+--------------------------------------------------
+IMPORTANT
+
+This module must NOT become another News module.
+
+The question is NOT:
+
+"What happened today?"
+
+The question IS:
+
+"What changed since my previous analysis that deserves my attention?"
+
+That distinction is the entire purpose of this module.
+
+Keep exactly the same OpenAI debug popup and request/response inspection dialog used by Portfolio Analyzer, Opportunity Finder and Risk Analyzer.

@@ -11,6 +11,7 @@ import PortfolioManager from '@/pages/PortfolioManager';
 import PortfolioAnalyzer from '@/pages/PortfolioAnalyzer';
 import OpportunityFinder from '@/pages/OpportunityFinder';
 import RiskAnalyzer from '@/pages/RiskAnalyzer';
+import MarketAlerts from '@/pages/MarketAlerts';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 
@@ -39,6 +40,7 @@ function Router() {
         <Route path="/analyse" component={PortfolioAnalyzer} />
         <Route path="/opportunities" component={OpportunityFinder} />
         <Route path="/risk" component={RiskAnalyzer} />
+        <Route path="/alerts" component={MarketAlerts} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />

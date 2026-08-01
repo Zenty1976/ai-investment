@@ -25,6 +25,7 @@ import type {
   ErrorResponse,
   EventMonitorAnalysis,
   HealthStatus,
+  MarketAlertsAnalysis,
   MarketAnalysis,
   NewsAnalysis,
   OpportunityAnalysis,
@@ -1020,6 +1021,28 @@ export const useRunOpportunityAnalysis = (options?: {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {};
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof runOpportunityAnalysis>>, void> = () =>
     runOpportunityAnalysis(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── Market Alerts ─────────────────────────────────────────────────────────────
+
+export const runMarketAlerts = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<MarketAlertsAnalysis>('/api/market-alerts/analyze', {
+    method: 'POST',
+    ...options,
+  });
+
+export const useRunMarketAlerts = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof runMarketAlerts>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof runMarketAlerts>>, ErrorType<unknown>, void> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runMarketAlerts>>, void> = () =>
+    runMarketAlerts(requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 
