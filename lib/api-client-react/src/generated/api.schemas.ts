@@ -600,14 +600,45 @@ export interface RiskScoreDriver {
   reason: string;
 }
 
+export type RiskCategory =
+  | 'Concentration'
+  | 'Company'
+  | 'Sector'
+  | 'Macro'
+  | 'Currency'
+  | 'Liquidity'
+  | 'Event'
+  | 'Geopolitical'
+  | 'Diversification';
+
+export interface RiskProfileItem {
+  category: RiskCategory;
+  score: number;
+  level: 'Low' | 'Moderate' | 'High';
+  reason: string;
+}
+
 export interface RiskItem {
   title: string;
-  category: 'Company' | 'Sector' | 'Macro' | 'Currency' | 'Liquidity' | 'Event' | 'Geopolitical' | 'Diversification';
+  category: RiskCategory;
   probability: 'Low' | 'Medium' | 'High';
   severity: 'Low' | 'Medium' | 'High';
   timeHorizon: 'Immediate' | 'Weeks' | 'Months';
+  eventDate: string;
+  affectedHoldings: string[];
   reason: string;
+  portfolioImpact: string;
+  interactionWithOtherRisks: string;
   monitor: string;
+  /** Server-populated: change vs previous analysis */
+  status?: 'New' | 'Increased' | 'Reduced' | 'Unchanged';
+}
+
+export interface RiskInteraction {
+  title: string;
+  reason: string;
+  affectedHoldings: string[];
+  severity: 'Low' | 'Medium' | 'High';
 }
 
 export interface RiskAnalysis {
@@ -618,8 +649,12 @@ export interface RiskAnalysis {
     reason: string;
   };
   riskScore: number;
+  /** Previous riskScore — absent when no history exists */
+  previousRiskScore?: number;
   scoreDrivers: RiskScoreDriver[];
+  riskProfile: RiskProfileItem[];
   topRisks: RiskItem[];
+  riskInteractions: RiskInteraction[];
   portfolioWeaknesses: string[];
   portfolioStrengths: string[];
   watchClosely: string[];

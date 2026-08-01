@@ -2,12 +2,11 @@
  * Risk Analyzer Page
  *
  * Identifies, explains, and prioritizes the risks affecting the current
- * portfolio over the next 1–3 months. Focuses entirely on risk — never
- * recommends trades.
+ * portfolio over the next 1–3 months. Focuses entirely on portfolio-level risk.
  */
 import { useState } from "react"
 import { useRunRiskAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
-import type { RiskAnalysis, RiskItem } from "@workspace/api-client-react"
+import type { RiskAnalysis, RiskItem, RiskProfileItem, RiskInteraction } from "@workspace/api-client-react"
 import {
   AlertCircle,
   RefreshCw,
@@ -21,6 +20,10 @@ import {
   Eye,
   Copy,
   Check,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Zap,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -78,11 +81,104 @@ function horizonVariant(h: string): BadgeVariant {
   return "outline"
 }
 
+function statusVariant(s: string): BadgeVariant {
+  if (s === "Increased") return "negative"
+  if (s === "New") return "warning"
+  if (s === "Reduced") return "positive"
+  return "secondary"
+}
+
 function riskScoreColor(score: number): string {
   if (score <= 30) return "text-emerald-400"
   if (score <= 55) return "text-amber-400"
   if (score <= 75) return "text-orange-400"
   return "text-rose-400"
+}
+
+function profileBarColor(score: number): string {
+  if (score <= 30) return "bg-emerald-500/70"
+  if (score <= 55) return "bg-amber-500/70"
+  if (score <= 75) return "bg-orange-500/70"
+  return "bg-rose-500/70"
+}
+
+function profileLevelVariant(level: string): BadgeVariant {
+  if (level === "High") return "negative"
+  if (level === "Moderate") return "warning"
+  return "positive"
+}
+
+function interactionSeverityVariant(s: string): BadgeVariant {
+  if (s === "High") return "negative"
+  if (s === "Medium") return "warning"
+  return "outline"
+}
+
+// ---------------------------------------------------------------------------
+// Score Change display
+// ---------------------------------------------------------------------------
+
+function ScoreChange({ current, previous }: { current: number; previous: number | undefined }) {
+  if (previous === undefined) return null
+  const delta = current - previous
+  if (delta === 0) {
+    return (
+      <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground/50">
+        <Minus className="h-3 w-3" />
+        Unchanged
+      </span>
+    )
+  }
+  const up = delta > 0
+  return (
+    <span className={`flex items-center gap-0.5 text-[11px] font-mono tabular-nums font-semibold ${up ? "text-rose-400" : "text-emerald-400"}`}>
+      {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+      {up ? "▲" : "▼"} {Math.abs(delta)}
+      <span className="text-muted-foreground/40 font-normal ml-1">prev {previous}</span>
+    </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Risk Profile bars
+// ---------------------------------------------------------------------------
+
+function RiskProfileBars({ profile }: { profile: RiskProfileItem[] }) {
+  if (!profile || profile.length === 0) return null
+
+  // Sort by score desc
+  const sorted = [...profile].sort((a, b) => b.score - a.score)
+
+  return (
+    <Card className="bg-card/40 border-card-border/40">
+      <CardContent className="p-4">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-3">
+          Risk Profile
+        </p>
+        <div className="space-y-2.5">
+          {sorted.map((item, i) => (
+            <div key={i} className="flex items-center gap-2.5">
+              <span className="text-[11px] text-muted-foreground/70 w-28 shrink-0 truncate">
+                {item.category}
+              </span>
+              <div className="flex-1 bg-white/5 rounded-full h-1.5 min-w-0 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${profileBarColor(item.score)}`}
+                  style={{ width: `${item.score}%` }}
+                />
+              </div>
+              <span className={`text-[11px] font-mono tabular-nums font-semibold w-6 text-right ${riskScoreColor(item.score)}`}>
+                {item.score}
+              </span>
+              <Badge variant={profileLevelVariant(item.level)} className="text-[9px] px-1 shrink-0">
+                {item.level}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +213,11 @@ function RiskCard({ risk }: { risk: RiskItem }) {
                 <Badge variant={horizonVariant(risk.timeHorizon)} className="text-[10px] px-1.5">
                   {risk.timeHorizon}
                 </Badge>
+                {risk.status && (
+                  <Badge variant={statusVariant(risk.status)} className="text-[10px] px-1.5">
+                    {risk.status}
+                  </Badge>
+                )}
               </div>
             </div>
             <ChevronRight
@@ -135,6 +236,50 @@ function RiskCard({ risk }: { risk: RiskItem }) {
               </p>
               <p className="text-xs text-foreground/80 leading-relaxed">{risk.reason}</p>
             </div>
+
+            {risk.portfolioImpact && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                  Portfolio Impact
+                </p>
+                <p className="text-xs text-foreground/75 leading-relaxed">{risk.portfolioImpact}</p>
+              </div>
+            )}
+
+            {risk.affectedHoldings && risk.affectedHoldings.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                  Affected Holdings
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {risk.affectedHoldings.map((h, i) => (
+                    <Badge key={i} variant="secondary" className="text-[10px] px-1.5 font-mono">
+                      {h}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {risk.eventDate && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                  Event Date
+                </p>
+                <p className="text-xs text-foreground/70 font-mono">{risk.eventDate}</p>
+              </div>
+            )}
+
+            {risk.interactionWithOtherRisks && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1 flex items-center gap-1">
+                  <Zap className="h-2.5 w-2.5" />
+                  Interaction with Other Risks
+                </p>
+                <p className="text-xs text-foreground/70 leading-relaxed">{risk.interactionWithOtherRisks}</p>
+              </div>
+            )}
+
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1 flex items-center gap-1">
                 <Eye className="h-3 w-3" />
@@ -142,6 +287,53 @@ function RiskCard({ risk }: { risk: RiskItem }) {
               </p>
               <p className="text-xs text-foreground/70 leading-relaxed">{risk.monitor}</p>
             </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Risk Interactions
+// ---------------------------------------------------------------------------
+
+function RiskInteractionCard({ interaction }: { interaction: RiskInteraction }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <Card className="bg-card/40 border-card-border/40 overflow-hidden">
+      <CardContent className="p-0">
+        <button
+          className="w-full text-left p-4 hover:bg-white/[0.02] transition-colors"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <div className="flex items-start gap-3">
+            <Zap className="h-3.5 w-3.5 text-amber-400/60 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground mb-1.5 leading-snug">
+                {interaction.title}
+              </p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge variant={interactionSeverityVariant(interaction.severity)} className="text-[10px] px-1.5">
+                  {interaction.severity} severity
+                </Badge>
+                {interaction.affectedHoldings?.length > 0 && (
+                  <span className="text-[10px] text-muted-foreground/50">
+                    {interaction.affectedHoldings.join(", ")}
+                  </span>
+                )}
+              </div>
+            </div>
+            <ChevronRight
+              className={`h-3.5 w-3.5 text-muted-foreground/30 shrink-0 mt-0.5 transition-transform duration-150 ${
+                expanded ? "rotate-90" : ""
+              }`}
+            />
+          </div>
+        </button>
+        {expanded && (
+          <div className="border-t border-border/20 px-4 pb-4 pt-3">
+            <p className="text-xs text-foreground/75 leading-relaxed">{interaction.reason}</p>
           </div>
         )}
       </CardContent>
@@ -255,7 +447,7 @@ export default function RiskAnalyzer() {
         {isPending && <div className="h-0.5 bg-primary/70 animate-pulse" />}
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h1 className="text-base font-bold tracking-widest uppercase text-foreground mb-2">
                 Risk Analyzer
               </h1>
@@ -267,6 +459,7 @@ export default function RiskAnalyzer() {
                   {analysis.riskScore}
                   <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">/100</span>
                 </span>
+                <ScoreChange current={analysis.riskScore} previous={analysis.previousRiskScore} />
                 {isPending ? (
                   <span className="flex items-center gap-1.5 text-[11px] text-primary/80 animate-pulse ml-1">
                     <RefreshCw className="h-3 w-3 animate-spin" />
@@ -363,6 +556,11 @@ export default function RiskAnalyzer() {
         </Card>
       )}
 
+      {/* ── Risk Profile bars ── */}
+      {analysis.riskProfile && analysis.riskProfile.length > 0 && (
+        <RiskProfileBars profile={analysis.riskProfile} />
+      )}
+
       {/* ── Executive Summary ── */}
       <Card className="bg-card/40 border-card-border/40">
         <CardContent className="p-4">
@@ -387,9 +585,23 @@ export default function RiskAnalyzer() {
         </>
       )}
 
-      {/* ── Strengths / Weaknesses ── */}
+      {/* ── Risk Interactions ── */}
+      {analysis.riskInteractions && analysis.riskInteractions.length > 0 && (
+        <>
+          <div className="flex items-center gap-2 px-1 text-[10px] text-muted-foreground/40">
+            <Zap className="h-3 w-3 text-amber-400/50" />
+            <span className="font-bold uppercase tracking-widest">Risk Interactions</span>
+            <span className="ml-auto italic">click to expand</span>
+          </div>
+          {analysis.riskInteractions.map((interaction, i) => (
+            <RiskInteractionCard key={i} interaction={interaction} />
+          ))}
+        </>
+      )}
+
+      {/* ── Strengths / Weaknesses — stacks on narrow screens ── */}
       {(analysis.portfolioStrengths.length > 0 || analysis.portfolioWeaknesses.length > 0) && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {analysis.portfolioStrengths.length > 0 && (
             <Card className="bg-card/40 border-card-border/40">
               <CardContent className="p-4">

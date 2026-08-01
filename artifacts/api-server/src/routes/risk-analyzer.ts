@@ -2,16 +2,15 @@
  * Risk Analyzer Route
  *
  * Identifies, explains, and prioritizes the risks affecting the current
- * portfolio over the next 1–3 months. Uses the OpenAI Responses API with
- * live web search.
+ * portfolio over the next 1–3 months. Focuses entirely on portfolio-level risk.
  *
- * Reads context from: Portfolio Manager, Portfolio Analyzer, Opportunity Finder,
- * Market Monitor, Event Monitor, News Monitor, Sector Monitor, and Company Monitor
- * analyses for currently-held positions (resolved via companyIdentityStore).
+ * Before calling OpenAI, calculates a compact portfolio profile (weights,
+ * currency exposures, sector exposures, cash %, upcoming events) so the AI
+ * can make precise portfolio-level conclusions without having to infer metrics.
  *
  * Results are stored under "risk-analyzer".
  * A compact history (latest 20 analyses) is maintained under "risk-analyzer-history".
- * Invalid results are never stored.
+ * Invalid results are never stored; the previous stored result is preserved.
  */
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
@@ -30,17 +29,246 @@ const MAX_HISTORY = 20;
 // History types
 // ---------------------------------------------------------------------------
 
+interface RiskHistoryRisk {
+  title: string;
+  category: string;
+  probability: string;
+  severity: string;
+  normalizedKey: string; // `${title.toLowerCase().trim()}|${category.toLowerCase()}`
+}
+
 interface RiskHistoryEntry {
   timestamp: string;
   overallRiskLevel: string;
   riskScore: number;
-  topThreeRisks: Array<{
-    title: string;
-    category: string;
-    probability: string;
-    severity: string;
-  }>;
+  risks: RiskHistoryRisk[];
   overallConclusion: string;
+}
+
+// ---------------------------------------------------------------------------
+// Sorting helpers
+// ---------------------------------------------------------------------------
+
+const SEVERITY_ORDER: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+const PROBABILITY_ORDER: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+const HORIZON_ORDER: Record<string, number> = { Immediate: 0, Weeks: 1, Months: 2 };
+
+function sortTopRisks<T extends { severity: string; probability: string; timeHorizon: string }>(
+  risks: T[]
+): T[] {
+  return [...risks].sort((a, b) => {
+    const sv = (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9);
+    if (sv !== 0) return sv;
+    const pb = (PROBABILITY_ORDER[a.probability] ?? 9) - (PROBABILITY_ORDER[b.probability] ?? 9);
+    if (pb !== 0) return pb;
+    return (HORIZON_ORDER[a.timeHorizon] ?? 9) - (HORIZON_ORDER[b.timeHorizon] ?? 9);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Risk change tracking
+// ---------------------------------------------------------------------------
+
+type RiskStatus = "New" | "Increased" | "Reduced" | "Unchanged";
+
+function computeRiskStatus(
+  risk: { severity: string; probability: string; normalizedKey?: string },
+  previousRisks: RiskHistoryRisk[]
+): RiskStatus {
+  const key =
+    risk.normalizedKey ??
+    `${String(risk.severity).toLowerCase()}|${String(risk.probability).toLowerCase()}`;
+  const prev = previousRisks.find((p) => p.normalizedKey === key);
+  if (!prev) return "New";
+
+  const prevSev = SEVERITY_ORDER[prev.severity] ?? 9;
+  const currSev = SEVERITY_ORDER[risk.severity] ?? 9;
+  const prevProb = PROBABILITY_ORDER[prev.probability] ?? 9;
+  const currProb = PROBABILITY_ORDER[risk.probability] ?? 9;
+
+  const worsened = currSev < prevSev || currProb < prevProb;
+  const improved = currSev > prevSev || currProb > prevProb;
+
+  if (worsened) return "Increased";
+  if (improved) return "Reduced";
+  return "Unchanged";
+}
+
+function normalizeRiskKey(title: string, category: string): string {
+  return `${title.toLowerCase().trim()}|${category.toLowerCase().trim()}`;
+}
+
+// ---------------------------------------------------------------------------
+// Portfolio profile calculation
+// ---------------------------------------------------------------------------
+
+interface PositionProfile {
+  symbol: string;
+  name: string;
+  marketValueBaseCurrency: number;
+  portfolioWeight: number;
+  currency: string;
+  sector?: string;
+  upcomingEvent?: string;
+}
+
+function buildPortfolioProfile(
+  portfolioResult: Record<string, unknown>,
+  accounts: Array<Record<string, unknown>>,
+  sectorBySymbol: Record<string, string>,
+  eventContext: string | null,
+  nowIso: string
+): string {
+  const baseCurrency = String(portfolioResult.baseCurrency ?? "");
+  const totalValue =
+    typeof portfolioResult.totalValue === "number" ? portfolioResult.totalValue : null;
+  const totalAvailableCash =
+    typeof portfolioResult.totalAvailableCash === "number"
+      ? portfolioResult.totalAvailableCash
+      : null;
+
+  // Flatten all positions
+  const allPositions: Array<{
+    symbol: string;
+    name: string;
+    marketValueBaseCurrency: number;
+    currency: string;
+    accountCurrency: string;
+  }> = [];
+
+  for (const account of accounts) {
+    const acctCurrency = String(account.currency ?? "");
+    const posArr = Array.isArray(account.positions)
+      ? (account.positions as Array<Record<string, unknown>>)
+      : [];
+    for (const pos of posArr) {
+      const mvbc =
+        typeof pos.marketValueBaseCurrency === "number" ? pos.marketValueBaseCurrency : 0;
+      allPositions.push({
+        symbol: String(pos.symbol ?? "").toUpperCase(),
+        name: String(pos.name ?? ""),
+        marketValueBaseCurrency: mvbc,
+        currency: String(pos.currency ?? ""),
+        accountCurrency: acctCurrency,
+      });
+    }
+  }
+
+  const totalInvestedValue = allPositions.reduce((sum, p) => sum + p.marketValueBaseCurrency, 0);
+  const baseForWeights = totalValue ?? totalInvestedValue;
+
+  // Currency exposures (% of total portfolio value)
+  const currencyExposure: Record<string, number> = {};
+  for (const pos of allPositions) {
+    const cur = pos.currency || pos.accountCurrency;
+    if (!cur) continue;
+    currencyExposure[cur] = (currencyExposure[cur] ?? 0) + pos.marketValueBaseCurrency;
+  }
+  const currencyExposurePct: Record<string, number> = {};
+  if (baseForWeights > 0) {
+    for (const [cur, val] of Object.entries(currencyExposure)) {
+      currencyExposurePct[cur] = Math.round((val / baseForWeights) * 1000) / 10;
+    }
+  }
+
+  // Sector exposures
+  const sectorExposure: Record<string, number> = {};
+  for (const pos of allPositions) {
+    const sector = sectorBySymbol[pos.symbol] ?? "Unknown";
+    sectorExposure[sector] = (sectorExposure[sector] ?? 0) + pos.marketValueBaseCurrency;
+  }
+  const sectorExposurePct: Record<string, number> = {};
+  if (baseForWeights > 0) {
+    for (const [sec, val] of Object.entries(sectorExposure)) {
+      sectorExposurePct[sec] = Math.round((val / baseForWeights) * 1000) / 10;
+    }
+  }
+
+  // Upcoming events within 14 days
+  const now = new Date(nowIso);
+  const in14Days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+  let upcomingEventCount = 0;
+  const upcomingEventsBySymbol: Record<string, string> = {};
+  if (eventContext) {
+    try {
+      const evData = JSON.parse(eventContext) as {
+        events?: Array<{ title: string; date: string; importance: string }>;
+      };
+      for (const ev of evData.events ?? []) {
+        if (!ev.date) continue;
+        const evDate = new Date(ev.date);
+        if (evDate >= now && evDate <= in14Days && ev.importance !== "Low") {
+          upcomingEventCount++;
+          // Try to match event to a holding symbol
+          for (const pos of allPositions) {
+            if (
+              ev.title.toUpperCase().includes(pos.symbol) ||
+              ev.title.toLowerCase().includes(pos.name.toLowerCase())
+            ) {
+              upcomingEventsBySymbol[pos.symbol] = `${ev.title} — ${ev.date}`;
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }
+
+  // Build position profiles with weight
+  const positionProfiles: PositionProfile[] = allPositions.map((pos) => {
+    const weight =
+      baseForWeights > 0
+        ? Math.round((pos.marketValueBaseCurrency / baseForWeights) * 1000) / 10
+        : 0;
+    const profile: PositionProfile = {
+      symbol: pos.symbol,
+      name: pos.name,
+      marketValueBaseCurrency: Math.round(pos.marketValueBaseCurrency),
+      portfolioWeight: weight,
+      currency: pos.currency,
+    };
+    if (sectorBySymbol[pos.symbol]) profile.sector = sectorBySymbol[pos.symbol];
+    if (upcomingEventsBySymbol[pos.symbol]) profile.upcomingEvent = upcomingEventsBySymbol[pos.symbol];
+    return profile;
+  });
+
+  // Sort positions by weight desc for easier reading
+  positionProfiles.sort((a, b) => b.portfolioWeight - a.portfolioWeight);
+
+  const largestWeight = positionProfiles[0]?.portfolioWeight ?? 0;
+  const twoLargestWeight =
+    positionProfiles.length >= 2
+      ? Math.round((positionProfiles[0].portfolioWeight + positionProfiles[1].portfolioWeight) * 10) / 10
+      : largestWeight;
+
+  const cashPct =
+    totalValue && totalValue > 0
+      ? Math.round(((totalValue - totalInvestedValue) / totalValue) * 1000) / 10
+      : 0;
+
+  // Account summaries (including availableCash per account in account currency)
+  const accountSummaries = accounts.map((a) => ({
+    currency: a.currency,
+    accountValue: a.accountValue,
+    availableCash: a.availableCash,
+  }));
+
+  return JSON.stringify({
+    baseCurrency,
+    totalValue: totalValue !== null ? Math.round(totalValue) : null,
+    totalInvestedValue: Math.round(totalInvestedValue),
+    totalAvailableCash: totalAvailableCash !== null ? Math.round(totalAvailableCash) : null,
+    cashPercentage: cashPct,
+    numberOfHoldings: allPositions.length,
+    largestPositionWeight: largestWeight,
+    twoLargestCombinedWeight: twoLargestWeight,
+    upcomingEventsWithin14Days: upcomingEventCount,
+    currencyExposures: currencyExposurePct,
+    sectorExposures: sectorExposurePct,
+    accounts: accountSummaries,
+    positions: positionProfiles,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -57,40 +285,42 @@ You must perform a web search before producing your analysis. Search for:
 - Current macroeconomic and geopolitical risk factors
 - Upcoming events, earnings, or catalysts that could pose risk to the portfolio
 
+PORTFOLIO-LEVEL FOCUS — CRITICAL:
+Analyse how risks affect the portfolio as a whole. Do not simply repeat separate company risks.
+Prefer portfolio-level conclusions such as:
+- Simultaneous company events increasing short-term portfolio volatility
+- Concentration in correlated growth exposures
+- Sensitivity to the AI investment cycle
+- Interaction between macro shocks and company-specific events
+- Currency exposure across accounts and holdings
+
+Company-specific risks may still be included when material, but always explain their effect on total portfolio value.
+
+TOP RISKS RULES:
+- Return approximately 5 top risks
+- Normally include at least 2 portfolio-level risks (Concentration, Macro, Currency, Diversification, Geopolitical)
+- Do not return more than 2 standalone Company risks unless the portfolio genuinely justifies it
+- Opportunity cost should normally be treated as a weakness or score driver, not a Top Risk, unless it is unusually material
+- Explain every risk in relation to actual position weights provided in the portfolio profile
+- Do not describe generic company risks without explaining their portfolio impact
+- Identify when risks may reinforce each other (set interactionWithOtherRisks)
+- Do not invent event dates. A past event must not be presented as upcoming. If no specific date is known, use an empty string for eventDate
+- Set affectedHoldings to the ticker symbols actually affected
+
+INFORMATION PRIORITY:
+1. Current portfolio profile with calculated exposure metrics — primary source
+2. Company Monitor data for held positions
+3. Portfolio Analyzer — existing weaknesses and exposure assessments
+4. Event Monitor — upcoming events
+5. Sector Monitor
+6. Market Monitor
+7. News Monitor
+8. Web search results
+9. Opportunity Finder — describes possible future investments only; treat candidates as non-holdings; use only to identify research gaps or risks connected to suggested future opportunities
+
 OBJECTIVE:
 Focus entirely on risk. Do not recommend buying or selling.
 Use language such as: Monitor, Review, Prepare for, Watch.
-
-EVALUATE:
-- concentration risk
-- company-specific risk
-- sector risk
-- macroeconomic risk
-- geopolitical risk
-- event risk
-- liquidity risk
-- currency risk
-- opportunity cost
-- portfolio diversification
-- correlation between holdings
-
-For every identified risk:
-- explain why it exists in the context of this specific portfolio
-- assess probability (Low/Medium/High)
-- assess potential severity (Low/Medium/High)
-- indicate time horizon (Immediate/Weeks/Months)
-- specify what should be monitored
-
-INFORMATION PRIORITY:
-1. Current portfolio positions, sizes, and cash — the portfolio to assess
-2. Portfolio Analyzer conclusions — existing weaknesses and exposure assessments
-3. Opportunity Finder — risks and uncertainties already identified
-4. Sector Monitor
-5. Event Monitor
-6. Market Monitor
-7. News Monitor
-8. Web search results (verify and supplement — not replace — the stored analyses)
-9. Company Monitor data for held companies
 
 CURRENT DATE VALIDATION:
 The current UTC date is provided in the user prompt.
@@ -103,22 +333,27 @@ Avoid generic risk language.
 Explain why each risk applies specifically to this portfolio given its actual holdings and exposures.
 
 riskScore is an integer 0–100 representing overall portfolio risk level (0 = minimal risk, 100 = extreme risk).
+The risk score describes portfolio risk, not expected investment return.
 
-scoreDrivers should include 3–6 key factors that raise or lower the riskScore.
-impact "Positive" means the factor reduces risk; "Negative" means it increases risk.
+scoreDrivers must include 5–6 key factors when sufficient information exists.
+Include both risk-increasing and risk-reducing factors.
+Risk-increasing examples: concentration, clustered company events, speculative holdings, currency exposure, correlated growth sensitivity.
+Risk-reducing examples: cash buffer, high-quality holdings, exposure across currencies, limited leverage.
+impact "Positive" means the factor REDUCES risk; "Negative" means it INCREASES risk.
+
+riskProfile: return only categories that are relevant, but normally include Concentration, Company, Macro, Currency, Liquidity, Diversification.
+
+riskInteractions: return 1–3 meaningful interactions where two or more risks reinforce each other. Do not create interactions merely to fill the array. If no meaningful interactions exist, return an empty array.
 
 Return JSON only — no markdown, no code fences, no extra text.
-
-OUTPUT RULES:
-- Return approximately 5 top risks ordered by severity and probability
-- Do not include the timestamp or analysisDuration fields — the server sets those
+Do not include the timestamp or analysisDuration fields — the server sets those.
 
 Return exactly:
-{"executiveSummary":"...","overallRiskLevel":"Low|Moderate|High","mainConclusion":{"title":"...","reason":"..."},"riskScore":0,"scoreDrivers":[{"factor":"...","impact":"Positive|Negative","reason":"..."}],"topRisks":[{"title":"...","category":"Company|Sector|Macro|Currency|Liquidity|Event|Geopolitical|Diversification","probability":"Low|Medium|High","severity":"Low|Medium|High","timeHorizon":"Immediate|Weeks|Months","reason":"...","monitor":"..."}],"portfolioWeaknesses":["..."],"portfolioStrengths":["..."],"watchClosely":["..."]}`;
+{"executiveSummary":"...","overallRiskLevel":"Low|Moderate|High","mainConclusion":{"title":"...","reason":"..."},"riskScore":0,"scoreDrivers":[{"factor":"...","impact":"Positive|Negative","reason":"..."}],"riskProfile":[{"category":"Concentration|Company|Sector|Macro|Currency|Liquidity|Event|Geopolitical|Diversification","score":0,"level":"Low|Moderate|High","reason":"..."}],"topRisks":[{"title":"...","category":"Concentration|Company|Sector|Macro|Currency|Liquidity|Event|Geopolitical|Diversification","probability":"Low|Medium|High","severity":"Low|Medium|High","timeHorizon":"Immediate|Weeks|Months","eventDate":"YYYY-MM-DD or empty string","affectedHoldings":["..."],"reason":"...","portfolioImpact":"...","interactionWithOtherRisks":"...","monitor":"..."}],"riskInteractions":[{"title":"...","reason":"...","affectedHoldings":["..."],"severity":"Low|Medium|High"}],"portfolioWeaknesses":["..."],"portfolioStrengths":["..."],"watchClosely":["..."]}`;
 
 function buildUserPrompt(
   nowIso: string,
-  portfolioContext: string,
+  portfolioProfile: string,
   portfolioAnalyzerContext: string | null,
   opportunityFinderContext: string | null,
   marketContext: string | null,
@@ -132,46 +367,46 @@ function buildUserPrompt(
     "",
     "Assess the risks facing this portfolio over the next 1–3 months.",
     "",
-    "Current Portfolio:",
-    portfolioContext,
+    "Portfolio Profile (pre-calculated — use these exact figures in your analysis):",
+    portfolioProfile,
   ];
 
   if (portfolioAnalyzerContext) {
     blocks.push(
       "",
-      "Portfolio Analyzer conclusions (existing weaknesses and exposures — use as your starting context):",
+      "Portfolio Analyzer conclusions (existing weaknesses and exposures — use as starting context):",
       portfolioAnalyzerContext
     );
   }
 
-  if (opportunityFinderContext) {
+  for (const [ticker, ctx] of Object.entries(companyContexts)) {
     blocks.push(
       "",
-      "Opportunity Finder context (identified risks and uncertainties — do not repeat verbatim):",
-      opportunityFinderContext
-    );
-  }
-
-  if (sectorContext) {
-    blocks.push(
-      "",
-      "Sector Monitor context (sector conditions — do not repeat verbatim):",
-      sectorContext
+      `Company Monitor for held position ${ticker}:`,
+      ctx
     );
   }
 
   if (eventContext) {
     blocks.push(
       "",
-      "Event Monitor context (upcoming events — do not repeat verbatim):",
+      "Event Monitor (upcoming events — do not repeat verbatim):",
       eventContext
+    );
+  }
+
+  if (sectorContext) {
+    blocks.push(
+      "",
+      "Sector Monitor (sector conditions — do not repeat verbatim):",
+      sectorContext
     );
   }
 
   if (marketContext) {
     blocks.push(
       "",
-      "Market Monitor context (macro conditions — do not repeat verbatim):",
+      "Market Monitor (macro conditions — do not repeat verbatim):",
       marketContext
     );
   }
@@ -179,16 +414,16 @@ function buildUserPrompt(
   if (newsContext) {
     blocks.push(
       "",
-      "News Monitor context (recent news — do not repeat verbatim):",
+      "News Monitor (recent news — do not repeat verbatim):",
       newsContext
     );
   }
 
-  for (const [ticker, ctx] of Object.entries(companyContexts)) {
+  if (opportunityFinderContext) {
     blocks.push(
       "",
-      `Company Monitor context for held position ${ticker} (do not repeat verbatim):`,
-      ctx
+      "Opportunity Finder (possible future investments only — candidates are NOT current holdings):",
+      opportunityFinderContext
     );
   }
 
@@ -204,6 +439,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
+  const nowDate = new Date(nowIso);
   let lastDebug: AiDebugInfo | undefined;
 
   // ── Portfolio Manager ─────────────────────────────────────────────────────
@@ -226,30 +462,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
     ? (portfolioResult.accounts as Array<Record<string, unknown>>)
     : [];
 
-  const portfolioSummary = {
-    baseCurrency: portfolioResult.baseCurrency,
-    totalValue: portfolioResult.totalValue,
-    totalAvailableCash: portfolioResult.totalAvailableCash,
-    totalUnrealizedProfitLoss: portfolioResult.totalUnrealizedProfitLoss,
-    accounts: accounts.map((a) => ({
-      currency: a.currency,
-      totalValue: a.totalValue,
-      positions: Array.isArray(a.positions)
-        ? (a.positions as Array<Record<string, unknown>>).map((p) => ({
-            symbol: p.symbol,
-            name: p.name,
-            quantity: p.quantity,
-            marketValue: p.marketValue,
-            marketValueBaseCurrency: p.marketValueBaseCurrency,
-            profitLoss: p.profitLoss,
-            currency: p.currency,
-          }))
-        : [],
-    })),
-  };
-  const portfolioContext = JSON.stringify(portfolioSummary);
-
-  // ── Portfolio Analyzer ────────────────────────────────────────────────────
+  // ── Collect optional module contexts ─────────────────────────────────────
 
   const analyzerEntry = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
   const portfolioAnalyzerContext = analyzerEntry
@@ -265,8 +478,6 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
         sectorAssessment: analyzerEntry.result.sectorAssessment,
       })
     : null;
-
-  // ── Opportunity Finder ────────────────────────────────────────────────────
 
   const opportunityEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
   const opportunityFinderContext = opportunityEntry
@@ -284,8 +495,6 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  // ── Market Monitor ────────────────────────────────────────────────────────
-
   const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
   const marketContext = marketEntry
     ? JSON.stringify({
@@ -297,8 +506,6 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
         keyRisks: marketEntry.result.keyRisks,
       })
     : null;
-
-  // ── Event Monitor ─────────────────────────────────────────────────────────
 
   const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
   const eventContext = eventEntry
@@ -315,8 +522,6 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
           : [],
       })
     : null;
-
-  // ── News Monitor ──────────────────────────────────────────────────────────
 
   const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
   const newsContext = newsEntry
@@ -335,8 +540,6 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  // ── Sector Monitor ────────────────────────────────────────────────────────
-
   const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
   const sectorContext = sectorEntry
     ? JSON.stringify({
@@ -353,7 +556,11 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  // ── Company Monitor for held positions (via companyIdentityStore) ─────────
+  if (!portfolioAnalyzerContext) {
+    systemLog.logWarning(MODULE_NAME, "Portfolio Analyzer data unavailable — analysis context is limited");
+  }
+
+  // ── Company Monitor for held positions ─────────────────────────────────────
 
   const allRepoEntries = analysisRepository.getAll();
   const companyMonitorCandidates = allRepoEntries
@@ -361,6 +568,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
     .map((e) => ({ key: e.moduleName, result: e.result as Record<string, unknown> }));
 
   const companyContexts: Record<string, string> = {};
+  const sectorBySymbol: Record<string, string> = {};
   let hasMissingCompanyData = false;
 
   for (const account of accounts) {
@@ -379,6 +587,11 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
         const entry = analysisRepository.get<Record<string, unknown>>(resolved.key);
         if (entry) {
           const r = entry.result as Record<string, unknown>;
+          // Extract sector for portfolio profile
+          const companyInfo = r.company as Record<string, unknown> | undefined;
+          if (companyInfo?.sector) {
+            sectorBySymbol[symbol] = String(companyInfo.sector);
+          }
           companyContexts[symbol] = JSON.stringify({
             executiveSummary: r.executiveSummary,
             investmentView: r.investmentView,
@@ -398,31 +611,28 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
   }
 
   if (hasMissingCompanyData) {
-    systemLog.logWarning(
-      MODULE_NAME,
-      "Company Monitor analysis missing for one or more holdings"
-    );
+    systemLog.logWarning(MODULE_NAME, "Company Monitor data missing for one or more holdings");
   }
 
-  req.log.info(
-    {
-      hasPortfolioAnalyzer: !!portfolioAnalyzerContext,
-      hasOpportunityFinder: !!opportunityFinderContext,
-      hasMarket: !!marketContext,
-      hasEvent: !!eventContext,
-      hasNews: !!newsContext,
-      hasSector: !!sectorContext,
-      holdingCompanyContextCount: Object.keys(companyContexts).length,
-    },
-    "Context loaded from Analysis Repository"
+  // ── Calculate portfolio profile ───────────────────────────────────────────
+
+  const portfolioProfile = buildPortfolioProfile(
+    portfolioResult,
+    accounts,
+    sectorBySymbol,
+    eventContext,
+    nowIso
   );
 
-  // ── Load previous history for change logging ───────────────────────────────
+  // ── Load previous history for change tracking ─────────────────────────────
 
-  const historyEntry = analysisRepository.get<{ entries: RiskHistoryEntry[] }>("risk-analyzer-history");
+  const historyEntry = analysisRepository.get<{ entries: RiskHistoryEntry[] }>(
+    "risk-analyzer-history"
+  );
   const previousEntry = historyEntry?.result?.entries?.[0] ?? null;
+  const previousRisks: RiskHistoryRisk[] = previousEntry?.risks ?? [];
 
-  // ── AI call with retry ─────────────────────────────────────────────────────
+  // ── AI call with retry ────────────────────────────────────────────────────
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
@@ -433,7 +643,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
         SYSTEM_PROMPT,
         buildUserPrompt(
           nowIso,
-          portfolioContext,
+          portfolioProfile,
           portfolioAnalyzerContext,
           opportunityFinderContext,
           marketContext,
@@ -442,7 +652,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
           sectorContext,
           companyContexts
         ),
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 5000, temperature: 0.1 }
       ));
     } catch (err) {
       req.log.error({ err }, "AI service call failed");
@@ -456,68 +666,115 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
     lastDebug = debug;
 
     const analysisDuration = Date.now() - startTime;
+
+    // ── eventDate validation — clear past dates ────────────────────────────
+    const rawResult = result as Record<string, unknown>;
+    if (Array.isArray(rawResult.topRisks)) {
+      rawResult.topRisks = (rawResult.topRisks as Array<Record<string, unknown>>).map((risk) => {
+        const dateStr = String(risk.eventDate ?? "").trim();
+        if (dateStr) {
+          const evDate = new Date(dateStr);
+          if (!isNaN(evDate.getTime()) && evDate < nowDate) {
+            risk.eventDate = "";
+          }
+        }
+        return risk;
+      });
+    }
+
     const parsed = RunRiskAnalyzerResponse.safeParse({
-      ...(result as Record<string, unknown>),
+      ...(rawResult as Record<string, unknown>),
       timestamp: nowIso,
       analysisDuration,
     });
 
     if (parsed.success) {
+      // ── Sort top risks deterministically ──────────────────────────────────
+      const sortedRisks = sortTopRisks(parsed.data.topRisks);
+
+      // ── Compute status per risk ───────────────────────────────────────────
+      const risksWithStatus = sortedRisks.map((risk) => {
+        const nk = normalizeRiskKey(risk.title, risk.category);
+        const status = computeRiskStatus(
+          { severity: risk.severity, probability: risk.probability, normalizedKey: nk },
+          previousRisks
+        );
+        return { ...risk, status };
+      });
+
+      // ── Identify resolved risks for logging ───────────────────────────────
+      const currentKeys = new Set(
+        risksWithStatus.map((r) => normalizeRiskKey(r.title, r.category))
+      );
+      const resolvedRisks = previousRisks.filter((p) => !currentKeys.has(p.normalizedKey));
+
+      const finalData = {
+        ...parsed.data,
+        topRisks: risksWithStatus,
+        previousRiskScore: previousEntry?.riskScore,
+      };
+
       // ── Store result ──────────────────────────────────────────────────────
-      analysisRepository.save("risk-analyzer", parsed.data);
+      analysisRepository.save("risk-analyzer", finalData);
 
       // ── Update history ────────────────────────────────────────────────────
       const existingEntries = historyEntry?.result?.entries ?? [];
       const newHistoryEntry: RiskHistoryEntry = {
         timestamp: nowIso,
-        overallRiskLevel: parsed.data.overallRiskLevel,
-        riskScore: parsed.data.riskScore,
-        topThreeRisks: parsed.data.topRisks.slice(0, 3).map((r) => ({
+        overallRiskLevel: finalData.overallRiskLevel,
+        riskScore: finalData.riskScore,
+        risks: risksWithStatus.map((r) => ({
           title: r.title,
           category: r.category,
           probability: r.probability,
           severity: r.severity,
+          normalizedKey: normalizeRiskKey(r.title, r.category),
         })),
-        overallConclusion: parsed.data.mainConclusion.title,
+        overallConclusion: finalData.mainConclusion.title,
       };
       const updatedHistory = [newHistoryEntry, ...existingEntries].slice(0, MAX_HISTORY);
       analysisRepository.save("risk-analyzer-history", { entries: updatedHistory });
 
-      // ── System Log ────────────────────────────────────────────────────────
+      // ── System log ────────────────────────────────────────────────────────
       systemLog.logInfo(MODULE_NAME, "Risk analysis completed");
 
-      const topRisk = parsed.data.topRisks[0];
+      if (previousEntry) {
+        const delta = finalData.riskScore - previousEntry.riskScore;
+        if (delta !== 0) {
+          const direction = delta > 0 ? "▲" : "▼";
+          systemLog.logInternal(
+            MODULE_NAME,
+            `Risk score: ${finalData.riskScore} ${direction} ${Math.abs(delta)} (was ${previousEntry.riskScore})`
+          );
+        } else {
+          systemLog.logInternal(MODULE_NAME, `Risk score unchanged: ${finalData.riskScore}`);
+        }
+      } else {
+        systemLog.logInternal(MODULE_NAME, `Risk score: ${finalData.riskScore}`);
+      }
+
+      // Log highest risk
+      const topRisk = risksWithStatus[0];
       if (topRisk) {
         systemLog.logInternal(
           MODULE_NAME,
-          `Highest current risk: ${topRisk.title}`
+          `Highest portfolio risk: ${topRisk.title} [${topRisk.category}, ${topRisk.severity} severity]`
         );
       }
 
-      if (previousEntry) {
-        const prevScore = previousEntry.riskScore;
-        const currScore = parsed.data.riskScore;
-        if (currScore !== prevScore) {
-          const direction = currScore > prevScore ? "increased" : "decreased";
-          systemLog.logInternal(
-            MODULE_NAME,
-            `Risk score ${direction} from ${prevScore} to ${currScore}`
-          );
-        }
-
-        // Log new risks that weren't in the previous top three
-        const prevRiskTitles = new Set(previousEntry.topThreeRisks.map((r) => r.title.toLowerCase()));
-        for (const risk of parsed.data.topRisks.slice(0, 3)) {
-          if (!prevRiskTitles.has(risk.title.toLowerCase())) {
-            systemLog.logInternal(
-              MODULE_NAME,
-              `New ${risk.category.toLowerCase()} risk detected: ${risk.title}`
-            );
-          }
+      // Log new, increased, or resolved risks
+      for (const risk of risksWithStatus) {
+        if (risk.status === "New") {
+          systemLog.logInternal(MODULE_NAME, `New risk detected: ${risk.title}`);
+        } else if (risk.status === "Increased") {
+          systemLog.logInternal(MODULE_NAME, `Risk increased: ${risk.title}`);
         }
       }
+      for (const resolved of resolvedRisks) {
+        systemLog.logInternal(MODULE_NAME, `Risk resolved: ${resolved.title}`);
+      }
 
-      res.json({ ...parsed.data, _debug: debug });
+      res.json({ ...finalData, _debug: debug });
       return;
     }
 
@@ -531,7 +788,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
         { errors: parsed.error.message },
         "Invalid AI response schema after retry"
       );
-      systemLog.logError(MODULE_NAME, "Risk analysis failed");
+      systemLog.logError(MODULE_NAME, "Risk analysis failed — invalid response structure");
       res.status(500).json({
         error: "AI returned an invalid response structure. Please try again.",
         _debug: lastDebug,

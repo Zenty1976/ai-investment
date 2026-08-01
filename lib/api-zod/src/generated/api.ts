@@ -379,6 +379,9 @@ export const RunOpportunityFinderResponse = zod.object({
 })
 
 
+// ── Risk Analyzer ─────────────────────────────────────────────────────────────
+
+/** AI-supplied risk profile category. Server adds status after parsing. */
 export const RunRiskAnalyzerResponse = zod.object({
   "executiveSummary": zod.string(),
   "overallRiskLevel": zod.enum(['Low', 'Moderate', 'High']),
@@ -387,20 +390,40 @@ export const RunRiskAnalyzerResponse = zod.object({
     "reason": zod.string()
   }),
   "riskScore": zod.number().int().min(0).max(100),
+  /** Server-populated: previous riskScore for delta display. Absent when no history. */
+  "previousRiskScore": zod.number().int().min(0).max(100).optional(),
   "scoreDrivers": zod.array(zod.object({
     "factor": zod.string(),
     "impact": zod.enum(['Positive', 'Negative']),
     "reason": zod.string()
   })).min(1),
+  "riskProfile": zod.array(zod.object({
+    "category": zod.enum(['Concentration', 'Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
+    "score": zod.number().int().min(0).max(100),
+    "level": zod.enum(['Low', 'Moderate', 'High']),
+    "reason": zod.string()
+  })),
   "topRisks": zod.array(zod.object({
     "title": zod.string(),
-    "category": zod.enum(['Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
+    "category": zod.enum(['Concentration', 'Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
     "probability": zod.enum(['Low', 'Medium', 'High']),
     "severity": zod.enum(['Low', 'Medium', 'High']),
     "timeHorizon": zod.enum(['Immediate', 'Weeks', 'Months']),
+    "eventDate": zod.string(),
+    "affectedHoldings": zod.array(zod.string()),
     "reason": zod.string(),
-    "monitor": zod.string()
+    "portfolioImpact": zod.string(),
+    "interactionWithOtherRisks": zod.string(),
+    "monitor": zod.string(),
+    /** Server-populated: change status vs previous analysis. */
+    "status": zod.enum(['New', 'Increased', 'Reduced', 'Unchanged']).optional()
   })).min(1),
+  "riskInteractions": zod.array(zod.object({
+    "title": zod.string(),
+    "reason": zod.string(),
+    "affectedHoldings": zod.array(zod.string()),
+    "severity": zod.enum(['Low', 'Medium', 'High'])
+  })),
   "portfolioWeaknesses": zod.array(zod.string()),
   "portfolioStrengths": zod.array(zod.string()),
   "watchClosely": zod.array(zod.string()),
@@ -421,5 +444,3 @@ export const GetRepositoryEntryResponse = zod.object({
   "createdAt": zod.string().describe('ISO 8601 — when this module first saved a result'),
   "updatedAt": zod.string().describe('ISO 8601 — when this module last saved a result')
 }).describe('A module\'s latest stored analysis result with metadata')
-
-

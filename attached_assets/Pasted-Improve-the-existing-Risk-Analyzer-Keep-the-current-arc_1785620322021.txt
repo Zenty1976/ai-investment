@@ -1,0 +1,353 @@
+Improve the existing Risk Analyzer. Keep the current architecture, OpenAI debug dialog, repository storage, history, manual Update Analysis behaviour and overall visual style.
+
+Do not create another module.
+
+The current implementation is good, but the analysis should become more portfolio-focused and less like several separate Company Monitor summaries.
+
+--------------------------------------------------
+PORTFOLIO-LEVEL RISK
+--------------------------------------------------
+
+Strengthen the OpenAI prompt with these rules:
+
+Risk Analyzer must analyse how risks affect the portfolio as a whole.
+
+Do not simply repeat separate company risks.
+
+Prefer portfolio-level conclusions such as:
+
+- simultaneous company events increasing short-term portfolio volatility
+- concentration in correlated growth exposures
+- sensitivity to the AI investment cycle
+- interaction between macro shocks and company-specific events
+- currency exposure across accounts and holdings
+
+Company-specific risks may still be included when material, but explain their effect on total portfolio value.
+
+Return approximately five top risks.
+
+Normally include at least two portfolio-level risks.
+
+Do not return more than two standalone company risks unless the portfolio genuinely justifies it.
+
+Opportunity cost should normally be treated as a weakness or score driver, not a Top Risk, unless it is unusually material.
+
+--------------------------------------------------
+PORTFOLIO DATA PREPARATION
+--------------------------------------------------
+
+Before calling OpenAI, calculate portfolio metrics on the backend instead of asking OpenAI to infer them.
+
+Add a compact calculated portfolio profile containing:
+
+- total portfolio value
+- total invested value
+- cash percentage
+- number of holdings
+- position weight for every holding
+- account and position currency exposure
+- sector exposure when known
+- largest position weight
+- combined weight of the two largest positions
+- number of major company events occurring within the next 14 days
+
+Include account-level available cash and account value in the supplied context.
+
+The current portfolio context omits available cash per account, which limits proper currency and account-risk analysis.
+
+Do not mix account currencies when calculating totals. Use the existing base-currency values.
+
+For each position provide:
+
+- symbol
+- company name
+- market value in base currency
+- portfolio weight
+- currency
+- sector if known
+- upcoming known event if available
+
+This should allow conclusions such as:
+
+“Microsoft represents approximately X% of total portfolio value and Y% of invested capital.”
+
+--------------------------------------------------
+RISK PROFILE
+--------------------------------------------------
+
+Add a structured risk profile to the OpenAI output:
+
+"riskProfile": [
+  {
+    "category": "Concentration|Company|Sector|Macro|Currency|Liquidity|Event|Geopolitical|Diversification",
+    "score": 0,
+    "level": "Low|Moderate|High",
+    "reason": "..."
+  }
+]
+
+Use integer scores from 0–100.
+
+Return only categories that are relevant, but normally include:
+
+- Concentration
+- Company/Event
+- Macro
+- Currency
+- Liquidity
+- Diversification
+
+Display these near the top as compact horizontal bars or score rows.
+
+This should provide a quick overview of which risk categories dominate.
+
+--------------------------------------------------
+TOP RISKS
+--------------------------------------------------
+
+Extend each Top Risk with:
+
+- affectedHoldings: string[]
+- portfolioImpact: short explanation of how the total portfolio could be affected
+- eventDate: ISO date or empty string
+- interactionWithOtherRisks: short text or empty string
+
+Updated item format:
+
+{
+  "title": "...",
+  "category": "...",
+  "probability": "Low|Medium|High",
+  "severity": "Low|Medium|High",
+  "timeHorizon": "Immediate|Weeks|Months",
+  "eventDate": "YYYY-MM-DD or empty string",
+  "affectedHoldings": ["..."],
+  "reason": "...",
+  "portfolioImpact": "...",
+  "interactionWithOtherRisks": "...",
+  "monitor": "..."
+}
+
+Tell OpenAI:
+
+- Explain the risk in relation to actual position weights.
+- Do not describe generic company risks without explaining their portfolio impact.
+- Identify when risks may reinforce each other.
+- Do not invent event dates.
+- A past event must not be presented as upcoming.
+
+After validation, the backend must sort Top Risks deterministically:
+
+1. Severity
+2. Probability
+3. Time horizon
+
+Use High before Medium before Low and Immediate before Weeks before Months.
+
+Do not trust the ordering returned by OpenAI.
+
+--------------------------------------------------
+RISK INTERACTIONS
+--------------------------------------------------
+
+Add a separate array:
+
+"riskInteractions": [
+  {
+    "title": "...",
+    "reason": "...",
+    "affectedHoldings": ["..."],
+    "severity": "Low|Medium|High"
+  }
+]
+
+Return approximately 1–3 meaningful interactions.
+
+Examples:
+
+- Two important earnings events occurring within a short period
+- Higher inflation and yields simultaneously pressuring technology exposure
+- Geopolitical energy shocks increasing both macro and currency risk
+
+Do not create interactions merely to fill the array.
+
+Display this section after Top Risks.
+
+--------------------------------------------------
+SCORE EXPLANATION
+--------------------------------------------------
+
+Require 5–6 scoreDrivers whenever sufficient information exists.
+
+Include both risk-increasing and risk-reducing factors.
+
+Examples:
+
+Risk increasing:
+- concentration
+- clustered company events
+- speculative holdings
+- currency exposure
+- correlated growth sensitivity
+
+Risk reducing:
+- cash buffer
+- high-quality holdings
+- exposure across more than one currency
+- limited leverage
+
+Keep the meaning:
+
+- Positive = reduces portfolio risk
+- Negative = increases portfolio risk
+
+The risk score must describe portfolio risk, not expected investment return.
+
+--------------------------------------------------
+INFORMATION PRIORITY
+--------------------------------------------------
+
+Adjust the prompt priority slightly.
+
+Use:
+
+1. Current portfolio and calculated exposure metrics
+2. Company Monitor data for held companies
+3. Portfolio Analyzer
+4. Event Monitor
+5. Sector Monitor
+6. Market Monitor
+7. News Monitor
+8. Web search
+9. Opportunity Finder
+
+Opportunity Finder describes possible future investments and should not materially affect the risk of the current portfolio.
+
+Only use Opportunity Finder to identify relevant research gaps or risks connected to suggested future opportunities. Do not treat those candidates as current holdings.
+
+--------------------------------------------------
+CURRENT DATE VALIDATION
+--------------------------------------------------
+
+Keep the existing current-date rule, but also validate dates on the backend.
+
+If topRisk.eventDate is earlier than the analysis timestamp:
+
+- Do not describe it as an upcoming event.
+- Either remove the date or reject and retry when the risk clearly depends on that event still being in the future.
+
+--------------------------------------------------
+RISK HISTORY AND CHANGE TRACKING
+--------------------------------------------------
+
+Continue storing the latest 20 analyses under:
+
+risk-analyzer-history
+
+Extend history sufficiently to compare risks between updates.
+
+For each current risk calculate one status:
+
+- New
+- Increased
+- Reduced
+- Unchanged
+
+A risk may be matched using normalized title and category.
+
+Also identify risks that existed previously but are no longer present as:
+
+- Resolved
+
+Do not store full prompts or full responses in history.
+
+Display the status as a small badge on each risk card.
+
+At the top display:
+
+- current risk score
+- score change since previous analysis
+- previous risk score
+
+Examples:
+
+68 ▲ 6
+54 ▼ 4
+Unchanged
+
+If no previous analysis exists, do not show a comparison.
+
+--------------------------------------------------
+FRONTEND
+--------------------------------------------------
+
+Keep the current compact expandable risk cards.
+
+Near the top display:
+
+- Overall Risk Level
+- Risk Score and change
+- Main Conclusion
+- Risk Profile category bars
+
+For each collapsed risk card show:
+
+- Title
+- Category
+- Probability
+- Severity
+- Time Horizon
+- Status: New / Increased / Reduced / Unchanged
+
+When expanded show:
+
+- Why the risk exists
+- Affected holdings
+- Portfolio impact
+- Interaction with other risks, when present
+- Event date, when present
+- What to monitor
+
+Keep Strengths, Weaknesses and Watch Closely.
+
+Move opportunity cost to Weaknesses unless it is genuinely one of the most material portfolio risks.
+
+On narrow mobile screens, do not force Strengths and Weaknesses into two cramped columns. Stack them vertically when necessary.
+
+--------------------------------------------------
+SYSTEM LOG
+--------------------------------------------------
+
+Keep logging concise.
+
+Log:
+
+- User manually started risk analysis
+- Warning when mock portfolio data is used
+- Warning when important context is unavailable
+- Risk analysis completed
+- Current risk score and change from previous score
+- Highest portfolio-level risk
+- Important new, increased or resolved risk
+- Analysis failure
+
+Do not log every risk, every context load, complete prompts or complete responses.
+
+--------------------------------------------------
+SCHEMA AND CODE
+--------------------------------------------------
+
+Update together:
+
+- OpenAPI schema
+- generated Zod types
+- backend validation
+- history types
+- frontend types
+- frontend rendering
+
+Preserve the existing retry behaviour and previous stored result when an update fails.
+
+Continue using the shared Company Identity service for Company Monitor matching.
+
+Keep the same OpenAI debug icon and popup with complete request, response and processing information.

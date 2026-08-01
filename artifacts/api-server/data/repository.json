@@ -1305,5 +1305,161 @@
     },
     "createdAt": "2026-08-01T20:53:13.160Z",
     "updatedAt": "2026-08-01T21:16:22.189Z"
+  },
+  "risk-analyzer": {
+    "moduleName": "risk-analyzer",
+    "result": {
+      "executiveSummary": "Over the next 1–3 months, the portfolio faces elevated event‑driven and macro risks. The most pressing threats stem from upcoming earnings for Serve Robotics (August 6) and Novo Nordisk (August 5), combined with macroeconomic and geopolitical volatility—particularly energy‑inflation pressures and cautious Fed policy—that could impact Microsoft and the broader portfolio. High cash levels mitigate liquidity risk but introduce opportunity cost.",
+      "overallRiskLevel": "Moderate",
+      "mainConclusion": {
+        "title": "Event‑driven and macro risks dominate near‑term outlook",
+        "reason": "The portfolio’s concentrated exposure to Microsoft, Novo Nordisk, and speculative Serve Robotics creates heightened sensitivity to upcoming earnings and guidance, while macro and geopolitical uncertainties—especially around inflation, energy, and central bank policy—pose additional downside risk."
+      },
+      "riskScore": 58,
+      "scoreDrivers": [
+        {
+          "factor": "Upcoming earnings for Serve Robotics and Novo Nordisk",
+          "impact": "Negative",
+          "reason": "High event risk could trigger sharp volatility if results or guidance disappoint."
+        },
+        {
+          "factor": "High cash allocation",
+          "impact": "Positive",
+          "reason": "Provides liquidity buffer and flexibility amid uncertainty."
+        },
+        {
+          "factor": "Macroeconomic and geopolitical volatility",
+          "impact": "Negative",
+          "reason": "Energy‑inflation shocks and cautious Fed tone may pressure rate‑sensitive and growth exposures."
+        }
+      ],
+      "topRisks": [
+        {
+          "title": "Serve Robotics Q2 earnings and execution risk",
+          "category": "Event",
+          "probability": "High",
+          "severity": "High",
+          "timeHorizon": "Immediate",
+          "reason": "Q2 results due August 6 may disappoint amid speculative business model, cash burn, and integration of Diligent Robotics acquisition.",
+          "monitor": "Watch earnings release, guidance, cash burn metrics, and commentary on execution and revenue per robot."
+        },
+        {
+          "title": "Novo Nordisk Q2 earnings and guidance risk",
+          "category": "Company",
+          "probability": "High",
+          "severity": "High",
+          "timeHorizon": "Immediate",
+          "reason": "Q2 earnings on August 5 may disappoint given weak full‑year guidance, competitive pressure, and potential impairment charges.",
+          "monitor": "Monitor earnings, guidance update, commentary on GLP‑1 uptake, Wegovy® pill performance, and competitive/legal developments."
+        },
+        {
+          "title": "Macroeconomic and inflation risk from energy shocks",
+          "category": "Macro",
+          "probability": "Medium",
+          "severity": "Medium",
+          "timeHorizon": "Weeks",
+          "reason": "Middle East tensions and rising energy prices could reignite inflation, prompting cautious Fed tone and higher yields, pressuring growth and rate‑sensitive stocks like Microsoft.",
+          "monitor": "Track energy prices, inflation data, Fed communications, and Danish inflation outlook given DKK base currency exposure."
+        },
+        {
+          "title": "Microsoft capex and macro sensitivity",
+          "category": "Company",
+          "probability": "Medium",
+          "severity": "Medium",
+          "timeHorizon": "Weeks",
+          "reason": "Microsoft’s heavy infrastructure spending may compress free cash flow if macro slows; broader macro risks could weigh on tech sentiment.",
+          "monitor": "Watch macro indicators, capex commentary, and any signs of slowing enterprise demand or margin pressure."
+        },
+        {
+          "title": "Opportunity cost of high cash allocation",
+          "category": "Liquidity",
+          "probability": "Low",
+          "severity": "Low",
+          "timeHorizon": "Months",
+          "reason": "While cash provides flexibility, it may underperform if markets rally, reducing portfolio return potential.",
+          "monitor": "Monitor market rotation into cyclicals and potential tactical deployment opportunities."
+        }
+      ],
+      "portfolioWeaknesses": [
+        "Concentrated exposure in three names increases sensitivity to idiosyncratic and event risk.",
+        "Speculative Serve Robotics position with high execution and dilution risk.",
+        "Novo Nordisk’s weak guidance and competitive pressures create near‑term uncertainty."
+      ],
+      "portfolioStrengths": [
+        "Large cash buffer provides liquidity and tactical flexibility.",
+        "Microsoft’s quality and AI tailwinds offer defensive growth support."
+      ],
+      "watchClosely": [
+        "Serve Robotics Q2 earnings and guidance (August 6).",
+        "Novo Nordisk Q2 earnings and GLP‑1 uptake commentary (August 5).",
+        "Energy prices, inflation data, and Fed policy signals.",
+        "Microsoft capex commentary and enterprise demand trends."
+      ],
+      "timestamp": "2026-08-01T21:33:35.605Z",
+      "analysisDuration": 12413
+    },
+    "createdAt": "2026-08-01T21:31:28.077Z",
+    "updatedAt": "2026-08-01T21:33:48.018Z"
+  },
+  "risk-analyzer-history": {
+    "moduleName": "risk-analyzer-history",
+    "result": {
+      "entries": [
+        {
+          "timestamp": "2026-08-01T21:33:35.605Z",
+          "overallRiskLevel": "Moderate",
+          "riskScore": 58,
+          "topThreeRisks": [
+            {
+              "title": "Serve Robotics Q2 earnings and execution risk",
+              "category": "Event",
+              "probability": "High",
+              "severity": "High"
+            },
+            {
+              "title": "Novo Nordisk Q2 earnings and guidance risk",
+              "category": "Company",
+              "probability": "High",
+              "severity": "High"
+            },
+            {
+              "title": "Macroeconomic and inflation risk from energy shocks",
+              "category": "Macro",
+              "probability": "Medium",
+              "severity": "Medium"
+            }
+          ],
+          "overallConclusion": "Event‑driven and macro risks dominate near‑term outlook"
+        },
+        {
+          "timestamp": "2026-08-01T21:31:20.167Z",
+          "overallRiskLevel": "Moderate",
+          "riskScore": 68,
+          "topThreeRisks": [
+            {
+              "title": "Novo Nordisk Q2 earnings and cyber‑security fallout",
+              "category": "Company",
+              "probability": "High",
+              "severity": "High"
+            },
+            {
+              "title": "Serve Robotics Q2 results and execution risk",
+              "category": "Company",
+              "probability": "High",
+              "severity": "High"
+            },
+            {
+              "title": "Macroeconomic and Fed policy uncertainty",
+              "category": "Macro",
+              "probability": "Medium",
+              "severity": "Medium"
+            }
+          ],
+          "overallConclusion": "Event‑driven and macro risks dominate near‑term outlook"
+        }
+      ]
+    },
+    "createdAt": "2026-08-01T21:31:28.079Z",
+    "updatedAt": "2026-08-01T21:33:48.020Z"
   }
 }
