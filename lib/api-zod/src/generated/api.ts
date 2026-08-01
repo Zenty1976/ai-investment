@@ -331,6 +331,35 @@ export const RunPortfolioAnalysisResponse = zod.object({
 
 
 /**
+ * Identifies the best investment opportunities for the next 1–3 months that complement the existing portfolio
+ * @summary Run opportunity finder analysis
+ */
+export const RunOpportunityFinderResponse = zod.object({
+  "executiveSummary": zod.string(),
+  "overallOpportunityLevel": zod.enum(['High', 'Medium', 'Low']),
+  "topOpportunities": zod.array(zod.object({
+    "company": zod.string(),
+    "ticker": zod.string(),
+    "sector": zod.string(),
+    "country": zod.string(),
+    "summary": zod.string(),
+    "whyItFits": zod.string(),
+    "mainCatalyst": zod.string(),
+    "mainRisk": zod.string(),
+    "confidence": zod.enum(['High', 'Medium', 'Low']),
+    "priority": zod.enum(['High', 'Medium', 'Low'])
+  })),
+  "sectorIdeas": zod.array(zod.object({
+    "sector": zod.string(),
+    "reason": zod.string()
+  })),
+  "thingsToResearch": zod.array(zod.string()),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
+/**
  * @summary Get a specific module's latest result
  */
 export const GetRepositoryEntryParams = zod.object({

@@ -541,6 +541,37 @@ export interface PortfolioAnalysis {
   analysisDuration: number;
 }
 
+// ── Opportunity Finder ────────────────────────────────────────────────────────
+
+export interface OpportunityFinderOpportunity {
+  company: string;
+  ticker: string;
+  sector: string;
+  country: string;
+  summary: string;
+  whyItFits: string;
+  mainCatalyst: string;
+  mainRisk: string;
+  confidence: 'High' | 'Medium' | 'Low';
+  priority: 'High' | 'Medium' | 'Low';
+}
+
+export interface OpportunityFinderSectorIdea {
+  sector: string;
+  reason: string;
+}
+
+export interface OpportunityAnalysis {
+  executiveSummary: string;
+  overallOpportunityLevel: 'High' | 'Medium' | 'Low';
+  topOpportunities: OpportunityFinderOpportunity[];
+  sectorIdeas: OpportunityFinderSectorIdea[];
+  thingsToResearch: string[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SaxoConfigBody {

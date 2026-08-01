@@ -27,6 +27,7 @@ import type {
   HealthStatus,
   MarketAnalysis,
   NewsAnalysis,
+  OpportunityAnalysis,
   PortfolioAnalysis,
   PortfolioRepositoryEntry,
   RepositoryEntry,
@@ -974,6 +975,28 @@ export const useRunPortfolioAnalysis = (options?: {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {};
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof runPortfolioAnalysis>>, void> = () =>
     runPortfolioAnalysis(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── Opportunity Finder ────────────────────────────────────────────────────────
+
+export const runOpportunityAnalysis = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<OpportunityAnalysis>('/api/opportunity-finder/analyze', {
+    method: 'POST',
+    ...options,
+  });
+
+export const useRunOpportunityAnalysis = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof runOpportunityAnalysis>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof runOpportunityAnalysis>>, ErrorType<unknown>, void> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runOpportunityAnalysis>>, void> = () =>
+    runOpportunityAnalysis(requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 

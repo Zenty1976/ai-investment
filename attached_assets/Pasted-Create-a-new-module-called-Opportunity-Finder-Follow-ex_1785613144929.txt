@@ -1,0 +1,241 @@
+Create a new module called "Opportunity Finder".
+
+Follow exactly the same architecture, layout and coding style as the existing modules.
+
+Create:
+
+- A separate backend module
+- A separate frontend page
+- A new sidebar menu item called "Opportunity Finder"
+
+Reuse:
+
+- Shared OpenAI service
+- Shared Analysis Repository
+- Shared System Log
+- Existing persistence model
+
+IMPORTANT:
+
+Use exactly the same OpenAI debug functionality as Portfolio Analyzer.
+
+The user must be able to inspect:
+
+- complete prompt
+- complete OpenAI response
+- processing information
+
+using the same debug icon and popup dialog.
+
+Reuse the existing implementation.
+
+--------------------------------------------------
+Purpose
+--------------------------------------------------
+
+The purpose of this module is NOT to analyse the existing portfolio.
+
+Its purpose is to identify the best investment opportunities for the next 1-3 months that complement the existing portfolio.
+
+It should search for opportunities the portfolio currently lacks.
+
+--------------------------------------------------
+Data sources
+--------------------------------------------------
+
+Read the latest stored data from:
+
+- Portfolio Manager
+- Portfolio Analyzer
+- Market Monitor
+- Event Monitor
+- News Monitor
+- Sector Monitor
+
+Company Monitor data may be used when relevant.
+
+Never communicate directly with Saxo.
+
+Never call other modules directly.
+
+Only read from the Analysis Repository.
+
+--------------------------------------------------
+OpenAI
+--------------------------------------------------
+
+Use the existing OpenAI Responses API with Web Search enabled.
+
+Perform one complete opportunity analysis.
+
+Use web search to verify and supplement the stored analyses.
+
+Use the stored analyses as the primary context.
+
+--------------------------------------------------
+Prompt
+--------------------------------------------------
+
+Tell OpenAI:
+
+You are an experienced institutional portfolio manager.
+
+Your task is to identify the most attractive investment opportunities for the next 1-3 months.
+
+Use the existing portfolio as your starting point.
+
+Do not simply recommend the strongest stocks.
+
+Instead identify opportunities that improve the portfolio considering:
+
+- diversification
+- sector exposure
+- macro conditions
+- upcoming events
+- current market leadership
+- valuation
+- risk
+- existing holdings
+- current cash position
+
+Avoid recommending companies already held unless there is a compelling reason.
+
+Clearly distinguish:
+
+- facts
+- reasonable expectations
+- analytical judgement
+
+Explain why each opportunity fits this specific portfolio.
+
+Return JSON only.
+
+--------------------------------------------------
+JSON
+--------------------------------------------------
+
+Return:
+
+{
+  "executiveSummary":"...",
+  "overallOpportunityLevel":"High|Medium|Low",
+
+  "topOpportunities":[
+    {
+      "company":"...",
+      "ticker":"...",
+      "sector":"...",
+      "country":"...",
+      "summary":"...",
+      "whyItFits":"...",
+      "mainCatalyst":"...",
+      "mainRisk":"...",
+      "confidence":"High|Medium|Low",
+      "priority":"High|Medium|Low"
+    }
+  ],
+
+  "sectorIdeas":[
+    {
+      "sector":"...",
+      "reason":"..."
+    }
+  ],
+
+  "thingsToResearch":[
+    "..."
+  ]
+}
+
+Return approximately five opportunities.
+
+Validate JSON before storing.
+
+Store under:
+
+opportunity-finder
+
+--------------------------------------------------
+Frontend
+--------------------------------------------------
+
+Reuse the existing module layout.
+
+Display:
+
+Executive Summary
+
+Overall Opportunity Level
+
+Top Opportunities
+
+Sector Ideas
+
+Things To Research
+
+Each opportunity should be shown as its own card.
+
+Each card should show:
+
+- Company
+- Ticker
+- Sector
+- Country
+- Summary
+- Why it fits this portfolio
+- Main catalyst
+- Main risk
+- Confidence
+- Priority
+
+Allow Summary, Why it fits, Main catalyst and Main risk to be collapsed and expanded.
+
+Use badges for:
+
+- Confidence
+- Priority
+
+--------------------------------------------------
+System Log
+--------------------------------------------------
+
+Keep the log concise.
+
+Log only meaningful events.
+
+Examples:
+
+user:
+"User manually started opportunity analysis"
+
+warning:
+"Opportunity analysis performed using mock portfolio data"
+
+warning:
+"Company Monitor analysis missing for one or more portfolio holdings"
+
+info:
+"Opportunity analysis completed"
+
+internal:
+"Highest-priority opportunity: Siemens because it improves sector diversification and benefits from current Industrials strength."
+
+internal:
+"Main reason for recommendation: Portfolio is underweight Industrials while macro conditions favour the sector."
+
+error:
+"Opportunity analysis failed"
+
+Do not log technical processing steps.
+
+Do not log prompts or complete OpenAI responses.
+
+--------------------------------------------------
+Goal
+--------------------------------------------------
+
+This module should answer:
+
+"If I were to invest new money over the next 1-3 months, what are currently the best opportunities for THIS portfolio, and why?"
+
+It should recommend opportunities that strengthen the portfolio rather than simply listing today's strongest stocks.

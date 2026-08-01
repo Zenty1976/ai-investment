@@ -10,6 +10,7 @@ import {
   Building2,
   ShieldAlert,
   BarChart2,
+  Lightbulb,
   History,
   Settings,
   Wifi,
@@ -41,8 +42,9 @@ const NAV_ITEMS = [
   { label: "SECTORS",     href: "/sectors",   icon: PieChart,     enabled: true  },
   { label: "COMPANIES",  href: "/companies", icon: Building2,    enabled: true  },
   { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: false },
-  { label: "ANALYZER",    href: "/analyse",   icon: BarChart2,    enabled: true  },
-  { label: "LOG & HIST.", href: "/log",       icon: History,      enabled: true  },
+  { label: "ANALYZER",    href: "/analyse",      icon: BarChart2,  enabled: true  },
+  { label: "OPPORTUNITY", href: "/opportunities", icon: Lightbulb,  enabled: true  },
+  { label: "LOG & HIST.", href: "/log",           icon: History,    enabled: true  },
   { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]
 

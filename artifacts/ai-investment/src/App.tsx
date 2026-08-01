@@ -9,6 +9,7 @@ import SectorMonitor from '@/pages/SectorMonitor';
 import CompanyMonitor from '@/pages/CompanyMonitor';
 import PortfolioManager from '@/pages/PortfolioManager';
 import PortfolioAnalyzer from '@/pages/PortfolioAnalyzer';
+import OpportunityFinder from '@/pages/OpportunityFinder';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 
@@ -35,6 +36,7 @@ function Router() {
         <Route path="/companies" component={CompanyMonitor} />
         <Route path="/portfolio" component={PortfolioManager} />
         <Route path="/analyse" component={PortfolioAnalyzer} />
+        <Route path="/opportunities" component={OpportunityFinder} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />
