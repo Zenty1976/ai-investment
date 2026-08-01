@@ -5,6 +5,7 @@ import eventMonitorRouter from "./event-monitor";
 import newsMonitorRouter from "./news-monitor";
 import sectorMonitorRouter from "./sector-monitor";
 import companyMonitorRouter from "./company-monitor";
+import portfolioManagerRouter from "./portfolio-manager";
 import repositoryRouter from "./repository";
 import settingsRouter from "./settings";
 
@@ -16,6 +17,7 @@ router.use(eventMonitorRouter);
 router.use(newsMonitorRouter);
 router.use(sectorMonitorRouter);
 router.use(companyMonitorRouter);
+router.use(portfolioManagerRouter);
 router.use(repositoryRouter);
 router.use(settingsRouter);
 

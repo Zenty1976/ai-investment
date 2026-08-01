@@ -7,6 +7,7 @@ import EventMonitor from '@/pages/EventMonitor';
 import NewsMonitor from '@/pages/NewsMonitor';
 import SectorMonitor from '@/pages/SectorMonitor';
 import CompanyMonitor from '@/pages/CompanyMonitor';
+import PortfolioManager from '@/pages/PortfolioManager';
 import Settings from '@/pages/Settings';
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function Router() {
         <Route path="/news" component={() => <NewsMonitor initialExpanded={true} />} />
         <Route path="/sectors" component={() => <SectorMonitor initialExpanded={true} />} />
         <Route path="/companies" component={CompanyMonitor} />
+        <Route path="/portfolio" component={PortfolioManager} />
         <Route path="/settings" component={Settings} />
         <Route component={SimpleNotFound} />
       </Switch>

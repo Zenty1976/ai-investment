@@ -33,7 +33,7 @@ const TICKERS = [
 // enabled=true → clickable and navigates; enabled=false → greyed-out stub for future modules
 const NAV_ITEMS = [
   { label: "OVERVIEW",    href: "/",          icon: LayoutGrid,   enabled: true  },
-  { label: "PORTFOLIO",   href: "/portfolio", icon: Briefcase,    enabled: false },
+  { label: "PORTFOLIO",   href: "/portfolio", icon: Briefcase,    enabled: true  },
   { label: "STOCKS",      href: "/stocks",    icon: TrendingUp,   enabled: false },
   { label: "MARKET",      href: "/market",    icon: Activity,     enabled: true  },
   { label: "NEWS",        href: "/news",      icon: Newspaper,    enabled: true  },

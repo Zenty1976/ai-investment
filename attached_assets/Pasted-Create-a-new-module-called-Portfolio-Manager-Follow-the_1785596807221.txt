@@ -1,0 +1,156 @@
+Create a new module called Portfolio Manager.
+
+Follow the same architecture, layout and coding style as the existing modules.
+
+Create:
+
+* A separate backend route/service
+* A separate frontend page
+* A new sidebar menu item called “Portfolio”
+* Persistent storage through the existing shared data layer
+
+Do not use OpenAI in this module.
+
+Use the existing Saxo connection from Settings. Do not create a second Saxo login implementation.
+
+Purpose:
+
+Portfolio Manager should fetch and display the user’s current open Saxo positions. It must work correctly when Saxo returns an empty portfolio.
+
+Use Saxo’s net positions endpoint:
+
+GET /openapi/port/v1/netpositions/me
+
+Request these field groups:
+
+NetPositionBase
+NetPositionView
+DisplayAndFormat
+ExchangeInfo
+
+Use net positions rather than individual positions so multiple trades in the same instrument are shown as one combined holding.
+
+Saxo returns a response similar to:
+
+{
+“Data”: [
+{
+“NetPositionId”: “…”,
+“DisplayAndFormat”: {
+“Description”: “…”,
+“Symbol”: “…”,
+“Currency”: “…”
+},
+“Exchange”: {
+“Name”: “…”,
+“ExchangeId”: “…”
+},
+“NetPositionBase”: {
+“AccountId”: “…”,
+“Amount”: 0,
+“AssetType”: “Stock”,
+“CanBeClosed”: true,
+“IsMarketOpen”: false,
+“OpeningDirection”: “Buy”,
+“Uic”: 0
+},
+“NetPositionView”: {
+“AverageOpenPrice”: 0,
+“CurrentPrice”: 0,
+“CurrentPriceDelayMinutes”: 0,
+“Exposure”: 0,
+“ExposureInBaseCurrency”: 0,
+“InstrumentPriceDayPercentChange”: 0,
+“ProfitLossOnTrade”: 0,
+“TradeCostsTotal”: 0,
+“Status”: “Open”
+}
+}
+],
+“__count”: 0,
+“__next”: “…”
+}
+
+Fields may be missing depending on instrument type and permissions, so parse them defensively.
+
+Convert Saxo’s response into one internal portfolio format:
+
+{
+“updatedAt”: “…”,
+“positions”: [
+{
+“id”: “…”,
+“name”: “…”,
+“symbol”: “…”,
+“assetType”: “…”,
+“exchange”: “…”,
+“currency”: “…”,
+“accountId”: “…”,
+“quantity”: 0,
+“direction”: “Buy|Sell”,
+“averageOpenPrice”: 0,
+“currentPrice”: 0,
+“marketValue”: 0,
+“marketValueBaseCurrency”: 0,
+“profitLoss”: 0,
+“dayChangePercent”: 0,
+“priceDelayMinutes”: 0,
+“isMarketOpen”: false
+}
+]
+}
+
+Store the latest successful portfolio snapshot in the shared data storage under:
+
+portfolio-manager
+
+When the page opens:
+
+* Load and display the latest stored snapshot
+* Do not contact Saxo automatically
+
+Only fetch fresh data when the user presses:
+
+Update Portfolio
+
+After a successful update:
+
+* Save the new snapshot
+* Display it immediately
+
+If Saxo returns an empty Data array:
+
+* Save a valid snapshot with positions: []
+* Display “No open positions”
+
+If the Saxo request fails:
+
+* Keep showing the previous stored snapshot
+* Show the error separately
+
+The UI should display:
+
+* Last updated
+* Number of positions
+* Total market value in base currency
+* Total unrealized profit/loss
+* A compact positions table or cards
+
+For each position show:
+
+* Company/instrument name
+* Symbol
+* Quantity
+* Average purchase price
+* Current price
+* Market value
+* Profit/loss
+* Daily percentage change
+* Currency
+* Market open/closed status
+
+Handle pagination by following Saxo’s __next value until all positions have been retrieved.
+
+Do not add trading, order placement, portfolio analysis, live streaming or OpenAI yet.
+
+This first version should only fetch, normalize, store and display the current Saxo portfolio.

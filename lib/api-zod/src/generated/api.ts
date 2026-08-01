@@ -206,6 +206,34 @@ export const SaxoSetEnvironmentBody = zod.object({
   "environment": zod.enum(['sim', 'live']),
 })
 
+// ── Portfolio Manager ─────────────────────────────────────────────────────────
+
+export const PortfolioPosition = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "symbol": zod.string(),
+  "assetType": zod.string(),
+  "exchange": zod.string(),
+  "currency": zod.string(),
+  "accountId": zod.string(),
+  "quantity": zod.number(),
+  "direction": zod.string(),
+  "averageOpenPrice": zod.number(),
+  "currentPrice": zod.number(),
+  "marketValue": zod.number(),
+  "marketValueBaseCurrency": zod.number(),
+  "profitLoss": zod.number(),
+  "dayChangePercent": zod.number(),
+  "priceDelayMinutes": zod.number(),
+  "isMarketOpen": zod.boolean(),
+})
+
+export const PortfolioSnapshot = zod.object({
+  "updatedAt": zod.string(),
+  "environment": zod.enum(['sim', 'live']),
+  "positions": zod.array(PortfolioPosition),
+})
+
 /**
  * @summary Save non-secret Saxo config (redirect URL override)
  */

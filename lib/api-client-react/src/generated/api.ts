@@ -27,6 +27,7 @@ import type {
   HealthStatus,
   MarketAnalysis,
   NewsAnalysis,
+  PortfolioRepositoryEntry,
   RepositoryEntry,
   SaxoConfigBody,
   SaxoLoginBody,
@@ -790,6 +791,56 @@ export const useSaxoLogout = (options?: {
     Awaited<ReturnType<typeof saxoLogout>>,
     void
   > = () => saxoLogout(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── useGetPortfolio / useUpdatePortfolio ──────────────────────────────────────
+
+export const getPortfolio = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<PortfolioRepositoryEntry | null>(`/api/portfolio-manager`, {
+    method: 'GET',
+    ...options,
+  });
+
+export const useGetPortfolio = (options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPortfolio>>,
+    ErrorType<unknown>,
+    Awaited<ReturnType<typeof getPortfolio>>,
+    QueryKey
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<Awaited<ReturnType<typeof getPortfolio>>, ErrorType<unknown>> => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey: QueryKey = ['/api/portfolio-manager'];
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPortfolio>>> = () =>
+    getPortfolio(requestOptions);
+  return useQuery({ queryKey, queryFn, ...queryOptions });
+};
+
+export const updatePortfolio = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<PortfolioRepositoryEntry>(`/api/portfolio-manager/update`, {
+    method: 'POST',
+    ...options,
+  });
+
+export const useUpdatePortfolio = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePortfolio>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePortfolio>>,
+  ErrorType<unknown>,
+  void
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePortfolio>>,
+    void
+  > = () => updatePortfolio(requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 

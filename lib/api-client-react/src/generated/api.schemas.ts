@@ -408,6 +408,41 @@ export interface SaxoSetEnvironmentBody {
   environment: SaxoEnvironment;
 }
 
+// ── Portfolio Manager ─────────────────────────────────────────────────────────
+
+export interface PortfolioPosition {
+  id: string;
+  name: string;
+  symbol: string;
+  assetType: string;
+  exchange: string;
+  currency: string;
+  accountId: string;
+  quantity: number;
+  direction: string;
+  averageOpenPrice: number;
+  currentPrice: number;
+  marketValue: number;
+  marketValueBaseCurrency: number;
+  profitLoss: number;
+  dayChangePercent: number;
+  priceDelayMinutes: number;
+  isMarketOpen: boolean;
+}
+
+export interface PortfolioSnapshot {
+  updatedAt: string;
+  environment: SaxoEnvironment;
+  positions: PortfolioPosition[];
+}
+
+export interface PortfolioRepositoryEntry {
+  moduleName: string;
+  result: PortfolioSnapshot;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SaxoConfigBody {
   redirectUrlOverride?: string;
 }
