@@ -641,6 +641,13 @@ export interface RiskInteraction {
   severity: 'Low' | 'Medium' | 'High';
 }
 
+export interface ResolvedRisk {
+  title: string;
+  category: RiskCategory;
+  severity: 'Low' | 'Medium' | 'High';
+  probability: 'Low' | 'Medium' | 'High';
+}
+
 export interface RiskAnalysis {
   executiveSummary: string;
   overallRiskLevel: 'Low' | 'Moderate' | 'High';
@@ -655,6 +662,8 @@ export interface RiskAnalysis {
   riskProfile: RiskProfileItem[];
   topRisks: RiskItem[];
   riskInteractions: RiskInteraction[];
+  /** Server-populated: risks from previous analysis no longer in current Top Risks */
+  resolvedRisks?: ResolvedRisk[];
   portfolioWeaknesses: string[];
   portfolioStrengths: string[];
   watchClosely: string[];

@@ -424,6 +424,13 @@ export const RunRiskAnalyzerResponse = zod.object({
     "affectedHoldings": zod.array(zod.string()),
     "severity": zod.enum(['Low', 'Medium', 'High'])
   })),
+  /** Server-populated: risks present in previous analysis but no longer in current Top Risks. */
+  "resolvedRisks": zod.array(zod.object({
+    "title": zod.string(),
+    "category": zod.enum(['Concentration', 'Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
+    "severity": zod.enum(['Low', 'Medium', 'High']),
+    "probability": zod.enum(['Low', 'Medium', 'High'])
+  })).optional(),
   "portfolioWeaknesses": zod.array(zod.string()),
   "portfolioStrengths": zod.array(zod.string()),
   "watchClosely": zod.array(zod.string()),

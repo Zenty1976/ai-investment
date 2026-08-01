@@ -1309,102 +1309,261 @@
   "risk-analyzer": {
     "moduleName": "risk-analyzer",
     "result": {
-      "executiveSummary": "Over the next 1–3 months, the portfolio faces elevated event‑driven and macro risks. The most pressing threats stem from upcoming earnings for Serve Robotics (August 6) and Novo Nordisk (August 5), combined with macroeconomic and geopolitical volatility—particularly energy‑inflation pressures and cautious Fed policy—that could impact Microsoft and the broader portfolio. High cash levels mitigate liquidity risk but introduce opportunity cost.",
+      "executiveSummary": "Over the next 1–3 months, the portfolio faces elevated risk driven by clustered near‑term earnings events (Novo Nordisk on August 5 and Serve Robotics on August 6), macroeconomic uncertainty around U.S. inflation and employment data, and concentrated exposure to correlated growth sectors (tech and healthcare). Currency exposure (USD vs DKK) and speculative positioning in Serve Robotics further amplify volatility. The large cash buffer provides flexibility but also opportunity cost if markets rally.",
       "overallRiskLevel": "Moderate",
       "mainConclusion": {
-        "title": "Event‑driven and macro risks dominate near‑term outlook",
-        "reason": "The portfolio’s concentrated exposure to Microsoft, Novo Nordisk, and speculative Serve Robotics creates heightened sensitivity to upcoming earnings and guidance, while macro and geopolitical uncertainties—especially around inflation, energy, and central bank policy—pose additional downside risk."
+        "title": "Clustered event risk amid macro and concentration vulnerabilities",
+        "reason": "The portfolio’s concentrated exposure in Microsoft, Novo Nordisk, and speculative Serve Robotics creates heightened sensitivity to near‑term earnings and guidance surprises, while macroeconomic data and rate policy uncertainty may amplify volatility. Currency exposure and speculative weighting in Serve add further risk, though cash provides a buffer."
       },
       "riskScore": 58,
       "scoreDrivers": [
         {
-          "factor": "Upcoming earnings for Serve Robotics and Novo Nordisk",
-          "impact": "Negative",
-          "reason": "High event risk could trigger sharp volatility if results or guidance disappoint."
-        },
-        {
-          "factor": "High cash allocation",
+          "factor": "High cash buffer",
           "impact": "Positive",
-          "reason": "Provides liquidity buffer and flexibility amid uncertainty."
+          "reason": "Over 53% in cash provides flexibility to respond to volatility or redeploy tactically."
         },
         {
-          "factor": "Macroeconomic and geopolitical volatility",
+          "factor": "Concentrated holdings in correlated growth sectors",
           "impact": "Negative",
-          "reason": "Energy‑inflation shocks and cautious Fed tone may pressure rate‑sensitive and growth exposures."
+          "reason": "Three holdings (tech, healthcare, robotics) are sensitive to macro and sentiment shifts, increasing portfolio volatility."
+        },
+        {
+          "factor": "Clustered near‑term earnings events",
+          "impact": "Negative",
+          "reason": "Novo Nordisk and Serve Robotics report within two days (Aug 5 and Aug 6), raising short‑term event risk."
+        },
+        {
+          "factor": "Currency exposure (USD vs DKK)",
+          "impact": "Negative",
+          "reason": "~25% USD exposure may introduce FX volatility relative to base currency DKK."
+        },
+        {
+          "factor": "Speculative exposure (Serve Robotics)",
+          "impact": "Negative",
+          "reason": "Small but high‑volatility position in speculative robotics increases tail‑risk."
+        },
+        {
+          "factor": "Macro uncertainty (inflation, Fed policy)",
+          "impact": "Negative",
+          "reason": "Upcoming U.S. CPI and employment data may shift rate expectations, affecting growth‑sensitive holdings."
+        }
+      ],
+      "riskProfile": [
+        {
+          "category": "Concentration",
+          "score": 70,
+          "level": "High",
+          "reason": "Two largest positions (Microsoft and Novo Nordisk) account for ~44.7% of portfolio, with correlated growth sensitivity."
+        },
+        {
+          "category": "Event",
+          "score": 65,
+          "level": "High",
+          "reason": "Back‑to‑back earnings events for Novo Nordisk (Aug 5) and Serve Robotics (Aug 6) create a narrow window of elevated volatility."
+        },
+        {
+          "category": "Macro",
+          "score": 60,
+          "level": "Moderate",
+          "reason": "Upcoming U.S. employment (Aug 7) and CPI (Aug 12) data may shift Fed policy expectations and market sentiment."
+        },
+        {
+          "category": "Currency",
+          "score": 50,
+          "level": "Moderate",
+          "reason": "USD exposure (~24.7%) introduces FX risk relative to DKK base currency."
+        },
+        {
+          "category": "Company",
+          "score": 55,
+          "level": "Moderate",
+          "reason": "Novo Nordisk faces guidance and impairment risk; Serve Robotics is speculative with high valuation multiples."
+        },
+        {
+          "category": "Diversification",
+          "score": 40,
+          "level": "Low",
+          "reason": "Limited number of holdings reduces diversification benefits."
         }
       ],
       "topRisks": [
         {
-          "title": "Serve Robotics Q2 earnings and execution risk",
+          "title": "Clustered earnings events (Novo Nordisk & Serve Robotics)",
           "category": "Event",
           "probability": "High",
           "severity": "High",
           "timeHorizon": "Immediate",
-          "reason": "Q2 results due August 6 may disappoint amid speculative business model, cash burn, and integration of Diligent Robotics acquisition.",
-          "monitor": "Watch earnings release, guidance, cash burn metrics, and commentary on execution and revenue per robot."
+          "eventDate": "",
+          "affectedHoldings": [
+            "NOVO B",
+            "SERV"
+          ],
+          "reason": "Earnings releases on August 5 (Novo Nordisk) and August 6 (Serve Robotics) may trigger sharp moves in both names, increasing portfolio volatility.",
+          "portfolioImpact": "Potential for simultaneous drawdowns or spikes in two holdings representing ~24.2% combined weight.",
+          "interactionWithOtherRisks": "Reinforces macro sensitivity and concentration risk.",
+          "monitor": "Watch earnings surprises, guidance tone, and market reaction around August 5–6.",
+          "status": "New"
         },
         {
-          "title": "Novo Nordisk Q2 earnings and guidance risk",
+          "title": "Guidance and impairment risk at Novo Nordisk",
           "category": "Company",
-          "probability": "High",
+          "probability": "Medium",
           "severity": "High",
           "timeHorizon": "Immediate",
-          "reason": "Q2 earnings on August 5 may disappoint given weak full‑year guidance, competitive pressure, and potential impairment charges.",
-          "monitor": "Monitor earnings, guidance update, commentary on GLP‑1 uptake, Wegovy® pill performance, and competitive/legal developments."
+          "eventDate": "",
+          "affectedHoldings": [
+            "NOVO B"
+          ],
+          "reason": "Novo’s Q2 earnings may include weak guidance or impairment charges (e.g., from ZEUS trial), weighing on share price.",
+          "portfolioImpact": "At ~22.1% weight, a negative surprise could materially drag portfolio value.",
+          "interactionWithOtherRisks": "Reinforced by macro volatility and concentration risk.",
+          "monitor": "Monitor August 5 earnings, guidance commentary, and impairment disclosures.",
+          "status": "New"
         },
         {
-          "title": "Macroeconomic and inflation risk from energy shocks",
-          "category": "Macro",
-          "probability": "Medium",
-          "severity": "Medium",
-          "timeHorizon": "Weeks",
-          "reason": "Middle East tensions and rising energy prices could reignite inflation, prompting cautious Fed tone and higher yields, pressuring growth and rate‑sensitive stocks like Microsoft.",
-          "monitor": "Track energy prices, inflation data, Fed communications, and Danish inflation outlook given DKK base currency exposure."
-        },
-        {
-          "title": "Microsoft capex and macro sensitivity",
+          "title": "Speculative valuation and execution risk in Serve Robotics",
           "category": "Company",
           "probability": "Medium",
-          "severity": "Medium",
+          "severity": "High",
           "timeHorizon": "Weeks",
-          "reason": "Microsoft’s heavy infrastructure spending may compress free cash flow if macro slows; broader macro risks could weigh on tech sentiment.",
-          "monitor": "Watch macro indicators, capex commentary, and any signs of slowing enterprise demand or margin pressure."
+          "eventDate": "",
+          "affectedHoldings": [
+            "SERV"
+          ],
+          "reason": "Serve trades at high forward‑sales multiples (~20×) and remains unprofitable; execution or guidance missteps could trigger sharp sell‑off.",
+          "portfolioImpact": "Though small weight (~2.1%), volatility could spill into broader sentiment and affect correlated holdings.",
+          "interactionWithOtherRisks": "Interacts with event risk and macro sentiment shifts.",
+          "monitor": "Review Q2 results on August 6, guidance, and analyst revisions.",
+          "status": "New"
         },
         {
-          "title": "Opportunity cost of high cash allocation",
-          "category": "Liquidity",
-          "probability": "Low",
-          "severity": "Low",
+          "title": "U.S. macro data and Fed policy uncertainty",
+          "category": "Macro",
+          "probability": "High",
+          "severity": "Medium",
+          "timeHorizon": "Weeks",
+          "eventDate": "",
+          "affectedHoldings": [
+            "MSFT",
+            "NOVO B",
+            "SERV"
+          ],
+          "reason": "U.S. employment (Aug 7) and CPI (Aug 12) data may shift rate expectations, affecting growth‑sensitive holdings across sectors.",
+          "portfolioImpact": "Could drive broad sentiment swings, impacting all holdings and cash deployment decisions.",
+          "interactionWithOtherRisks": "Amplifies event‑driven volatility and concentration risk.",
+          "monitor": "Track data releases and Fed commentary; assess impact on rate‑sensitive sectors.",
+          "status": "New"
+        },
+        {
+          "title": "Currency volatility (USD vs DKK)",
+          "category": "Currency",
+          "probability": "Medium",
+          "severity": "Medium",
           "timeHorizon": "Months",
-          "reason": "While cash provides flexibility, it may underperform if markets rally, reducing portfolio return potential.",
-          "monitor": "Monitor market rotation into cyclicals and potential tactical deployment opportunities."
+          "eventDate": "",
+          "affectedHoldings": [
+            "MSFT",
+            "SERV"
+          ],
+          "reason": "USD‑denominated holdings (~24.7%) may be impacted by FX moves, especially if DKK strengthens or USD weakens amid macro shifts.",
+          "portfolioImpact": "FX swings could alter base‑currency value of ~24.7% of portfolio.",
+          "interactionWithOtherRisks": "Could exacerbate losses from company or macro shocks.",
+          "monitor": "Track USD/DKK exchange rate movements and central bank signals.",
+          "status": "New"
+        }
+      ],
+      "riskInteractions": [
+        {
+          "title": "Earnings events and macro volatility",
+          "reason": "Simultaneous earnings releases (Novo and Serve) during a period of macro uncertainty (employment and CPI data) may amplify volatility across holdings.",
+          "affectedHoldings": [
+            "NOVO B",
+            "SERV",
+            "MSFT"
+          ],
+          "severity": "High"
+        },
+        {
+          "title": "Concentration and speculative exposure",
+          "reason": "High weight in Microsoft and Novo combined with speculative Serve Robotics increases sensitivity to sentiment shifts and execution risk.",
+          "affectedHoldings": [
+            "MSFT",
+            "NOVO B",
+            "SERV"
+          ],
+          "severity": "Medium"
         }
       ],
       "portfolioWeaknesses": [
-        "Concentrated exposure in three names increases sensitivity to idiosyncratic and event risk.",
-        "Speculative Serve Robotics position with high execution and dilution risk.",
-        "Novo Nordisk’s weak guidance and competitive pressures create near‑term uncertainty."
+        "High concentration in three holdings with correlated growth sensitivity.",
+        "Clustered near‑term earnings events increasing short‑term volatility.",
+        "Speculative exposure in Serve Robotics with high valuation and execution risk.",
+        "Currency exposure to USD introduces FX risk."
       ],
       "portfolioStrengths": [
-        "Large cash buffer provides liquidity and tactical flexibility.",
-        "Microsoft’s quality and AI tailwinds offer defensive growth support."
+        "Large cash buffer (>53%) provides tactical flexibility.",
+        "Holdings include high‑quality Microsoft with AI tailwinds and dividend income."
       ],
       "watchClosely": [
-        "Serve Robotics Q2 earnings and guidance (August 6).",
-        "Novo Nordisk Q2 earnings and GLP‑1 uptake commentary (August 5).",
-        "Energy prices, inflation data, and Fed policy signals.",
-        "Microsoft capex commentary and enterprise demand trends."
+        "Novo Nordisk Q2 earnings and guidance (Aug 5).",
+        "Serve Robotics Q2 results and outlook (Aug 6).",
+        "U.S. employment (Aug 7) and CPI (Aug 12) data releases.",
+        "USD/DKK exchange rate movements."
       ],
-      "timestamp": "2026-08-01T21:33:35.605Z",
-      "analysisDuration": 12413
+      "timestamp": "2026-08-01T21:46:43.720Z",
+      "analysisDuration": 13026,
+      "previousRiskScore": 58
     },
     "createdAt": "2026-08-01T21:31:28.077Z",
-    "updatedAt": "2026-08-01T21:33:48.018Z"
+    "updatedAt": "2026-08-01T21:46:56.748Z"
   },
   "risk-analyzer-history": {
     "moduleName": "risk-analyzer-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-01T21:46:43.720Z",
+          "overallRiskLevel": "Moderate",
+          "riskScore": 58,
+          "risks": [
+            {
+              "title": "Clustered earnings events (Novo Nordisk & Serve Robotics)",
+              "category": "Event",
+              "probability": "High",
+              "severity": "High",
+              "normalizedKey": "clustered earnings events (novo nordisk & serve robotics)|event"
+            },
+            {
+              "title": "Guidance and impairment risk at Novo Nordisk",
+              "category": "Company",
+              "probability": "Medium",
+              "severity": "High",
+              "normalizedKey": "guidance and impairment risk at novo nordisk|company"
+            },
+            {
+              "title": "Speculative valuation and execution risk in Serve Robotics",
+              "category": "Company",
+              "probability": "Medium",
+              "severity": "High",
+              "normalizedKey": "speculative valuation and execution risk in serve robotics|company"
+            },
+            {
+              "title": "U.S. macro data and Fed policy uncertainty",
+              "category": "Macro",
+              "probability": "High",
+              "severity": "Medium",
+              "normalizedKey": "u.s. macro data and fed policy uncertainty|macro"
+            },
+            {
+              "title": "Currency volatility (USD vs DKK)",
+              "category": "Currency",
+              "probability": "Medium",
+              "severity": "Medium",
+              "normalizedKey": "currency volatility (usd vs dkk)|currency"
+            }
+          ],
+          "overallConclusion": "Clustered event risk amid macro and concentration vulnerabilities"
+        },
         {
           "timestamp": "2026-08-01T21:33:35.605Z",
           "overallRiskLevel": "Moderate",
@@ -1460,6 +1619,6 @@
       ]
     },
     "createdAt": "2026-08-01T21:31:28.079Z",
-    "updatedAt": "2026-08-01T21:33:48.020Z"
+    "updatedAt": "2026-08-01T21:46:56.750Z"
   }
 }

@@ -6,7 +6,7 @@
  */
 import { useState } from "react"
 import { useRunRiskAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
-import type { RiskAnalysis, RiskItem, RiskProfileItem, RiskInteraction } from "@workspace/api-client-react"
+import type { RiskAnalysis, RiskItem, RiskProfileItem, RiskInteraction, ResolvedRisk } from "@workspace/api-client-react"
 import {
   AlertCircle,
   RefreshCw,
@@ -140,13 +140,50 @@ function ScoreChange({ current, previous }: { current: number; previous: number 
 }
 
 // ---------------------------------------------------------------------------
-// Risk Profile bars
+// Risk Profile bars (expandable rows)
 // ---------------------------------------------------------------------------
+
+function RiskProfileRow({ item }: { item: RiskProfileItem }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div>
+      <button
+        className="w-full text-left hover:bg-white/[0.02] transition-colors rounded -mx-1 px-1"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <div className="flex items-center gap-2.5 py-1">
+          <span className="text-[11px] text-muted-foreground/70 w-28 shrink-0 truncate">
+            {item.category}
+          </span>
+          <div className="flex-1 bg-white/5 rounded-full h-1.5 min-w-0 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${profileBarColor(item.score)}`}
+              style={{ width: `${item.score}%` }}
+            />
+          </div>
+          <span className={`text-[11px] font-mono tabular-nums font-semibold w-6 text-right ${riskScoreColor(item.score)}`}>
+            {item.score}
+          </span>
+          <Badge variant={profileLevelVariant(item.level)} className="text-[9px] px-1 shrink-0">
+            {item.level}
+          </Badge>
+          <ChevronRight
+            className={`h-3 w-3 text-muted-foreground/25 shrink-0 transition-transform duration-150 ${expanded ? "rotate-90" : ""}`}
+          />
+        </div>
+      </button>
+      {expanded && item.reason && (
+        <p className="text-[11px] text-foreground/60 leading-relaxed pb-2 pl-[7.5rem]">
+          {item.reason}
+        </p>
+      )}
+    </div>
+  )
+}
 
 function RiskProfileBars({ profile }: { profile: RiskProfileItem[] }) {
   if (!profile || profile.length === 0) return null
 
-  // Sort by score desc
   const sorted = [...profile].sort((a, b) => b.score - a.score)
 
   return (
@@ -155,25 +192,9 @@ function RiskProfileBars({ profile }: { profile: RiskProfileItem[] }) {
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-3">
           Risk Profile
         </p>
-        <div className="space-y-2.5">
+        <div className="space-y-0.5">
           {sorted.map((item, i) => (
-            <div key={i} className="flex items-center gap-2.5">
-              <span className="text-[11px] text-muted-foreground/70 w-28 shrink-0 truncate">
-                {item.category}
-              </span>
-              <div className="flex-1 bg-white/5 rounded-full h-1.5 min-w-0 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${profileBarColor(item.score)}`}
-                  style={{ width: `${item.score}%` }}
-                />
-              </div>
-              <span className={`text-[11px] font-mono tabular-nums font-semibold w-6 text-right ${riskScoreColor(item.score)}`}>
-                {item.score}
-              </span>
-              <Badge variant={profileLevelVariant(item.level)} className="text-[9px] px-1 shrink-0">
-                {item.level}
-              </Badge>
-            </div>
+            <RiskProfileRow key={i} item={item} />
           ))}
         </div>
       </CardContent>
@@ -334,6 +355,52 @@ function RiskInteractionCard({ interaction }: { interaction: RiskInteraction }) 
         {expanded && (
           <div className="border-t border-border/20 px-4 pb-4 pt-3">
             <p className="text-xs text-foreground/75 leading-relaxed">{interaction.reason}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Resolved Risks Section
+// ---------------------------------------------------------------------------
+
+function ResolvedRisksSection({ risks }: { risks: ResolvedRisk[] }) {
+  const [open, setOpen] = useState(false)
+  if (!risks || risks.length === 0) return null
+
+  return (
+    <Card className="bg-card/30 border-card-border/25">
+      <CardContent className="p-0">
+        <button
+          className="w-full text-left px-4 py-3 hover:bg-white/[0.02] transition-colors"
+          onClick={() => setOpen((v) => !v)}
+        >
+          <div className="flex items-center gap-2">
+            <ChevronRight
+              className={`h-3 w-3 text-muted-foreground/30 shrink-0 transition-transform duration-150 ${open ? "rotate-90" : ""}`}
+            />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+              Resolved since previous analysis
+            </span>
+            <span className="text-[10px] text-muted-foreground/30 ml-1">({risks.length})</span>
+          </div>
+        </button>
+        {open && (
+          <div className="border-t border-border/15 px-4 pb-3 pt-2 space-y-2">
+            {risks.map((r, i) => (
+              <div key={i} className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground/55 line-through">{r.title}</span>
+                <Badge variant="secondary" className="text-[9px] px-1 opacity-60">{r.category}</Badge>
+                <Badge variant={r.severity === "High" ? "negative" : r.severity === "Medium" ? "warning" : "outline"} className="text-[9px] px-1 opacity-60">
+                  S: {r.severity}
+                </Badge>
+                <Badge variant={r.probability === "High" ? "negative" : r.probability === "Medium" ? "warning" : "outline"} className="text-[9px] px-1 opacity-60">
+                  P: {r.probability}
+                </Badge>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
@@ -597,6 +664,11 @@ export default function RiskAnalyzer() {
             <RiskInteractionCard key={i} interaction={interaction} />
           ))}
         </>
+      )}
+
+      {/* ── Resolved risks ── */}
+      {analysis.resolvedRisks && analysis.resolvedRisks.length > 0 && (
+        <ResolvedRisksSection risks={analysis.resolvedRisks} />
       )}
 
       {/* ── Strengths / Weaknesses — stacks on narrow screens ── */}

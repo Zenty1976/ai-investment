@@ -106,7 +106,10 @@ interface PositionProfile {
   symbol: string;
   name: string;
   marketValueBaseCurrency: number;
+  /** % of total portfolio value including cash */
   portfolioWeight: number;
+  /** % of total invested position value excluding cash */
+  investedCapitalWeight: number;
   currency: string;
   sector?: string;
   upcomingEvent?: string;
@@ -215,17 +218,22 @@ function buildPortfolioProfile(
     }
   }
 
-  // Build position profiles with weight
+  // Build position profiles with both weight bases
   const positionProfiles: PositionProfile[] = allPositions.map((pos) => {
-    const weight =
+    const portfolioWeight =
       baseForWeights > 0
         ? Math.round((pos.marketValueBaseCurrency / baseForWeights) * 1000) / 10
+        : 0;
+    const investedCapitalWeight =
+      totalInvestedValue > 0
+        ? Math.round((pos.marketValueBaseCurrency / totalInvestedValue) * 1000) / 10
         : 0;
     const profile: PositionProfile = {
       symbol: pos.symbol,
       name: pos.name,
       marketValueBaseCurrency: Math.round(pos.marketValueBaseCurrency),
-      portfolioWeight: weight,
+      portfolioWeight,
+      investedCapitalWeight,
       currency: pos.currency,
     };
     if (sectorBySymbol[pos.symbol]) profile.sector = sectorBySymbol[pos.symbol];
@@ -233,14 +241,27 @@ function buildPortfolioProfile(
     return profile;
   });
 
-  // Sort positions by weight desc for easier reading
+  // Sort positions by portfolio weight desc for easier reading
   positionProfiles.sort((a, b) => b.portfolioWeight - a.portfolioWeight);
 
-  const largestWeight = positionProfiles[0]?.portfolioWeight ?? 0;
-  const twoLargestWeight =
+  // Portfolio-weight metrics (includes cash denominator)
+  const largestPositionWeight = positionProfiles[0]?.portfolioWeight ?? 0;
+  const twoLargestCombinedWeight =
     positionProfiles.length >= 2
       ? Math.round((positionProfiles[0].portfolioWeight + positionProfiles[1].portfolioWeight) * 10) / 10
-      : largestWeight;
+      : largestPositionWeight;
+
+  // Invested-capital-weight metrics (excludes cash — use for concentration analysis)
+  const sortedByInvested = [...positionProfiles].sort(
+    (a, b) => b.investedCapitalWeight - a.investedCapitalWeight
+  );
+  const largestInvestedPositionWeight = sortedByInvested[0]?.investedCapitalWeight ?? 0;
+  const twoLargestCombinedInvestedWeight =
+    sortedByInvested.length >= 2
+      ? Math.round(
+          (sortedByInvested[0].investedCapitalWeight + sortedByInvested[1].investedCapitalWeight) * 10
+        ) / 10
+      : largestInvestedPositionWeight;
 
   const cashPct =
     totalValue && totalValue > 0
@@ -261,8 +282,10 @@ function buildPortfolioProfile(
     totalAvailableCash: totalAvailableCash !== null ? Math.round(totalAvailableCash) : null,
     cashPercentage: cashPct,
     numberOfHoldings: allPositions.length,
-    largestPositionWeight: largestWeight,
-    twoLargestCombinedWeight: twoLargestWeight,
+    largestPositionWeight,
+    twoLargestCombinedWeight,
+    largestInvestedPositionWeight,
+    twoLargestCombinedInvestedWeight,
     upcomingEventsWithin14Days: upcomingEventCount,
     currencyExposures: currencyExposurePct,
     sectorExposures: sectorExposurePct,
@@ -708,10 +731,19 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
       );
       const resolvedRisks = previousRisks.filter((p) => !currentKeys.has(p.normalizedKey));
 
+      // Build resolved risk list for UI display
+      const resolvedRisksForUi = resolvedRisks.map((p) => ({
+        title: p.title,
+        category: p.category,
+        severity: p.severity,
+        probability: p.probability,
+      }));
+
       const finalData = {
         ...parsed.data,
         topRisks: risksWithStatus,
         previousRiskScore: previousEntry?.riskScore,
+        resolvedRisks: resolvedRisksForUi,
       };
 
       // ── Store result ──────────────────────────────────────────────────────
