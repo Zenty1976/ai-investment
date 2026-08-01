@@ -317,13 +317,17 @@ async function buildSnapshot(
     clientBalance.MarginAvailableForTrading ??
     clientBalance.CashBalance ??
     accounts.reduce((s, a) => s + a.availableCash, 0);
-  // Sum ProfitLossOnTrade across all positions for the aggregate P/L total
-  // (consistent with Fix 3; Saxo converts each position to base currency in ExposureInBaseCurrency,
-  //  but ProfitLossOnTrade is already in base currency for the client-level roll-up).
-  const totalUnrealizedProfitLoss = accounts.reduce(
-    (s, a) => s + a.unrealizedProfitLoss,
-    0
-  );
+  // Roll up P/L to base currency by using the implied FX rate Saxo already
+  // provides: ExposureInBaseCurrency / Exposure gives the rate for each position.
+  // Summing account.unrealizedProfitLoss directly is wrong when accounts are in
+  // different currencies — it would mix DKK and USD (or any other pair).
+  const totalUnrealizedProfitLoss = accounts.reduce((total, acct) => {
+    return total + acct.positions.reduce((sum, pos) => {
+      if (pos.marketValue === 0) return sum + pos.profitLoss;
+      const fxRate = pos.marketValueBaseCurrency / pos.marketValue;
+      return sum + pos.profitLoss * fxRate;
+    }, 0);
+  }, 0);
 
   const totalPositions = accounts.reduce((s, a) => s + a.positions.length, 0);
   logger.info(
