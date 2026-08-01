@@ -488,10 +488,10 @@ export default function OpportunityFinder() {
                     Searching for opportunities…
                   </span>
                 ) : (
-                  <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50 ml-1">
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50 ml-1">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(analysis.timestamp), "HH:mm 'UTC'")}
+                      {format(new Date(analysis.timestamp), "d. MMM HH:mm")}
                     </span>
                     <span className="flex items-center gap-1">
                       <Timer className="h-3 w-3" />
