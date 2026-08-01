@@ -1,0 +1,105 @@
+Extend the existing Portfolio Manager. Do not redesign it.
+
+The goal is to support multiple Saxo accounts internally while keeping the UI simple.
+
+--------------------------------------------------
+SAXO DATA
+--------------------------------------------------
+
+Instead of only retrieving net positions, first retrieve all accounts for the connected client.
+
+For each account retrieve:
+
+- Account information
+- Account currency
+- Account type
+- Account balance
+- Available cash / available funds for trading
+- Net positions for that account
+
+Use the appropriate Saxo Portfolio endpoints for:
+
+- Accounts
+- Balances
+- Net Positions
+
+The implementation must support any number of accounts, even if the Simulation environment only returns one account.
+
+--------------------------------------------------
+INTERNAL STORAGE
+--------------------------------------------------
+
+Change the internal Portfolio Manager snapshot to contain:
+
+- updatedAt
+- total portfolio value
+- total available cash
+- total unrealized profit/loss
+
+plus
+
+accounts[]
+
+Each account contains:
+
+- accountKey
+- accountId
+- accountName
+- accountType
+- currency
+- availableCash
+- accountValue
+- unrealizedProfitLoss
+- positions[]
+
+Each position belongs to exactly one account.
+
+Continue storing everything under:
+
+portfolio-manager
+
+The other modules must never communicate directly with Saxo.
+They must continue reading Portfolio Manager data only.
+
+--------------------------------------------------
+GUI
+--------------------------------------------------
+
+Keep the existing Portfolio page.
+
+Add one new summary card:
+
+Available Cash
+
+This shows the SUM of available cash across all accounts.
+
+When the user clicks this card, expand a section below it.
+
+The expanded section should show one card per account containing:
+
+- Account name
+- Account type
+- Currency
+- Available cash
+- Account value
+- Unrealized P/L
+- Number of positions
+
+Collapse again when clicked.
+
+Do not display account details unless expanded.
+
+If only one account exists (Simulation), the UI should still behave exactly the same.
+
+--------------------------------------------------
+IMPORTANT
+
+Keep the existing Update Portfolio behaviour.
+
+Do not introduce OpenAI.
+
+Do not add trading.
+
+Do not change the existing module architecture.
+
+This change is only to introduce full multi-account support internally while exposing only a simple "Available Cash" summary in the main UI.

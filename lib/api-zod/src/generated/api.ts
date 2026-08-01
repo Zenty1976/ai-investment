@@ -215,7 +215,7 @@ export const PortfolioPosition = zod.object({
   "assetType": zod.string(),
   "exchange": zod.string(),
   "currency": zod.string(),
-  "accountId": zod.string(),
+  "accountKey": zod.string(),
   "quantity": zod.number(),
   "direction": zod.string(),
   "averageOpenPrice": zod.number(),
@@ -228,11 +228,26 @@ export const PortfolioPosition = zod.object({
   "isMarketOpen": zod.boolean(),
 })
 
+export const PortfolioAccount = zod.object({
+  "accountKey": zod.string(),
+  "accountId": zod.string(),
+  "accountName": zod.string(),
+  "accountType": zod.string(),
+  "currency": zod.string(),
+  "availableCash": zod.number(),
+  "accountValue": zod.number(),
+  "unrealizedProfitLoss": zod.number(),
+  "positions": zod.array(PortfolioPosition),
+})
+
 export const PortfolioSnapshot = zod.object({
   "updatedAt": zod.string(),
   "environment": zod.enum(['sim', 'live']),
   "baseCurrency": zod.string(),
-  "positions": zod.array(PortfolioPosition),
+  "totalValue": zod.number(),
+  "totalAvailableCash": zod.number(),
+  "totalUnrealizedProfitLoss": zod.number(),
+  "accounts": zod.array(PortfolioAccount),
 })
 
 /**

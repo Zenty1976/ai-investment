@@ -417,7 +417,8 @@ export interface PortfolioPosition {
   assetType: string;
   exchange: string;
   currency: string;
-  accountId: string;
+  /** AccountKey this position belongs to */
+  accountKey: string;
   quantity: number;
   direction: string;
   averageOpenPrice: number;
@@ -430,12 +431,27 @@ export interface PortfolioPosition {
   isMarketOpen: boolean;
 }
 
+export interface PortfolioAccount {
+  accountKey: string;
+  accountId: string;
+  accountName: string;
+  accountType: string;
+  currency: string;
+  availableCash: number;
+  accountValue: number;
+  unrealizedProfitLoss: number;
+  positions: PortfolioPosition[];
+}
+
 export interface PortfolioSnapshot {
   updatedAt: string;
   environment: SaxoEnvironment;
-  /** Base currency of the account (e.g. "DKK"), for future Portfolio Analyzer use */
+  /** Base currency of the primary account */
   baseCurrency: string;
-  positions: PortfolioPosition[];
+  totalValue: number;
+  totalAvailableCash: number;
+  totalUnrealizedProfitLoss: number;
+  accounts: PortfolioAccount[];
 }
 
 export interface PortfolioRepositoryEntry {
