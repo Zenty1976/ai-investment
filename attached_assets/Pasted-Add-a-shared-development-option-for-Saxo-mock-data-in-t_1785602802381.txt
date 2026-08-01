@@ -1,0 +1,158 @@
+Add a shared development option for Saxo mock data in the existing Settings module.
+
+Purpose:
+
+Allow the application to test Saxo-dependent modules with realistic simulated Saxo responses when the Simulation account has no positions.
+
+The mock mode must be shared across the application, not implemented separately inside Portfolio Manager.
+
+Add this setting to the Saxo section in Settings:
+
+Use mock Saxo data
+
+Requirements:
+
+* Default value must be false.
+* Clearly mark it as development/debug only.
+* Persist the setting using the existing Settings storage.
+* Make the setting available through the shared Saxo/settings service so current and future modules can read it.
+* Do not create separate mock toggles inside individual modules.
+
+When mock mode is disabled:
+
+* Use the real Saxo API exactly as today.
+* Do not load or mix in any mock data.
+
+When mock mode is enabled:
+
+* Saxo-dependent modules may use realistic simulated Saxo API responses.
+* For now, implement this behaviour only for Portfolio Manager.
+* Future modules should be able to reuse the same shared setting.
+
+Portfolio Manager implementation:
+
+Do not hardcode mock positions in the UI, repository, normalisation code or route.
+
+Create one isolated mock Saxo data provider beside the existing Saxo integration layer.
+
+When mock mode is enabled, replace only the raw responses that would normally be returned by Saxo.
+
+Everything after the raw response must use the existing real pipeline unchanged:
+
+* Response parsing
+* Position normalisation
+* Multi-account handling
+* Currency handling
+* Portfolio totals
+* Analysis Repository storage
+* System logging
+* Frontend rendering
+
+The rest of the application must behave as if Saxo returned the data.
+
+When mock mode is enabled, Portfolio Manager must not call the real Saxo portfolio endpoints.
+
+Provide realistic mock responses for:
+
+* Account list
+* Client-level balance
+* Balance per account
+* Net positions per account
+
+Create realistic data for two or three accounts, for example:
+
+* Danish account in DKK
+* Foreign securities account in USD
+* Optional third account in EUR
+
+Create three open stock positions distributed across the accounts, for example:
+
+* Novo Nordisk on the DKK account
+* Microsoft on the USD account
+* Serve Robotics on the USD account
+
+The mock response objects must use the exact Saxo field names and structures that the existing parser expects.
+
+Include realistic fields for accounts:
+
+* AccountKey
+* AccountId
+* AccountType
+* Currency
+* DisplayName
+* ClientKey
+* Active
+
+Include realistic balance fields currently used by the parser, such as:
+
+* CashBalance
+* CashAvailableForTrading
+* TotalValue
+* Currency
+* Relevant margin fields if required
+
+Include realistic net-position fields:
+
+* NetPositionId
+* DisplayAndFormat.Description
+* DisplayAndFormat.Symbol
+* DisplayAndFormat.Currency
+* Exchange.Name
+* Exchange.ExchangeId
+* NetPositionBase.AccountId
+* NetPositionBase.Amount
+* NetPositionBase.AssetType
+* NetPositionBase.CanBeClosed
+* NetPositionBase.IsMarketOpen
+* NetPositionBase.OpeningDirection
+* NetPositionBase.Uic
+* NetPositionView.AverageOpenPrice
+* NetPositionView.CurrentPrice
+* NetPositionView.CurrentPriceDelayMinutes
+* NetPositionView.Exposure
+* NetPositionView.ExposureInBaseCurrency
+* NetPositionView.InstrumentPriceDayPercentChange
+* NetPositionView.ProfitLossOnTrade
+* NetPositionView.TradeCostsTotal
+* NetPositionView.Status
+
+Keep all mock response data in one dedicated file.
+
+Do not duplicate mock values elsewhere.
+
+Make the mock values internally consistent:
+
+* Quantity multiplied by current price should approximately match Exposure.
+* Profit/loss should match the difference between average open price and current price.
+* Account values should approximately match cash plus positions.
+* Client-level totals should be consistent with account-level totals using reasonable currency-conversion assumptions.
+
+System Log:
+
+When mock mode is used, write:
+
+* warning: “Portfolio update is using mock Saxo data”
+* info: “Mock portfolio loaded: X accounts, Y positions”
+* info: “Mock portfolio snapshot stored”
+
+Portfolio UI:
+
+When the currently displayed portfolio snapshot was created from mock data, show a small visible badge:
+
+Mock data
+
+Store a boolean field such as:
+
+isMockData: true | false
+
+inside the portfolio snapshot so the UI and future modules can identify the data source.
+
+Important rules:
+
+* Never mix mock and live Saxo data in the same update.
+* Do not modify Saxo authentication.
+* Do not store mock credentials.
+* Do not create a separate demo Portfolio Manager.
+* Do not change the existing Portfolio Manager data model more than necessary beyond adding isMockData.
+* Keep the current Portfolio Manager layout unchanged apart from the small Mock data badge.
+* Future Saxo-dependent modules must be able to read the same shared mock-mode setting from Settings.

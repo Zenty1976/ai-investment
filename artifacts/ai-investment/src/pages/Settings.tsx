@@ -11,6 +11,7 @@ import {
   useSaxoLogout,
   useSaxoSaveConfig,
   useSaxoSetEnvironment,
+  useSaxoSetMock,
 } from "@workspace/api-client-react"
 import type { SaxoStatus } from "@workspace/api-client-react"
 import {
@@ -24,6 +25,7 @@ import {
   Info,
   Copy,
   Check,
+  FlaskConical,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -108,6 +110,7 @@ function SaxoBankSection() {
   const logoutMutation = useSaxoLogout()
   const configMutation = useSaxoSaveConfig()
   const envMutation = useSaxoSetEnvironment()
+  const mockMutation = useSaxoSetMock()
 
   // Redirect URL override — local edit state, saved explicitly
   const [redirectOverride, setRedirectOverride] = useState("")
@@ -162,6 +165,10 @@ function SaxoBankSection() {
   const handleSetEnvironment = (env: "sim" | "live") => {
     if (env === status?.environment) return
     envMutation.mutate({ environment: env }, { onSuccess: () => refetch() })
+  }
+
+  const handleSetMock = (useMockData: boolean) => {
+    mockMutation.mutate({ useMockData }, { onSuccess: () => refetch() })
   }
 
   // ── Loading / error states ────────────────────────────────────────────────
@@ -346,6 +353,35 @@ function SaxoBankSection() {
             Leave blank to use the detected URL above. Saxo requires an exact match.
           </p>
         </div>
+      </Row>
+
+      {/* Mock Saxo data toggle — development/debug only */}
+      <Row label="Development">
+        <div className="flex items-center gap-3">
+          <button
+            role="switch"
+            aria-checked={status.useMockSaxoData}
+            onClick={() => handleSetMock(!status.useMockSaxoData)}
+            disabled={mockMutation.isPending}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 transition-colors focus-visible:outline-none disabled:opacity-50 ${
+              status.useMockSaxoData
+                ? "bg-amber-500/70 border-amber-500/70"
+                : "bg-muted/40 border-muted/40"
+            }`}
+          >
+            <span className={`pointer-events-none inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform mt-0 ${
+              status.useMockSaxoData ? "translate-x-3.5" : "translate-x-0"
+            }`} />
+          </button>
+          <div className="flex items-center gap-1.5">
+            <FlaskConical className="h-3 w-3 text-amber-400/70" />
+            <span className="text-xs text-foreground/70">Use mock Saxo data</span>
+          </div>
+        </div>
+        <p className="text-[11px] text-amber-400/60 mt-1.5 leading-snug">
+          Debug only — replaces Saxo API calls with simulated responses in Portfolio Manager.
+          Not for production use.
+        </p>
       </Row>
 
       {/* Error banner */}

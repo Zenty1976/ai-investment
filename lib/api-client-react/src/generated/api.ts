@@ -879,6 +879,40 @@ export const useSaxoSetEnvironment = (options?: {
   return useMutation({ mutationFn, ...mutationOptions });
 };
 
+// ── useSaxoSetMock ────────────────────────────────────────────────────────────
+
+export const saxoSetMock = (
+  body: { useMockData: boolean },
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<SaxoStatus>(`/api/settings/saxo/mock`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    ...options,
+  });
+};
+
+export const useSaxoSetMock = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saxoSetMock>>,
+    ErrorType<unknown>,
+    { useMockData: boolean }
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saxoSetMock>>,
+  ErrorType<unknown>,
+  { useMockData: boolean }
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saxoSetMock>>,
+    { useMockData: boolean }
+  > = (vars) => saxoSetMock(vars, requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
 // ── System Log ────────────────────────────────────────────────────────────────
 
 export const getGetSystemLogQueryKey = () => ['/api/system-log'] as const;

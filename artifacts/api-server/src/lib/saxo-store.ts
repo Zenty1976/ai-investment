@@ -25,6 +25,8 @@ export const SAXO_STORE_FILE = resolve(DATA_DIR, "saxo-connection.json");
 interface SaxoStoreData {
   /** "sim" | "live" — follows SAXO_ENVIRONMENT env var; may be overridden here */
   environment: "sim" | "live";
+  /** Development/debug flag — use mock Saxo data instead of real API calls */
+  useMockSaxoData?: boolean;
   /** User-supplied override for the OAuth callback URL */
   redirectUrlOverride?: string;
   /** Short-lived nonce stored during an active auth flow */
@@ -59,6 +61,8 @@ export interface SaxoPublicStatus {
   expiresAt?: string;
   connectedAt?: string;
   error?: string;
+  /** Development/debug flag — use mock Saxo data instead of real API calls */
+  useMockSaxoData: boolean;
 }
 
 // ── Store class ──────────────────────────────────────────────────────────────
@@ -135,6 +139,10 @@ class SaxoStore {
     return new Date(this.data.expiresAt).getTime() - Date.now() < withinMs;
   }
 
+  isMockMode(): boolean {
+    return this.data.useMockSaxoData ?? false;
+  }
+
   /** Returns a safe-to-send-to-frontend status snapshot (no tokens). */
   getPublicStatus(appKeyConfigured: boolean, appSecretConfigured: boolean): SaxoPublicStatus {
     const devDomain = process.env["REPLIT_DEV_DOMAIN"];
@@ -153,10 +161,16 @@ class SaxoStore {
       expiresAt: this.data.expiresAt,
       connectedAt: this.data.connectedAt,
       error: this.data.error,
+      useMockSaxoData: this.data.useMockSaxoData ?? false,
     };
   }
 
   // ── Writes ────────────────────────────────────────────────────────────────
+
+  setMockMode(useMock: boolean): void {
+    this.data.useMockSaxoData = useMock;
+    this._persistToDisk();
+  }
 
   setEnvironment(env: "sim" | "live"): void {
     this.data.environment = env;

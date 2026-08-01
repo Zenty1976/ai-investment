@@ -22,6 +22,7 @@ import {
   BarChart2,
   ChevronDown,
   ChevronUp,
+  FlaskConical,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -437,11 +438,19 @@ export default function PortfolioManager() {
                 Portfolio Manager
               </h2>
               {snapshot ? (
-                <p className="text-[11px] text-muted-foreground/50 mt-0.5">
-                  Last updated{" "}
-                  {formatDistanceToNow(new Date(snapshot.updatedAt), { addSuffix: true })}{" "}
-                  · {format(new Date(snapshot.updatedAt), "HH:mm 'd.' d MMM yyyy")}
-                </p>
+                <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                  <p className="text-[11px] text-muted-foreground/50">
+                    Last updated{" "}
+                    {formatDistanceToNow(new Date(snapshot.updatedAt), { addSuffix: true })}{" "}
+                    · {format(new Date(snapshot.updatedAt), "HH:mm 'd.' d MMM yyyy")}
+                  </p>
+                  {snapshot.isMockData && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-400/10 border border-amber-400/25 rounded px-1.5 py-0.5">
+                      <FlaskConical className="h-2.5 w-2.5" />
+                      Mock data
+                    </span>
+                  )}
+                </div>
               ) : isLoading ? (
                 <p className="text-[11px] text-muted-foreground/40 mt-0.5">Loading…</p>
               ) : (

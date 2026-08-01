@@ -204,6 +204,21 @@ settingsRouter.post("/settings/saxo/logout", (_req, res) => {
   res.json(saxoStore.getPublicStatus(appKeyConfigured, appSecretConfigured));
 });
 
+// ── POST /api/settings/saxo/mock ─────────────────────────────────────────────
+
+settingsRouter.post("/settings/saxo/mock", (req, res) => {
+  const { useMockData } = req.body as { useMockData?: unknown };
+  if (typeof useMockData !== "boolean") {
+    res.status(400).json({ error: "useMockData must be a boolean" });
+    return;
+  }
+  saxoStore.setMockMode(useMockData);
+  logger.info({ useMockData }, "[settings/saxo] Mock mode changed");
+  systemLog.logInfo("Settings", `Saxo mock data ${useMockData ? "enabled" : "disabled"}`);
+  const { appKeyConfigured, appSecretConfigured } = getSaxoConfigStatus();
+  res.json(saxoStore.getPublicStatus(appKeyConfigured, appSecretConfigured));
+});
+
 export default settingsRouter;
 
 // ── Token refresh helper (called from index.ts on an interval) ───────────────

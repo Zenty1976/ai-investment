@@ -15,6 +15,12 @@ import { analysisRepository } from "../lib/analysis-repository.js";
 import { saxoStore } from "../lib/saxo-store.js";
 import { logger } from "../lib/logger.js";
 import { systemLog } from "../lib/system-log.js";
+import {
+  mockAccounts,
+  mockClientBalance,
+  mockAccountBalances,
+  mockAccountPositions,
+} from "../lib/saxo-mock-data.js";
 
 const portfolioRouter = Router();
 
@@ -137,6 +143,8 @@ export interface PortfolioSnapshot {
   /** Sum of unrealizedProfitLoss across all accounts */
   totalUnrealizedProfitLoss: number;
   accounts: PortfolioAccount[];
+  /** True when this snapshot was built from mock data, not the real Saxo API */
+  isMockData?: boolean;
 }
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
@@ -330,6 +338,56 @@ async function buildSnapshot(
     totalAvailableCash,
     totalUnrealizedProfitLoss,
     accounts,
+    isMockData: false,
+  };
+}
+
+// ── Build snapshot from mock data ─────────────────────────────────────────────
+//
+// Replaces only the raw Saxo HTTP responses with mock data.
+// Everything after the raw response (normalisePosition, account building,
+// totals, repository storage, system logging) is the real pipeline unchanged.
+
+function buildSnapshotFromMock(env: "sim" | "live"): PortfolioSnapshot {
+  const accounts: PortfolioAccount[] = mockAccounts.map((acct) => {
+    const accountKey = acct.AccountKey;
+    const bal = mockAccountBalances[accountKey] ?? {};
+    const rawPositions = mockAccountPositions[accountKey] ?? [];
+
+    const positions = rawPositions.map((p) => normalisePosition(p as SaxoNetPosition, accountKey));
+    const unrealizedProfitLoss = positions.reduce((s, p) => s + p.profitLoss, 0);
+    const availableCash =
+      (bal as SaxoBalance).CashAvailableForTrading ??
+      (bal as SaxoBalance).CashBalance ??
+      0;
+
+    return {
+      accountKey,
+      accountId:           acct.AccountId,
+      accountName:         acct.DisplayName,
+      accountType:         acct.AccountType,
+      currency:            acct.Currency,
+      availableCash,
+      accountValue:        (bal as SaxoBalance).TotalValue ?? 0,
+      unrealizedProfitLoss,
+      positions,
+    };
+  });
+
+  const baseCurrency           = mockClientBalance.Currency;
+  const totalValue             = mockClientBalance.TotalValue;
+  const totalAvailableCash     = mockClientBalance.CashAvailableForTrading;
+  const totalUnrealizedProfitLoss = accounts.reduce((s, a) => s + a.unrealizedProfitLoss, 0);
+
+  return {
+    updatedAt:               new Date().toISOString(),
+    environment:             env,
+    baseCurrency,
+    totalValue,
+    totalAvailableCash,
+    totalUnrealizedProfitLoss,
+    accounts,
+    isMockData:              true,
   };
 }
 
@@ -357,20 +415,34 @@ portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
   }
 
   const env = saxoStore.getEnvironment();
+  const mockMode = saxoStore.isMockMode();
   systemLog.logUser("Portfolio Manager", "User manually started portfolio update");
 
   try {
-    const snapshot = await buildSnapshot(accessToken, env);
+    if (mockMode) {
+      systemLog.logWarning("Portfolio Manager", "Portfolio update is using mock Saxo data");
+    }
+
+    const snapshot = mockMode
+      ? buildSnapshotFromMock(env)
+      : await buildSnapshot(accessToken, env);
     const totalPositions = snapshot.accounts.reduce((s, a) => s + a.positions.length, 0);
     if (totalPositions === 0) {
       systemLog.logWarning("Portfolio Manager", "Saxo returned no open positions");
     }
     const cashStr = snapshot.totalAvailableCash.toLocaleString("da-DK", { maximumFractionDigits: 0 });
-    systemLog.logInfo(
-      "Portfolio Manager",
-      `Portfolio updated from Saxo: ${snapshot.accounts.length} account${snapshot.accounts.length !== 1 ? "s" : ""}, ${totalPositions} position${totalPositions !== 1 ? "s" : ""}, available cash ${cashStr} ${snapshot.baseCurrency}`
-    );
+    if (mockMode) {
+      systemLog.logInfo("Portfolio Manager", `Mock portfolio loaded: ${snapshot.accounts.length} account${snapshot.accounts.length !== 1 ? "s" : ""}, ${totalPositions} position${totalPositions !== 1 ? "s" : ""}`);
+    } else {
+      systemLog.logInfo(
+        "Portfolio Manager",
+        `Portfolio updated from Saxo: ${snapshot.accounts.length} account${snapshot.accounts.length !== 1 ? "s" : ""}, ${totalPositions} position${totalPositions !== 1 ? "s" : ""}, available cash ${cashStr} ${snapshot.baseCurrency}`
+      );
+    }
     const entry = analysisRepository.save<PortfolioSnapshot>(MODULE_NAME, snapshot);
+    if (mockMode) {
+      systemLog.logInfo("Portfolio Manager", "Mock portfolio snapshot stored");
+    }
     res.json(entry);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

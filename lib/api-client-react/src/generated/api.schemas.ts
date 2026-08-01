@@ -402,6 +402,8 @@ export interface SaxoStatus {
   expiresAt?: string;
   connectedAt?: string;
   error?: string;
+  /** Development/debug flag — use mock Saxo data instead of real API calls */
+  useMockSaxoData: boolean;
 }
 
 export interface SaxoSetEnvironmentBody {
@@ -452,6 +454,8 @@ export interface PortfolioSnapshot {
   totalAvailableCash: number;
   totalUnrealizedProfitLoss: number;
   accounts: PortfolioAccount[];
+  /** True when this snapshot was built from mock data, not the real Saxo API */
+  isMockData?: boolean;
 }
 
 export interface PortfolioRepositoryEntry {
