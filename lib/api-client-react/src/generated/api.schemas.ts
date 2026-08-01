@@ -485,6 +485,17 @@ export interface SystemLogEntry {
 export type PortfolioAnalysisOverallRating = 'Excellent' | 'Good' | 'Fair' | 'Weak';
 export type PortfolioAnalysisOverallOutlook = 'Bullish' | 'Moderately Bullish' | 'Neutral' | 'Moderately Bearish' | 'Bearish';
 
+export interface PortfolioAnalysisMainConclusion {
+  title: string;
+  reason: string;
+}
+
+export interface PortfolioAnalysisScoreDriver {
+  factor: string;
+  impact: 'Positive' | 'Negative';
+  reason: string;
+}
+
 export interface PortfolioAnalysisRisk {
   title: string;
   reason: string;
@@ -510,6 +521,8 @@ export interface PortfolioAnalysisAction {
 }
 
 export interface PortfolioAnalysis {
+  mainConclusion: PortfolioAnalysisMainConclusion;
+  scoreDrivers: PortfolioAnalysisScoreDriver[];
   executiveSummary: string;
   overallRating: PortfolioAnalysisOverallRating;
   overallOutlook: PortfolioAnalysisOverallOutlook;

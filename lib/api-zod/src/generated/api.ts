@@ -288,6 +288,15 @@ export const ListRepositoryEntriesResponse = zod.array(ListRepositoryEntriesResp
  * @summary Run portfolio analysis
  */
 export const RunPortfolioAnalysisResponse = zod.object({
+  "mainConclusion": zod.object({
+    "title": zod.string(),
+    "reason": zod.string()
+  }),
+  "scoreDrivers": zod.array(zod.object({
+    "factor": zod.string(),
+    "impact": zod.enum(['Positive', 'Negative']),
+    "reason": zod.string()
+  })).min(3).max(6),
   "executiveSummary": zod.string(),
   "overallRating": zod.enum(['Excellent', 'Good', 'Fair', 'Weak']),
   "overallOutlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),

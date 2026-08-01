@@ -29,39 +29,54 @@ const MAX_ATTEMPTS = 2;
 
 const SYSTEM_PROMPT = `You are an experienced institutional portfolio manager.
 
-Your task is to analyse the user's current portfolio for an investment horizon of approximately 1-3 months.
+Your task is to analyse the user's current portfolio for an investment horizon of approximately 1–3 months.
 
-IMPORTANT: Search the web for current market conditions, recent news and events relevant to the held positions before producing your analysis. You must perform a web search.
+INFORMATION PRIORITY:
+1. Current portfolio positions, position sizes, and cash
+2. Existing Company Monitor analyses for held companies (use as primary company-specific context)
+3. Sector Monitor
+4. Event Monitor
+5. Market Monitor
+6. News Monitor
+7. Web search (use to verify recent developments and identify important information published after the stored analyses)
 
-Use the supplied portfolio, market, sector, event and news information together with the web search results.
+Use the supplied module analyses as the primary analytical context.
+Use web search to verify recent developments and identify important information published after the stored analyses.
+Do not disregard or unnecessarily repeat the supplied analyses.
+If fresh web information conflicts with stored context, prefer the newer reliable information and mention the conflict in the analysis.
+Company-specific information should take priority over broad macro commentary when assessing an individual holding.
+Broad market information should only affect a position assessment when it is materially relevant.
 
-Evaluate:
-- portfolio quality
-- diversification
-- sector exposure
-- concentration risk
-- upcoming events
-- macroeconomic risks
-- company-specific risks
-- opportunities
-- missing exposure
-- overall outlook
+SCOPE — PORTFOLIO ANALYZER ONLY (not a Trade Decision Engine):
+Do not recommend explicit buy, sell, trim, add or hedge actions.
+Recommended actions must use language such as: Monitor, Review, Investigate, Watch, Reassess after, Prepare for.
+For example, write "Review Serve Robotics exposure before earnings because event risk is high" — not "Consider trimming Serve Robotics ahead of earnings".
 
-Explain your reasoning.
+ANALYTICAL BALANCE:
+Evaluate both the positive and negative consequences of major portfolio characteristics.
+For example, a large cash position may provide flexibility but may also create opportunity cost.
+Avoid one-sided conclusions.
 
-Base conclusions only on the supplied information and current web search.
+NO REPETITION:
+Do not repeat the same conclusion across Executive Summary, Weaknesses, Risks, Position Comments, Recommended Actions and Things to Watch.
+Each section must contribute a different type of information.
+Executive Summary must be concise — approximately 120 words maximum.
 
-Clearly distinguish between facts, reasonable expectations and analytical judgement.
+EVIDENCE-BASED REASONING:
+Explain why each important conclusion follows from the portfolio data, stored module context or verified current information.
+Avoid generic investment language.
+Clearly distinguish confirmed facts, reasonable expectations and analytical judgement.
 
 Return JSON only — no markdown, no code fences, no extra text.
 
 OUTPUT RULES:
 - Return exactly the JSON structure shown below — nothing else
 - portfolioScore: integer 0–100
+- scoreDrivers: 3–6 items explaining why the portfolio received its score
 - Do not include the timestamp or analysisDuration fields — the server sets those
 
 Return exactly:
-{"executiveSummary":"...","overallRating":"Excellent|Good|Fair|Weak","overallOutlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","portfolioScore":75,"strengths":["..."],"weaknesses":["..."],"topRisks":[{"title":"...","reason":"...","severity":"High|Medium|Low"}],"topOpportunities":[{"title":"...","reason":"...","confidence":"High|Medium|Low"}],"sectorAssessment":"...","positionComments":[{"ticker":"...","summary":"...","attention":"High|Medium|Low"}],"recommendedActions":[{"action":"...","reason":"...","priority":"High|Medium|Low"}],"thingsToWatch":["..."]}`;
+{"mainConclusion":{"title":"...","reason":"..."},"scoreDrivers":[{"factor":"...","impact":"Positive|Negative","reason":"..."}],"executiveSummary":"...","overallRating":"Excellent|Good|Fair|Weak","overallOutlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","portfolioScore":75,"strengths":["..."],"weaknesses":["..."],"topRisks":[{"title":"...","reason":"...","severity":"High|Medium|Low"}],"topOpportunities":[{"title":"...","reason":"...","confidence":"High|Medium|Low"}],"sectorAssessment":"...","positionComments":[{"ticker":"...","summary":"...","attention":"High|Medium|Low"}],"recommendedActions":[{"action":"...","reason":"...","priority":"High|Medium|Low"}],"thingsToWatch":["..."]}`;
 
 function buildUserPrompt(
   nowIso: string,
@@ -169,15 +184,44 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     }
   }
 
+  // ── Build Company Monitor alias map ──────────────────────────────────────
+  // Saxo display symbols (e.g. "NOVO B") may differ from the ticker stored in
+  // Company Monitor (e.g. "NVO"). We build a lookup from every stored
+  // company-monitor entry: normalised ticker → repository key.
+
+  const allRepoEntries = analysisRepository.getAll();
+  const companyMonitorAliasMap = new Map<string, string>(); // UPPER ticker → repo key
+  for (const entry of allRepoEntries) {
+    if (entry.moduleName.startsWith("company-monitor:")) {
+      // Map the key suffix itself
+      const keySuffix = entry.moduleName.slice("company-monitor:".length).toUpperCase();
+      companyMonitorAliasMap.set(keySuffix, entry.moduleName);
+      // Also map the stored company.ticker (may differ from key suffix)
+      const storedResult = entry.result as Record<string, unknown>;
+      const company = storedResult.company as Record<string, unknown> | undefined;
+      if (company?.ticker) {
+        companyMonitorAliasMap.set(String(company.ticker).toUpperCase(), entry.moduleName);
+      }
+    }
+  }
+
   // ── Load Company Monitor analyses for held positions ───────────────────────
 
   const companyContexts: Record<string, string> = {};
   const missingCompanyTickers: string[] = [];
 
   for (const ticker of tickers) {
-    const entry = analysisRepository.get<Record<string, unknown>>(
-      `company-monitor:${ticker}`
-    );
+    // 1. Try exact key match
+    let entry = analysisRepository.get<Record<string, unknown>>(`company-monitor:${ticker}`);
+
+    // 2. Fall back to alias map (handles Saxo display symbols like "NOVO B" → "NVO")
+    if (!entry) {
+      const aliasKey = companyMonitorAliasMap.get(ticker);
+      if (aliasKey) {
+        entry = analysisRepository.get<Record<string, unknown>>(aliasKey);
+      }
+    }
+
     if (entry) {
       const r = entry.result as Record<string, unknown>;
       companyContexts[ticker] = JSON.stringify({
@@ -356,6 +400,10 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
       // ── Meaningful system log entries ────────────────────────────────────
 
       systemLog.logInfo(MODULE_NAME, "Portfolio analysis completed");
+      systemLog.logInfo(
+        MODULE_NAME,
+        `Main conclusion: ${parsed.data.mainConclusion.title}`
+      );
       systemLog.logInfo(
         MODULE_NAME,
         `Overall rating: ${parsed.data.overallRating}`

@@ -1,0 +1,147 @@
+I reviewed the Portfolio Analyzer code. The architecture is good and Company Monitor data is already loaded, but please make the following focused improvements.
+
+1. Fix Company Monitor matching
+
+Portfolio positions may use Saxo symbols such as “NOVO B”, while Company Monitor may be stored under another ticker such as “NVO”.
+
+Do not assume the Saxo display symbol always equals the Company Monitor repository key.
+
+Use a stable instrument identifier or stored ticker mapping when available. At minimum, support an alias mapping between the portfolio position and the corresponding Company Monitor analysis.
+
+Log a warning only when no matching Company Monitor analysis can actually be found.
+
+2. Define information priority in the OpenAI prompt
+
+Add these rules:
+
+Information priority:
+
+1. Current portfolio positions, position sizes and cash
+2. Existing Company Monitor analyses for held companies
+3. Sector Monitor
+4. Event Monitor
+5. Market Monitor
+6. News Monitor
+7. Web search
+
+Company-specific information should take priority over broad macro commentary when assessing an individual holding.
+
+Broad market information should only affect a position assessment when it is materially relevant.
+
+3. Use web search as verification and supplementation
+
+Replace the current instruction that forces OpenAI to rebuild everything from web search.
+
+Tell OpenAI:
+
+Use the supplied module analyses as the primary analytical context.
+
+Use web search to verify recent developments and identify important information published after the stored analyses.
+
+Do not disregard or unnecessarily repeat the supplied analyses.
+
+If fresh web information conflicts with stored context, prefer the newer reliable information and mention the conflict in the analysis.
+
+4. Keep Portfolio Analyzer separate from Trade Decision Engine
+
+Do not recommend explicit buy, sell, trim, add or hedge actions in this module.
+
+Recommended actions should use language such as:
+
+Monitor
+Review
+Investigate
+Watch
+Reassess after
+Prepare for
+
+For example, replace:
+
+“Consider trimming Serve Robotics ahead of earnings”
+
+with:
+
+“Review Serve Robotics exposure before earnings because event risk is high.”
+
+Trade instructions will belong to a later Trade Decision Engine.
+
+5. Make the portfolio score explainable
+
+Add this field to the JSON:
+
+“scoreDrivers”: [
+{
+“factor”: “…”,
+“impact”: “Positive|Negative”,
+“reason”: “…”
+}
+]
+
+Return approximately 3–6 score drivers.
+
+They should explain why the portfolio received its score without pretending that each factor has a mathematically exact number.
+
+Display Score Drivers below the portfolio score, collapsed by default.
+
+6. Add a concise main conclusion
+
+Add this field:
+
+“mainConclusion”: {
+“title”: “…”,
+“reason”: “…”
+}
+
+It should contain the single most important conclusion about the portfolio in one short title and one concise explanation.
+
+Display it near the top, before the Executive Summary.
+
+7. Improve analytical balance
+
+Add this prompt rule:
+
+Evaluate both the positive and negative consequences of major portfolio characteristics.
+
+For example, a large cash position may provide flexibility but may also create opportunity cost.
+
+Avoid one-sided conclusions.
+
+8. Reduce repetition
+
+Add this prompt rule:
+
+Do not repeat the same conclusion in Executive Summary, Weaknesses, Risks, Position Comments, Recommended Actions and Things to Watch.
+
+Each section must contribute a different type of information.
+
+Keep Executive Summary concise, preferably no more than approximately 120 words.
+
+9. Make conclusions evidence-based
+
+Replace the general instruction “Explain your reasoning” with:
+
+Explain why each important conclusion follows from the portfolio data, stored module context or verified current information.
+
+Avoid generic investment language.
+
+Clearly distinguish confirmed facts, expectations and analytical judgement.
+
+10. Update the JSON schema
+
+Use the existing structure, but add:
+
+“mainConclusion”: {
+“title”: “…”,
+“reason”: “…”
+},
+“scoreDrivers”: [
+{
+“factor”: “…”,
+“impact”: “Positive|Negative”,
+“reason”: “…”
+}
+]
+
+Update the OpenAPI schema, generated types, backend validation and frontend together.
+
+Keep all existing repository behaviour, retry handling, System Log integration and overall UI design unchanged.

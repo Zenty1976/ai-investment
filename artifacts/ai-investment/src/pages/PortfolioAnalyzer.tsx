@@ -118,6 +118,7 @@ export default function PortfolioAnalyzer() {
   const [expandedOpps, setExpandedOpps] = useState<Set<number>>(new Set())
   const [expandedActions, setExpandedActions] = useState<Set<number>>(new Set())
   const [expandedPositions, setExpandedPositions] = useState<Set<number>>(new Set())
+  const [scoreDriversOpen, setScoreDriversOpen] = useState(false)
 
   // ── Persisted result (loaded from repository on mount) ────────────────────
   const { data: repoEntry, isLoading: repoLoading } = useGetRepositoryEntry(
@@ -309,8 +310,64 @@ export default function PortfolioAnalyzer() {
               </Button>
             </div>
           </div>
+
+          {/* ── Score Drivers (collapsible) ── */}
+          {analysis.scoreDrivers && analysis.scoreDrivers.length > 0 && (
+            <div className="mt-3 border-t border-border/20 pt-3">
+              <button
+                onClick={() => setScoreDriversOpen((v) => !v)}
+                className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronRight
+                  className={`h-3 w-3 transition-transform duration-150 ${scoreDriversOpen ? "rotate-90" : ""}`}
+                />
+                Score drivers
+                <span className="text-muted-foreground/40 ml-0.5">
+                  ({analysis.scoreDrivers.length})
+                </span>
+              </button>
+              {scoreDriversOpen && (
+                <div className="mt-2.5 space-y-2">
+                  {analysis.scoreDrivers.map((driver, i) => (
+                    <div key={i} className="flex items-start gap-2 text-[11px]">
+                      <span
+                        className={`shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold leading-none ${
+                          driver.impact === "Positive"
+                            ? "bg-emerald-500/15 text-emerald-400"
+                            : "bg-rose-500/15 text-rose-400"
+                        }`}
+                      >
+                        {driver.impact === "Positive" ? "▲" : "▼"}
+                      </span>
+                      <div className="leading-snug">
+                        <span className="text-foreground/90 font-medium">{driver.factor}</span>
+                        <span className="text-muted-foreground/60"> — {driver.reason}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* ── Main Conclusion ── */}
+      {analysis.mainConclusion && (
+        <Card className="bg-card/50 border-primary/20">
+          <CardContent className="p-4">
+            <p className="text-[11px] font-bold tracking-widest uppercase text-primary/60 mb-1.5">
+              Main Conclusion
+            </p>
+            <p className="text-sm font-semibold text-foreground leading-snug">
+              {analysis.mainConclusion.title}
+            </p>
+            <p className="text-xs text-foreground/65 mt-1.5 leading-relaxed">
+              {analysis.mainConclusion.reason}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Executive Summary ── */}
       <Card className="bg-card/40 border-card-border/40">
