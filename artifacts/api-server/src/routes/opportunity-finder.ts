@@ -459,9 +459,20 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
+      // ── Sort by overallScore and reassign ranks (do not trust AI ordering) ──
+
+      const sortedCandidates = [...parsed.data.topOpportunities]
+        .sort((a, b) => b.overallScore - a.overallScore)
+        .map((opp, i) => ({ ...opp, rank: i + 1 }));
+
+      req.log.info(
+        { order: sortedCandidates.map((o) => `${o.ticker}(${o.overallScore})`) },
+        "Candidates sorted by overallScore"
+      );
+
       // ── Post-process each candidate ────────────────────────────────────────
 
-      const enrichedOpportunities = parsed.data.topOpportunities.map((opp) => {
+      const enrichedOpportunities = sortedCandidates.map((opp) => {
         // 1. Override companyAnalysisAvailable — server is authoritative
         const resolved = companyIdentityStore.resolve(
           opp.ticker,
@@ -470,23 +481,31 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
         );
         const companyAnalysisAvailable = resolved !== null;
 
-        // 2. Clear catalyst dates that are in the past
+        // 2. Clear expired catalysts.
+        //    If catalystDate is in the past, the catalyst text is stale too — a
+        //    past date signals the AI described an already-occurred event as
+        //    upcoming. Clear both fields so the saved candidate contains no
+        //    expired catalyst. A past event is only valid if the text describes
+        //    its published result (no date needed), but that cannot be
+        //    distinguished programmatically, so we clear both conservatively.
         let catalystDate = opp.catalystDate;
+        let mainCatalyst = opp.mainCatalyst;
         if (catalystDate) {
           const d = new Date(catalystDate);
           if (!isNaN(d.getTime()) && d <= nowDate) {
             req.log.debug(
               { ticker: opp.ticker, catalystDate },
-              "Clearing past catalyst date"
+              "Clearing past catalyst date and text"
             );
             catalystDate = "";
+            mainCatalyst = "";
           }
         }
 
-        // 3. Compute status from history
+        // 3. Compute status using the corrected (server-assigned) rank
         const status = computeStatus(opp.ticker, opp.rank);
 
-        return { ...opp, companyAnalysisAvailable, catalystDate, status };
+        return { ...opp, companyAnalysisAvailable, catalystDate, mainCatalyst, status };
       });
 
       const enrichedData = { ...parsed.data, topOpportunities: enrichedOpportunities };

@@ -868,94 +868,355 @@
   "opportunity-finder": {
     "moduleName": "opportunity-finder",
     "result": {
-      "executiveSummary": "With substantial cash (~DKK 339k) and concentrated exposure in tech (Microsoft), healthcare (Novo Nordisk), and speculative robotics (Serve Robotics), the portfolio is under‑exposed to cyclicals, energy, materials, and industrials—sectors currently showing strength amid macro rotation, Middle East energy tensions, and capex momentum. Over the next 1–3 months, tactical additions in industrials, materials, energy, and select defensives can enhance diversification, capture event‑driven upside, and hedge macro risks.",
+      "executiveSummary": "With a large cash buffer and concentrated exposure to tech (Microsoft), healthcare (Novo Nordisk), and speculative robotics (Serve Robotics), the portfolio lacks exposure to cyclicals—particularly industrials, materials, and energy—that are currently benefiting from macro rotation and upcoming catalysts. Over the next 1–3 months, select companies in industrials (Caterpillar), materials (Freeport‑McMoRan), and healthcare (Eli Lilly) offer complementary exposure, upcoming earnings or events, and favorable sector momentum.",
       "overallOpportunityLevel": "High",
       "topOpportunities": [
         {
-          "company": "Nucor Corporation",
-          "ticker": "NUE",
-          "sector": "Materials/Industrials",
+          "rank": 1,
+          "company": "Caterpillar Inc.",
+          "ticker": "CAT",
+          "exchange": "NYSE",
+          "sector": "Industrials",
           "country": "USA",
-          "summary": "Steel producer reporting strong Q2 results, raising Q3 outlook, paying dividend on August 11.",
-          "whyItFits": "Diversifies into materials/industrial cyclicals, benefits from manufacturing rebound and capex tailwinds; dividend adds income.",
-          "mainCatalyst": "Q2 earnings beat and raised Q3 guidance, dividend payout August 11.",
-          "mainRisk": "Steel margins may compress if raw‑material costs rise or demand softens.",
+          "overallScore": 88,
+          "portfolioFit": 5,
+          "diversificationBenefit": 5,
+          "sectorMacroFit": 5,
+          "timing": 4,
+          "riskReward": 4,
+          "scoreReason": "Strong industrial momentum, upcoming earnings, and diversification away from tech/healthcare.",
+          "investmentThesis": [
+            "Caterpillar benefits directly from manufacturing and capex rebound.",
+            "Provides cyclicals exposure to balance tech/healthcare concentration."
+          ],
+          "whyNow": [
+            "Q2 earnings scheduled for August 4, 2026, offering a near‑term catalyst."
+          ],
+          "whyThisPortfolio": [
+            "Offsets tech/healthcare bias with industrial cyclicals.",
+            "Leverages sector rotation into capex‑sensitive names."
+          ],
+          "mainCatalyst": "Q2 2026 earnings release",
+          "catalystDate": "2026-08-04",
+          "mainRisk": "Cyclical sensitivity to macro slowdown or weaker capex demand.",
           "confidence": "High",
-          "priority": "High"
+          "priority": "High",
+          "positionSizeSuitability": "Medium",
+          "positionSizeReason": "Significant sector diversification but still cyclical; moderate allocation prudent.",
+          "companyAnalysisAvailable": false,
+          "sources": [
+            {
+              "title": "United States Earnings Calendar: Upcoming Companies Reporting Earnings",
+              "url": "source",
+              "published": "2026-07-?"
+            }
+          ],
+          "status": "Unchanged"
         },
         {
-          "company": "Crane Company",
-          "ticker": "CR",
-          "sector": "Industrials",
+          "rank": 2,
+          "company": "Freeport‑McMoRan Inc.",
+          "ticker": "FCX",
+          "exchange": "NYSE",
+          "sector": "Materials",
           "country": "USA",
-          "summary": "Industrial flow‑technology provider with strong earnings beat history and positive earnings surprise potential.",
-          "whyItFits": "Adds exposure to aerospace/defense and process flow markets, aligning with industrials momentum and geopolitical tailwinds.",
-          "mainCatalyst": "Q2 earnings expected July 28 with high surprise potential.",
-          "mainRisk": "Guidance may disappoint if aerospace demand slows.",
+          "overallScore": 82,
+          "portfolioFit": 4,
+          "diversificationBenefit": 5,
+          "sectorMacroFit": 5,
+          "timing": 3,
+          "riskReward": 4,
+          "scoreReason": "Materials sector strong momentum; adds commodity exposure and inflation hedge.",
+          "investmentThesis": [
+            "Freeport‑McMoRan benefits from rising materials demand and commodity pricing.",
+            "Diversifies into materials, complementing existing tech/healthcare holdings."
+          ],
+          "whyNow": [
+            "Q2 earnings already reported (July 23), but momentum in materials remains strong and macro data (CPI) upcoming may boost commodity names."
+          ],
+          "whyThisPortfolio": [
+            "Provides inflation‑sensitive exposure missing in current holdings.",
+            "Balances growth‑oriented tech/healthcare with value/commodity cyclicals."
+          ],
+          "mainCatalyst": "Post‑earnings momentum and CPI data (August 12)",
+          "catalystDate": "2026-08-12",
+          "mainRisk": "Commodity price volatility and sensitivity to global demand.",
           "confidence": "Medium",
-          "priority": "Medium"
+          "priority": "Medium",
+          "positionSizeSuitability": "Medium",
+          "positionSizeReason": "Materials exposure useful but volatile; moderate allocation advised.",
+          "companyAnalysisAvailable": false,
+          "sources": [
+            {
+              "title": "United States Earnings Calendar: Upcoming Companies Reporting Earnings",
+              "url": "source",
+              "published": "2026-07-?"
+            },
+            {
+              "title": "Sector Monitor: Materials improving",
+              "url": "source",
+              "published": "2026-?"
+            }
+          ],
+          "status": "New"
         },
         {
-          "company": "Halliburton",
-          "ticker": "HAL",
-          "sector": "Energy Services",
+          "rank": 3,
+          "company": "Eli Lilly and Company",
+          "ticker": "LLY",
+          "exchange": "NYSE",
+          "sector": "Health Care",
           "country": "USA",
-          "summary": "Oil‑services leader benefiting from elevated oil prices amid Middle East tensions.",
-          "whyItFits": "Provides energy/commodity exposure and levered upside to oil capex; diversifies away from tech/healthcare.",
-          "mainCatalyst": "Higher drilling activity and oil‑price driven demand for services.",
-          "mainRisk": "Ceasefire or oil price drop could reverse gains.",
-          "confidence": "Medium",
-          "priority": "Medium"
+          "overallScore": 78,
+          "portfolioFit": 3,
+          "diversificationBenefit": 2,
+          "sectorMacroFit": 4,
+          "timing": 4,
+          "riskReward": 4,
+          "scoreReason": "Healthcare exposure with strong fundamentals and upcoming earnings; complements Novo Nordisk with US‑centric pharma.",
+          "investmentThesis": [
+            "Eli Lilly offers high‑quality healthcare exposure with strong R&D and earnings growth.",
+            "Diversifies geographic/regional pharma exposure beyond Novo Nordisk."
+          ],
+          "whyNow": [
+            "Q2 earnings scheduled for August 5, 2026, providing a timely catalyst."
+          ],
+          "whyThisPortfolio": [
+            "Balances GLP‑1 exposure with broader pharma leader.",
+            "Reduces reliance on European healthcare dynamics."
+          ],
+          "mainCatalyst": "Q2 2026 earnings release",
+          "catalystDate": "2026-08-05",
+          "mainRisk": "Pharma regulatory or pricing pressure; guidance may disappoint.",
+          "confidence": "High",
+          "priority": "High",
+          "positionSizeSuitability": "Medium",
+          "positionSizeReason": "High‑quality defensive exposure; moderate allocation to balance risk.",
+          "companyAnalysisAvailable": false,
+          "sources": [
+            {
+              "title": "United States Earnings Calendar: Upcoming Companies Reporting Earnings",
+              "url": "source",
+              "published": "2026-07-?"
+            },
+            {
+              "title": "Sector Monitor: Health Care moderately strong",
+              "url": "source",
+              "published": "2026-?"
+            }
+          ],
+          "status": "Down"
         },
         {
-          "company": "TotalEnergies",
-          "ticker": "TTE",
-          "sector": "Energy",
-          "country": "France",
-          "summary": "Integrated energy major posting record profits amid Middle East war and elevated oil prices.",
-          "whyItFits": "Offers defensive energy exposure with strong cash flow and dividend; hedges inflation and geopolitical risk.",
-          "mainCatalyst": "Sustained high oil prices and strong earnings.",
-          "mainRisk": "Oil price normalization or peace deal could pressure margins.",
-          "confidence": "Medium",
-          "priority": "Medium"
-        },
-        {
-          "company": "AMETEK, Inc.",
-          "ticker": "AME",
-          "sector": "Industrials",
+          "rank": 4,
+          "company": "NVIDIA Corporation",
+          "ticker": "NVDA",
+          "exchange": "NASDAQ",
+          "sector": "Technology",
           "country": "USA",
-          "summary": "Diversified industrials with strong short‑cycle order growth and data‑center demand.",
-          "whyItFits": "Captures industrials momentum and AI infrastructure capex beyond tech; complements Microsoft exposure.",
-          "mainCatalyst": "Accelerating short‑cycle orders and robust demand across segments.",
-          "mainRisk": "Cyclical slowdown or capex pullback could weigh.",
+          "overallScore": 75,
+          "portfolioFit": 3,
+          "diversificationBenefit": 1,
+          "sectorMacroFit": 4,
+          "timing": 4,
+          "riskReward": 5,
+          "scoreReason": "AI leader with upcoming earnings and strong momentum; adds to tech exposure but high upside.",
+          "investmentThesis": [
+            "NVIDIA is a core AI infrastructure play with strong earnings growth.",
+            "Captures AI capex tailwinds missing from current Microsoft‑centric tech exposure."
+          ],
+          "whyNow": [
+            "Q2 earnings scheduled for August 26, 2026, offering a near‑term catalyst."
+          ],
+          "whyThisPortfolio": [
+            "Deepens AI exposure beyond Microsoft.",
+            "Leverages sector momentum in AI infrastructure."
+          ],
+          "mainCatalyst": "Q2 2026 earnings release",
+          "catalystDate": "2026-08-26",
+          "mainRisk": "High valuation and tech sector volatility.",
+          "confidence": "High",
+          "priority": "Medium",
+          "positionSizeSuitability": "Small",
+          "positionSizeReason": "High upside but high valuation; small tactical allocation advised.",
+          "companyAnalysisAvailable": true,
+          "sources": [
+            {
+              "title": "United States Earnings Calendar: Upcoming Companies Reporting Earnings",
+              "url": "source",
+              "published": "2026-07-?"
+            },
+            {
+              "title": "News Monitor: AI capex ramps up",
+              "url": "source",
+              "published": "2026-?"
+            }
+          ],
+          "status": "Unchanged"
+        },
+        {
+          "rank": 5,
+          "company": "The Home Depot, Inc.",
+          "ticker": "HD",
+          "exchange": "NYSE",
+          "sector": "Consumer Discretionary",
+          "country": "USA",
+          "overallScore": 70,
+          "portfolioFit": 3,
+          "diversificationBenefit": 4,
+          "sectorMacroFit": 3,
+          "timing": 3,
+          "riskReward": 3,
+          "scoreReason": "Consumer cyclical exposure with housing/capex sensitivity; upcoming earnings.",
+          "investmentThesis": [
+            "Home Depot benefits from resilient consumer spending and housing activity.",
+            "Adds consumer cyclical exposure to diversify away from tech/healthcare."
+          ],
+          "whyNow": [
+            "Q2 earnings scheduled for August 18, 2026."
+          ],
+          "whyThisPortfolio": [
+            "Provides exposure to domestic consumer and housing trends.",
+            "Balances portfolio across sectors."
+          ],
+          "mainCatalyst": "Q2 2026 earnings release",
+          "catalystDate": "2026-08-18",
+          "mainRisk": "Consumer slowdown or housing weakness.",
           "confidence": "Medium",
-          "priority": "Low"
+          "priority": "Low",
+          "positionSizeSuitability": "Small",
+          "positionSizeReason": "Cyclical and consumer‑sensitive; small tactical allocation appropriate.",
+          "companyAnalysisAvailable": false,
+          "sources": [
+            {
+              "title": "United States Earnings Calendar: Upcoming Companies Reporting Earnings",
+              "url": "source",
+              "published": "2026-07-?"
+            }
+          ],
+          "status": "Unchanged"
         }
       ],
       "sectorIdeas": [
         {
           "sector": "Industrials",
-          "reason": "Strong sector momentum from manufacturing rebound, capex tailwinds, and rotation away from crowded tech; adds diversification and event‑driven upside."
-        },
-        {
-          "sector": "Energy / Energy Services",
-          "reason": "Middle East tensions and elevated oil prices support energy and services; provides inflation hedge and macro diversification."
+          "reason": "Strong momentum from manufacturing rebound and capex tailwinds; under‑represented in current portfolio."
         },
         {
           "sector": "Materials",
-          "reason": "Materials benefit from global industrial recovery and pricing power; complements industrial exposure and adds cyclicality."
+          "reason": "Benefiting from global industrial recovery and inflation hedge; adds commodity exposure."
         }
       ],
       "thingsToResearch": [
-        "Exact Q2 earnings dates and guidance for Crane, AMETEK, Halliburton, TotalEnergies to time entries.",
-        "Valuation multiples and dividend yields for each candidate relative to peers.",
-        "Correlation of these sectors with existing holdings to optimize diversification.",
-        "Macro scenario sensitivity: oil price path, manufacturing PMI trends, central bank policy shifts."
+        "Confirm Caterpillar’s earnings guidance and analyst expectations ahead of August 4 release.",
+        "Assess Freeport‑McMoRan’s Q2 results and commodity price sensitivity post‑CPI data.",
+        "Review Eli Lilly’s guidance and GLP‑1 pipeline updates relative to Novo Nordisk exposure."
       ],
-      "timestamp": "2026-08-01T19:55:11.978Z",
-      "analysisDuration": 7246
+      "timestamp": "2026-08-01T21:04:29.333Z",
+      "analysisDuration": 11780
     },
     "createdAt": "2026-08-01T19:45:44.507Z",
-    "updatedAt": "2026-08-01T19:55:19.225Z"
+    "updatedAt": "2026-08-01T21:04:41.116Z"
+  },
+  "opportunity-finder-history": {
+    "moduleName": "opportunity-finder-history",
+    "result": {
+      "entries": [
+        {
+          "timestamp": "2026-08-01T21:04:29.333Z",
+          "overallOpportunityLevel": "High",
+          "candidates": [
+            {
+              "ticker": "CAT",
+              "company": "Caterpillar Inc.",
+              "rank": 1,
+              "overallScore": 88,
+              "priority": "High",
+              "confidence": "High"
+            },
+            {
+              "ticker": "FCX",
+              "company": "Freeport‑McMoRan Inc.",
+              "rank": 2,
+              "overallScore": 82,
+              "priority": "Medium",
+              "confidence": "Medium"
+            },
+            {
+              "ticker": "LLY",
+              "company": "Eli Lilly and Company",
+              "rank": 3,
+              "overallScore": 78,
+              "priority": "High",
+              "confidence": "High"
+            },
+            {
+              "ticker": "NVDA",
+              "company": "NVIDIA Corporation",
+              "rank": 4,
+              "overallScore": 75,
+              "priority": "Medium",
+              "confidence": "High"
+            },
+            {
+              "ticker": "HD",
+              "company": "The Home Depot, Inc.",
+              "rank": 5,
+              "overallScore": 70,
+              "priority": "Low",
+              "confidence": "Medium"
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-08-01T20:53:01.128Z",
+          "overallOpportunityLevel": "High",
+          "candidates": [
+            {
+              "ticker": "CAT",
+              "company": "Caterpillar Inc.",
+              "rank": 1,
+              "overallScore": 88,
+              "priority": "High",
+              "confidence": "High"
+            },
+            {
+              "ticker": "LLY",
+              "company": "Eli Lilly and Company",
+              "rank": 2,
+              "overallScore": 82,
+              "priority": "High",
+              "confidence": "High"
+            },
+            {
+              "ticker": "MP",
+              "company": "MP Materials Corp.",
+              "rank": 3,
+              "overallScore": 78,
+              "priority": "Medium",
+              "confidence": "Medium"
+            },
+            {
+              "ticker": "NVDA",
+              "company": "NVIDIA Corporation",
+              "rank": 4,
+              "overallScore": 75,
+              "priority": "Medium",
+              "confidence": "High"
+            },
+            {
+              "ticker": "HD",
+              "company": "The Home Depot, Inc.",
+              "rank": 5,
+              "overallScore": 70,
+              "priority": "Medium",
+              "confidence": "Medium"
+            }
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-08-01T20:53:13.160Z",
+    "updatedAt": "2026-08-01T21:04:41.117Z"
   }
 }
