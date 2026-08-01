@@ -8,6 +8,7 @@ import NewsMonitor from '@/pages/NewsMonitor';
 import SectorMonitor from '@/pages/SectorMonitor';
 import CompanyMonitor from '@/pages/CompanyMonitor';
 import PortfolioManager from '@/pages/PortfolioManager';
+import PortfolioAnalyzer from '@/pages/PortfolioAnalyzer';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/sectors" component={() => <SectorMonitor initialExpanded={true} />} />
         <Route path="/companies" component={CompanyMonitor} />
         <Route path="/portfolio" component={PortfolioManager} />
+        <Route path="/analyse" component={PortfolioAnalyzer} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />

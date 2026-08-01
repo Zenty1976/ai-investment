@@ -284,6 +284,44 @@ export const ListRepositoryEntriesResponse = zod.array(ListRepositoryEntriesResp
 
 
 /**
+ * Performs a complete AI-powered portfolio analysis for a 1–3 month investment horizon
+ * @summary Run portfolio analysis
+ */
+export const RunPortfolioAnalysisResponse = zod.object({
+  "executiveSummary": zod.string(),
+  "overallRating": zod.enum(['Excellent', 'Good', 'Fair', 'Weak']),
+  "overallOutlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),
+  "portfolioScore": zod.number().int().min(0).max(100),
+  "strengths": zod.array(zod.string()),
+  "weaknesses": zod.array(zod.string()),
+  "topRisks": zod.array(zod.object({
+    "title": zod.string(),
+    "reason": zod.string(),
+    "severity": zod.enum(['High', 'Medium', 'Low'])
+  })),
+  "topOpportunities": zod.array(zod.object({
+    "title": zod.string(),
+    "reason": zod.string(),
+    "confidence": zod.enum(['High', 'Medium', 'Low'])
+  })),
+  "sectorAssessment": zod.string(),
+  "positionComments": zod.array(zod.object({
+    "ticker": zod.string(),
+    "summary": zod.string(),
+    "attention": zod.enum(['High', 'Medium', 'Low'])
+  })),
+  "recommendedActions": zod.array(zod.object({
+    "action": zod.string(),
+    "reason": zod.string(),
+    "priority": zod.enum(['High', 'Medium', 'Low'])
+  })),
+  "thingsToWatch": zod.array(zod.string()),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
+/**
  * @summary Get a specific module's latest result
  */
 export const GetRepositoryEntryParams = zod.object({

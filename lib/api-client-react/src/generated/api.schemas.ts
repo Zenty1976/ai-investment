@@ -480,6 +480,54 @@ export interface SystemLogEntry {
   details?: unknown;
 }
 
+// ── Portfolio Analyzer ────────────────────────────────────────────────────────
+
+export type PortfolioAnalysisOverallRating = 'Excellent' | 'Good' | 'Fair' | 'Weak';
+export type PortfolioAnalysisOverallOutlook = 'Bullish' | 'Moderately Bullish' | 'Neutral' | 'Moderately Bearish' | 'Bearish';
+
+export interface PortfolioAnalysisRisk {
+  title: string;
+  reason: string;
+  severity: 'High' | 'Medium' | 'Low';
+}
+
+export interface PortfolioAnalysisOpportunity {
+  title: string;
+  reason: string;
+  confidence: 'High' | 'Medium' | 'Low';
+}
+
+export interface PortfolioAnalysisPositionComment {
+  ticker: string;
+  summary: string;
+  attention: 'High' | 'Medium' | 'Low';
+}
+
+export interface PortfolioAnalysisAction {
+  action: string;
+  reason: string;
+  priority: 'High' | 'Medium' | 'Low';
+}
+
+export interface PortfolioAnalysis {
+  executiveSummary: string;
+  overallRating: PortfolioAnalysisOverallRating;
+  overallOutlook: PortfolioAnalysisOverallOutlook;
+  /** Integer 0–100 */
+  portfolioScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  topRisks: PortfolioAnalysisRisk[];
+  topOpportunities: PortfolioAnalysisOpportunity[];
+  sectorAssessment: string;
+  positionComments: PortfolioAnalysisPositionComment[];
+  recommendedActions: PortfolioAnalysisAction[];
+  thingsToWatch: string[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SaxoConfigBody {

@@ -1,0 +1,255 @@
+Create a new module called "Portfolio Analyzer".
+
+Follow exactly the same architecture, layout and coding style as the existing modules.
+
+Create:
+
+- A separate backend module
+- A separate frontend page
+- A new sidebar menu item called "Portfolio Analyzer"
+
+Reuse:
+
+- Shared OpenAI service
+- Shared Analysis Repository
+- Shared System Log
+- Existing persistence model
+
+Do not call Saxo directly.
+
+Never communicate directly with other modules.
+
+Only read stored data from the Analysis Repository.
+
+Store the result under:
+
+portfolio-analyzer
+
+Load the previous analysis automatically when opening the page.
+
+Only perform a new analysis when the user presses:
+
+Update Analysis
+
+If the analysis fails, continue showing the previous successful result.
+
+--------------------------------------------------
+Data used
+--------------------------------------------------
+
+Read the latest stored data from:
+
+- Portfolio Manager
+- Market Monitor
+- Event Monitor
+- News Monitor
+- Sector Monitor
+
+Also load Company Monitor analyses for companies currently held in the portfolio if available.
+
+If a Company Monitor analysis does not exist for a holding, continue without it.
+
+--------------------------------------------------
+OpenAI
+--------------------------------------------------
+
+Use the existing OpenAI Responses API with Web Search enabled.
+
+Provide all stored analyses as context.
+
+Do not simply summarize them.
+
+Perform one complete portfolio analysis.
+
+--------------------------------------------------
+Prompt
+--------------------------------------------------
+
+Tell OpenAI:
+
+"You are an experienced institutional portfolio manager.
+
+Your task is to analyse the user's current portfolio for an investment horizon of approximately 1-3 months.
+
+Use the supplied portfolio, market, sector, event and news information.
+
+Evaluate:
+
+- portfolio quality
+- diversification
+- sector exposure
+- concentration risk
+- upcoming events
+- macroeconomic risks
+- company-specific risks
+- opportunities
+- missing exposure
+- overall outlook
+
+Explain your reasoning.
+
+Base conclusions only on the supplied information and current web search.
+
+Clearly distinguish between facts, reasonable expectations and analytical judgement.
+
+Return JSON only."
+
+--------------------------------------------------
+JSON format
+--------------------------------------------------
+
+Return:
+
+{
+  "executiveSummary": "...",
+  "overallRating": "Excellent|Good|Fair|Weak",
+  "overallOutlook": "Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish",
+  "portfolioScore": 0-100,
+
+  "strengths": [
+    "..."
+  ],
+
+  "weaknesses": [
+    "..."
+  ],
+
+  "topRisks": [
+    {
+      "title": "...",
+      "reason": "...",
+      "severity": "Low|Medium|High"
+    }
+  ],
+
+  "topOpportunities": [
+    {
+      "title": "...",
+      "reason": "...",
+      "confidence": "Low|Medium|High"
+    }
+  ],
+
+  "sectorAssessment": "...",
+
+  "positionComments": [
+    {
+      "ticker": "...",
+      "summary": "...",
+      "attention": "Low|Medium|High"
+    }
+  ],
+
+  "recommendedActions": [
+    {
+      "action": "...",
+      "reason": "...",
+      "priority": "Low|Medium|High"
+    }
+  ],
+
+  "thingsToWatch": [
+    "..."
+  ]
+}
+
+Validate JSON before storing.
+
+Never store invalid JSON.
+
+--------------------------------------------------
+Frontend
+--------------------------------------------------
+
+Reuse the same layout style as the other modules.
+
+Display:
+
+Executive Summary
+
+Overall Rating
+
+Portfolio Score
+
+Overall Outlook
+
+Strengths
+
+Weaknesses
+
+Top Risks
+
+Top Opportunities
+
+Sector Assessment
+
+Position Comments
+
+Recommended Actions
+
+Things To Watch
+
+Use badges for:
+
+- Overall Rating
+- Overall Outlook
+- Severity
+- Confidence
+- Priority
+- Attention
+
+Allow longer explanations to be collapsed/expanded like in the other modules.
+
+--------------------------------------------------
+System Log
+--------------------------------------------------
+
+Keep logging concise and useful.
+
+Do not log technical steps such as loading individual modules or preparing prompts.
+
+Only log information that helps the user understand what the AI concluded and why.
+
+Examples:
+
+user:
+"User manually started portfolio analysis"
+
+warning:
+"Portfolio analysis performed without Company Monitor data for MSFT"
+
+warning:
+"Portfolio analysis is based on mock portfolio data"
+
+info:
+"Portfolio analysis completed"
+
+info:
+"Overall rating: Good"
+
+info:
+"Overall outlook: Moderately Bullish"
+
+internal:
+"Main concern identified: High exposure to Healthcare because 48% of portfolio is concentrated in one sector."
+
+internal:
+"Main opportunity identified: Industrials appear underrepresented compared to current market strength."
+
+internal:
+"Recommended highest-priority action: Monitor Novo earnings before considering increasing exposure."
+
+error:
+"Portfolio analysis failed"
+
+The System Log should explain the important reasoning behind the conclusions, not every internal processing step.
+
+Never log API keys, secrets, tokens, complete prompts or complete OpenAI responses.
+
+--------------------------------------------------
+Goal
+--------------------------------------------------
+
+This module should be the first true AI reasoning module.
+
+Its purpose is not to repeat the other modules, but to combine them into one coherent assessment of the user's portfolio and explain why that assessment was reached.

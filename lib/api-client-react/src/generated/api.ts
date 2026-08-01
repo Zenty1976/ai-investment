@@ -27,6 +27,7 @@ import type {
   HealthStatus,
   MarketAnalysis,
   NewsAnalysis,
+  PortfolioAnalysis,
   PortfolioRepositoryEntry,
   RepositoryEntry,
   SaxoConfigBody,
@@ -951,6 +952,28 @@ export const useClearSystemLog = (options?: {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {};
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearSystemLog>>, void> = () =>
     clearSystemLog(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── Portfolio Analyzer ────────────────────────────────────────────────────────
+
+export const runPortfolioAnalysis = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<PortfolioAnalysis>('/api/portfolio-analyzer/analyze', {
+    method: 'POST',
+    ...options,
+  });
+
+export const useRunPortfolioAnalysis = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof runPortfolioAnalysis>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof runPortfolioAnalysis>>, ErrorType<unknown>, void> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runPortfolioAnalysis>>, void> = () =>
+    runPortfolioAnalysis(requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 
