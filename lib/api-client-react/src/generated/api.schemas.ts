@@ -396,10 +396,16 @@ export interface SaxoStatus {
   appSecretConfigured: boolean;
   connected: boolean;
   environment: SaxoEnvironment;
+  /** Auto-detected callback URL built from REPLIT_DEV_DOMAIN on the server */
+  detectedCallbackUrl: string;
   redirectUrlOverride?: string;
   expiresAt?: string;
   connectedAt?: string;
   error?: string;
+}
+
+export interface SaxoSetEnvironmentBody {
+  environment: SaxoEnvironment;
 }
 
 export interface SaxoConfigBody {

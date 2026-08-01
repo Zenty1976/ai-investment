@@ -165,6 +165,30 @@ settingsRouter.get("/settings/saxo/callback", async (req, res) => {
   }
 });
 
+// ── POST /api/settings/saxo/environment ──────────────────────────────────────
+
+settingsRouter.post("/settings/saxo/environment", (req, res) => {
+  const { environment } = req.body as { environment?: string };
+
+  if (environment !== "sim" && environment !== "live") {
+    res.status(400).json({ error: 'environment must be "sim" or "live"' });
+    return;
+  }
+
+  // Switching environments invalidates existing tokens (they are env-specific)
+  const wasConnected = saxoStore.isConnected();
+  saxoStore.setEnvironment(environment);
+  if (wasConnected) {
+    saxoStore.clearTokens();
+    logger.info({ environment }, "[settings/saxo] Environment changed — tokens cleared");
+  } else {
+    logger.info({ environment }, "[settings/saxo] Environment changed");
+  }
+
+  const { appKeyConfigured, appSecretConfigured } = getSaxoConfigStatus();
+  res.json(saxoStore.getPublicStatus(appKeyConfigured, appSecretConfigured));
+});
+
 // ── POST /api/settings/saxo/logout ───────────────────────────────────────────
 
 settingsRouter.post("/settings/saxo/logout", (_req, res) => {

@@ -195,10 +195,15 @@ export const GetSaxoStatusResponse = zod.object({
   "appSecretConfigured": zod.boolean(),
   "connected": zod.boolean(),
   "environment": zod.enum(['sim', 'live']),
+  "detectedCallbackUrl": zod.string(),
   "redirectUrlOverride": zod.string().optional(),
   "expiresAt": zod.string().optional(),
   "connectedAt": zod.string().optional(),
   "error": zod.string().optional(),
+})
+
+export const SaxoSetEnvironmentBody = zod.object({
+  "environment": zod.enum(['sim', 'live']),
 })
 
 /**

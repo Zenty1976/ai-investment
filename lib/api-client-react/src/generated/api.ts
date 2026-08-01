@@ -31,6 +31,7 @@ import type {
   SaxoConfigBody,
   SaxoLoginBody,
   SaxoLoginResponse,
+  SaxoSetEnvironmentBody,
   SaxoStatus,
   SectorAnalysis
 } from './api.schemas';
@@ -789,6 +790,40 @@ export const useSaxoLogout = (options?: {
     Awaited<ReturnType<typeof saxoLogout>>,
     void
   > = () => saxoLogout(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── useSaxoSetEnvironment ─────────────────────────────────────────────────────
+
+export const saxoSetEnvironment = (
+  body: SaxoSetEnvironmentBody,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<SaxoStatus>(`/api/settings/saxo/environment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    ...options,
+  });
+};
+
+export const useSaxoSetEnvironment = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saxoSetEnvironment>>,
+    ErrorType<unknown>,
+    SaxoSetEnvironmentBody
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saxoSetEnvironment>>,
+  ErrorType<unknown>,
+  SaxoSetEnvironmentBody
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saxoSetEnvironment>>,
+    SaxoSetEnvironmentBody
+  > = (vars) => saxoSetEnvironment(vars, requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 

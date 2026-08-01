@@ -53,6 +53,8 @@ export interface SaxoPublicStatus {
   appSecretConfigured: boolean;
   connected: boolean;
   environment: "sim" | "live";
+  /** Auto-detected callback URL built from REPLIT_DEV_DOMAIN on the server */
+  detectedCallbackUrl: string;
   redirectUrlOverride?: string;
   expiresAt?: string;
   connectedAt?: string;
@@ -135,12 +137,18 @@ class SaxoStore {
 
   /** Returns a safe-to-send-to-frontend status snapshot (no tokens). */
   getPublicStatus(appKeyConfigured: boolean, appSecretConfigured: boolean): SaxoPublicStatus {
+    const devDomain = process.env["REPLIT_DEV_DOMAIN"];
+    const detectedCallbackUrl = devDomain
+      ? `https://${devDomain}/api/settings/saxo/callback`
+      : `http://localhost:${process.env["PORT"] ?? 8080}/api/settings/saxo/callback`;
+
     return {
       configured: appKeyConfigured && appSecretConfigured,
       appKeyConfigured,
       appSecretConfigured,
       connected: this.isConnected(),
       environment: this.data.environment,
+      detectedCallbackUrl,
       redirectUrlOverride: this.data.redirectUrlOverride,
       expiresAt: this.data.expiresAt,
       connectedAt: this.data.connectedAt,

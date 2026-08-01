@@ -10,6 +10,7 @@ import {
   useSaxoLogin,
   useSaxoLogout,
   useSaxoSaveConfig,
+  useSaxoSetEnvironment,
 } from "@workspace/api-client-react"
 import type { SaxoStatus } from "@workspace/api-client-react"
 import {
@@ -32,19 +33,6 @@ import { format, formatDistanceToNow } from "date-fns"
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function envLabel(env: SaxoStatus["environment"]) {
-  return env === "live" ? "Live" : "Simulation"
-}
-
-function envBadgeVariant(env: SaxoStatus["environment"]): "positive" | "warning" {
-  return env === "live" ? "positive" : "warning"
-}
-
-/** Builds the auto-detected callback URL from the current browser origin. */
-function autoDetectCallbackUrl(): string {
-  return `${window.location.origin}/api/settings/saxo/callback`
-}
-
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   const handleCopy = () => {
@@ -57,14 +45,14 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       className="text-muted-foreground hover:text-foreground transition-colors"
-      title="Copy"
+      title="Copy to clipboard"
     >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3.5 w-3.5 text-green-500/80" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   )
 }
 
-// ── Saxo status indicator ─────────────────────────────────────────────────────
+// ── Saxo status badge ─────────────────────────────────────────────────────────
 
 function SaxoStatusBadge({ status }: { status: SaxoStatus }) {
   if (status.connected) {
@@ -83,7 +71,7 @@ function SaxoStatusBadge({ status }: { status: SaxoStatus }) {
   )
 }
 
-// ── Section wrapper ───────────────────────────────────────────────────────────
+// ── Layout helpers ────────────────────────────────────────────────────────────
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -119,14 +107,13 @@ function SaxoBankSection() {
   const loginMutation = useSaxoLogin()
   const logoutMutation = useSaxoLogout()
   const configMutation = useSaxoSaveConfig()
+  const envMutation = useSaxoSetEnvironment()
 
-  const detectedUrl = autoDetectCallbackUrl()
-
-  // Redirect URL override — local state so the user can edit before saving
-  const [redirectOverride, setRedirectOverride] = useState<string>("")
+  // Redirect URL override — local edit state, saved explicitly
+  const [redirectOverride, setRedirectOverride] = useState("")
   const [overrideSaved, setOverrideSaved] = useState(false)
 
-  // Populate from server data on first load
+  // Populate from server on first load
   useEffect(() => {
     if (status?.redirectUrlOverride !== undefined) {
       setRedirectOverride(status.redirectUrlOverride ?? "")
@@ -136,16 +123,13 @@ function SaxoBankSection() {
   // Handle saxo_success / saxo_error query params after OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const success = params.get("saxo_success")
-    const error = params.get("saxo_error")
-    if (success || error) {
-      // Clean up URL without page reload
-      const clean = window.location.pathname
-      window.history.replaceState({}, "", clean)
+    if (params.get("saxo_success") || params.get("saxo_error")) {
+      window.history.replaceState({}, "", window.location.pathname)
       refetch()
     }
   }, [refetch])
 
+  const detectedUrl = status?.detectedCallbackUrl ?? ""
   const activeRedirectUrl = redirectOverride.trim() || detectedUrl
 
   const handleSaveRedirectUrl = () => {
@@ -165,18 +149,20 @@ function SaxoBankSection() {
     const returnUrl = window.location.href.split("?")[0]
     loginMutation.mutate(
       { redirectUrl: activeRedirectUrl, returnUrl },
-      {
-        onSuccess: (data) => {
-          // Navigate to Saxo authorization page
-          window.location.href = data.authUrl
-        },
-      }
+      { onSuccess: (data) => { window.location.href = data.authUrl } }
     )
   }
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, { onSuccess: () => refetch() })
   }
+
+  const handleSetEnvironment = (env: "sim" | "live") => {
+    if (env === status?.environment) return
+    envMutation.mutate({ environment: env }, { onSuccess: () => refetch() })
+  }
+
+  // ── Loading / error states ────────────────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -203,19 +189,15 @@ function SaxoBankSection() {
     )
   }
 
+  // ── Main content ──────────────────────────────────────────────────────────
+
   return (
     <SectionCard title="Saxo Bank">
 
-      {/* Status + env row */}
+      {/* Status row */}
       <Row label="Status">
         <div className="flex items-center gap-2 flex-wrap">
           <SaxoStatusBadge status={status} />
-          <Badge
-            variant={envBadgeVariant(status.environment)}
-            className="text-[10px] uppercase tracking-wider px-1.5 py-0"
-          >
-            {envLabel(status.environment)}
-          </Badge>
           <button
             onClick={() => refetch()}
             disabled={isRefetching}
@@ -227,21 +209,56 @@ function SaxoBankSection() {
         </div>
       </Row>
 
-      {/* Credentials configured */}
+      {/* Environment toggle */}
+      <Row label="Environment">
+        <div className="flex items-center gap-1 rounded-md border border-border/40 p-0.5 w-fit">
+          {(["sim", "live"] as const).map((env) => {
+            const active = status.environment === env
+            return (
+              <button
+                key={env}
+                onClick={() => handleSetEnvironment(env)}
+                disabled={envMutation.isPending}
+                className={`px-3 py-1 text-xs rounded font-medium transition-colors ${
+                  active
+                    ? env === "live"
+                      ? "bg-green-600/20 text-green-400 border border-green-600/30"
+                      : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {env === "sim" ? "Simulation" : "Live"}
+              </button>
+            )
+          })}
+        </div>
+        {status.environment === "live" && (
+          <p className="text-[11px] text-amber-400/70 mt-1">
+            Live environment — real money is at risk.
+          </p>
+        )}
+        {status.connected && envMutation.isSuccess && (
+          <p className="text-[11px] text-muted-foreground/50 mt-1">
+            Tokens cleared — please log in again for the new environment.
+          </p>
+        )}
+      </Row>
+
+      {/* Credentials */}
       <Row label="Credentials">
         <div className="flex items-center gap-3 flex-wrap text-xs">
-          <span className={`flex items-center gap-1 ${status.appKeyConfigured ? "text-green-500/80" : "text-muted-foreground/50"}`}>
-            {status.appKeyConfigured
-              ? <CheckCircle2 className="h-3.5 w-3.5" />
-              : <XCircle className="h-3.5 w-3.5" />}
-            App Key
-          </span>
-          <span className={`flex items-center gap-1 ${status.appSecretConfigured ? "text-green-500/80" : "text-muted-foreground/50"}`}>
-            {status.appSecretConfigured
-              ? <CheckCircle2 className="h-3.5 w-3.5" />
-              : <XCircle className="h-3.5 w-3.5" />}
-            App Secret
-          </span>
+          {[
+            { label: "App Key", ok: status.appKeyConfigured },
+            { label: "App Secret", ok: status.appSecretConfigured },
+          ].map(({ label, ok }) => (
+            <span
+              key={label}
+              className={`flex items-center gap-1 ${ok ? "text-green-500/80" : "text-muted-foreground/50"}`}
+            >
+              {ok ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+              {label}
+            </span>
+          ))}
         </div>
         {(!status.appKeyConfigured || !status.appSecretConfigured) && (
           <p className="text-[11px] text-muted-foreground/50 mt-1">
@@ -251,7 +268,7 @@ function SaxoBankSection() {
         )}
       </Row>
 
-      {/* Token expiry (connected only) */}
+      {/* Token expiry when connected */}
       {status.connected && status.expiresAt && (
         <Row label="Token expires">
           <span className="text-xs text-foreground/70">
@@ -263,7 +280,7 @@ function SaxoBankSection() {
         </Row>
       )}
 
-      {/* Connected at (connected only) */}
+      {/* Connected at when connected */}
       {status.connected && status.connectedAt && (
         <Row label="Connected">
           <span className="text-xs text-muted-foreground/60">
@@ -272,13 +289,13 @@ function SaxoBankSection() {
         </Row>
       )}
 
-      {/* Auto-detected redirect URL */}
+      {/* Detected redirect URL (server-computed) */}
       <Row label="Detected URL">
         <div className="flex items-center gap-2 min-w-0">
           <code className="text-[11px] text-primary/70 bg-muted/30 rounded px-1.5 py-0.5 break-all">
-            {detectedUrl}
+            {detectedUrl || "—"}
           </code>
-          <CopyButton text={detectedUrl} />
+          {detectedUrl && <CopyButton text={detectedUrl} />}
         </div>
       </Row>
 
@@ -289,7 +306,7 @@ function SaxoBankSection() {
             <Input
               value={redirectOverride}
               onChange={(e) => setRedirectOverride(e.target.value)}
-              placeholder={detectedUrl}
+              placeholder={detectedUrl || "https://your-domain/api/settings/saxo/callback"}
               className="h-8 text-xs bg-background/60 border-border/60 focus:border-primary/50 font-mono"
             />
             <Button
@@ -337,7 +354,7 @@ function SaxoBankSection() {
         </div>
       )}
 
-      {/* Divider + action buttons */}
+      {/* Action buttons */}
       <div className="pt-1 border-t border-border/30 flex items-center gap-2 flex-wrap">
         {status.connected ? (
           <Button
@@ -358,11 +375,9 @@ function SaxoBankSection() {
             disabled={loginMutation.isPending || !status.configured}
             className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loginMutation.isPending ? (
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <LogIn className="h-3.5 w-3.5" />
-            )}
+            {loginMutation.isPending
+              ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              : <LogIn className="h-3.5 w-3.5" />}
             Login to Saxo
           </Button>
         )}
@@ -383,7 +398,6 @@ export default function Settings() {
   return (
     <div className="space-y-3 pb-8 animate-in fade-in duration-500">
 
-      {/* Page header */}
       <Card className="bg-card/60 border-card-border/50">
         <CardContent className="p-4">
           <h2 className="text-xs font-bold tracking-widest uppercase text-muted-foreground">
@@ -395,7 +409,6 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Saxo Bank integration */}
       <SaxoBankSection />
 
     </div>
