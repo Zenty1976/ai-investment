@@ -741,105 +741,131 @@
   "portfolio-analyzer": {
     "moduleName": "portfolio-analyzer",
     "result": {
-      "executiveSummary": "The portfolio is modestly sized and heavily concentrated in just three positions—Novo Nordisk B (DKK), Microsoft (USD), and Serve Robotics (USD)—with significant cash reserves. Market conditions are mixed: macro risks from Middle East tensions and inflation persist, while AI capex and healthcare innovation offer tailwinds. Over the next 1–3 months, the portfolio’s defensive healthcare and tech exposure provides some resilience, but concentration and event risk (e.g., Serve Robotics earnings, U.S. macro data) warrant caution.",
+      "mainConclusion": {
+        "title": "Balanced portfolio with strong liquidity and mixed exposure",
+        "reason": "The portfolio holds high cash (~53%), a large position in defensive healthcare (Novo Nordisk), and exposure to high‑growth tech (Microsoft) and speculative robotics (Serve Robotics). This mix provides flexibility and upside potential, but also concentration and event risk over the 1–3 month horizon."
+      },
+      "scoreDrivers": [
+        {
+          "factor": "High cash allocation",
+          "impact": "Positive",
+          "reason": "With ~DKK 339k in cash (~53% of total value), the portfolio has strong liquidity to respond to short‑term market moves or redeploy into opportunities."
+        },
+        {
+          "factor": "Concentration in few positions",
+          "impact": "Negative",
+          "reason": "Only three holdings—Novo Nordisk, Microsoft, Serve Robotics—create idiosyncratic risk and limited diversification."
+        },
+        {
+          "factor": "Exposure to defensive healthcare",
+          "impact": "Positive",
+          "reason": "Novo Nordisk offers quality defensive exposure amid macro uncertainty and inflation pressures."
+        },
+        {
+          "factor": "Tech and AI upside",
+          "impact": "Positive",
+          "reason": "Microsoft’s recent strong earnings and AI momentum support potential near‑term gains."
+        },
+        {
+          "factor": "Speculative robotics risk",
+          "impact": "Negative",
+          "reason": "Serve Robotics is highly speculative, with ongoing losses, dilution risk, and upcoming earnings event."
+        }
+      ],
+      "executiveSummary": "The portfolio is well‑positioned for short‑term flexibility, with over half in cash and exposure to both defensive healthcare and growth tech. Microsoft’s recent earnings and AI strength offer near‑term upside, while Novo Nordisk provides stability amid macro uncertainty. However, the concentrated holdings and speculative nature of Serve Robotics introduce elevated idiosyncratic and event risk. Upcoming earnings and macro data could drive volatility. Overall, the portfolio balances liquidity and opportunity, but requires active monitoring of key events.",
       "overallRating": "Fair",
       "overallOutlook": "Neutral",
-      "portfolioScore": 60,
+      "portfolioScore": 68,
       "strengths": [
-        "High cash buffer (~53% of portfolio) provides flexibility",
-        "Exposure to healthcare (Novo Nordisk) offers defensive quality and innovation upside",
-        "Microsoft benefits from strong AI capex trends and strategic partnerships"
+        "High cash buffer provides flexibility",
+        "Defensive exposure via Novo Nordisk",
+        "Strong recent momentum in Microsoft"
       ],
       "weaknesses": [
-        "High concentration in only three names and two sectors",
-        "Serve Robotics is small, speculative, and event‑driven",
-        "Limited diversification across sectors and geographies"
+        "High concentration in three names",
+        "Speculative exposure to Serve Robotics",
+        "Limited sector diversification"
       ],
       "topRisks": [
         {
-          "title": "Geopolitical/Energy Shock",
-          "reason": "Middle East conflict continues to drive oil volatility and inflation, pressuring markets and central bank policy.",
+          "title": "Serve Robotics earnings and dilution risk",
+          "reason": "Q2 results on August 6 may highlight continued losses, dilution from share issuance, and integration costs, potentially pressuring the stock.",
           "severity": "High"
         },
         {
-          "title": "Serve Robotics Q2 Results",
-          "reason": "Upcoming earnings on August 6 could trigger sharp moves in this small‑cap speculative position.",
+          "title": "Novo Nordisk legal and sentiment risk",
+          "reason": "Recent lawsuit against Eli Lilly and ADR weakness may weigh on sentiment and share price in short term.",
           "severity": "Medium"
         },
         {
-          "title": "Novo Nordisk Legal/Clinical Risks",
-          "reason": "Recent lawsuit vs Eli Lilly and mixed clinical updates (e.g., ZEUS trial) may weigh on sentiment.",
+          "title": "Macro data volatility",
+          "reason": "Upcoming U.S. employment (Aug 7) and CPI (Aug 12) releases could shift risk appetite and impact tech and healthcare sectors.",
           "severity": "Medium"
         }
       ],
       "topOpportunities": [
         {
-          "title": "Novo Nordisk EU Wegovy Pill Approval",
-          "reason": "Oral GLP‑1 approval in EU expands market and supports growth.",
+          "title": "Microsoft AI momentum",
+          "reason": "Strong Q3 results and AI capex tailwinds may drive further gains in the near term.",
           "confidence": "High"
         },
         {
-          "title": "Microsoft AI Partnerships and Capex Momentum",
-          "reason": "Strong AI infrastructure demand and partnerships (e.g., with 3M, Databricks) support earnings.",
-          "confidence": "High"
+          "title": "Novo Nordisk buy‑back support",
+          "reason": "Expanded share repurchase program may underpin share price and provide downside support.",
+          "confidence": "Medium"
         },
         {
-          "title": "Serve Robotics Edge AI Expansion",
-          "reason": "Edge AI product debut and revenue growth could catalyze upside if execution impresses.",
+          "title": "Serve Robotics strategic expansion",
+          "reason": "Diversification into laundry, healthcare robotics and fleet productivity improvements could catalyze re‑rating if execution is credible.",
           "confidence": "Low"
         }
       ],
-      "sectorAssessment": "Portfolio is skewed toward healthcare and technology. Healthcare (Novo Nordisk) aligns with moderately strong sector trends; technology (Microsoft) benefits from AI capex but sector is weakening overall; Serve Robotics is speculative and adds volatility.",
+      "sectorAssessment": "Healthcare (Novo) offers defensive stability; Technology (Microsoft) benefits from AI momentum; Robotics (Serve) remains speculative and volatile.",
       "positionComments": [
         {
           "ticker": "NOVO B",
-          "summary": "Defensive healthcare exposure with recent EU approval of oral Wegovy and legal/clinical developments; solid quality but watch litigation and trial news.",
+          "summary": "Defensive healthcare anchor with buy‑back support but legal headline risk; stable near‑term outlook.",
           "attention": "Medium"
         },
         {
           "ticker": "MSFT",
-          "summary": "Strong AI momentum via partnerships and infrastructure build‑out; benefits from capex cycle though tech sector sentiment is fragile.",
-          "attention": "Low"
+          "summary": "Strong earnings and AI momentum underpin near‑term upside, though valuation and macro sensitivity remain.",
+          "attention": "High"
         },
         {
           "ticker": "SERV",
-          "summary": "Highly speculative small‑cap; upcoming Q2 results (Aug 6) and product launches could drive volatility.",
+          "summary": "Highly speculative robotics play with upcoming Q2 results and dilution risk; volatile and event‑driven.",
           "attention": "High"
         }
       ],
       "recommendedActions": [
         {
-          "action": "Consider trimming Serve Robotics ahead of earnings",
-          "reason": "High event risk and speculative nature; freeing cash reduces volatility.",
+          "action": "Monitor Serve Robotics Q2 results on August 6",
+          "reason": "Earnings and commentary will be key to assessing dilution, revenue trajectory and investor sentiment.",
           "priority": "High"
         },
         {
-          "action": "Monitor Novo Nordisk legal and clinical developments closely",
-          "reason": "Lawsuit and trial updates could impact sentiment; be ready to adjust exposure.",
+          "action": "Review Novo Nordisk legal developments",
+          "reason": "The lawsuit vs Eli Lilly and ADR weakness could affect sentiment; monitor for updates.",
           "priority": "Medium"
         },
         {
-          "action": "Maintain Microsoft position",
-          "reason": "Strong fundamentals and AI tailwinds support medium‑term upside; sector rotation may favor quality tech.",
-          "priority": "Low"
-        },
-        {
-          "action": "Explore adding exposure to Industrials or Materials",
-          "reason": "These sectors are improving and underrepresented in portfolio; could enhance diversification.",
+          "action": "Watch U.S. macro data (employment, CPI)",
+          "reason": "These releases may shift market tone and impact tech and healthcare exposures.",
           "priority": "Medium"
         }
       ],
       "thingsToWatch": [
-        "U.S. Employment report (Aug 7) and CPI (Aug 12) for Fed policy direction",
-        "Oil price and Middle East developments affecting inflation and risk sentiment",
-        "Serve Robotics Q2 earnings and webcast (Aug 6)",
-        "Novo Nordisk legal filings and ZEUS trial updates",
-        "Sector rotation trends into Industrials/Materials"
+        "Serve Robotics Q2 webcast on August 6",
+        "U.S. Employment data release on August 7",
+        "U.S. CPI release on August 12",
+        "Novo Nordisk ADR and legal news flow",
+        "Microsoft AI capex commentary and market reaction"
       ],
-      "timestamp": "2026-08-01T18:06:08.951Z",
-      "analysisDuration": 6980
+      "timestamp": "2026-08-01T18:18:15.949Z",
+      "analysisDuration": 9385
     },
     "createdAt": "2026-08-01T17:55:42.469Z",
-    "updatedAt": "2026-08-01T18:06:15.931Z"
+    "updatedAt": "2026-08-01T18:18:25.335Z"
   }
 }

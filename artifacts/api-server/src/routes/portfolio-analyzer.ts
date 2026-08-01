@@ -17,6 +17,7 @@ import { systemLog } from "../lib/system-log.js";
 import { RunPortfolioAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
+import { companyIdentityStore } from "../lib/company-identity";
 
 const router: IRouter = Router();
 
@@ -53,6 +54,12 @@ SCOPE — PORTFOLIO ANALYZER ONLY (not a Trade Decision Engine):
 Do not recommend explicit buy, sell, trim, add or hedge actions.
 Recommended actions must use language such as: Monitor, Review, Investigate, Watch, Reassess after, Prepare for.
 For example, write "Review Serve Robotics exposure before earnings because event risk is high" — not "Consider trimming Serve Robotics ahead of earnings".
+
+POSITION ATTENTION LEVELS:
+Use attention=High only when a position requires close monitoring because of material risk, uncertainty or an imminent catalyst — for example a near-term earnings release, a regulatory decision, significant recent price volatility, or a deteriorating fundamental situation.
+Do not assign High merely because the company is large, well-known or performing well.
+Use attention=Medium for positions that warrant periodic review without urgency.
+Use attention=Low for positions that are stable and require no near-term action.
 
 ANALYTICAL BALANCE:
 Evaluate both the positive and negative consequences of major portfolio characteristics.
@@ -186,60 +193,76 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     }
   }
 
-  // ── Build Company Monitor alias map ──────────────────────────────────────
-  // Saxo display symbols (e.g. "NOVO B") may differ from the ticker stored in
-  // Company Monitor (e.g. "NVO"). We build a lookup from every stored
-  // company-monitor entry: normalised ticker → repository key.
+  // ── Build Company Monitor candidate list ─────────────────────────────────
+  // Collect all stored company-monitor entries as candidates for identity
+  // resolution. The companyIdentityStore resolves Saxo display symbols
+  // (e.g. "NOVO B") to the correct repository key using a 5-step chain:
+  // UIC → ISIN → saved alias → exact ticker → normalised name.
 
   const allRepoEntries = analysisRepository.getAll();
-  const companyMonitorAliasMap = new Map<string, string>(); // UPPER ticker → repo key
-  for (const entry of allRepoEntries) {
-    if (entry.moduleName.startsWith("company-monitor:")) {
-      // Map the key suffix itself
-      const keySuffix = entry.moduleName.slice("company-monitor:".length).toUpperCase();
-      companyMonitorAliasMap.set(keySuffix, entry.moduleName);
-      // Also map the stored company.ticker (may differ from key suffix)
-      const storedResult = entry.result as Record<string, unknown>;
-      const company = storedResult.company as Record<string, unknown> | undefined;
-      if (company?.ticker) {
-        companyMonitorAliasMap.set(String(company.ticker).toUpperCase(), entry.moduleName);
-      }
-    }
-  }
+  const companyMonitorCandidates = allRepoEntries
+    .filter((e) => e.moduleName.startsWith("company-monitor:"))
+    .map((e) => ({
+      key: e.moduleName,
+      result: e.result as Record<string, unknown>,
+    }));
 
   // ── Load Company Monitor analyses for held positions ───────────────────────
 
   const companyContexts: Record<string, string> = {};
   const missingCompanyTickers: string[] = [];
+  const matchLog: Array<{ symbol: string; key: string; method: string }> = [];
 
   for (const ticker of tickers) {
-    // 1. Try exact key match
-    let entry = analysisRepository.get<Record<string, unknown>>(`company-monitor:${ticker}`);
-
-    // 2. Fall back to alias map (handles Saxo display symbols like "NOVO B" → "NVO")
-    if (!entry) {
-      const aliasKey = companyMonitorAliasMap.get(ticker);
-      if (aliasKey) {
-        entry = analysisRepository.get<Record<string, unknown>>(aliasKey);
+    // Find the original position entry so we can pass name for step-5 matching
+    let posName: string | null = null;
+    for (const account of accounts) {
+      const posArr = Array.isArray(account.positions)
+        ? (account.positions as Array<Record<string, unknown>>)
+        : [];
+      const found = posArr.find(
+        (p) =>
+          String(p.symbol ?? p.ticker ?? "")
+            .trim()
+            .toUpperCase() === ticker
+      );
+      if (found) {
+        posName = String(found.name ?? "");
+        break;
       }
     }
 
-    if (entry) {
-      const r = entry.result as Record<string, unknown>;
-      companyContexts[ticker] = JSON.stringify({
-        executiveSummary: r.executiveSummary,
-        investmentView: r.investmentView,
-        currentSituation: r.currentSituation,
-        catalysts: r.catalysts,
-        risks: r.risks,
-        earningsAndGuidance: r.earningsAndGuidance,
-        marketSentiment: r.marketSentiment,
-        keyThingsToWatch: r.keyThingsToWatch,
-      });
+    const resolved = companyIdentityStore.resolve(
+      ticker,
+      { companyName: posName },
+      companyMonitorCandidates
+    );
+
+    if (resolved) {
+      const entry = analysisRepository.get<Record<string, unknown>>(resolved.key);
+      if (entry) {
+        const r = entry.result as Record<string, unknown>;
+        companyContexts[ticker] = JSON.stringify({
+          executiveSummary: r.executiveSummary,
+          investmentView: r.investmentView,
+          currentSituation: r.currentSituation,
+          catalysts: r.catalysts,
+          risks: r.risks,
+          earningsAndGuidance: r.earningsAndGuidance,
+          marketSentiment: r.marketSentiment,
+          keyThingsToWatch: r.keyThingsToWatch,
+        });
+        matchLog.push({ symbol: ticker, key: resolved.key, method: resolved.method });
+      } else {
+        missingCompanyTickers.push(ticker);
+      }
     } else {
       missingCompanyTickers.push(ticker);
     }
   }
+
+  // Debug-only: log which Company Monitor analyses were matched and how
+  req.log.debug({ matchLog }, "Company Monitor identity resolution");
 
   for (const ticker of missingCompanyTickers) {
     systemLog.logWarning(
