@@ -34,7 +34,8 @@ import type {
   SaxoLoginResponse,
   SaxoSetEnvironmentBody,
   SaxoStatus,
-  SectorAnalysis
+  SectorAnalysis,
+  SystemLogEntry
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -878,5 +879,44 @@ export const useSaxoSetEnvironment = (options?: {
   return useMutation({ mutationFn, ...mutationOptions });
 };
 
+// ── System Log ────────────────────────────────────────────────────────────────
 
+export const getGetSystemLogQueryKey = () => ['/api/system-log'] as const;
+
+export const getSystemLog = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<SystemLogEntry[]>('/api/system-log', options);
+
+export const useGetSystemLog = <
+  TData = Awaited<ReturnType<typeof getSystemLog>>,
+  TError = ErrorType<unknown>
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getSystemLog>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = getGetSystemLogQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemLog>>> = () =>
+    getSystemLog(requestOptions);
+  return useQuery({ queryKey, queryFn, ...queryOptions });
+};
+
+export const clearSystemLog = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<{ ok: boolean }>('/api/system-log', {
+    method: 'DELETE',
+    ...options,
+  });
+
+export const useClearSystemLog = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof clearSystemLog>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof clearSystemLog>>, ErrorType<unknown>, void> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearSystemLog>>, void> = () =>
+    clearSystemLog(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
 

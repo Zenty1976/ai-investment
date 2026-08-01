@@ -17,6 +17,7 @@
  * Invalid results are never stored.
  */
 import { Router, type IRouter } from "express";
+import { systemLog } from "../lib/system-log.js";
 import { RunCompanyAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
@@ -129,6 +130,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       ? req.body.companyName.trim()
       : undefined;
   req.log.info({ ticker, companyName }, "Running company monitor analysis with web search");
+  systemLog.logUser("Company Monitor", `User manually started company analysis for ${ticker}`);
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
@@ -227,6 +229,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       ));
     } catch (err) {
       req.log.error({ err }, "AI service call failed");
+      systemLog.logError("Company Monitor", `Company analysis failed for ${ticker}: ${err instanceof Error ? err.message : "AI service call failed"}`);
       res.status(500).json({
         error: err instanceof Error ? err.message : "AI service call failed",
       });
@@ -292,6 +295,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       }
 
       analysisRepository.save(repositoryKey, parsed.data);
+      systemLog.logInfo("Company Monitor", `Company analysis completed for ${ticker}: rating ${parsed.data.investmentView.rating}`);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

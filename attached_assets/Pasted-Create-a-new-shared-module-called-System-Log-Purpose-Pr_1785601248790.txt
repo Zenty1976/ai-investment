@@ -1,0 +1,129 @@
+Create a new shared module called “System Log”.
+
+Purpose:
+Provide one central console-like view where all modules can write operational messages, user actions, internal decisions, warnings and errors.
+
+Architecture:
+
+* Create a shared backend logging service.
+* Create a separate frontend page called “System Log”.
+* Add a new “System Log” item to the sidebar.
+* Do not let modules write directly to the System Log UI.
+* All modules must write through the shared logging service.
+
+Persistence:
+
+* Keep the latest 500 log entries.
+* Store them in memory and persist them to a JSON file.
+* Load the saved log entries on server startup.
+* If the file is missing or invalid, start with an empty log without crashing.
+* Exclude the log file from Git.
+
+Each log entry must contain:
+
+* id
+* timestamp
+* module
+* level
+* message
+* optional details
+
+Allowed levels:
+
+* user
+* info
+* warning
+* error
+* internal
+
+Visual meaning:
+
+* user = green
+* info = neutral blue
+* warning = amber
+* error = red
+* internal = gray
+
+Logging service API:
+Provide simple methods such as:
+
+* logUser(module, message, details?)
+* logInfo(module, message, details?)
+* logWarning(module, message, details?)
+* logError(module, message, details?)
+* logInternal(module, message, details?)
+
+System Log UI:
+
+* Use a console-like dark layout.
+* Show newest entries at the bottom.
+* Make the list vertically scrollable.
+* Automatically scroll to the newest message unless the user has manually scrolled upward.
+* Show timestamp, module name, icon/badge and message.
+* Keep optional details collapsed by default and expandable on click.
+* Add filters for:
+    * module
+    * level
+    * free-text search
+* Add a “Clear log” button with confirmation.
+* Do not clear logs when navigating away from the page.
+
+Update existing modules:
+Add useful logging to all current modules without filling the log with unnecessary noise.
+
+For every module, log:
+
+* when the user manually starts an update
+* when an update succeeds
+* a short result summary
+* when an update fails
+* important internal decisions or fallbacks
+
+Examples:
+
+Portfolio Manager:
+
+* user: “User manually started portfolio update”
+* info: “Portfolio updated from Saxo: 3 accounts, 5 positions, available cash 42,500 DKK”
+* warning: “Saxo returned no open positions”
+* error: “Portfolio update failed: Saxo request returned 401”
+
+Market Monitor:
+
+* user: “User manually started market analysis”
+* info: “Market analysis completed: Neutral sentiment, Moderate risk”
+* error: “Market analysis failed: invalid OpenAI response”
+
+Event Monitor:
+
+* info: “Event analysis completed: 5 upcoming events, 2 high importance”
+
+News Monitor:
+
+* info: “News analysis completed: 7 market-moving stories found”
+
+Sector Monitor:
+
+* info: “Sector analysis completed: Healthcare strongest, Technology weakest”
+
+Company Monitor:
+
+* info: “Company analysis completed for NVDA: rating Watch”
+
+Settings / Saxo:
+
+* user: “User started Saxo login”
+* info: “Saxo connection established in Simulation environment”
+* warning: “Saxo access token refreshed”
+* error: “Saxo login failed”
+
+Important rules:
+
+* Never log API keys, app secrets, access tokens, refresh tokens, authorization codes or full Saxo account identifiers.
+* Never log complete OpenAI prompts or full raw responses by default.
+* Keep messages short and readable.
+* Use optional details only when more technical information is useful.
+* Logging failures must never break the main module operation.
+* Do not change the existing module layouts or business logic beyond adding logging calls.
+
+The goal is to create one shared operational history where the user can quickly understand what the application has done across all modules.

@@ -24,6 +24,7 @@ import {
   refreshAccessToken,
 } from "../lib/saxo-config.js";
 import { logger } from "../lib/logger.js";
+import { systemLog } from "../lib/system-log.js";
 
 const settingsRouter = Router();
 
@@ -94,6 +95,7 @@ settingsRouter.post("/settings/saxo/login", (req, res) => {
     { environment },
     "[settings/saxo] OAuth login initiated"
   );
+  systemLog.logUser("Settings", "User started Saxo login");
 
   res.json({ authUrl });
 });
@@ -156,11 +158,13 @@ settingsRouter.get("/settings/saxo/callback", async (req, res) => {
       { environment, expiresAt: tokens.expiresAt },
       "[settings/saxo] OAuth callback successful — tokens stored"
     );
+    systemLog.logInfo("Settings", `Saxo connection established in ${environment} environment`);
     res.redirect(`${returnUrl}?saxo_success=1`);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Token exchange failed";
     saxoStore.markDisconnected(message);
     logger.error({ err: message }, "[settings/saxo] Token exchange failed");
+    systemLog.logError("Settings", "Saxo login failed: token exchange");
     res.redirect(`${returnUrl}?saxo_error=token_exchange_failed`);
   }
 });
@@ -184,6 +188,7 @@ settingsRouter.post("/settings/saxo/environment", (req, res) => {
   } else {
     logger.info({ environment }, "[settings/saxo] Environment changed");
   }
+  systemLog.logInfo("Settings", `Saxo environment changed to ${environment}`);
 
   const { appKeyConfigured, appSecretConfigured } = getSaxoConfigStatus();
   res.json(saxoStore.getPublicStatus(appKeyConfigured, appSecretConfigured));
@@ -194,6 +199,7 @@ settingsRouter.post("/settings/saxo/environment", (req, res) => {
 settingsRouter.post("/settings/saxo/logout", (_req, res) => {
   saxoStore.clearTokens();
   logger.info("[settings/saxo] Logged out — tokens cleared");
+  systemLog.logUser("Settings", "User logged out from Saxo");
   const { appKeyConfigured, appSecretConfigured } = getSaxoConfigStatus();
   res.json(saxoStore.getPublicStatus(appKeyConfigured, appSecretConfigured));
 });
@@ -228,9 +234,11 @@ export async function maybeSaxoRefresh(): Promise<void> {
       { environment, expiresAt: tokens.expiresAt },
       "[settings/saxo] Access token refreshed"
     );
+    systemLog.logWarning("Settings", "Saxo access token refreshed");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Refresh failed";
     saxoStore.markDisconnected(message);
     logger.warn({ err: message }, "[settings/saxo] Token refresh failed — marked disconnected");
+    systemLog.logError("Settings", "Saxo login failed: token refresh");
   }
 }

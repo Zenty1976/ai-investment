@@ -18,6 +18,7 @@
  * Invalid, incomplete or failed results are never stored in the repository.
  */
 import { Router, type IRouter } from "express";
+import { systemLog } from "../lib/system-log.js";
 import { RunEventAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
@@ -88,6 +89,7 @@ Search for all significant scheduled financial events within the above 14-day wi
 
 router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running event monitor analysis with web search");
+  systemLog.logUser("Event Monitor", "User manually started event analysis");
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
@@ -134,6 +136,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       ));
     } catch (err) {
       req.log.error({ err }, "AI service call failed");
+      systemLog.logError("Event Monitor", `Event analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
       res.status(500).json({
         error: err instanceof Error ? err.message : "AI service call failed",
       });
@@ -146,6 +149,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
     const resultObj = result as Record<string, unknown>;
     if (resultObj?.data_unavailable === true) {
       req.log.warn({ reason: resultObj.reason }, "Event data unavailable");
+      systemLog.logWarning("Event Monitor", `Event data unavailable: ${String(resultObj.reason ?? "no data")}`);
       res.status(503).json({
         error: `Event data unavailable: ${
           resultObj.reason ?? "Could not retrieve upcoming event data. Please try again later."
@@ -217,6 +221,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
         continue;
       }
       req.log.error("No upcoming events found after retry");
+      systemLog.logError("Event Monitor", "Event analysis failed: no upcoming events found");
       res.status(503).json({
         error:
           "No upcoming financial events were found for the next 14 days. Please try again later.",
@@ -246,6 +251,8 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
 
     if (parsed.success) {
       analysisRepository.save("event-monitor", parsed.data);
+      const highCount = parsed.data.events.filter((e) => e.importance === "High").length;
+      systemLog.logInfo("Event Monitor", `Event analysis completed: ${parsed.data.events.length} upcoming event${parsed.data.events.length !== 1 ? "s" : ""}, ${highCount} high importance`);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

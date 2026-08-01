@@ -16,6 +16,7 @@
  * Invalid results are never stored in the repository.
  */
 import { Router, type IRouter } from "express";
+import { systemLog } from "../lib/system-log.js";
 import { RunSectorAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
@@ -105,6 +106,7 @@ function buildUserPrompt(
 
 router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running sector monitor analysis with web search");
+  systemLog.logUser("Sector Monitor", "User manually started sector analysis");
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
@@ -188,6 +190,7 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
       ));
     } catch (err) {
       req.log.error({ err }, "AI service call failed");
+      systemLog.logError("Sector Monitor", `Sector analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
       res.status(500).json({
         error: err instanceof Error ? err.message : "AI service call failed",
       });
@@ -207,6 +210,8 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
 
     if (parsed.success) {
       analysisRepository.save("sector-monitor", parsed.data);
+      const weakest = parsed.data.sectors[parsed.data.sectors.length - 1];
+      systemLog.logInfo("Sector Monitor", `Sector analysis completed: ${parsed.data.topSector.name} strongest, ${weakest?.name ?? "—"} weakest`);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

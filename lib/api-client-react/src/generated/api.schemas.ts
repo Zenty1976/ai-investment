@@ -461,6 +461,21 @@ export interface PortfolioRepositoryEntry {
   updatedAt: string;
 }
 
+// ── System Log ───────────────────────────────────────────────────────────────
+
+export type SystemLogLevel = 'user' | 'info' | 'warning' | 'error' | 'internal';
+
+export interface SystemLogEntry {
+  id: string;
+  timestamp: string;
+  module: string;
+  level: SystemLogLevel;
+  message: string;
+  details?: unknown;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface SaxoConfigBody {
   redirectUrlOverride?: string;
 }

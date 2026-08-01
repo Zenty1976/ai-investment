@@ -12,6 +12,7 @@ import { Router, type IRouter } from "express";
 import { RunMarketAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
+import { systemLog } from "../lib/system-log.js";
 
 const router: IRouter = Router();
 
@@ -49,6 +50,7 @@ const MAX_ATTEMPTS = 2;
 
 router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running market analysis with web search");
+  systemLog.logUser("Market Monitor", "User manually started market analysis");
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
@@ -66,6 +68,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
       ));
     } catch (err) {
       req.log.error({ err }, "AI service call failed");
+      systemLog.logError("Market Monitor", `Market analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
       res.status(500).json({
         error: err instanceof Error ? err.message : "AI service call failed",
       });
@@ -78,6 +81,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
     const resultObj = result as Record<string, unknown>;
     if (resultObj?.data_unavailable === true) {
       req.log.warn({ reason: resultObj.reason }, "Market data unavailable");
+      systemLog.logWarning("Market Monitor", `Market data unavailable: ${String(resultObj.reason ?? "no data")}`);
       res.status(503).json({
         error: `Market data unavailable: ${
           resultObj.reason ??
@@ -98,6 +102,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
 
     if (parsed.success) {
       analysisRepository.save("market-monitor", parsed.data);
+      systemLog.logInfo("Market Monitor", `Market analysis completed: ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk`);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

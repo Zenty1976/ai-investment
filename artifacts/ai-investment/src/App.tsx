@@ -9,6 +9,7 @@ import SectorMonitor from '@/pages/SectorMonitor';
 import CompanyMonitor from '@/pages/CompanyMonitor';
 import PortfolioManager from '@/pages/PortfolioManager';
 import Settings from '@/pages/Settings';
+import SystemLog from '@/pages/SystemLog';
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/companies" component={CompanyMonitor} />
         <Route path="/portfolio" component={PortfolioManager} />
         <Route path="/settings" component={Settings} />
+        <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />
       </Switch>
     </AppShell>

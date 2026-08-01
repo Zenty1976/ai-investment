@@ -42,7 +42,7 @@ const NAV_ITEMS = [
   { label: "COMPANIES",  href: "/companies", icon: Building2,    enabled: true  },
   { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: false },
   { label: "ANALYSIS",    href: "/analyse",   icon: BarChart2,    enabled: false },
-  { label: "LOG & HIST.", href: "/log",       icon: History,      enabled: false },
+  { label: "LOG & HIST.", href: "/log",       icon: History,      enabled: true  },
   { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]
 

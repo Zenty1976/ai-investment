@@ -14,6 +14,7 @@ import { Router } from "express";
 import { analysisRepository } from "../lib/analysis-repository.js";
 import { saxoStore } from "../lib/saxo-store.js";
 import { logger } from "../lib/logger.js";
+import { systemLog } from "../lib/system-log.js";
 
 const portfolioRouter = Router();
 
@@ -356,14 +357,25 @@ portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
   }
 
   const env = saxoStore.getEnvironment();
+  systemLog.logUser("Portfolio Manager", "User manually started portfolio update");
 
   try {
     const snapshot = await buildSnapshot(accessToken, env);
+    const totalPositions = snapshot.accounts.reduce((s, a) => s + a.positions.length, 0);
+    if (totalPositions === 0) {
+      systemLog.logWarning("Portfolio Manager", "Saxo returned no open positions");
+    }
+    const cashStr = snapshot.totalAvailableCash.toLocaleString("da-DK", { maximumFractionDigits: 0 });
+    systemLog.logInfo(
+      "Portfolio Manager",
+      `Portfolio updated from Saxo: ${snapshot.accounts.length} account${snapshot.accounts.length !== 1 ? "s" : ""}, ${totalPositions} position${totalPositions !== 1 ? "s" : ""}, available cash ${cashStr} ${snapshot.baseCurrency}`
+    );
     const entry = analysisRepository.save<PortfolioSnapshot>(MODULE_NAME, snapshot);
     res.json(entry);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error({ err }, "[portfolio-manager] Failed to build snapshot");
+    systemLog.logError("Portfolio Manager", `Portfolio update failed: ${message}`);
 
     const stored = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
     res.status(502).json({ error: message, stored: stored ?? null });

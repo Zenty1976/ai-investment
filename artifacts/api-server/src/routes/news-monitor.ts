@@ -16,6 +16,7 @@
  * Invalid results are never stored in the repository.
  */
 import { Router, type IRouter } from "express";
+import { systemLog } from "../lib/system-log.js";
 import { RunNewsAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
@@ -112,6 +113,7 @@ function buildUserPrompt(nowIso: string, marketContext: string | null, eventCont
 
 router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running news monitor analysis with web search");
+  systemLog.logUser("News Monitor", "User manually started news analysis");
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
@@ -173,6 +175,7 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
       ));
     } catch (err) {
       req.log.error({ err }, "AI service call failed");
+      systemLog.logError("News Monitor", `News analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
       res.status(500).json({
         error: err instanceof Error ? err.message : "AI service call failed",
       });
@@ -211,6 +214,7 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
 
     if (parsed.success) {
       analysisRepository.save("news-monitor", parsed.data);
+      systemLog.logInfo("News Monitor", `News analysis completed: ${parsed.data.news.length} market-moving stor${parsed.data.news.length !== 1 ? "ies" : "y"} found`);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

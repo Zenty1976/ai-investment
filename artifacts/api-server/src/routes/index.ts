@@ -8,6 +8,7 @@ import companyMonitorRouter from "./company-monitor";
 import portfolioManagerRouter from "./portfolio-manager";
 import repositoryRouter from "./repository";
 import settingsRouter from "./settings";
+import systemLogRouter from "./system-log";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(companyMonitorRouter);
 router.use(portfolioManagerRouter);
 router.use(repositoryRouter);
 router.use(settingsRouter);
+router.use(systemLogRouter);
 
 export default router;
