@@ -1,13 +1,13 @@
 /**
  * Company Monitor Route
  *
- * Uses the OpenAI Responses API with live web search to evaluate a single
- * company as a possible investment over the next 1-3 months.
+ * A stateful institutional analyst that maintains a persistent investment
+ * thesis and evaluates whether the investment case has materially changed
+ * since the last analysis. On a first run it generates a complete analysis;
+ * on subsequent runs it compares against the previous analysis and only
+ * rewrites what has genuinely changed.
  *
- * The caller supplies { companyName?, ticker } in the request body.
- * Context from all four other monitors is pulled from the Analysis
- * Repository — never via direct module calls.
- *
+ * Context from other monitors is pulled from the Analysis Repository.
  * Server-side processing after the AI call:
  *  - Validates against Zod schema
  *  - Sets timestamp and analysisDuration — never trusted from AI response
@@ -30,12 +30,19 @@ const router: IRouter = Router();
 
 const MAX_ATTEMPTS = 2;
 
+// ---------------------------------------------------------------------------
+// JSON output template (shared by both prompts)
+// ---------------------------------------------------------------------------
+
+const JSON_TEMPLATE = `{"updateType":"FullAnalysis|UpdateWithChanges|NoMaterialChange","company":{"name":"...","ticker":"...","sector":"...","industry":"..."},"executiveSummary":"...","investmentView":{"rating":"Strong Buy|Buy|Watch|Avoid|Strong Avoid","outlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","reason":"..."},"investmentThesis":[{"point":"...","status":"Strengthened|Unchanged|Weakened|Invalidated"}],"investmentCaseStrength":85,"investmentCaseChange":{"changed":false,"severity":"None|Low|Medium|High","summary":"...","previousInvestmentView":"N/A","currentInvestmentView":"Buy","reason":"..."},"investmentCaseStrengthChange":{"previousScore":88,"currentScore":82,"reasons":["..."]},"stableProfile":{"businessDescription":"...","competitiveAdvantage":"...","longTermStrengths":["..."],"recurringRisks":["..."]},"currentSituation":"...","catalysts":[{"title":"...","description":"...","timeframe":"Immediate|Within 1 month|Within 3 months","impact":"High|Medium|Low"}],"risks":[{"title":"...","description":"...","impact":"High|Medium|Low"}],"earningsAndGuidance":{"summary":"...","trend":"Improving|Stable|Weakening","nextKnownEvent":"...","nextKnownEventDate":"..."},"competitivePosition":{"assessment":"Strong|Moderate|Weak","summary":"..."},"sectorContext":"...","marketSentiment":"Positive|Mixed|Negative","valuationAssessment":{"level":"Attractive|Reasonable|Expensive|Unclear","summary":"..."},"bullCase":"...","baseCase":"...","bearCase":"...","keyThingsToWatch":["..."],"confidence":"High|Medium|Low"}`;
 
 // ---------------------------------------------------------------------------
-// Prompts
+// System prompt — first-time full analysis
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You are a senior equity analyst evaluating the company for an investor with a 1-3 month investment horizon.
+const SYSTEM_PROMPT_FULL = `You are a senior institutional equity analyst. Your role is not to describe companies — it is to evaluate whether this company represents a compelling investment opportunity over the next 1-3 months.
+
+Your analysis is the permanent foundation for downstream investment decisions by a Risk Analyzer, Portfolio Analyzer, and Trade Decision Engine. It must be structured, specific, and investment-focused.
 
 Use current web search results and the supplied market context.
 
@@ -47,17 +54,95 @@ Do not invent financial figures, dates, guidance or events.
 
 If reliable information is unavailable, state this clearly.
 
-Return structured JSON only.
+OUTPUT RULES:
+- Return exactly the JSON structure shown below — no markdown, no code fences, no extra text
+- catalysts: maximum 5 items
+- risks: maximum 5 items
+- investmentThesis: 3-5 bullet points stating WHY this company is or is not a compelling investment — these are the core thesis points that will be re-evaluated on every future update
+- investmentCaseStrength: 0–100 — how strong the overall investment case is right now (not a price target; 80+ = strong case, 60–79 = moderate, 40–59 = mixed, <40 = weak)
+- updateType: always "FullAnalysis" for a first-time analysis
+- investmentCaseChange: set changed=false, severity="None", previousInvestmentView="N/A" for a first-time analysis
+- omit investmentCaseStrengthChange entirely for a first-time analysis
+- stableProfile: core business facts — business model, competitive moat, structural strengths, recurring risks
+- All enum fields must use exactly the allowed values
+- Do not include the timestamp or analysisDuration fields — the server sets those
+
+Return exactly:
+${JSON_TEMPLATE}`;
+
+// ---------------------------------------------------------------------------
+// System prompt — update (previous analysis exists)
+// ---------------------------------------------------------------------------
+
+const SYSTEM_PROMPT_UPDATE = `You are a senior institutional equity analyst maintaining a continuous investment thesis on a company.
+
+You have been provided with the PREVIOUS ANALYSIS for this company. Your primary task is NOT to rewrite the analysis — it is to evaluate what has MATERIALLY CHANGED since the previous analysis.
+
+Primary objectives:
+1. Has the investment case changed?
+2. Has each thesis point been strengthened or weakened?
+3. Should the investment view (rating/outlook) change?
+4. Has the investment case strength (score) changed materially?
+
+A VALID OUTCOME is to confirm nothing material has changed:
+- Set updateType="NoMaterialChange"
+- Confirm the previous thesis still stands
+- Update only the dynamic information (currentSituation, earningsAndGuidance, catalysts, risks)
+- Keep investmentCaseChange.changed=false
+
+Only set updateType="UpdateWithChanges" if the investment case or a thesis point has GENUINELY changed.
+
+Do NOT:
+- Rewrite stable business facts that have not changed
+- Change the investment view because of minor daily news
+- Invent financial figures, dates, guidance or events
+- Include investmentCaseStrengthChange unless the score has actually changed
+
+Use current web search results to check for material developments since the previous analysis.
 
 OUTPUT RULES:
 - Return exactly the JSON structure shown below — no markdown, no code fences, no extra text
 - catalysts: maximum 5 items
 - risks: maximum 5 items
+- updateType: "UpdateWithChanges" if investment case changed materially, "NoMaterialChange" if previous analysis still stands
+- investmentThesis: re-evaluate EVERY previous thesis point with an updated status; add new points only if genuinely warranted
+- investmentCaseStrength: move this score only when the investment case has materially changed; small news = no change
+- investmentCaseStrengthChange: include ONLY when the score has actually changed, with specific reasons
+- stableProfile: copy unchanged from previous analysis unless the underlying business has genuinely changed
+- investmentCaseChange: always populate — set changed=true only if investment view or case has genuinely changed
 - All enum fields must use exactly the allowed values
 - Do not include the timestamp or analysisDuration fields — the server sets those
 
 Return exactly:
-{"company":{"name":"...","ticker":"...","sector":"...","industry":"..."},"executiveSummary":"...","investmentView":{"rating":"Strong Buy|Buy|Watch|Avoid|Strong Avoid","outlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","reason":"..."},"currentSituation":"...","catalysts":[{"title":"...","description":"...","timeframe":"Immediate|Within 1 month|Within 3 months","impact":"High|Medium|Low"}],"risks":[{"title":"...","description":"...","impact":"High|Medium|Low"}],"earningsAndGuidance":{"summary":"...","trend":"Improving|Stable|Weakening","nextKnownEvent":"...","nextKnownEventDate":"..."},"competitivePosition":{"assessment":"Strong|Moderate|Weak","summary":"..."},"sectorContext":"...","marketSentiment":"Positive|Mixed|Negative","valuationAssessment":{"level":"Attractive|Reasonable|Expensive|Unclear","summary":"..."},"bullCase":"...","baseCase":"...","bearCase":"...","keyThingsToWatch":["...","...","..."],"confidence":"High|Medium|Low"}`;
+${JSON_TEMPLATE}`;
+
+// ---------------------------------------------------------------------------
+// Previous analysis summary for the update prompt
+// ---------------------------------------------------------------------------
+
+function buildPreviousAnalysisSummary(prev: Record<string, unknown>): string {
+  return JSON.stringify({
+    analyzedAt:            prev.timestamp,
+    updateType:            prev.updateType,
+    investmentView:        prev.investmentView,
+    investmentCaseStrength: prev.investmentCaseStrength ?? null,
+    investmentThesis:      prev.investmentThesis ?? [],
+    investmentCaseChange:  prev.investmentCaseChange ?? null,
+    executiveSummary:      prev.executiveSummary,
+    currentSituation:      prev.currentSituation,
+    stableProfile:         prev.stableProfile ?? null,
+    bullCase:              prev.bullCase,
+    baseCase:              prev.baseCase,
+    bearCase:              prev.bearCase,
+    keyThingsToWatch:      prev.keyThingsToWatch,
+    earningsAndGuidance:   prev.earningsAndGuidance,
+    competitivePosition:   prev.competitivePosition,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// User prompt
+// ---------------------------------------------------------------------------
 
 function buildUserPrompt(
   ticker: string,
@@ -66,19 +151,36 @@ function buildUserPrompt(
   marketContext: string | null,
   eventContext: string | null,
   newsContext: string | null,
-  sectorContext: string | null
+  sectorContext: string | null,
+  previousAnalysisSummary: string | null
 ): string {
   const displayName = companyName ? `${companyName} (${ticker})` : ticker;
+  const isUpdate = !!previousAnalysisSummary;
 
-  const blocks: string[] = [
-    `UTC: ${nowIso}`,
-    "",
-    `Perform a full investment analysis of ${displayName} for the next 1-3 months.`,
-    "",
-    "Analyse: recent company news, latest earnings and guidance, revenue and profit trends, key products and business segments, competitive position, sector conditions, analyst expectations, upcoming company-specific events, catalysts, risks, valuation concerns, market sentiment and likely short-term direction.",
-    "",
-    "This must be an investment analysis — not a company description or news summary.",
-  ];
+  const blocks: string[] = [`UTC: ${nowIso}`, ""];
+
+  if (isUpdate) {
+    blocks.push(
+      "PREVIOUS ANALYSIS (your own prior work on this company):",
+      previousAnalysisSummary,
+      "",
+      `New information to evaluate for ${displayName}:`,
+      "",
+      "Search for material developments since the previous analysis: recent earnings, guidance changes, analyst upgrades/downgrades, regulatory news, major news events, or any other company-specific developments.",
+      "",
+      "Question: Has the investment case changed since the previous analysis? Evaluate each thesis point."
+    );
+  } else {
+    blocks.push(
+      `Perform a full investment analysis of ${displayName} for the next 1-3 months.`,
+      "",
+      "Analyse: recent company news, latest earnings and guidance, revenue and profit trends, key products and business segments, competitive position, sector conditions, analyst expectations, upcoming company-specific events, catalysts, risks, valuation concerns, market sentiment and likely short-term direction.",
+      "",
+      "Build an explicit investment thesis — 3-5 bullet points explaining WHY this company is (or is not) a compelling investment right now.",
+      "",
+      "This must be an investment analysis — not a company description or news summary."
+    );
+  }
 
   if (marketContext) {
     blocks.push(
@@ -129,7 +231,9 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     typeof req.body?.companyName === "string" && req.body.companyName.trim()
       ? req.body.companyName.trim()
       : undefined;
+
   req.log.info({ ticker, companyName }, "Running company monitor analysis with web search");
+
   const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
   if (orchestratorTrigger) {
     systemLog.logInfo("Company Monitor", `Scheduled run for ${ticker} (trigger: ${orchestratorTrigger})`);
@@ -140,6 +244,22 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
   let lastDebug: AiDebugInfo | undefined;
+
+  // ── Read previous analysis from repository ────────────────────────────────
+
+  const repositoryKey = `company-monitor:${ticker}`;
+  const prevEntry = analysisRepository.getAll().find(e => e.moduleName === repositoryKey);
+  const prevAnalysis = prevEntry?.result as Record<string, unknown> | undefined;
+  const isFirstRun = !prevAnalysis;
+
+  const previousAnalysisSummary = prevAnalysis ? buildPreviousAnalysisSummary(prevAnalysis) : null;
+
+  if (!isFirstRun) {
+    req.log.info(
+      { ticker, prevTimestamp: prevAnalysis?.timestamp },
+      "Previous analysis found — running in update mode"
+    );
+  }
 
   // ── Read context from Analysis Repository ──────────────────────────────────
 
@@ -214,13 +334,21 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       hasEvent: !!eventContext,
       hasNews: !!newsContext,
       hasSector: !!sectorContextStr,
+      isFirstRun,
     },
     "Context loaded from Analysis Repository"
   );
 
-  // ── AI call with retry ─────────────────────────────────────────────────────
+  // ── Choose prompt and build user message ───────────────────────────────────
 
-  const repositoryKey = `company-monitor:${ticker}`;
+  const systemPrompt = isFirstRun ? SYSTEM_PROMPT_FULL : SYSTEM_PROMPT_UPDATE;
+  const userPrompt = buildUserPrompt(
+    ticker, companyName, nowIso,
+    marketContext, eventContext, newsContext, sectorContextStr,
+    previousAnalysisSummary
+  );
+
+  // ── AI call with retry ─────────────────────────────────────────────────────
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
@@ -228,8 +356,8 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
     try {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
-        SYSTEM_PROMPT,
-        buildUserPrompt(ticker, companyName, nowIso, marketContext, eventContext, newsContext, sectorContextStr),
+        systemPrompt,
+        userPrompt,
         { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
       ));
     } catch (err) {
@@ -280,7 +408,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
         return;
       }
 
-      // Loose company name check: at least one significant word must appear in the returned name
+      // Loose company name check
       if (companyName) {
         const returnedName = parsed.data.company.name.toLowerCase();
         const requestedWords = companyName
@@ -308,7 +436,14 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       }
 
       analysisRepository.save(repositoryKey, parsed.data);
-      systemLog.logInfo("Company Monitor", `Company analysis completed for ${ticker}: rating ${parsed.data.investmentView.rating}`);
+      const updateTypeLabel = parsed.data.updateType;
+      const strengthLabel = parsed.data.investmentCaseStrength !== undefined
+        ? `, strength ${parsed.data.investmentCaseStrength}`
+        : "";
+      systemLog.logInfo(
+        "Company Monitor",
+        `Company analysis completed for ${ticker}: ${updateTypeLabel}, rating ${parsed.data.investmentView.rating}${strengthLabel}`
+      );
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

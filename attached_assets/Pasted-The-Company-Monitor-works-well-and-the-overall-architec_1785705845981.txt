@@ -1,0 +1,282 @@
+The Company Monitor works well and the overall architecture is good. However, I would like to evolve it from a “generate a fresh analysis every time” module into a true long-term company analyst.
+
+The goal is not to redesign the UI. The goal is to improve the intelligence, consistency and usefulness of the analysis that feeds the rest of the system.
+
+The Company Monitor should become one of the most important modules in the entire platform because almost every downstream module (Risk Analyzer, Portfolio Analyzer, Market Alerts and especially Trade Decision Engine) depends on its output.
+
+1. Make Company Monitor stateful
+
+Today the analysis starts from scratch every time.
+
+Instead, Company Monitor should receive both:
+
+* the previous Company Monitor analysis
+* the new information available today
+
+The AI should then evaluate:
+
+* What has changed?
+* Has the investment case changed?
+* Is the change material?
+* Is the previous conclusion still valid?
+
+This should become the primary objective of the prompt.
+
+The AI should not rewrite the entire company analysis every time if nothing meaningful has changed.
+
+A valid outcome should often be:
+
+“No material changes since the previous analysis.”
+
+This will make the analysis much more stable, consistent and significantly reduce unnecessary text and OpenAI variability.
+
+⸻
+
+2. Introduce an Investment Thesis
+
+Each Company Monitor should maintain an explicit Investment Thesis.
+
+Instead of simply describing the company, define why this company is attractive (or unattractive) as an investment.
+
+For example:
+
+Microsoft
+
+Investment Thesis
+
+* Azure continues taking cloud market share
+* AI investments strengthen long-term competitive advantage
+* High free cash flow supports continued investment
+* Software margins remain structurally strong
+
+This thesis should persist across updates.
+
+Each new analysis should evaluate whether these thesis points are:
+
+* strengthened
+* unchanged
+* weakened
+* invalidated
+
+The thesis becomes the foundation for future investment decisions.
+
+⸻
+
+3. Introduce “Investment Case Changed”
+
+Add a new structured section describing whether the investment case has changed since the previous analysis.
+
+Example:
+
+investmentCaseChange
+
+* changed
+* severity
+* summary
+* previousInvestmentView
+* currentInvestmentView
+* reason
+
+Example:
+
+changed = true
+
+severity = High
+
+previousInvestmentView = Buy
+
+currentInvestmentView = Watch
+
+reason = Guidance reduced significantly after earnings.
+
+Trade Decision Engine should be able to use this section directly instead of trying to infer changes from large amounts of text.
+
+⸻
+
+4. Add Investment Case Strength
+
+Introduce a new score:
+
+Investment Case Strength
+
+0–100
+
+This is NOT a price target.
+
+It represents how strong the overall investment case currently is.
+
+Example:
+
+Microsoft
+
+Investment Case Strength
+
+91
+
+Later:
+
+88
+
+Later:
+
+83
+
+The score should move only when the investment case changes.
+
+Small daily news should not cause large swings.
+
+⸻
+
+5. Explain score changes
+
+Whenever the Investment Case Strength changes, explain why.
+
+Example:
+
+Previous
+
+88
+
+Current
+
+82
+
+Main reasons
+
+* weaker guidance
+* lower operating margin
+
+* AI demand unchanged
+* cloud growth still strong
+
+This information should be structured and deterministic.
+
+Trade Decision Engine should be able to consume this directly.
+
+⸻
+
+6. Reduce unnecessary full analyses
+
+The AI should no longer think:
+
+“Generate a complete company analysis.”
+
+Instead it should think:
+
+Previous analysis:
+
+…
+
+New information:
+
+…
+
+Question:
+
+Has the investment case changed?
+
+If yes:
+
+Explain exactly what changed.
+
+If no:
+
+Return a short update confirming that the previous analysis still stands.
+
+This will improve consistency and significantly reduce token usage.
+
+⸻
+
+7. Separate stable facts from changing facts
+
+The stored Company Monitor result should distinguish between:
+
+Stable information
+
+Examples:
+
+* business description
+* competitive position
+* long-term strengths
+* recurring risks
+* core investment thesis
+
+Dynamic information
+
+Examples:
+
+* earnings
+* guidance
+* analyst actions
+* legal developments
+* regulatory news
+* valuation changes
+* market reaction
+* catalysts
+
+Stable information should rarely change.
+
+Dynamic information should update frequently.
+
+This prevents the AI from rewriting the same content repeatedly.
+
+⸻
+
+8. Improve prompt focus
+
+The current prompt asks the AI to analyse almost everything.
+
+Instead, make the prompt focus on:
+
+* what changed
+* why it matters
+* whether the investment thesis changed
+* whether conviction changed
+* whether the investment view changed
+* whether the change is meaningful
+
+The AI should spend less effort rewriting history and more effort analysing new information.
+
+⸻
+
+9. Improve downstream usability
+
+Company Monitor should increasingly become structured data rather than long prose.
+
+Future modules should be able to consume fields such as:
+
+* Investment Thesis
+* Investment Case Strength
+* Investment Case Change
+* Conviction
+* Key Catalysts
+* Key Risks
+* Things That Would Change Our View
+
+without having to interpret long paragraphs.
+
+The narrative text should remain for the UI, but the structured fields should become the primary interface used by Risk Analyzer, Portfolio Analyzer and Trade Decision Engine.
+
+⸻
+
+10. Preserve existing functionality
+
+Do not remove any existing functionality.
+
+Keep:
+
+* executiveSummary
+* investmentView
+* catalysts
+* risks
+* earningsAndGuidance
+* keyThingsToWatch
+* web search
+* historical persistence
+* existing UI
+
+These should simply be strengthened by the additions above.
+
+⸻
+
+The overall goal is to transform Company Monitor from a module that repeatedly generates company reports into a persistent institutional analyst that continuously evaluates whether the investment case has actually changed. This should improve consistency, reduce OpenAI cost, provide far better input for the Trade Decision Engine, and make the entire platform significantly more intelligent over time.

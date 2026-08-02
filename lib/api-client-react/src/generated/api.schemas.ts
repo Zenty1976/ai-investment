@@ -359,10 +359,72 @@ export const CompanyConfidence = {
   'Low': 'Low',
 } as const;
 
+export type CompanyUpdateType = typeof CompanyUpdateType[keyof typeof CompanyUpdateType];
+export const CompanyUpdateType = {
+  FullAnalysis: 'FullAnalysis',
+  UpdateWithChanges: 'UpdateWithChanges',
+  NoMaterialChange: 'NoMaterialChange',
+} as const;
+
+export type CompanyThesisPointStatus = typeof CompanyThesisPointStatus[keyof typeof CompanyThesisPointStatus];
+export const CompanyThesisPointStatus = {
+  Strengthened: 'Strengthened',
+  Unchanged: 'Unchanged',
+  Weakened: 'Weakened',
+  Invalidated: 'Invalidated',
+} as const;
+
+export interface CompanyThesisPoint {
+  point: string;
+  status: CompanyThesisPointStatus;
+}
+
+export type CompanyCaseChangeSeverity = typeof CompanyCaseChangeSeverity[keyof typeof CompanyCaseChangeSeverity];
+export const CompanyCaseChangeSeverity = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+  None: 'None',
+} as const;
+
+export interface CompanyInvestmentCaseChange {
+  changed: boolean;
+  severity: CompanyCaseChangeSeverity;
+  summary: string;
+  previousInvestmentView: string;
+  currentInvestmentView: string;
+  reason: string;
+}
+
+export interface CompanyInvestmentCaseStrengthChange {
+  previousScore: number;
+  currentScore: number;
+  reasons: string[];
+}
+
+export interface CompanyStableProfile {
+  businessDescription: string;
+  competitiveAdvantage: string;
+  longTermStrengths: string[];
+  recurringRisks: string[];
+}
+
 export interface CompanyAnalysis {
+  /** Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation */
+  updateType: CompanyUpdateType;
   company: CompanyInfo;
   executiveSummary: string;
   investmentView: CompanyInvestmentView;
+  /** The persistent investment thesis — WHY this company is attractive or unattractive */
+  investmentThesis: CompanyThesisPoint[];
+  /** 0–100 score representing how strong the overall investment case currently is */
+  investmentCaseStrength: number;
+  /** Whether and how the investment case changed since the previous analysis */
+  investmentCaseChange: CompanyInvestmentCaseChange;
+  /** Present only when investmentCaseStrength changed — explains why */
+  investmentCaseStrengthChange?: CompanyInvestmentCaseStrengthChange;
+  /** Stable company profile — business facts that rarely change */
+  stableProfile: CompanyStableProfile;
   currentSituation: string;
   catalysts: CompanyCatalyst[];
   risks: CompanyRisk[];

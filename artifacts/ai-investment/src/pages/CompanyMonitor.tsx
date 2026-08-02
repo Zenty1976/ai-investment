@@ -21,6 +21,7 @@ import type {
   CompanyAnalysis,
   CompanyCatalyst,
   CompanyRisk,
+  CompanyThesisPoint,
 } from "@workspace/api-client-react"
 import {
   AlertCircle,
@@ -588,6 +589,25 @@ export default function CompanyMonitor() {
                 >
                   {analysis.confidence} conf.
                 </Badge>
+                {analysis.investmentCaseStrength !== undefined && (
+                  <span className="text-[10px] font-mono text-muted-foreground/60 bg-muted/30 rounded px-1.5 py-0.5 shrink-0 tabular-nums">
+                    ICS {analysis.investmentCaseStrength}
+                    {analysis.investmentCaseStrengthChange && (
+                      <span className={analysis.investmentCaseStrengthChange.currentScore > analysis.investmentCaseStrengthChange.previousScore ? "text-emerald-500/70" : "text-rose-500/70"}>
+                        {analysis.investmentCaseStrengthChange.currentScore > analysis.investmentCaseStrengthChange.previousScore ? " ↑" : " ↓"}
+                        {Math.abs(analysis.investmentCaseStrengthChange.currentScore - analysis.investmentCaseStrengthChange.previousScore)}
+                      </span>
+                    )}
+                  </span>
+                )}
+                {analysis.updateType && analysis.updateType !== "FullAnalysis" && (
+                  <Badge
+                    variant={analysis.updateType === "NoMaterialChange" ? "secondary" : "warning"}
+                    className="text-[9px] px-1.5 py-0 shrink-0"
+                  >
+                    {analysis.updateType === "NoMaterialChange" ? "No change" : "Updated"}
+                  </Badge>
+                )}
               </div>
 
               {/* Company name + ticker */}
@@ -692,6 +712,104 @@ export default function CompanyMonitor() {
               )}
             </CardContent>
           </Card>
+
+          {/* Investment Case Change — shown prominently when something materially changed */}
+          {analysis.investmentCaseChange?.changed && (
+            <Card className={`overflow-hidden border ${
+              analysis.investmentCaseChange.severity === "High"
+                ? "border-amber-500/35 bg-amber-500/5"
+                : analysis.investmentCaseChange.severity === "Medium"
+                ? "border-blue-500/25 bg-blue-500/5"
+                : "border-border/40 bg-muted/10"
+            }`}>
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+                    Investment Case Changed
+                  </p>
+                  <Badge
+                    variant={analysis.investmentCaseChange.severity === "High" ? "warning" : "secondary"}
+                    className="text-[9px] px-1.5 py-0"
+                  >
+                    {analysis.investmentCaseChange.severity}
+                  </Badge>
+                  {analysis.investmentCaseChange.previousInvestmentView !== "N/A" &&
+                    analysis.investmentCaseChange.previousInvestmentView !== analysis.investmentCaseChange.currentInvestmentView && (
+                    <span className="text-[10px] text-muted-foreground/60 font-mono">
+                      {analysis.investmentCaseChange.previousInvestmentView}
+                      <span className="mx-1 text-muted-foreground/30">→</span>
+                      {analysis.investmentCaseChange.currentInvestmentView}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-foreground/80 leading-relaxed">{analysis.investmentCaseChange.summary}</p>
+                {analysis.investmentCaseChange.reason && (
+                  <p className="text-xs text-muted-foreground/60 leading-snug">{analysis.investmentCaseChange.reason}</p>
+                )}
+                {analysis.investmentCaseStrengthChange && (
+                  <div className="pt-2 border-t border-border/30 space-y-1">
+                    <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60">
+                      Case Strength: {analysis.investmentCaseStrengthChange.previousScore} →{" "}
+                      <span className={analysis.investmentCaseStrengthChange.currentScore >= analysis.investmentCaseStrengthChange.previousScore ? "text-emerald-500/70" : "text-rose-500/70"}>
+                        {analysis.investmentCaseStrengthChange.currentScore}
+                      </span>
+                    </p>
+                    <ul className="space-y-0.5">
+                      {analysis.investmentCaseStrengthChange.reasons.map((r: string, i: number) => (
+                        <li key={i} className="text-xs text-muted-foreground/60 flex gap-1.5">
+                          <span className="shrink-0 mt-0.5 text-muted-foreground/30">·</span>
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Investment Thesis */}
+          {analysis.investmentThesis && analysis.investmentThesis.length > 0 && (
+            <Card className="bg-card/40 border-card-border/40">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+                    Investment Thesis
+                  </p>
+                  {analysis.investmentCaseStrength !== undefined && (
+                    <span className="ml-auto text-[10px] font-mono text-muted-foreground/50 tabular-nums">
+                      Strength: {analysis.investmentCaseStrength}/100
+                    </span>
+                  )}
+                </div>
+                <ul className="space-y-2">
+                  {analysis.investmentThesis.map((pt: CompanyThesisPoint, i: number) => {
+                    const statusColor =
+                      pt.status === "Strengthened" ? "text-emerald-500/70 border-emerald-500/30" :
+                      pt.status === "Weakened"     ? "text-amber-500/70 border-amber-500/30" :
+                      pt.status === "Invalidated"  ? "text-rose-500/70 border-rose-500/30" :
+                                                     "text-muted-foreground/40 border-border/30";
+                    const dotColor =
+                      pt.status === "Strengthened" ? "bg-emerald-500/60" :
+                      pt.status === "Weakened"     ? "bg-amber-500/60" :
+                      pt.status === "Invalidated"  ? "bg-rose-500/60" :
+                                                     "bg-muted-foreground/30";
+                    return (
+                      <li key={i} className={`flex items-start gap-2.5 pb-2 ${i < analysis.investmentThesis.length - 1 ? "border-b border-border/20" : ""}`}>
+                        <span className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${dotColor}`} />
+                        <span className="text-sm text-foreground/80 leading-snug flex-1">{pt.point}</span>
+                        {analysis.updateType !== "FullAnalysis" && (
+                          <span className={`text-[9px] font-medium uppercase tracking-wider shrink-0 mt-0.5 border rounded px-1 py-0 ${statusColor}`}>
+                            {pt.status}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Investment View highlight card */}
           <Card className="bg-primary/5 border-primary/15">
@@ -913,6 +1031,62 @@ export default function CompanyMonitor() {
                     </li>
                   ))}
                 </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Stable Profile — core business facts that rarely change */}
+          {analysis.stableProfile && (
+            <Card className="bg-card/30 border-card-border/30">
+              <CardContent className="p-4 space-y-3">
+                <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground/60">
+                  Stable Profile
+                </p>
+                {analysis.stableProfile.businessDescription && (
+                  <p className="text-sm text-foreground/70 leading-relaxed">
+                    {analysis.stableProfile.businessDescription}
+                  </p>
+                )}
+                {analysis.stableProfile.competitiveAdvantage && (
+                  <div className="pt-2 border-t border-border/20">
+                    <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/50 mb-1">
+                      Competitive Advantage
+                    </p>
+                    <p className="text-sm text-foreground/70 leading-relaxed">
+                      {analysis.stableProfile.competitiveAdvantage}
+                    </p>
+                  </div>
+                )}
+                {analysis.stableProfile.longTermStrengths && analysis.stableProfile.longTermStrengths.length > 0 && (
+                  <div className="pt-2 border-t border-border/20">
+                    <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/50 mb-1.5">
+                      Long-Term Strengths
+                    </p>
+                    <ul className="space-y-1">
+                      {analysis.stableProfile.longTermStrengths.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-foreground/70 flex gap-2">
+                          <span className="text-emerald-500/40 shrink-0 mt-0.5">+</span>
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {analysis.stableProfile.recurringRisks && analysis.stableProfile.recurringRisks.length > 0 && (
+                  <div className="pt-2 border-t border-border/20">
+                    <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/50 mb-1.5">
+                      Recurring Risks
+                    </p>
+                    <ul className="space-y-1">
+                      {analysis.stableProfile.recurringRisks.map((r: string, i: number) => (
+                        <li key={i} className="text-sm text-foreground/70 flex gap-2">
+                          <span className="text-muted-foreground/40 shrink-0 mt-0.5">·</span>
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

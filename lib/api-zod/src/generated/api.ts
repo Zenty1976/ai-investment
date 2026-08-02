@@ -136,6 +136,8 @@ export const RunSectorAnalysisResponse = zod.object({
  * @summary Run company monitor analysis
  */
 export const RunCompanyAnalysisResponse = zod.object({
+  /** Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation */
+  "updateType": zod.enum(['FullAnalysis', 'UpdateWithChanges', 'NoMaterialChange']),
   "company": zod.object({
     "name": zod.string(),
     "ticker": zod.string(),
@@ -147,6 +149,35 @@ export const RunCompanyAnalysisResponse = zod.object({
     "rating": zod.enum(['Strong Buy', 'Buy', 'Watch', 'Avoid', 'Strong Avoid']),
     "outlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),
     "reason": zod.string()
+  }),
+  /** The persistent investment thesis — WHY this company is attractive or unattractive */
+  "investmentThesis": zod.array(zod.object({
+    "point": zod.string(),
+    "status": zod.enum(['Strengthened', 'Unchanged', 'Weakened', 'Invalidated'])
+  })),
+  /** 0–100 score representing how strong the overall investment case currently is */
+  "investmentCaseStrength": zod.number().min(0).max(100),
+  /** Structured description of whether and how the investment case changed since the previous analysis */
+  "investmentCaseChange": zod.object({
+    "changed": zod.boolean(),
+    "severity": zod.enum(['High', 'Medium', 'Low', 'None']),
+    "summary": zod.string(),
+    "previousInvestmentView": zod.string(),
+    "currentInvestmentView": zod.string(),
+    "reason": zod.string()
+  }),
+  /** Only present when investmentCaseStrength has changed — explains why */
+  "investmentCaseStrengthChange": zod.object({
+    "previousScore": zod.number().min(0).max(100),
+    "currentScore": zod.number().min(0).max(100),
+    "reasons": zod.array(zod.string())
+  }).optional(),
+  /** Stable company profile — business facts that rarely change */
+  "stableProfile": zod.object({
+    "businessDescription": zod.string(),
+    "competitiveAdvantage": zod.string(),
+    "longTermStrengths": zod.array(zod.string()),
+    "recurringRisks": zod.array(zod.string())
   }),
   "currentSituation": zod.string(),
   "catalysts": zod.array(zod.object({
