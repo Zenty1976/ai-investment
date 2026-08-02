@@ -206,8 +206,10 @@ export default function MarketAlerts() {
         setDebugError(null)
       },
       onError: (err) => {
+        // ApiError wraps the parsed JSON body in `.data`; fall back to the
+        // error object itself for non-ApiError cases.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const d = (err as any)?._debug
+        const d = (err as any)?.data?._debug ?? (err as any)?._debug
         if (d) setDebugInfo(d)
         setDebugError(err)
       },

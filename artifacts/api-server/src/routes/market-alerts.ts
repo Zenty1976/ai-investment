@@ -14,7 +14,7 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunMarketAlertsResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
+import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 
@@ -535,6 +535,7 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
       systemLog.logError(MODULE_NAME, "Market alerts analysis failed");
       res.status(500).json({
         error: err instanceof Error ? err.message : "AI service call failed",
+        _debug: extractAiErrorDebug(err),
       });
       return;
     }

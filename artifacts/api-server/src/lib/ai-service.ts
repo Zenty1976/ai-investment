@@ -44,6 +44,33 @@ export interface AiDebugInfo {
   calledAt: string;
   /** Whether a web search tool was used during this call */
   webSearchUsed: boolean;
+  /** Present only when web-search detection failed — explains what was seen */
+  webSearchDetection?: {
+    outputItemTypes: string[];
+    webSearchCallFound: boolean;
+    citationAnnotationCount: number;
+    extractedSourceCount: number;
+  };
+}
+
+/**
+ * Extract whatever debug context is available from an error thrown by
+ * `callAiWithWebSearch`.  Returns null when the error carries no AI context.
+ * Safe to call on any caught value.
+ */
+export function extractAiErrorDebug(err: unknown): Partial<AiDebugInfo> | null {
+  if (!err || typeof err !== "object") return null;
+  const e = err as Record<string, unknown>;
+  // Only errors thrown by callAiWithWebSearch carry these private fields
+  if (!e._requestPayload && !e._rawResponse && !e._webSearchDebug) return null;
+  return {
+    request: (e._requestPayload ?? {}) as Record<string, unknown>,
+    rawResponse: typeof e._rawResponse === "string" ? e._rawResponse : "",
+    webSearchUsed: false,
+    calledAt: typeof e._calledAt === "string" ? e._calledAt : new Date().toISOString(),
+    usage: { prompt_tokens: null, completion_tokens: null, total_tokens: null },
+    webSearchDetection: e._webSearchDebug as AiDebugInfo["webSearchDetection"],
+  };
 }
 
 export interface AiCallResult<T> {
@@ -208,7 +235,12 @@ export async function callAiWithWebSearch<T>(
     );
     throw Object.assign(
       new Error("Web search was not detected in the OpenAI response."),
-      { _webSearchDebug: debugPayload, _rawResponse: rawText }
+      {
+        _webSearchDebug: debugPayload,
+        _rawResponse: rawText,
+        _requestPayload: requestPayload,
+        _calledAt: calledAt,
+      }
     );
   }
 
