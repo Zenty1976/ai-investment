@@ -3,6 +3,11 @@
  *
  * Converts Trade Decision Engine proposals into user-reviewable trade cards.
  * Phase 1 NEVER places, modifies or cancels orders.
+ *
+ * Design principles:
+ *   - Decision Strength (Reason Score) and Execution Status are shown separately.
+ *   - A blocked trade still shows calculated price / quantity / value.
+ *   - The score measures evidence quality, not whether the trade can fire today.
  */
 import { useState, useEffect } from "react"
 import { useLocation } from "wouter"
@@ -26,6 +31,7 @@ import {
   AlertTriangle,
   ClipboardList,
   Info,
+  Calendar,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -54,9 +60,19 @@ function statusVariant(s: TradeProposalStatus): BadgeVariant {
   return "outline"
 }
 
+function formatPrice(price: number, currency: string): string {
+  if (price <= 0) return "—"
+  return `${price.toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}/share`
+}
+
 function formatValue(value: number, currency: string): string {
-  if (value === 0) return "—"
+  if (value <= 0) return "—"
   return `≈\u202F${value.toLocaleString("da-DK")} ${currency}`
+}
+
+function formatEventDate(iso: string | undefined): string {
+  if (!iso) return ""
+  try { return format(parseISO(iso), "d MMM yyyy") } catch { return iso }
 }
 
 function formatTimestamp(iso: string | null | undefined): string {
@@ -65,15 +81,19 @@ function formatTimestamp(iso: string | null | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// Reason Score indicator
+// Decision Strength indicator (Reason Score)
 // ---------------------------------------------------------------------------
 
-function ReasonScore({ score }: { score: number }) {
+function DecisionStrength({ score }: { score: number }) {
   const stroke = score >= 70 ? "#10b981" : score >= 45 ? "#f59e0b" : "#f43f5e"
+  const label  = score >= 70 ? "Strong" : score >= 45 ? "Moderate" : "Weak"
   const circumference = 2 * Math.PI * 13
   const dashLen = (score / 100) * circumference
   return (
-    <div className="flex flex-col items-center gap-0.5" title={`Reason score: ${score}/100`}>
+    <div
+      className="flex flex-col items-center gap-0.5"
+      title={`Decision strength: ${score}/100 — ${label} evidence quality`}
+    >
       <div className="relative w-9 h-9">
         <svg viewBox="0 0 32 32" className="w-9 h-9 -rotate-90">
           <circle cx="16" cy="16" r="13" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" />
@@ -88,7 +108,7 @@ function ReasonScore({ score }: { score: number }) {
           {score}
         </span>
       </div>
-      <span className="text-[9px] text-muted-foreground uppercase tracking-wide">Score</span>
+      <span className="text-[9px] text-muted-foreground uppercase tracking-wide">Strength</span>
     </div>
   )
 }
@@ -107,24 +127,28 @@ interface CardProps {
 }
 
 function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutating }: CardProps) {
-  const isBuy        = proposal.action === "BUY"
-  const isDecided    = proposal.status === "Approved" || proposal.status === "Rejected"
+  const isBuy     = proposal.action === "BUY"
+  const isDecided = proposal.status === "Approved" || proposal.status === "Rejected"
 
-  // Scale estimated value proportionally from server-computed value
-  const scaledValue = proposal.quantity > 0 && proposal.estimatedValue > 0
-    ? Math.round((qty / proposal.quantity) * proposal.estimatedValue)
-    : 0
+  // Scale estimated value relative to the server-computed suggestion.
+  // Always show server value when qty matches the suggested quantity.
+  const scaledValue =
+    proposal.quantity > 0
+      ? Math.round((qty / proposal.quantity) * proposal.estimatedValue)
+      : proposal.estimatedValue > 0 && qty === 0
+        ? 0
+        : Math.round(qty * (proposal.estimatedPrice > 0 ? proposal.estimatedPrice : 0))
 
-  const borderClass  = isBuy
+  const borderClass = isBuy
     ? "border-emerald-500/25 bg-emerald-500/[0.03]"
     : "border-rose-500/25 bg-rose-500/[0.03]"
-  const actionColor  = isBuy ? "text-emerald-400" : "text-rose-400"
+  const actionColor = isBuy ? "text-emerald-400" : "text-rose-400"
 
   return (
     <Card className={`border ${borderClass} transition-colors`}>
       <CardContent className="p-4 space-y-3">
 
-        {/* ── Row 1: action label · company · status · reason score ── */}
+        {/* ── Row 1: action · company · execution status · decision strength ── */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <span className={`text-xs font-bold tracking-widest shrink-0 ${actionColor}`}>
@@ -135,54 +159,90 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
               <p className="text-[11px] text-muted-foreground font-mono">{proposal.ticker}</p>
             </div>
           </div>
+          {/* Right side: Execution Status + Decision Strength — kept visually separate */}
           <div className="flex items-start gap-2 shrink-0">
-            <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0 mt-0.5">
-              {proposal.status}
-            </Badge>
-            <ReasonScore score={proposal.reasonScore} />
+            <div className="flex flex-col items-end gap-1 pt-0.5">
+              <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0">
+                {proposal.status}
+              </Badge>
+              {proposal.blockedByEvent && (
+                <Badge variant="warning" className="text-[10px] px-1.5 py-0 flex items-center gap-0.5">
+                  <AlertTriangle className="h-2.5 w-2.5" />
+                  {proposal.blockingEvent
+                    ? `Waiting for ${proposal.blockingEvent}${proposal.blockingEventDate ? ` · ${formatEventDate(proposal.blockingEventDate)}` : ""}`
+                    : "Event blocked"}
+                </Badge>
+              )}
+            </div>
+            <DecisionStrength score={proposal.reasonScore} />
           </div>
         </div>
 
-        {/* ── Row 2: quantity controls · estimated value ── */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline" size="icon" className="h-7 w-7"
-              onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
-              disabled={isMutating || qty <= 0}
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
-            <input
-              type="number"
-              value={qty}
-              min={0}
-              onChange={(e) => {
-                const v = parseInt(e.target.value, 10)
-                if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
-              }}
-              className="w-14 text-center text-sm font-mono bg-transparent border border-border rounded-md py-0.5
-                [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <Button
-              variant="outline" size="icon" className="h-7 w-7"
-              onClick={() => onQtyChange(proposal.id, qty + 1)}
-              disabled={isMutating}
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-            <span className="text-[11px] text-muted-foreground ml-1">shares</span>
+        {/* ── Row 2: price · quantity controls · estimated value ── */}
+        <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-1.5">
+
+          {/* Price */}
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground">Price</span>
+            <span className="font-mono tabular-nums">
+              {proposal.estimatedPrice > 0
+                ? formatPrice(proposal.estimatedPrice, proposal.currency)
+                : <span className="text-muted-foreground/60 italic">No price available</span>}
+            </span>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-semibold tabular-nums">
-              {qty === 0 ? <span className="text-muted-foreground">—</span> : formatValue(scaledValue, proposal.currency)}
-            </p>
-            {proposal.resultingAllocationPercent > 0 && qty > 0 && (
-              <p className="text-[10px] text-muted-foreground">
-                → {proposal.resultingAllocationPercent}% of portfolio
-              </p>
-            )}
+
+          {/* Suggested quantity (server-computed) + user override input */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] text-muted-foreground shrink-0">Shares</span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline" size="icon" className="h-6 w-6"
+                onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
+                disabled={isMutating || qty <= 0}
+              >
+                <Minus className="h-2.5 w-2.5" />
+              </Button>
+              <input
+                type="number"
+                value={qty}
+                min={0}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10)
+                  if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
+                }}
+                className="w-14 text-center text-sm font-mono bg-transparent border border-border rounded-md py-0.5
+                  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <Button
+                variant="outline" size="icon" className="h-6 w-6"
+                onClick={() => onQtyChange(proposal.id, qty + 1)}
+                disabled={isMutating}
+              >
+                <Plus className="h-2.5 w-2.5" />
+              </Button>
+            </div>
           </div>
+
+          {/* Estimated value */}
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground">Est. value</span>
+            <span className="font-semibold tabular-nums">
+              {qty === 0
+                ? <span className="text-muted-foreground/60">—</span>
+                : formatValue(scaledValue, proposal.currency)}
+            </span>
+          </div>
+
+          {/* Allocation */}
+          {(proposal.targetAllocationPercent > 0 || proposal.currentAllocationPercent > 0) && (
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/40 pt-1 mt-0.5">
+              <span>Target {proposal.targetAllocationPercent}%</span>
+              <span>Now {proposal.currentAllocationPercent}%</span>
+              {proposal.resultingAllocationPercent > 0 && qty > 0 && (
+                <span>→ {proposal.resultingAllocationPercent}%</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── Row 3: short reason ── */}
@@ -192,23 +252,19 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
           </p>
         )}
 
-        {/* ── Row 4: badges + allocation targets ── */}
+        {/* ── Row 4: evidence quality badges ── */}
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant={confidenceVariant(proposal.confidence)} className="text-[10px] px-1.5 py-0">
-            {proposal.confidence}
+            {proposal.confidence} confidence
           </Badge>
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
             {urgencyLabel(proposal.urgency)}
           </Badge>
-          {proposal.blockedByEvent && (
-            <Badge variant="warning" className="text-[10px] px-1.5 py-0 flex items-center gap-0.5">
-              <AlertTriangle className="h-2.5 w-2.5" />
-              Event blocked
-            </Badge>
+          {proposal.sourceModules.length > 0 && (
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              {proposal.sourceModules.length} module{proposal.sourceModules.length !== 1 ? "s" : ""}
+            </span>
           )}
-          <span className="text-[10px] text-muted-foreground ml-auto">
-            Target {proposal.targetAllocationPercent}% · Now {proposal.currentAllocationPercent}%
-          </span>
         </div>
 
         {/* ── Row 5: action buttons ── */}
@@ -219,6 +275,7 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
                 size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3"
                 onClick={() => onAction(proposal.id, "Approved", qty)}
                 disabled={isMutating || qty === 0}
+                title={qty === 0 ? "Set a quantity before approving" : undefined}
               >
                 <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                 Approve
@@ -337,7 +394,7 @@ export default function TradeReview() {
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-80" />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64" />)}
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-72" />)}
         </div>
       </div>
     )
@@ -356,9 +413,10 @@ export default function TradeReview() {
     )
   }
 
-  const proposals   = data?.proposals ?? []
-  const hasTde      = !!data?.tdeTimestamp
+  const proposals    = data?.proposals ?? []
+  const hasTde       = !!data?.tdeTimestamp
   const pendingCount = proposals.filter(p => p.status === "Ready" || p.status === "Waiting").length
+  const blockedCount = proposals.filter(p => p.blockedByEvent).length
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto">
@@ -425,13 +483,17 @@ export default function TradeReview() {
 
       {/* ── Summary bar ── */}
       {proposals.length > 0 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <SummaryBar proposals={proposals} />
-          {pendingCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {pendingCount} pending review
-            </span>
-          )}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+            {blockedCount > 0 && (
+              <span className="flex items-center gap-1 text-amber-500/80">
+                <Calendar className="h-3 w-3" />
+                {blockedCount} waiting for event
+              </span>
+            )}
+            {pendingCount > 0 && <span>{pendingCount} pending review</span>}
+          </div>
         </div>
       )}
 
@@ -440,7 +502,11 @@ export default function TradeReview() {
         <div className="flex items-start gap-2 rounded-md border border-amber-500/25 bg-amber-500/5 px-3 py-2">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
           <p className="text-[11px] text-muted-foreground">
-            Phase 1 — approvals are recorded only. No orders are placed automatically.
+            Phase 1 — approvals are recorded only. No orders are placed automatically.{" "}
+            <span className="text-muted-foreground/70">
+              The <strong>Strength</strong> score measures evidence quality.
+              <strong> Status</strong> reflects execution readiness.
+            </span>
           </p>
         </div>
       )}

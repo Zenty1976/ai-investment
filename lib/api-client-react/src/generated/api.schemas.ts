@@ -793,6 +793,10 @@ export interface TradeProposal {
   decisionRank: number;
   sourceModules: string[];
   blockedByEvent: boolean;
+  /** Name of the event blocking this trade (empty string when not blocked) */
+  blockingEvent: string;
+  /** ISO date of the blocking event, e.g. "2026-08-04" (empty string when not blocked or unverified) */
+  blockingEventDate: string;
   sizingReason: string;
   sizingConfidence: TradeDecisionConfidence | '';
   createdAt: string;

@@ -1,0 +1,143 @@
+I would like to improve the Trade Review module. The current implementation works, but there are three important issues that should be corrected.
+
+⸻
+
+1. A blocked trade should still calculate a proposed position
+
+At the moment, when a decision is blocked by an upcoming event (for example an earnings release), the UI shows:
+
+* 0 shares
+* no estimated trade value
+
+This is misleading.
+
+A blocked trade does not mean “do not calculate a position”.
+
+It means:
+
+“This is the position we would like to take, but we are waiting for an event before approving or executing it.”
+
+Trade Review should therefore always calculate:
+
+* suggested number of shares
+* estimated trade value
+* resulting portfolio allocation
+
+even if blockedByEvent = true.
+
+The only difference should be that the proposal status remains Waiting until the blocking event has passed.
+
+⸻
+
+2. Always show estimated price and trade value
+
+Each proposal should display:
+
+* current share price
+* suggested number of shares
+* estimated total trade value
+
+Example:
+
+Price:
+2,645 DKK/share
+
+Suggested:
+38 shares
+
+Estimated value:
+100,510 DKK
+
+This should work with both real market data and mock market data.
+
+The absence of Saxo integration must never prevent these values from being calculated.
+
+If mock data is enabled, use the mock prices.
+
+⸻
+
+3. Reason Score should measure decision quality—not execution readiness
+
+Currently, proposals that are blocked by an event receive a very low Reason Score (around 25).
+
+This is misleading.
+
+The score should answer:
+
+“How strong is the evidence supporting this investment idea?”
+
+—not
+
+“Can this trade be executed today?”
+
+Execution readiness is already communicated by:
+
+* Waiting
+* Event blocked
+* Approved
+* Ready
+
+The Reason Score should instead consider factors such as:
+
+* Trade Decision confidence
+* Number of supporting modules
+* Risk Analyzer agreement
+* Opportunity Finder agreement
+* Company Monitor support
+* Market Alerts support
+* Portfolio diversification benefit
+* Freshness of the evidence
+* Whether conflicting evidence exists
+
+The blocking event itself should only reduce the score slightly—not dominate it.
+
+Example:
+
+Excellent investment idea but waiting for earnings:
+
+Reason Score:
+75–85
+
+Weak evidence with conflicting analyses:
+
+Reason Score:
+20–40
+
+This will make the score much more intuitive.
+
+⸻
+
+4. Separate “Decision Strength” from “Execution Status”
+
+There are really two independent concepts:
+
+Decision Strength
+
+How good is this investment idea?
+
+Execution Status
+
+Can we execute it now?
+
+These should never be mixed together.
+
+Example:
+
+Reason Score:
+82
+
+Status:
+Waiting
+
+Blocked by:
+Q2 Earnings (2026-08-04)
+
+This tells the user:
+
+“The idea is strong, but we are deliberately waiting.”
+
+That is much more useful than showing a low score simply because the trade is temporarily blocked.
+
+⸻
+
+Overall, the architecture is moving in the right direction. These changes will make Trade Review behave more like a professional portfolio management system, where investment quality and execution timing are treated as two separate decisions.

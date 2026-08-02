@@ -43,6 +43,8 @@ interface TradeProposal {
   decisionRank: number;
   sourceModules: string[];
   blockedByEvent: boolean;
+  blockingEvent: string;
+  blockingEventDate: string;
   sizingReason: string;
   sizingConfidence: "High" | "Medium" | "Low" | "";
   createdAt: string;
@@ -84,27 +86,41 @@ function extractShortReason(d: Record<string, unknown>): string {
 /**
  * Backend-computed evidence score: 0–100.
  *
+ * Measures DECISION QUALITY — not execution readiness.
+ * Execution readiness is communicated separately via proposal status and blockedByEvent.
+ *
  * Factors:
- *   Confidence (0–40) + module breadth (0–30) + key module bonuses (0–30)
+ *   Confidence (0–40) + module breadth (0–25) + key module bonuses (0–35)
  * Penalties:
- *   blockedByEvent (–20) + insufficient evidence (–5)
+ *   blockedByEvent (–5, small — only slightly reduces score) + missing evidence (–5)
+ *
+ * Target ranges:
+ *   Excellent idea, blocked by event → 75–90
+ *   Weak evidence, conflicting       → 20–40
  */
 function computeReasonScore(d: Record<string, unknown>): number {
-  const mods      = Array.isArray(d.sourceModules) ? (d.sourceModules as string[]) : [];
-  const conf      = String(d.confidence ?? "");
-  const blocked   = d.blockedByEvent === true;
-  const missing   = Array.isArray(d.missingEvidence) ? d.missingEvidence : [];
+  const mods    = Array.isArray(d.sourceModules) ? (d.sourceModules as string[]) : [];
+  const conf    = String(d.confidence ?? "");
+  const blocked = d.blockedByEvent === true;
+  const missing = Array.isArray(d.missingEvidence) ? d.missingEvidence : [];
 
-  const confScore    = conf === "High" ? 40 : conf === "Medium" ? 25 : 10;
-  const breadthScore = Math.min(30, mods.length * 5);
+  // Confidence: 0–40
+  const confScore = conf === "High" ? 40 : conf === "Medium" ? 25 : 10;
 
+  // Breadth: 0–25 (each unique module adds 5, capped at 5 modules)
+  const breadthScore = Math.min(25, mods.length * 5);
+
+  // Key module bonuses: 0–35
   let keyScore = 0;
-  if (mods.includes("RiskAnalyzer"))     keyScore += 10;
-  if (mods.includes("CompanyMonitor"))   keyScore += 10;
-  if (mods.includes("OpportunityFinder")) keyScore += 5;
-  if (mods.includes("MarketAlerts"))     keyScore += 5;
+  if (mods.includes("RiskAnalyzer"))      keyScore += 12;  // diversification/risk view
+  if (mods.includes("CompanyMonitor"))    keyScore += 10;  // fundamental company support
+  if (mods.includes("OpportunityFinder")) keyScore += 8;   // systematic opportunity signal
+  if (mods.includes("MarketAlerts"))      keyScore += 3;   // market context
+  if (mods.includes("NewsMonitor"))       keyScore += 1;
+  if (mods.includes("SectorMonitor"))     keyScore += 1;
 
-  const blockPenalty   = blocked ? 20 : 0;
+  // Penalties — small: execution timing should not dominate the quality score
+  const blockPenalty   = blocked ? 5 : 0;          // was 20 — now only a slight reduction
   const missingPenalty = missing.length >= 3 ? 5 : 0;
 
   return Math.max(0, Math.min(100, confScore + breadthScore + keyScore - blockPenalty - missingPenalty));
@@ -258,11 +274,14 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
         : null;
 
       // Status: preserve deliberate user decisions from previous proposals
+      const blocked = d.blockedByEvent === true;
       const prev = prevMap.get(decisionId);
       let status: ProposalStatus;
       if (prev && PRESERVED_STATUSES.includes(prev.status)) {
         status = prev.status;
-      } else if (currentPrice === 0 || quantity === 0) {
+      } else if (blocked || currentPrice === 0 || quantity === 0) {
+        // Blocked by event → always Waiting regardless of calculated quantity.
+        // No price or zero quantity → also Waiting (user must supply qty manually).
         status = "Waiting";
       } else {
         status = "Ready";
@@ -292,7 +311,9 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
         decisionTitle:            String(d.title ?? ""),
         decisionRank:             typeof d.rank === "number" ? d.rank : 0,
         sourceModules:            Array.isArray(d.sourceModules) ? (d.sourceModules as string[]) : [],
-        blockedByEvent:           d.blockedByEvent === true,
+        blockedByEvent:           blocked,
+        blockingEvent:            String(d.blockingEvent ?? ""),
+        blockingEventDate:        String(d.blockingEventDate ?? ""),
         sizingReason,
         sizingConfidence:         sizingConf,
         createdAt:                prev?.createdAt ?? nowIso,
