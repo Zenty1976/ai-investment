@@ -37,6 +37,7 @@ import type {
   UpdateTradeProposalBody,
   PortfolioRepositoryEntry,
   RepositoryEntry,
+  ResetCompanyMonitorDataResponse,
   SaxoConfigBody,
   SaxoLoginBody,
   SaxoLoginResponse,
@@ -505,6 +506,79 @@ export const useRunCompanyAnalysis = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getRunCompanyAnalysisMutationOptions(options));
     }
+
+// ── Company Monitor reset (dev only) ─────────────────────────────────────────
+
+export const getResetCompanyMonitorDataUrl = () => `/api/company-monitor/reset`;
+
+/**
+ * Delete all Company Monitor analyses and history so every target rebuilds a
+ * clean v2 baseline on the next run. Development environments only.
+ * @summary Reset all Company Monitor data (dev only)
+ */
+export const resetCompanyMonitorData = async (
+  options?: Parameters<typeof customFetch>[1]
+): Promise<ResetCompanyMonitorDataResponse> =>
+  customFetch<ResetCompanyMonitorDataResponse>(getResetCompanyMonitorDataUrl(), {
+    ...options,
+    method: 'DELETE',
+  });
+
+export const getResetCompanyMonitorDataMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof resetCompanyMonitorData>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof resetCompanyMonitorData>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ['resetCompanyMonitorData'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof resetCompanyMonitorData>>,
+    void
+  > = () => resetCompanyMonitorData(requestOptions);
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ResetCompanyMonitorDataMutationResult = NonNullable<
+  Awaited<ReturnType<typeof resetCompanyMonitorData>>
+>;
+export type ResetCompanyMonitorDataMutationError = ErrorType<ErrorResponse>;
+
+/** @summary Reset all Company Monitor data (dev only) */
+export const useResetCompanyMonitorData = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof resetCompanyMonitorData>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof resetCompanyMonitorData>>,
+  TError,
+  void,
+  TContext
+> => useMutation(getResetCompanyMonitorDataMutationOptions(options));
+
+// ── Repository ────────────────────────────────────────────────────────────────
 
 export const getListRepositoryEntriesUrl = () => {
 

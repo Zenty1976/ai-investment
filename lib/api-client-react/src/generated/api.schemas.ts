@@ -1076,3 +1076,15 @@ export interface SaxoLoginResponse {
   authUrl: string;
 }
 
+/** Response from the development-only Company Monitor data reset endpoint. */
+export interface ResetCompanyMonitorDataResponse {
+  /** Total repository entries deleted */
+  deletedEntries: number;
+  /** Latest-analysis entries deleted */
+  deletedAnalyses: number;
+  /** History entries deleted */
+  deletedHistoryEntries: number;
+  /** Human-readable summary */
+  message: string;
+}
+

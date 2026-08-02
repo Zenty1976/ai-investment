@@ -12,6 +12,7 @@ import {
   useSaxoSaveConfig,
   useSaxoSetEnvironment,
   useSaxoSetMock,
+  useResetCompanyMonitorData,
 } from "@workspace/api-client-react"
 import type { SaxoStatus } from "@workspace/api-client-react"
 import {
@@ -26,11 +27,20 @@ import {
   Copy,
   Check,
   FlaskConical,
+  Trash2,
+  TriangleAlert,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { format, formatDistanceToNow } from "date-fns"
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -96,6 +106,132 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       </span>
       <div className="flex-1 min-w-0">{children}</div>
     </div>
+  )
+}
+
+// ── Company Monitor reset (dev only) ─────────────────────────────────────────
+
+function CompanyMonitorResetSection() {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [lastResult, setLastResult] = useState<{ deletedAnalyses: number; deletedHistoryEntries: number } | null>(null)
+
+  const resetMutation = useResetCompanyMonitorData({
+    mutation: {
+      onSuccess: (data) => {
+        setLastResult({ deletedAnalyses: data.deletedAnalyses, deletedHistoryEntries: data.deletedHistoryEntries })
+        setConfirmOpen(false)
+      },
+    },
+  })
+
+  const handleConfirm = () => {
+    setLastResult(null)
+    resetMutation.mutate()
+  }
+
+  return (
+    <>
+      <SectionCard title="Development Tools">
+        <Row label="Company Monitor">
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground/70 leading-snug">
+              Delete all Company Monitor analyses and history. The next run for every
+              target will generate a clean v2 baseline using{" "}
+              <code className="text-primary/70 text-[10px]">FullAnalysis</code>.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => { setLastResult(null); setConfirmOpen(true) }}
+              disabled={resetMutation.isPending}
+              className="h-8 gap-1.5 border-destructive/30 text-destructive/70 hover:bg-destructive/10 disabled:opacity-50"
+            >
+              {resetMutation.isPending
+                ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                : <Trash2 className="h-3.5 w-3.5" />}
+              Reset Company Monitor data
+            </Button>
+            {lastResult && (
+              <div className="flex items-start gap-1.5 text-[11px] text-green-500/80">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>
+                  Done — deleted {lastResult.deletedAnalyses} analysis record{lastResult.deletedAnalyses !== 1 ? "s" : ""}
+                  {lastResult.deletedHistoryEntries > 0
+                    ? ` and ${lastResult.deletedHistoryEntries} history record${lastResult.deletedHistoryEntries !== 1 ? "s" : ""}`
+                    : ""
+                  }. All targets will use FullAnalysis on next run.
+                </span>
+              </div>
+            )}
+            {resetMutation.isError && (
+              <div className="flex items-start gap-1.5 text-[11px] text-destructive/80">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>Reset failed — check server logs.</span>
+              </div>
+            )}
+          </div>
+        </Row>
+        <p className="text-[11px] text-amber-400/60 leading-snug flex items-start gap-1.5">
+          <FlaskConical className="h-3 w-3 shrink-0 mt-0.5" />
+          Development only — this section is not shown in production.
+        </p>
+      </SectionCard>
+
+      <Dialog open={confirmOpen} onOpenChange={(v) => { if (!v) setConfirmOpen(false) }}>
+        <DialogContent className="max-w-md bg-[#0d1117] border-border text-foreground">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-sm font-bold">
+              <TriangleAlert className="h-4 w-4 text-destructive/80" />
+              Reset Company Monitor data?
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-3 mt-2 text-xs text-muted-foreground/80">
+                <p>This will permanently delete:</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground/70">
+                  <li>All Company Monitor analyses (one per tracked ticker)</li>
+                  <li>All Company Monitor history records (last 20 updates per ticker)</li>
+                  <li>Automation run state for Company Monitor</li>
+                </ul>
+                <p>
+                  After reset, the next analysis for every ticker will run as a{" "}
+                  <strong className="text-foreground/80">FullAnalysis</strong> and generate a
+                  complete v2 baseline — including valid{" "}
+                  <code className="text-primary/70">investmentCaseStrength</code>,
+                  3–6 thesis points with stable IDs, and a complete{" "}
+                  <code className="text-primary/70">stableProfile</code>.
+                </p>
+                <div className="bg-amber-500/8 border border-amber-500/20 rounded px-3 py-2 text-amber-400/80">
+                  <strong>Not deleted:</strong> portfolio data, market/news/event/sector analyses,
+                  settings, Saxo connection, automation configuration, system log.
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-end gap-2 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setConfirmOpen(false)}
+              disabled={resetMutation.isPending}
+              className="h-8 border-border/50 text-muted-foreground hover:text-foreground"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleConfirm}
+              disabled={resetMutation.isPending}
+              className="h-8 gap-1.5 border-destructive/40 bg-destructive/10 text-destructive/80 hover:bg-destructive/20"
+            >
+              {resetMutation.isPending
+                ? <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Resetting…</>
+                : <><Trash2 className="h-3.5 w-3.5" /> Delete all Company Monitor data</>}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -505,6 +641,8 @@ export default function Settings() {
       </Card>
 
       <SaxoBankSection />
+
+      {import.meta.env.DEV && <CompanyMonitorResetSection />}
 
     </div>
   )

@@ -586,3 +586,15 @@ export const GetRepositoryEntryResponse = zod.object({
   "createdAt": zod.string().describe('ISO 8601 — when this module first saved a result'),
   "updatedAt": zod.string().describe('ISO 8601 — when this module last saved a result')
 }).describe('A module\'s latest stored analysis result with metadata')
+
+/**
+ * Development-only: delete all Company Monitor analyses and history so every
+ * target rebuilds a clean v2 baseline on the next run.
+ * @summary Reset all Company Monitor data (dev only)
+ */
+export const ResetCompanyMonitorDataResponse = zod.object({
+  "deletedEntries": zod.number().describe('Total repository entries deleted'),
+  "deletedAnalyses": zod.number().describe('Latest-analysis entries deleted'),
+  "deletedHistoryEntries": zod.number().describe('History entries deleted'),
+  "message": zod.string().describe('Human-readable summary of what was deleted')
+})

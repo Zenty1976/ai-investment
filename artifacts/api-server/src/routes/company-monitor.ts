@@ -27,6 +27,7 @@ import { systemLog } from "../lib/system-log.js";
 import { RunCompanyAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
+import { automationOrchestrator } from "../lib/automation-orchestrator";
 import type { z } from "zod";
 
 const router: IRouter = Router();
@@ -888,6 +889,38 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     res.json({ ...withMeta, _debug: debug });
     return;
   }
+});
+
+// ---------------------------------------------------------------------------
+// Development reset — clears all Company Monitor data so the next analysis
+// for every target uses FullAnalysis and generates a clean v2 baseline.
+// Not available in production.
+// ---------------------------------------------------------------------------
+
+router.delete("/company-monitor/reset", async (req, res): Promise<void> => {
+  if (process.env.NODE_ENV === "production") {
+    res.status(403).json({ error: "This endpoint is not available in production." });
+    return;
+  }
+
+  const deletedLatest  = analysisRepository.deleteByPrefix("company-monitor:");
+  const deletedHistory = analysisRepository.deleteByPrefix("company-monitor-history:");
+  const deletedEntries = deletedLatest + deletedHistory;
+
+  automationOrchestrator.resetCompanyMonitorState();
+
+  systemLog.logWarning(
+    "Company Monitor",
+    `Dev reset: deleted ${deletedLatest} analysis record(s) and ${deletedHistory} history record(s). ` +
+    `All Company Monitor targets will run FullAnalysis on next trigger.`
+  );
+
+  res.json({
+    deletedEntries,
+    deletedAnalyses: deletedLatest,
+    deletedHistoryEntries: deletedHistory,
+    message: `Deleted ${deletedLatest} analysis record(s) and ${deletedHistory} history record(s). All targets will use FullAnalysis on next run.`,
+  });
 });
 
 export default router;

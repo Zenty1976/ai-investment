@@ -1415,6 +1415,55 @@ class AutomationOrchestratorService {
     this._persistState();
     writeJson("automation-jobs.json", this.jobs);
   }
+
+  // ── Development reset ────────────────────────────────────────────────────────
+
+  /**
+   * Reset the company-monitor runtime state so the orchestrator treats every
+   * target as NeverRun.  Called after the repository entries have already been
+   * deleted.  The module will run FullAnalysis on the next scheduled or manual
+   * trigger.
+   *
+   * @returns number of tickers whose state was cleared
+   */
+  resetCompanyMonitorState(): number {
+    const st = this.runtimeState.get("company-monitor");
+    if (st) {
+      st.status = "Idle";
+      st.lastRunAt = null;
+      st.lastSuccessfulRunAt = null;
+      st.nextRunAt = null;
+      st.lastError = null;
+      st.currentJobId = null;
+      st.waitingForDeps = [];
+    }
+
+    // Cancel any pending/running company-monitor jobs
+    let cancelledJobs = 0;
+    for (const job of this.jobs) {
+      if (
+        job.moduleId === "company-monitor" &&
+        (job.status === "Pending" || job.status === "Running")
+      ) {
+        job.status = "Cancelled";
+        job.completedAt = new Date().toISOString();
+        job.error = "Cancelled by Company Monitor data reset";
+        cancelledJobs++;
+      }
+    }
+
+    this._persistState();
+    if (cancelledJobs > 0) {
+      writeJson("automation-jobs.json", this.jobs);
+    }
+
+    systemLog.logWarning(
+      "Company Monitor",
+      `Dev reset: runtime state cleared${cancelledJobs > 0 ? `, ${cancelledJobs} job(s) cancelled` : ""}. All targets will use FullAnalysis on next run.`
+    );
+
+    return cancelledJobs;
+  }
 }
 
 /** Singleton — import everywhere; never instantiate directly. */

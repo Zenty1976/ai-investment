@@ -114,6 +114,21 @@ class AnalysisRepository {
   has(moduleName: string): boolean {
     return this.store.has(moduleName);
   }
+
+  /**
+   * Delete all entries whose key starts with the given prefix.
+   * Immediately persists to disk.
+   * Returns the number of entries deleted.
+   */
+  deleteByPrefix(prefix: string): number {
+    const toDelete: string[] = [];
+    for (const key of this.store.keys()) {
+      if (key.startsWith(prefix)) toDelete.push(key);
+    }
+    for (const key of toDelete) this.store.delete(key);
+    if (toDelete.length > 0) this._persistToDisk();
+    return toDelete.length;
+  }
 }
 
 /** Singleton — import this everywhere; never instantiate AnalysisRepository directly. */
