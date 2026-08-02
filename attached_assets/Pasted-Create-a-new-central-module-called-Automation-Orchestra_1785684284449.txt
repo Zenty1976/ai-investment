@@ -1,0 +1,818 @@
+Create a new central module called:
+
+Automation Orchestrator
+
+This module is the central scheduler, dependency manager and operational status dashboard for the entire application.
+
+Individual modules must not each own independent timers.
+
+The Automation Orchestrator must centrally decide:
+
+* which modules should update
+* when they should update
+* in which order they should update
+* why they were triggered
+* whether the update succeeded
+* whether dependent modules must run afterwards
+
+The Orchestrator must not contain investment logic.
+
+It must only coordinate the existing modules.
+
+⸻
+
+CORE RESPONSIBILITY
+
+The Orchestrator should answer:
+
+“What should be updated now, and what should run afterwards?”
+
+It should support:
+
+* manual updates
+* scheduled updates
+* dependency-based updates
+* event-triggered updates
+* stale-data detection
+* retry handling
+* pause/resume
+* operational status monitoring
+
+The purpose is to ensure the application remains current without requiring the user to manually visit and update every module.
+
+⸻
+
+AUTOMATION MODES
+
+Add three system-wide automation modes:
+
+Manual
+
+SemiAutomatic
+
+FullAutomatic
+
+Manual:
+
+* No module runs automatically.
+* The user starts updates manually.
+* The Orchestrator still shows module status, dependencies and stale data.
+* “Run all now” and individual “Run now” actions remain available.
+
+SemiAutomatic:
+
+* Monitoring and analysis modules run automatically.
+* Trade Decision and Trade Review may also update automatically.
+* No trade is approved or executed automatically.
+* Trade Review still requires manual approval.
+
+FullAutomatic:
+
+* Reserved for a later version.
+* The complete analysis and decision flow may run automatically.
+* Future policy checks may allow ready trade proposals to proceed without manual approval.
+* Do not implement automatic approval or execution now.
+* Show FullAutomatic as disabled or “Coming later” until policy and execution modules exist.
+
+Store the selected mode centrally.
+
+The mode must survive application restarts.
+
+⸻
+
+MODULE REGISTRY
+
+Create a central module registry.
+
+Do not hardcode scheduling logic separately in many places.
+
+Each orchestrated module should register metadata such as:
+
+* moduleId
+* displayName
+* enabled
+* scheduleType
+* defaultIntervalMinutes
+* minimumIntervalMinutes
+* maximumIntervalMinutes
+* staleAfterMinutes
+* dependencies
+* runAfter
+* priority
+* supportsAutomaticRun
+* marketHoursOnly
+* lastRunAt
+* lastSuccessfulRunAt
+* nextRunAt
+* status
+* lastError
+* currentJobId
+
+Suggested module IDs:
+
+* portfolio-manager
+* market-monitor
+* news-monitor
+* event-monitor
+* sector-monitor
+* company-monitor
+* market-alerts
+* risk-analyzer
+* portfolio-analyzer
+* opportunity-finder
+* trade-decision-engine
+* trade-review
+
+Do not include Settings or Log & History as scheduled modules.
+
+⸻
+
+MODULE RUN CONTRACT
+
+Do not automate modules by simulating frontend button clicks.
+
+Create a shared backend execution contract for orchestrated modules.
+
+Each module should expose an internal runner such as:
+
+runModule({
+trigger,
+correlationId,
+requestedAt,
+context
+})
+
+Suggested trigger values:
+
+* Manual
+* Scheduled
+* Dependency
+* EventPassed
+* ImportantAlert
+* PortfolioChanged
+* StaleData
+* StartupRecovery
+
+The internal runner should return:
+
+* success
+* moduleId
+* startedAt
+* completedAt
+* durationMs
+* resultUpdated
+* meaningfulChange
+* changeSeverity
+* affectedTickers
+* nextSuggestedRunAt
+* error
+
+Existing manual API routes may call the same internal runner.
+
+Do not duplicate the module’s business logic between manual and automated execution.
+
+⸻
+
+DEPENDENCY FLOW
+
+The Orchestrator must understand module dependencies.
+
+Do not run downstream modules before required upstream modules are sufficiently fresh.
+
+Recommended base dependency graph:
+
+Portfolio Manager:
+
+* independent external data source
+
+Market Monitor:
+
+* independent analysis source
+
+News Monitor:
+
+* independent analysis source
+
+Event Monitor:
+
+* independent analysis source
+
+Sector Monitor:
+
+* depends on sufficiently fresh Market Monitor and News Monitor when available
+
+Company Monitor:
+
+* runs for selected companies when triggered by relevant events, news or portfolio exposure
+
+Market Alerts:
+
+* depends on fresh portfolio and recent monitor data
+
+Risk Analyzer:
+
+* depends on Portfolio Manager, Market Alerts, relevant Company Monitor data, Market Monitor and Event Monitor
+
+Portfolio Analyzer:
+
+* depends on Portfolio Manager, Risk Analyzer, Market Monitor, Sector Monitor and relevant Company Monitor data
+
+Opportunity Finder:
+
+* depends on Portfolio Manager, Portfolio Analyzer, Sector Monitor, Market Monitor, Event Monitor and News Monitor
+
+Trade Decision Engine:
+
+* depends on Portfolio Manager, Risk Analyzer, Portfolio Analyzer, Market Alerts, Opportunity Finder and relevant Company Monitor data
+
+Trade Review:
+
+* runs immediately after a successful Trade Decision update
+* does not call OpenAI
+* rebuilds ready and waiting presentation from the latest Trade Decision result
+
+Avoid dependency cycles.
+
+The Orchestrator should reject invalid registry configurations that create cycles.
+
+⸻
+
+DEFAULT SCHEDULING
+
+Provide editable default intervals.
+
+Suggested initial defaults:
+
+Portfolio Manager:
+
+* every 15 minutes when Saxo is connected
+* every 60 minutes when using mock data
+* stale after 30 minutes
+
+Market Alerts:
+
+* every 15 minutes
+* stale after 20 minutes
+
+News Monitor:
+
+* every 30 minutes
+* stale after 45 minutes
+
+Market Monitor:
+
+* every 30 minutes during relevant market hours
+* every 120 minutes outside market hours
+* stale after 60 minutes
+
+Event Monitor:
+
+* every 180 minutes
+* additionally when a known event date approaches or passes
+* stale after 240 minutes
+
+Sector Monitor:
+
+* every 720 minutes
+* stale after 900 minutes
+
+Company Monitor:
+
+* trigger-based for held companies and active opportunity candidates
+* scheduled safety refresh every 360 minutes for held companies
+* stale after 480 minutes
+
+Risk Analyzer:
+
+* after meaningful portfolio, company, alert or macro changes
+* scheduled safety refresh every 120 minutes
+* stale after 180 minutes
+
+Portfolio Analyzer:
+
+* after Risk Analyzer or Portfolio Manager changes
+* scheduled safety refresh every 180 minutes
+* stale after 240 minutes
+
+Opportunity Finder:
+
+* every 720 minutes
+* also after a material Portfolio Analyzer or Sector Monitor change
+* stale after 900 minutes
+
+Trade Decision Engine:
+
+* after meaningful changes in required dependencies
+* scheduled safety refresh every 120 minutes
+* stale after 180 minutes
+
+Trade Review:
+
+* immediately after Trade Decision
+* no independent OpenAI schedule
+* stale when its source Trade Decision timestamp changes
+
+These are initial defaults only.
+
+The user must be able to edit intervals within safe minimum and maximum bounds.
+
+⸻
+
+EVENT-DRIVEN CHAINS
+
+Support event-triggered update chains.
+
+Example: important news about a held company
+
+News Monitor detects an important development
+→ Company Monitor for affected ticker
+→ Market Alerts
+→ Risk Analyzer
+→ Portfolio Analyzer
+→ Trade Decision Engine
+→ Trade Review
+
+Example: blocking earnings event has passed
+
+Event Monitor detects the event has passed
+→ Company Monitor for affected ticker
+→ Market Alerts
+→ Risk Analyzer
+→ Portfolio Analyzer
+→ Trade Decision Engine
+→ Trade Review
+
+Example: portfolio changed
+
+Portfolio Manager detects changed positions or cash
+→ Risk Analyzer
+→ Portfolio Analyzer
+→ Opportunity Finder when materially relevant
+→ Trade Decision Engine
+→ Trade Review
+
+Only trigger downstream modules when the upstream result indicates a meaningful change.
+
+Do not rerun the full chain after every harmless refresh.
+
+⸻
+
+MEANINGFUL CHANGE
+
+Each module runner should report whether a meaningful change occurred.
+
+Suggested values:
+
+* None
+* Low
+* Medium
+* High
+
+The Orchestrator should use this to decide whether downstream modules need to run.
+
+Examples:
+
+* timestamp-only refresh: None
+* small wording change: Low
+* new important company alert: High
+* portfolio position changed: High
+* risk score changed materially: Medium or High
+* Trade Decision readiness changed: High
+
+Do not let OpenAI decide scheduling directly.
+
+Scheduling decisions should be deterministic backend logic based on module results and configured rules.
+
+⸻
+
+STALE-DATA HANDLING
+
+The Orchestrator should calculate whether each module is:
+
+* Fresh
+* DueSoon
+* Stale
+* Running
+* Failed
+* Disabled
+* WaitingForDependency
+
+If a required dependency is stale:
+
+* update the dependency first
+* do not run the downstream module with knowingly stale critical input unless explicitly allowed
+* show why the downstream module is waiting
+
+Example:
+
+Trade Decision:
+Waiting for fresh Risk Analyzer
+
+⸻
+
+JOB MANAGEMENT
+
+Create persistent orchestration jobs.
+
+Suggested job fields:
+
+* id
+* correlationId
+* moduleId
+* trigger
+* status
+* priority
+* requestedAt
+* startedAt
+* completedAt
+* attempt
+* maxAttempts
+* error
+* affectedTickers
+* parentJobId
+
+Suggested job statuses:
+
+* Pending
+* Running
+* Completed
+* Failed
+* Cancelled
+* Skipped
+* WaitingForDependency
+
+Prevent duplicate concurrent jobs for the same module.
+
+If the same module is triggered several times while already pending or running:
+
+* merge compatible triggers
+* increase priority when appropriate
+* do not create unnecessary duplicate calls
+
+⸻
+
+RETRIES AND FAILURE ISOLATION
+
+Use bounded retries.
+
+Reuse the existing module-level retry and OpenAI timeout behaviour.
+
+The Orchestrator should not retry indefinitely.
+
+If one module fails:
+
+* record the failure
+* keep previous successful module data
+* do not incorrectly mark downstream modules as updated
+* block only downstream jobs that require the failed result
+* allow unrelated modules to continue
+
+Show the latest useful error in the GUI.
+
+⸻
+
+MARKET HOURS
+
+Support market-hours-aware scheduling, but keep it configurable.
+
+Do not assume every instrument follows U.S. market hours.
+
+Allow scheduling profiles such as:
+
+* Always
+* U.S. market hours
+* European market hours
+* Custom time window
+* Trigger only
+
+The initial version may use simple configured time windows.
+
+Do not build a complex exchange-calendar engine yet.
+
+⸻
+
+GUI
+
+Add a new sidebar menu item:
+
+Automation
+
+The page should be a compact operational dashboard.
+
+Top section:
+
+* Automation mode
+* Overall system status
+* Pause / Resume
+* Run all now
+* Last full cycle
+* Next scheduled job
+* Number of running, stale and failed modules
+
+Automation mode control:
+
+* Manual
+* Semi-automatic
+* Full automatic — disabled / coming later
+
+Show a clear warning when SemiAutomatic is active:
+
+“Analysis modules update automatically. Trades still require manual approval.”
+
+⸻
+
+MODULE STATUS LIST
+
+Display one compact row per module.
+
+Each row should show:
+
+* module name
+* current status
+* last successful update
+* next scheduled update
+* configured interval
+* stale indicator
+* latest duration
+* latest error indicator
+* Run now
+* Settings/expand control
+
+Example:
+
+Market Alerts
+Fresh
+Updated 5 min ago
+Next in 10 min
+Every 15 min
+[Run now]
+
+Risk Analyzer
+Waiting for dependency
+Requires fresh Company Monitor
+[Run dependencies]
+
+Trade Review
+Synced
+Source updated 2 min ago
+Runs after Trade Decision
+
+⸻
+
+COUNTDOWN
+
+Show a live countdown for:
+
+* next scheduled system job
+* next update for each scheduled module
+
+The countdown is presentation only.
+
+The backend schedule remains authoritative.
+
+Refreshing or closing the page must not reset schedules.
+
+⸻
+
+EDITABLE MODULE SETTINGS
+
+Allow each module row to expand and edit:
+
+* enabled
+* automatic updates allowed
+* interval
+* stale threshold
+* schedule profile
+* run only after meaningful dependency changes
+* scheduled safety refresh
+* priority
+
+Validate values on the backend.
+
+Do not allow intervals below the configured safe minimum.
+
+Include:
+
+* Reset to defaults
+* Save
+
+Changes must persist.
+
+⸻
+
+RUN ALL NOW
+
+“Run all now” should not blindly start every module simultaneously.
+
+It should create a coordinated full-cycle plan.
+
+Suggested order:
+
+1. Portfolio Manager
+2. Market Monitor, News Monitor and Event Monitor in parallel
+3. Sector Monitor
+4. Relevant Company Monitors
+5. Market Alerts
+6. Risk Analyzer
+7. Portfolio Analyzer
+8. Opportunity Finder
+9. Trade Decision Engine
+10. Trade Review
+
+Skip disabled modules.
+
+Respect dependencies.
+
+Show full-cycle progress.
+
+⸻
+
+COMPANY MONITOR TARGETING
+
+Do not run Company Monitor for every possible company.
+
+Automatically target:
+
+* current portfolio holdings
+* active Trade Decision subjects
+* top Opportunity Finder candidates
+* tickers affected by important alerts or events
+
+Apply configurable limits to avoid excessive OpenAI calls.
+
+Suggested default:
+
+* all held positions
+* maximum five active opportunity candidates per cycle
+* specifically triggered tickers always included
+
+Use the shared Company Identity service.
+
+⸻
+
+COST AND RATE CONTROL
+
+The Orchestrator must avoid unnecessary OpenAI calls.
+
+Add deterministic controls:
+
+* minimum interval per module
+* do not rerun when required inputs are unchanged unless safety refresh is due
+* deduplicate jobs
+* cap Company Monitor targets
+* exponential backoff after repeated failures
+* daily run counters
+* optional daily OpenAI run limit
+
+Display basic usage information in the Automation GUI:
+
+* analyses run today
+* failed runs today
+* next allowed run after backoff
+* optional configured daily limit
+
+Do not show token-level cost estimates unless the application already has reliable usage data.
+
+⸻
+
+SYSTEM LOG
+
+Use the shared System Log.
+
+Keep entries concise.
+
+Log:
+
+* automation mode changed
+* automation paused or resumed
+* full cycle started/completed
+* module scheduled because of a meaningful trigger
+* module failed
+* downstream chain blocked by dependency
+* waiting Trade Decision re-evaluated after event
+* decision became ReadyForReview
+
+Do not log every timer tick or every internal scheduler poll.
+
+⸻
+
+PERSISTENCE
+
+Persist:
+
+* automation mode
+* paused state
+* module registry settings
+* schedules
+* last run data
+* next run data
+* jobs
+* full-cycle history
+* failure/backoff state
+
+Suggested repository keys:
+
+automation-orchestrator-settings
+
+automation-orchestrator-state
+
+automation-orchestrator-jobs
+
+automation-orchestrator-history
+
+Keep job history bounded.
+
+Suggested limits:
+
+* latest 100 jobs
+* latest 20 full cycles
+
+⸻
+
+PROCESS LIFECYCLE
+
+The schedule must run on the backend, not in the browser.
+
+Closing the browser must not stop the schedule while the backend deployment is running.
+
+On backend startup:
+
+* restore persisted schedules
+* detect abandoned Running jobs
+* mark abandoned jobs failed or retryable
+* recalculate nextRunAt
+* avoid replaying every missed interval
+* run one recovery check when appropriate
+
+Do not create frontend timers that invoke backend modules directly.
+
+The frontend only displays state and sends explicit user commands.
+
+⸻
+
+FIRST VERSION LIMITS
+
+Implement now:
+
+* Manual mode
+* SemiAutomatic mode
+* FullAutomatic disabled
+* backend scheduler
+* editable module intervals
+* dependency sequencing
+* event and meaningful-change triggers
+* stale detection
+* status dashboard
+* Run all now
+* individual Run now
+* pause/resume
+* persistent jobs and state
+
+Do not implement now:
+
+* automatic trade approval
+* Saxo order placement
+* autonomous execution
+* sophisticated exchange holiday calendars
+* sub-minute scheduling
+* webhook-based external triggers
+
+Minimum supported interval should be no lower than five minutes.
+
+⸻
+
+IMPORTANT ARCHITECTURE RULES
+
+The Orchestrator must not:
+
+* duplicate module analysis logic
+* modify module results itself
+* make investment decisions
+* approve trades
+* execute trades
+* directly write fake analysis results
+* rely on the browser remaining open
+* create separate uncontrolled timers inside modules
+
+Each module remains responsible for producing its own result.
+
+The Orchestrator is responsible only for:
+
+* scheduling
+* sequencing
+* dependencies
+* triggering
+* operational state
+* retry coordination
+* visibility
+
+The final flow should be:
+
+Automation Orchestrator
+→ updates monitoring and analysis modules
+→ Trade Decision Engine re-evaluates decisions
+→ waiting ideas remain waiting or become ReadyForReview
+→ Trade Review synchronizes
+→ user manually approves ready trades
+
+Full automatic trade approval and execution will be added later as a separate safety and execution phase.
