@@ -423,7 +423,7 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                   copyText={inputMessages.map(m => `[${m.role}]\n${m.content}`).join("\n\n")}
                 >
                   <div className="space-y-1.5 mb-3">
-                    <Row label="API" value={debugInfo.webSearchUsed ? "Responses API + web_search" : "Chat Completions"} />
+                    <Row label="API" value={"Responses API + Web Search"} />
                     <Row label="Model" value={String(debugInfo.request.model ?? "—")} />
                     <Row label="Temperature" value={String(debugInfo.request.temperature ?? "—")} />
                     <Row label="Max tokens" value={String(
