@@ -2486,36 +2486,36 @@
     "result": {
       "mainConclusion": {
         "title": "Maintain cautious, event‑driven posture with selective preparation",
-        "reason": "High cash buffer and concentrated holdings amid clustered near‑term earnings and macro risks warrant active monitoring and selective positioning rather than immediate trades."
+        "reason": "High cash buffer and concentrated holdings amid clustered near‑term earnings and macro risks warrant active monitoring and selective positioning rather than broad deployment."
       },
-      "executiveSummary": "The portfolio holds concentrated positions in Microsoft, Novo Nordisk, and Serve Robotics, with over 53% in cash. Near‑term catalysts include earnings for Novo Nordisk (Aug 5), Serve Robotics (Aug 6), and macro data (U.S. jobs Aug 7, CPI Aug 12). Novo faces heightened downside risk following a failed ZEUS Phase 3 trial; Serve remains speculative with execution and valuation risks; Microsoft benefits from AI/cloud momentum but is sensitive to macro data and capacity constraints. Given these dynamics, we recommend waiting for earnings outcomes before adjusting exposure, while preparing to add cyclicals (e.g., Caterpillar) for diversification if macro signals improve.",
-      "overallDecisionPosture": "WaitForEvents",
+      "executiveSummary": "The portfolio holds concentrated exposure to Microsoft, Novo Nordisk, and speculative Serve Robotics, with over 53% in cash. Near‑term catalysts include earnings for Novo (Aug 5), Serve (Aug 6), and macro data (U.S. jobs Aug 7, CPI Aug 12). A negative ZEUS trial update for Novo increases downside risk. Microsoft benefits from AI/cloud momentum but remains sensitive to macro data and capacity constraints. Serve Robotics is highly speculative with execution and valuation risks. Diversification into cyclicals (e.g., Caterpillar) or U.S. pharma (Eli Lilly) may offer balance, but decisions should await earnings clarity.",
+      "overallDecisionPosture": "ActivelyReview",
       "decisionReadinessScore": 65,
       "readinessDrivers": [
         {
-          "factor": "High near‑term event density",
+          "factor": "High near‑term event density (earnings, macro data)",
           "impact": "Negative",
-          "reason": "Earnings and macro data clustered in early August increase volatility and uncertainty."
+          "reason": "Multiple clustered catalysts increase volatility and uncertainty."
         },
         {
-          "factor": "Strong cash position (~53%)",
+          "factor": "Substantial cash (~53%)",
           "impact": "Positive",
           "reason": "Provides flexibility to act post‑events without forced decisions."
         },
         {
-          "factor": "Novo Nordisk ZEUS trial failure",
+          "factor": "Negative ZEUS trial update for Novo Nordisk",
           "impact": "Negative",
-          "reason": "New negative clinical outcome raises downside risk ahead of earnings."
+          "reason": "Raises downside risk ahead of earnings."
         },
         {
-          "factor": "Microsoft AI/cloud strength",
+          "factor": "Strong Microsoft fundamentals and AI momentum",
           "impact": "Positive",
-          "reason": "Robust Q4 results and AI momentum support resilience amid macro uncertainty."
+          "reason": "Supports continued upside if macro data remains benign."
         },
         {
-          "factor": "Serve Robotics speculative nature",
+          "factor": "Serve Robotics speculative profile",
           "impact": "Negative",
-          "reason": "High valuation and execution risk make near‑term outcomes binary."
+          "reason": "High execution and valuation risk suggest caution."
         }
       ],
       "decisions": [
@@ -2525,76 +2525,76 @@
           "company": "Novo Nordisk A/S",
           "ticker": "NOVO B",
           "decision": "WaitForEvent",
-          "title": "Await Q2 earnings before adjusting Novo Nordisk exposure",
-          "reason": "Recent ZEUS Phase 3 trial failure increases downside risk; earnings on August 5 will clarify guidance, impairment risk, and pipeline outlook.",
+          "title": "Await Q2 earnings and guidance post‑ZEUS trial failure",
+          "reason": "ZEUS Phase 3 failure increases downside risk; earnings on August 5 may clarify impairment or guidance revisions.",
           "supportingEvidence": [
-            "ZEUS trial failed to show MACE benefit, raising downside risk ahead of earnings",
-            "Weak full‑year guidance and potential impairment charge flagged"
+            "ZEUS trial failed to show MACE benefit, raising sentiment and guidance risk",
+            "Weak full‑year guidance already flagged, earnings may disappoint further"
           ],
           "opposingEvidence": [
-            "Strong GLP‑1 pipeline and EU approval of Wegovy® pill support medium‑term growth"
+            "Strong GLP‑1 pipeline and EU approvals support medium‑term growth"
           ],
           "confidence": "High",
           "urgency": "Immediate",
           "blockedByEvent": true,
           "blockingEvent": "Novo Nordisk Q2 earnings release",
-          "blockingEventDate": "2026-08-05",
+          "blockingEventDate": "2026‑08‑05",
           "whatWouldChangeDecision": [
-            "Earnings beat with narrowed guidance or positive R&D commentary",
-            "Impairment charge or weaker guidance"
+            "Earnings beat with narrowed guidance or impairment clarity",
+            "Positive R&D or pipeline commentary"
           ],
           "missingEvidence": [
-            "Post‑earnings guidance clarity",
-            "Pipeline R&D updates"
+            "Detailed Q2 results and updated guidance"
           ],
-          "portfolioImpact": "Novo Nordisk is ~22% of portfolio; earnings outcome could materially shift risk/return profile.",
-          "accountConsiderations": "Position held in DKK account, avoiding FX conversion; underlying company revenue exposure includes USD and global markets.",
+          "portfolioImpact": "Clarifies near‑term risk in ~22% of portfolio; informs whether to reduce or hold.",
+          "accountConsiderations": "Position held in DKK account; no FX conversion needed; underlying exposure to global pharma remains.",
           "sourceModules": [
             "MarketAlerts",
             "PortfolioAnalyzer",
-            "CompanyMonitor"
+            "CompanyMonitor",
+            "RiskAnalyzer"
           ],
-          "status": "New",
+          "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
-          "readinessReason": "Waiting for Novo Nordisk Q2 earnings release (2026-08-05) — decision cannot be assessed until the event occurs."
+          "readinessReason": "Waiting for Novo Nordisk Q2 earnings release (2026‑08‑05) — decision cannot be assessed until the event occurs."
         },
         {
           "rank": 2,
           "subjectType": "Holding",
-          "company": "Serve Robotics Inc.",
+          "company": "Serve Robotics Inc",
           "ticker": "SERV",
           "decision": "WaitForEvent",
-          "title": "Hold Serve Robotics pending Q2 results and utilization metrics",
-          "reason": "High execution and valuation risk; Q2 earnings on August 6 will be pivotal for growth, margins, and guidance.",
+          "title": "Await Q2 earnings to assess execution and valuation risk",
+          "reason": "High execution uncertainty and valuation vulnerability; Q2 results on August 6 are pivotal.",
           "supportingEvidence": [
-            "Speculative Physical AI play with high valuation and execution uncertainty",
-            "Q2 earnings (Aug 6) is key catalyst"
+            "Speculative Physical AI play with high valuation and execution risk",
+            "Q2 earnings expected August 6 after market close"
           ],
           "opposingEvidence": [
-            "Strong Q1 revenue growth and raised FY2026 guidance to $26M"
+            "Strong top‑line growth and raised FY guidance provide upside potential"
           ],
           "confidence": "Medium",
           "urgency": "Immediate",
           "blockedByEvent": true,
           "blockingEvent": "Serve Robotics Q2 earnings release",
-          "blockingEventDate": "2026-08-06",
+          "blockingEventDate": "2026‑08‑06",
           "whatWouldChangeDecision": [
-            "Beat on revenue/margin with improved guidance",
+            "Beat on revenue/guidance with improved utilization metrics",
             "Disappointing results or cash burn concerns"
           ],
           "missingEvidence": [
-            "Utilization metrics, cash burn details, guidance clarity"
+            "Q2 revenue, EPS, guidance, utilization and cash burn details"
           ],
-          "portfolioImpact": "Small weight (~2%), but high volatility could affect sentiment and risk profile.",
+          "portfolioImpact": "Clarifies speculative exposure (~2% of portfolio); informs whether to reduce or prepare to buy.",
           "accountConsiderations": "Held in USD account; FX exposure to USD/DKK remains unhedged.",
           "sourceModules": [
             "CompanyMonitor",
             "RiskAnalyzer",
             "PortfolioAnalyzer"
           ],
-          "status": "Changed",
+          "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
-          "readinessReason": "Waiting for Serve Robotics Q2 earnings release (2026-08-06) — decision cannot be assessed until the event occurs."
+          "readinessReason": "Waiting for Serve Robotics Q2 earnings release (2026‑08‑06) — decision cannot be assessed until the event occurs."
         },
         {
           "rank": 3,
@@ -2602,15 +2602,15 @@
           "company": "Microsoft Corporation",
           "ticker": "MSFT",
           "decision": "Review",
-          "title": "Review Microsoft exposure post‑macro data and ahead of ex‑dividend",
-          "reason": "Strong AI/cloud momentum supports upside, but upcoming U.S. jobs (Aug 7) and CPI (Aug 12) data may influence valuation; ex‑dividend on Aug 20 may attract income flows.",
+          "title": "Review exposure post‑rally ahead of macro data and ex‑dividend",
+          "reason": "Strong AI/cloud momentum supports upside, but macro data (jobs Aug 7, CPI Aug 12) and capacity constraints pose risks; ex‑dividend on Aug 20 may influence flows.",
           "supportingEvidence": [
-            "Robust Q4 results, Azure and AI growth, strong cash flow",
-            "Ex‑dividend date Aug 20 may support share price"
+            "Robust Q4 FY26 results, Azure and AI growth, strong cash flow",
+            "Ex‑dividend date confirmed as August 20, 2026"
           ],
           "opposingEvidence": [
-            "Azure capacity constraints and consumer weakness remain risks",
-            "Valuation premium limits multiple expansion"
+            "Valuation premium and macro sensitivity may limit upside",
+            "Consumer segment weakness and capex pressure remain"
           ],
           "confidence": "High",
           "urgency": "Days",
@@ -2618,22 +2618,21 @@
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Positive macro data supporting tech rally",
-            "Negative data or capacity headwinds"
+            "Macro data supportive, capacity ramp confirmed",
+            "Weak jobs/CPI or capex concerns emerge"
           ],
           "missingEvidence": [
-            "Post‑jobs/CPI market reaction",
-            "Azure capacity update"
+            "Post‑dividend price reaction and macro data impact"
           ],
-          "portfolioImpact": "Largest holding (~23%); macro shifts could materially affect portfolio value.",
-          "accountConsiderations": "Held in USD account; FX exposure to USD/DKK remains unhedged.",
+          "portfolioImpact": "Informs whether to trim or hold ~23% exposure; affects portfolio risk balance.",
+          "accountConsiderations": "Held in USD account; avoids conversion; underlying exposure to USD/DKK FX remains.",
           "sourceModules": [
             "CompanyMonitor",
-            "RiskAnalyzer",
             "PortfolioAnalyzer",
+            "RiskAnalyzer",
             "EventMonitor"
           ],
-          "status": "New",
+          "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "Requires closer manual assessment before a trade decision can be made."
         },
@@ -2643,29 +2642,29 @@
           "company": "Caterpillar Inc.",
           "ticker": "CAT",
           "decision": "PrepareToBuy",
-          "title": "Prepare to add Caterpillar for diversification post‑earnings",
-          "reason": "CAT offers cyclical and industrial exposure underrepresented in portfolio; Q2 earnings on August 4 may provide entry opportunity.",
+          "title": "Potential industrial diversification via CAT ahead of earnings",
+          "reason": "Diversifies away from tech/healthcare; Q2 earnings on August 4 may offer entry point if results are solid.",
           "supportingEvidence": [
-            "Opportunity Finder highlights CAT as top diversification candidate",
+            "Opportunity Finder flags CAT as top diversification candidate",
             "Sector Monitor shows Industrials improving trend"
           ],
           "opposingEvidence": [
-            "High valuation (~40x P/E) and cost/tariff pressures may limit upside"
+            "High valuation (~40× P/E) and cyclical sensitivity may limit upside"
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
           "blockedByEvent": true,
           "blockingEvent": "Caterpillar Q2 earnings release",
-          "blockingEventDate": "2026-08-04",
+          "blockingEventDate": "2026‑08‑04",
           "whatWouldChangeDecision": [
-            "Earnings beat with backlog conversion and margin strength",
-            "Disappointing results or cost headwinds"
+            "Strong earnings and backlog conversion",
+            "Weak macro or cost pressure commentary"
           ],
           "missingEvidence": [
-            "Post‑earnings guidance and backlog conversion details"
+            "Q2 results and guidance details"
           ],
-          "portfolioImpact": "Would diversify into cyclicals, reducing concentration risk.",
-          "accountConsiderations": "Would be held in USD account; adds USD exposure but aligns with existing USD holdings.",
+          "portfolioImpact": "Adds cyclical/value exposure to balance concentrated holdings.",
+          "accountConsiderations": "Would be held in USD account; adds USD exposure; underlying industrial revenue global.",
           "sourceModules": [
             "OpportunityFinder",
             "SectorMonitor",
@@ -2674,10 +2673,10 @@
           "targetAllocationPercent": 8,
           "maximumAllocationPercent": 12,
           "sizingConfidence": "Low",
-          "sizingReason": "Await earnings clarity before committing; moderate allocation to diversify.",
-          "status": "New",
+          "sizingReason": "Awaiting earnings clarity before committing; moderate allocation for diversification.",
+          "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
-          "readinessReason": "Waiting for Caterpillar Q2 earnings release (2026-08-04) — trade must be re-evaluated after the event with new price, risk and sizing data."
+          "readinessReason": "Waiting for Caterpillar Q2 earnings release (2026‑08‑04) — trade must be re-evaluated after the event with new price, risk and sizing data."
         },
         {
           "rank": 5,
@@ -2685,29 +2684,29 @@
           "company": "Eli Lilly and Company",
           "ticker": "LLY",
           "decision": "PrepareToBuy",
-          "title": "Prepare to add Eli Lilly as healthcare complement to Novo",
-          "reason": "LLY offers U.S. GLP‑1 leadership and may outperform Novo; Q2 earnings on August 5 could provide catalyst.",
+          "title": "Consider U.S. pharma exposure via LLY post‑earnings",
+          "reason": "Balances healthcare exposure; strong GLP‑1 pipeline and upcoming earnings on August 5 may offer positive catalyst.",
           "supportingEvidence": [
-            "Strong pipeline and obesity drug momentum",
-            "Opportunity Finder ranks LLY high for diversification and offsetting Novo risk"
+            "Opportunity Finder ranks LLY second; strong pipeline momentum",
+            "Company Monitor notes high-impact obesity drug data and manufacturing ramp"
           ],
           "opposingEvidence": [
-            "Regulatory and pricing pressures, high valuation (~40x P/E) pose risks"
+            "Regulatory and pricing risks, high valuation (~40× P/E) remain"
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
           "blockedByEvent": true,
           "blockingEvent": "Eli Lilly Q2 earnings release",
-          "blockingEventDate": "2026-08-05",
+          "blockingEventDate": "2026‑08‑05",
           "whatWouldChangeDecision": [
-            "Earnings beat with positive pipeline commentary",
-            "Regulatory setbacks or weak guidance"
+            "Earnings beat and positive pipeline commentary",
+            "Regulatory delays or weak guidance"
           ],
           "missingEvidence": [
-            "Post‑earnings guidance and regulatory clarity"
+            "Q2 results and guidance, FDA feedback updates"
           ],
-          "portfolioImpact": "Adds U.S. pharma exposure and offsets Novo concentration.",
-          "accountConsiderations": "Would be held in USD account; adds USD exposure consistent with other holdings.",
+          "portfolioImpact": "Diversifies healthcare exposure and offsets Novo Nordisk concentration.",
+          "accountConsiderations": "Would be held in USD account; adds USD exposure; underlying pharma revenue global.",
           "sourceModules": [
             "OpportunityFinder",
             "CompanyMonitor"
@@ -2715,78 +2714,130 @@
           "targetAllocationPercent": 6,
           "maximumAllocationPercent": 10,
           "sizingConfidence": "Low",
-          "sizingReason": "Await earnings and regulatory clarity; moderate allocation to balance healthcare exposure.",
-          "status": "New",
+          "sizingReason": "Awaiting earnings and regulatory clarity; moderate allocation for diversification.",
+          "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
-          "readinessReason": "Waiting for Eli Lilly Q2 earnings release (2026-08-05) — trade must be re-evaluated after the event with new price, risk and sizing data."
+          "readinessReason": "Waiting for Eli Lilly Q2 earnings release (2026‑08‑05) — trade must be re-evaluated after the event with new price, risk and sizing data."
         }
       ],
       "conflictsResolved": [
         {
-          "topic": "Healthcare concentration between Novo and Lilly",
-          "conflict": "Novo’s weak guidance and trial failure vs Lilly’s strong pipeline and earnings potential",
-          "resolution": "Wait for earnings from both before adjusting; prepare to add Lilly if it outperforms to diversify healthcare exposure."
+          "topic": "Novo Nordisk vs Eli Lilly healthcare exposure",
+          "conflict": "Novo has near‑term risk from ZEUS failure and weak guidance; Eli Lilly offers potential upside but also valuation risk.",
+          "resolution": "Wait for earnings from both before adjusting exposure; prepare to buy LLY if results are favorable, while holding Novo pending clarity."
         },
         {
-          "topic": "Tech exposure vs cyclicals",
-          "conflict": "Heavy tech/AI concentration vs lack of cyclicals",
-          "resolution": "Prepare to add Caterpillar post‑earnings to diversify into Industrials if results support."
+          "topic": "Tech concentration vs diversification",
+          "conflict": "High exposure to Microsoft and speculative Serve Robotics increases concentration risk.",
+          "resolution": "Maintain MSFT but review post‑macro data; await Serve earnings; prepare to diversify via CAT and LLY selectively."
         }
       ],
       "nextReviewTriggers": [
         {
           "trigger": "Novo Nordisk Q2 earnings release",
-          "date": "2026-08-05",
+          "date": "2026‑08‑05",
           "affectedDecisions": [
-            "Await Q2 earnings before adjusting Novo Nordisk exposure"
+            "Await Q2 earnings and guidance post‑ZEUS trial failure"
           ]
         },
         {
           "trigger": "Eli Lilly Q2 earnings release",
-          "date": "2026-08-05",
+          "date": "2026‑08‑05",
           "affectedDecisions": [
-            "Prepare to add Eli Lilly as healthcare complement to Novo"
+            "Consider U.S. pharma exposure via LLY post‑earnings"
           ]
         },
         {
           "trigger": "Caterpillar Q2 earnings release",
-          "date": "2026-08-04",
+          "date": "2026‑08‑04",
           "affectedDecisions": [
-            "Prepare to add Caterpillar for diversification post‑earnings"
+            "Potential industrial diversification via CAT ahead of earnings"
           ]
         },
         {
           "trigger": "Serve Robotics Q2 earnings release",
-          "date": "2026-08-06",
+          "date": "2026‑08‑06",
           "affectedDecisions": [
-            "Hold Serve Robotics pending Q2 results and utilization metrics"
+            "Await Q2 earnings to assess execution and valuation risk"
           ]
         },
         {
-          "trigger": "U.S. Nonfarm Payrolls release",
-          "date": "2026-08-07",
+          "trigger": "U.S. Nonfarm Payrolls data",
+          "date": "2026‑08‑07",
           "affectedDecisions": [
-            "Review Microsoft exposure post‑macro data and ahead of ex‑dividend"
+            "Review exposure post‑rally ahead of macro data and ex‑dividend"
           ]
         },
         {
-          "trigger": "U.S. CPI release",
-          "date": "2026-08-12",
+          "trigger": "U.S. CPI data",
+          "date": "2026‑08‑12",
           "affectedDecisions": [
-            "Review Microsoft exposure post‑macro data and ahead of ex‑dividend"
+            "Review exposure post‑rally ahead of macro data and ex‑dividend"
           ]
         }
       ],
-      "timestamp": "2026-08-02T20:18:59.249Z",
-      "analysisDuration": 12529
+      "timestamp": "2026-08-02T21:32:50.717Z",
+      "analysisDuration": 13779
     },
     "createdAt": "2026-08-02T09:52:12.533Z",
-    "updatedAt": "2026-08-02T20:19:11.780Z"
+    "updatedAt": "2026-08-02T21:33:04.502Z"
   },
   "trade-decision-engine-history": {
     "moduleName": "trade-decision-engine-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-02T21:32:50.717Z",
+          "overallDecisionPosture": "ActivelyReview",
+          "decisionReadinessScore": 65,
+          "decisions": [
+            {
+              "normalizedKey": "holding|novo b|waitforevent",
+              "subjectType": "Holding",
+              "company": "Novo Nordisk A/S",
+              "ticker": "NOVO B",
+              "decision": "WaitForEvent",
+              "confidence": "High",
+              "urgency": "Immediate"
+            },
+            {
+              "normalizedKey": "holding|serv|waitforevent",
+              "subjectType": "Holding",
+              "company": "Serve Robotics Inc",
+              "ticker": "SERV",
+              "decision": "WaitForEvent",
+              "confidence": "Medium",
+              "urgency": "Immediate"
+            },
+            {
+              "normalizedKey": "holding|msft|review",
+              "subjectType": "Holding",
+              "company": "Microsoft Corporation",
+              "ticker": "MSFT",
+              "decision": "Review",
+              "confidence": "High",
+              "urgency": "Days"
+            },
+            {
+              "normalizedKey": "opportunity|cat|preparetobuy",
+              "subjectType": "Opportunity",
+              "company": "Caterpillar Inc.",
+              "ticker": "CAT",
+              "decision": "PrepareToBuy",
+              "confidence": "Medium",
+              "urgency": "Weeks"
+            },
+            {
+              "normalizedKey": "opportunity|lly|preparetobuy",
+              "subjectType": "Opportunity",
+              "company": "Eli Lilly and Company",
+              "ticker": "LLY",
+              "decision": "PrepareToBuy",
+              "confidence": "Medium",
+              "urgency": "Weeks"
+            }
+          ]
+        },
         {
           "timestamp": "2026-08-02T20:18:59.249Z",
           "overallDecisionPosture": "WaitForEvents",
@@ -3328,7 +3379,7 @@
       ]
     },
     "createdAt": "2026-08-02T09:52:12.535Z",
-    "updatedAt": "2026-08-02T20:19:11.782Z"
+    "updatedAt": "2026-08-02T21:33:04.508Z"
   },
   "trade-review": {
     "moduleName": "trade-review",
@@ -3969,109 +4020,133 @@
   "company-monitor:JPM": {
     "moduleName": "company-monitor:JPM",
     "result": {
+      "updateType": "UpdateWithChanges",
       "company": {
         "name": "JPMorgan Chase & Co.",
         "ticker": "JPM",
         "sector": "Financials",
         "industry": "Diversified Banks"
       },
-      "executiveSummary": "JPMorgan delivered a strong Q2 2026 beat, driven by record revenues across business lines and robust capital metrics. With the next earnings not until mid‑October, the 1–3 month horizon centers on macro data, credit trends, and geopolitical developments. The bank’s diversified model and capital strength support resilience, but energy‑driven inflation, private credit stress, and macro uncertainty pose risks.",
+      "executiveSummary": "Since our prior analysis on August 2, 2026, JPMorgan has announced a meaningful dividend increase and a substantial $50 billion share repurchase authorization, alongside leadership promotions that enhance succession clarity. Analyst sentiment remains broadly positive with several upgrades and target boosts. These developments reinforce the firm’s capital return profile and governance stability, modestly strengthening the investment case.",
       "investmentView": {
         "rating": "Buy",
         "outlook": "Moderately Bullish",
-        "reason": "Strong Q2 results, solid capital, diversified revenue streams, and favorable sector rotation into financials support near‑term upside, though macro and credit risks temper enthusiasm."
+        "reason": "Dividend hike and large buyback reinforce shareholder returns; leadership succession clarity reduces governance uncertainty; analyst upgrades and target increases support upside, while macro and energy risks remain."
       },
-      "currentSituation": "JPMorgan reported Q2 2026 net income of $21.2 billion ($7.70 EPS), significantly above the prior year’s $15.0 billion ($5.24 EPS) ([jpmorganchaseco.gcs-web.com](https://jpmorganchaseco.gcs-web.com/node/909756/html?utm_source=openai)). Managed revenue was $58.0 billion, with expenses of $27.3 billion and credit costs of $2.5 billion ([sec.gov](https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/a2q26erfexhibit991narrative.htm?utm_source=openai)). Markets, investment banking, and asset management all hit record revenue levels, with markets revenue up ~35% YoY ([apnews.com](https://apnews.com/article/d56b36051dbaef8be234d86b49f8f620?utm_source=openai)). The firm maintains strong capital ratios (CET1 ~14.1%) and liquidity (cash & securities ~$1.5 trillion) ([sec.gov](https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/a2q26erfexhibit991narrative.htm?utm_source=openai)). The next earnings release is scheduled for October 13, 2026 ([jpmorganchase.com](https://www.jpmorganchase.com/ir/news/2025/jpmc-announces-conference-calls-to-review-first-quarter-second-quarter-third-quarter-and-fourth-quarter-2026-earnings?utm_source=openai)).",
+      "investmentThesis": [
+        {
+          "point": "Strong capital return via dividend increase and $50 billion buyback",
+          "status": "Strengthened"
+        },
+        {
+          "point": "Diversified revenue streams and record Q2 performance",
+          "status": "Unchanged"
+        },
+        {
+          "point": "Leadership succession clarity",
+          "status": "Strengthened"
+        },
+        {
+          "point": "Macro and energy‑driven inflation risks",
+          "status": "Unchanged"
+        },
+        {
+          "point": "Private credit and credit cost risks",
+          "status": "Unchanged"
+        }
+      ],
+      "investmentCaseStrength": 88,
+      "investmentCaseChange": {
+        "changed": true,
+        "severity": "Low",
+        "summary": "Capital return enhancements and leadership clarity modestly improve the investment case.",
+        "previousInvestmentView": "Buy, Moderately Bullish",
+        "currentInvestmentView": "Buy, Moderately Bullish",
+        "reason": "Dividend and buyback boost returns; succession planning reduces uncertainty."
+      },
+      "stableProfile": {
+        "businessDescription": "Leading global diversified financial services firm with strong presence across consumer, commercial, investment banking, markets, and asset management.",
+        "competitiveAdvantage": "Scale, diversified business mix, capital strength, leadership in markets and investment banking.",
+        "longTermStrengths": [
+          "Diversified revenue streams",
+          "Robust capital and liquidity",
+          "Scale and market leadership"
+        ],
+        "recurringRisks": [
+          "Macro slowdown",
+          "Energy‑driven inflation",
+          "Credit cost volatility"
+        ]
+      },
+      "currentSituation": "JPMorgan announced a quarterly dividend increase to $1.65 (from $1.50) for Q3 2026 and authorized a new $50 billion share repurchase program effective July 1, 2026 ([jpmorganchase.com](https://www.jpmorganchase.com/ir/news/2026/jpmc-dividend-increase-common-share-repurchase?utm_source=openai)). Leadership succession advanced with promotion of Doug Petno and Troy Rohrbaugh to co‑presidents, enhancing clarity around future CEO succession ([apnews.com](https://apnews.com/article/ee40285f2b448407db9acfa2f4b59f44?utm_source=openai)). Analyst sentiment remains constructive, with multiple upgrades and target increases, including Deutsche Bank upgrading to Buy ($375 target), Bank of America boosting target to $420, and others maintaining or raising targets ([pricetargets.com](https://www.pricetargets.com/NYSE/JPM/?utm_source=openai)).",
       "catalysts": [
         {
-          "title": "Strong macro data (jobs, CPI)",
-          "description": "Upcoming U.S. labor (Aug 7) and CPI (Aug 12) prints could lift interest rate expectations and net interest income outlook.",
-          "timeframe": "Within 1 month",
+          "title": "Dividend increase and buyback execution",
+          "description": "Implementation of $50 billion repurchase and higher dividend could support stock performance.",
+          "timeframe": "Within 3 months",
           "impact": "High"
         },
         {
-          "title": "Private credit stress developments",
-          "description": "Any signs of deterioration or stabilization in private credit markets could influence credit costs and investor sentiment.",
-          "timeframe": "Within 3 months",
+          "title": "Analyst target upgrades",
+          "description": "Continued positive revisions and upgrades may drive sentiment and valuation.",
+          "timeframe": "Within 1 month",
           "impact": "Medium"
         },
         {
-          "title": "Energy/inflation trends",
-          "description": "Easing or worsening energy‑driven inflation could affect loan demand, margins, and trading volumes.",
-          "timeframe": "Within 3 months",
-          "impact": "Medium"
-        },
-        {
-          "title": "Branch expansion execution",
-          "description": "Roll‑out of 160 new branches and renovations could support consumer banking growth and sentiment.",
-          "timeframe": "Within 3 months",
-          "impact": "Low"
-        },
-        {
-          "title": "Geopolitical developments",
-          "description": "Middle East tensions could drive market volatility, benefiting trading revenues but raising macro risk.",
-          "timeframe": "Within 3 months",
-          "impact": "Medium"
+          "title": "Macro data (NFP, CPI)",
+          "description": "U.S. labor and inflation data could influence interest rate outlook and NII trajectory.",
+          "timeframe": "Within 1 month",
+          "impact": "High"
         }
       ],
       "risks": [
         {
-          "title": "Macro slowdown or Fed tightening",
-          "description": "Weakening growth or hawkish Fed signals could pressure loan growth and trading activity.",
+          "title": "Energy‑driven inflation",
+          "description": "Ongoing Middle East tensions could sustain inflation and pressure consumer spending.",
           "impact": "High"
         },
         {
-          "title": "Credit deterioration",
-          "description": "Rising charge‑offs or reserve builds, especially in commercial/private credit, could weigh on earnings.",
-          "impact": "High"
-        },
-        {
-          "title": "Inflation volatility",
-          "description": "Persistent inflation could squeeze margins or slow consumer demand.",
+          "title": "Private credit stress",
+          "description": "Weakness in private credit markets could elevate credit costs.",
           "impact": "Medium"
         },
         {
-          "title": "Geopolitical shocks",
-          "description": "Escalation in Middle East conflict could disrupt markets and economic confidence.",
+          "title": "Macro slowdown",
+          "description": "Broader economic slowdown could weigh on trading, investment banking, and NII.",
           "impact": "Medium"
-        },
-        {
-          "title": "Execution risk on branch expansion",
-          "description": "Delays or cost overruns in branch openings could limit consumer banking upside.",
-          "impact": "Low"
         }
       ],
       "earningsAndGuidance": {
-        "summary": "Q2 2026 delivered a strong beat with record revenues and robust capital; no forward guidance provided.",
-        "trend": "Improving",
+        "summary": "No new earnings released since Q2 2026 beat; no updated guidance provided.",
+        "trend": "Stable",
         "nextKnownEvent": "Q3 2026 earnings release",
         "nextKnownEventDate": "2026‑10‑13"
       },
       "competitivePosition": {
         "assessment": "Strong",
-        "summary": "JPMorgan’s diversified business mix, scale, capital strength, and leadership in markets and investment banking underpin a leading competitive position."
+        "summary": "Capital return enhancements and leadership succession planning reinforce JPMorgan’s leadership and stability."
       },
-      "sectorContext": "Financials are in a moderately strong, improving trend as capital rotates into value and domestic‑focused banks amid stable rates and economic resilience.",
+      "sectorContext": "Financials remain in favor amid rotation into value and defensives; JPMorgan benefits from this trend.",
       "marketSentiment": "Positive",
       "valuationAssessment": {
         "level": "Reasonable",
-        "summary": "At ~P/E 16.8, JPM trades in line with peers; strong earnings justify valuation, though macro risks warrant caution."
+        "summary": "Analyst targets imply modest upside (~6–22%), consistent with current valuation."
       },
-      "bullCase": "Macro data surprises positively, credit remains benign, inflation eases, and trading revenues stay elevated—driving further upside into Q3.",
-      "baseCase": "Stable macro, modest NII growth, controlled credit costs, and continued diversification support a steady upward drift.",
-      "bearCase": "Macro weakens, credit costs rise, inflation persists, and geopolitical shocks disrupt markets—leading to underperformance.",
+      "bullCase": "Strong execution of buyback and dividend, favorable macro data, continued trading and IB strength drive further upside.",
+      "baseCase": "Stable macro, continued diversification, modest NII growth, controlled credit costs support steady performance.",
+      "bearCase": "Energy‑inflation persists, macro weakens, credit costs rise, limiting upside.",
       "keyThingsToWatch": [
-        "U.S. Nonfarm Payrolls (Aug 7) and CPI (Aug 12)",
-        "Private credit market developments",
-        "Energy/inflation trends",
-        "Branch expansion progress",
-        "Geopolitical developments in Middle East"
+        "Execution of buyback program",
+        "Analyst revisions",
+        "U.S. NFP and CPI data",
+        "Private credit developments",
+        "Middle East energy tensions"
       ],
-      "confidence": "Medium",
-      "timestamp": "2026-08-02T20:18:12.724Z",
-      "analysisDuration": 11727
+      "confidence": "High",
+      "timestamp": "2026-08-02T21:38:07.403Z",
+      "analysisDuration": 9696
     },
     "createdAt": "2026-08-02T20:18:24.451Z",
-    "updatedAt": "2026-08-02T20:18:24.451Z"
+    "updatedAt": "2026-08-02T21:38:17.099Z"
   }
 }

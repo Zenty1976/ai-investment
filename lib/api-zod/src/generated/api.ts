@@ -152,6 +152,7 @@ export const RunCompanyAnalysisResponse = zod.object({
   }),
   /** The persistent investment thesis — WHY this company is attractive or unattractive */
   "investmentThesis": zod.array(zod.object({
+    "id": zod.string().describe('Stable kebab-case identifier, e.g. "azure-growth" — never changes across updates'),
     "point": zod.string(),
     "status": zod.enum(['Strengthened', 'Unchanged', 'Weakened', 'Invalidated'])
   })),
@@ -213,7 +214,11 @@ export const RunCompanyAnalysisResponse = zod.object({
   "keyThingsToWatch": zod.array(zod.string()),
   "confidence": zod.enum(['High', 'Medium', 'Low']),
   "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds'),
+  /** Server-computed: how meaningful this update was for downstream orchestration */
+  "meaningfulChange": zod.enum(['None', 'Low', 'Medium', 'High']).optional(),
+  /** Server-computed: tickers affected by this analysis result */
+  "affectedTickers": zod.array(zod.string()).optional()
 })
 
 

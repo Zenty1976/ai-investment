@@ -1,61 +1,5 @@
 [
   {
-    "id": "6e1b8cbf-19c2-43a8-8e9f-8a09babc141e",
-    "timestamp": "2026-08-01T22:11:16.308Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "a05b3bea-aec7-457e-9a54-57e10f6e5586",
-    "timestamp": "2026-08-01T22:11:22.428Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "32a57d45-92e4-497b-8b5d-b455f48d3908",
-    "timestamp": "2026-08-01T22:11:22.429Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "3 new alert(s): Novo Nordisk raises 2026 guidance but flags Q3 impairment; Serve Robotics sets Q2 2026 earnings date and continues expansion; Microsoft deepens AI infrastructure partnerships and cuts workforce"
-  },
-  {
-    "id": "f582e795-9964-49a1-ba3a-287a58ee801b",
-    "timestamp": "2026-08-01T22:11:22.430Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Novo Nordisk raises 2026 guidance but flags Q3 impairment [Company]"
-  },
-  {
-    "id": "8d370885-db22-419b-b56a-a26a47f6ba12",
-    "timestamp": "2026-08-01T22:11:36.076Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "9f816370-2680-4fbd-b4ee-ea59bd742d58",
-    "timestamp": "2026-08-01T22:11:38.088Z",
-    "module": "Market Alerts",
-    "level": "error",
-    "message": "Market alerts analysis failed"
-  },
-  {
-    "id": "8bd45444-9550-4829-a5f9-6a8f7635f928",
-    "timestamp": "2026-08-01T22:11:43.757Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "970b6aa4-08b4-4306-8994-21a087100d9b",
-    "timestamp": "2026-08-01T22:11:46.122Z",
-    "module": "Market Alerts",
-    "level": "error",
-    "message": "Market alerts analysis failed"
-  },
-  {
     "id": "f45a1661-ce87-42c0-a68d-925f0ea6bc04",
     "timestamp": "2026-08-01T22:11:47.554Z",
     "module": "Market Alerts",
@@ -3498,5 +3442,61 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Full cycle completed in 166s"
+  },
+  {
+    "id": "b5f25660-6c84-4735-b86a-1bcc530b3d7b",
+    "timestamp": "2026-08-02T21:32:50.716Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "e8b6c274-b642-4ad4-8f22-f339a51d8c21",
+    "timestamp": "2026-08-02T21:32:50.717Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "ce60fabf-84b1-4aed-8f83-af03d009772d",
+    "timestamp": "2026-08-02T21:33:04.555Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "db35d732-5227-4e79-8753-4fdada774d43",
+    "timestamp": "2026-08-02T21:33:04.558Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: ActivelyReview | Readiness: 65/100"
+  },
+  {
+    "id": "ea560d88-f58f-4827-820c-39f37af4546b",
+    "timestamp": "2026-08-02T21:33:04.560Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "4 decision(s) WaitingForReevaluation: NOVO B, SERV, CAT, LLY"
+  },
+  {
+    "id": "a3affbac-af8e-4e72-9033-9127a08ce3c4",
+    "timestamp": "2026-08-02T21:33:04.563Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Top decision: [WaitForEvent] Await Q2 earnings and guidance post‑ZEUS trial failure — High confidence, Immediate urgency"
+  },
+  {
+    "id": "ac7dc30a-fbda-4857-97fc-6e525d9482e0",
+    "timestamp": "2026-08-02T21:38:07.402Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for JPM"
+  },
+  {
+    "id": "515ea971-a52d-4942-b90e-953f654b2de1",
+    "timestamp": "2026-08-02T21:38:17.101Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for JPM: UpdateWithChanges, rating Buy, strength 88"
   }
 ]

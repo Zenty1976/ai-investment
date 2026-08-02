@@ -1,0 +1,213 @@
+The Company Monitor version 2 implementation is generally good. Keep the current architecture and UI, but make the following correctness improvements.
+
+1. Do not let a NoMaterialChange response overwrite stable analysis fields
+
+The current backend saves the complete AI response directly:
+
+analysisRepository.save(repositoryKey, parsed.data)
+
+This means that even when updateType is NoMaterialChange, OpenAI can rewrite:
+
+- stableProfile
+- investmentThesis wording
+- investmentView
+- bullCase
+- baseCase
+- bearCase
+- competitivePosition
+- other stable fields
+
+That defeats the purpose of a persistent stateful analyst.
+
+When updateType === "NoMaterialChange", build the final stored result on the server by merging the response with the previous successful analysis.
+
+Preserve these fields from the previous analysis unless a material change was explicitly accepted:
+
+- company identity
+- stableProfile
+- investmentThesis point text
+- investmentView
+- investmentCaseStrength
+- competitivePosition
+- bullCase
+- baseCase
+- bearCase
+
+Allow dynamic fields to update:
+
+- executiveSummary
+- currentSituation
+- catalysts
+- risks
+- earningsAndGuidance
+- sectorContext
+- marketSentiment
+- valuationAssessment
+- keyThingsToWatch
+- confidence
+
+For the investment thesis, preserve the previous point text and only apply the returned status when the point can be matched reliably.
+
+Do not allow a NoMaterialChange response to silently replace or rephrase the permanent thesis.
+
+2. Add consistency validation against the previous analysis
+
+Zod currently validates the structure but not the logical relationship between fields.
+
+For a first analysis:
+
+- updateType must be FullAnalysis
+- investmentCaseChange.changed must be false
+- investmentCaseChange.severity must be None
+- previousInvestmentView must be N/A
+- investmentCaseStrengthChange must not be present
+
+For NoMaterialChange:
+
+- investmentCaseChange.changed must be false
+- severity must be None
+- investmentView rating and outlook must equal the previous analysis
+- investmentCaseStrength must equal the previous score
+- investmentCaseStrengthChange must not be present
+- no previous thesis point may be removed or marked Invalidated
+- currentInvestmentView must equal the current stored investment view
+
+For UpdateWithChanges:
+
+- investmentCaseChange.changed must be true
+- severity must not be None
+- reason and summary must be non-empty
+- previousInvestmentView must match the actual previous stored view
+- currentInvestmentView must match the newly returned investment view
+- if investmentCaseStrength changed, investmentCaseStrengthChange is required
+- its previousScore must equal the actual previous score
+- its currentScore must equal the returned investmentCaseStrength
+- if the score did not change, investmentCaseStrengthChange must be absent
+
+Reject inconsistent output and retry instead of storing it.
+
+3. Preserve thesis identity across updates
+
+The current schema identifies thesis points only by their text.
+
+OpenAI may reword a point, making it appear to be a new thesis even when it represents the same idea.
+
+Add a stable id to each thesis point:
+
+{
+  "id": "azure-growth",
+  "point": "...",
+  "status": "Strengthened|Unchanged|Weakened|Invalidated"
+}
+
+On the first analysis, generate short stable IDs.
+
+On updates:
+
+- require all previous IDs to be returned
+- preserve their original point text unless the thesis genuinely changed
+- allow new thesis points only with new unique IDs
+- never silently remove a previous thesis point
+- use Invalidated when a thesis is no longer valid
+
+Update the OpenAPI schema, generated types, backend and frontend together.
+
+4. Add compact Company Monitor history
+
+The current repository key stores only the latest analysis, so previous scores and case changes disappear when the result is overwritten.
+
+Create compact history under:
+
+company-monitor-history:<TICKER>
+
+Keep the latest 20 analyses.
+
+Store only:
+
+- timestamp
+- updateType
+- investmentView rating
+- investmentView outlook
+- investmentCaseStrength
+- investmentCaseChange severity
+- investmentCaseChange summary
+- thesis point IDs and statuses
+- confidence
+
+Do not duplicate the entire analysis, prompts or raw OpenAI responses.
+
+This history will later allow:
+
+- score trend
+- rating changes
+- case strengthened/weakened
+- consistency checks
+- better Trade Decision input
+
+5. Calculate meaningfulChange deterministically
+
+Company Monitor is used by the Automation Orchestrator.
+
+Return orchestration metadata based on the validated final result:
+
+NoMaterialChange:
+- meaningfulChange = None or Low
+
+UpdateWithChanges with Low severity:
+- meaningfulChange = Low
+
+UpdateWithChanges with Medium severity:
+- meaningfulChange = Medium
+
+UpdateWithChanges with High severity, rating change, thesis invalidation or large score change:
+- meaningfulChange = High
+
+A timestamp-only or wording-only update must not trigger the full downstream chain.
+
+Include the ticker in affectedTickers.
+
+6. Make score movement disciplined
+
+Add prompt and backend validation rules:
+
+- Do not move Investment Case Strength because of ordinary daily price movement or minor news.
+- Small changes should normally be 1–3 points.
+- Larger changes require clearly identified material evidence.
+- A score change of more than 10 points requires severity High and at least two concrete reasons.
+- The score must not change when updateType is NoMaterialChange.
+
+This prevents random score drift over repeated updates.
+
+7. Improve current-date validation
+
+Validate earningsAndGuidance.nextKnownEventDate on the backend.
+
+- If the date is in the past, it must not be stored as the next upcoming event.
+- Require an ISO YYYY-MM-DD date or an empty string.
+- If an event has occurred, the analysis should use its published outcome instead of continuing to describe it as upcoming.
+
+Apply the same rule to catalyst descriptions when they explicitly reference dated events.
+
+8. Avoid pretending the update is token-efficient when it still requires a complete response
+
+The update prompt currently asks OpenAI to return the full CompanyAnalysis object every time.
+
+That is acceptable for now, but it does not significantly reduce response tokens.
+
+Keep the full response format in this version for compatibility, but rely on the server-side merge and consistency validation described above.
+
+Do not claim that unchanged stable fields have been safely preserved unless the backend actually preserves them.
+
+Do not redesign the current Company Monitor UI.
+
+Preserve:
+
+- existing web search
+- debug dialog
+- retry and timeout handling
+- identity verification
+- current Company Monitor page layout
+- recent-company selection
+- existing repository key
+- System Log integration
+- Automation Orchestrator integration

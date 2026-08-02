@@ -795,7 +795,7 @@ export default function CompanyMonitor() {
                       pt.status === "Invalidated"  ? "bg-rose-500/60" :
                                                      "bg-muted-foreground/30";
                     return (
-                      <li key={i} className={`flex items-start gap-2.5 pb-2 ${i < analysis.investmentThesis.length - 1 ? "border-b border-border/20" : ""}`}>
+                      <li key={pt.id || i} className={`flex items-start gap-2.5 pb-2 ${i < analysis.investmentThesis.length - 1 ? "border-b border-border/20" : ""}`}>
                         <span className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${dotColor}`} />
                         <span className="text-sm text-foreground/80 leading-snug flex-1">{pt.point}</span>
                         {analysis.updateType !== "FullAnalysis" && (

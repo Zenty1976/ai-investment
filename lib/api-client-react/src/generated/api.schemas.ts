@@ -375,6 +375,8 @@ export const CompanyThesisPointStatus = {
 } as const;
 
 export interface CompanyThesisPoint {
+  /** Stable kebab-case identifier, e.g. "azure-growth" — never changes across updates */
+  id: string;
   point: string;
   status: CompanyThesisPointStatus;
 }
@@ -409,6 +411,14 @@ export interface CompanyStableProfile {
   recurringRisks: string[];
 }
 
+export type CompanyMeaningfulChange = typeof CompanyMeaningfulChange[keyof typeof CompanyMeaningfulChange];
+export const CompanyMeaningfulChange = {
+  None: 'None',
+  Low: 'Low',
+  Medium: 'Medium',
+  High: 'High',
+} as const;
+
 export interface CompanyAnalysis {
   /** Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation */
   updateType: CompanyUpdateType;
@@ -441,6 +451,24 @@ export interface CompanyAnalysis {
   timestamp: string;
   /** Time taken to complete the analysis in milliseconds */
   analysisDuration: number;
+  /** Server-computed: how meaningful this update was for downstream orchestration */
+  meaningfulChange?: CompanyMeaningfulChange;
+  /** Server-computed: tickers affected by this analysis result */
+  affectedTickers?: string[];
+}
+
+/** Compact history entry stored under company-monitor-history:<TICKER> */
+export interface CompanyMonitorHistoryEntry {
+  timestamp: string;
+  updateType: CompanyUpdateType;
+  investmentViewRating: CompanyInvestmentRating;
+  investmentViewOutlook: CompanyOutlook;
+  investmentCaseStrength: number;
+  investmentCaseChangeSeverity: CompanyCaseChangeSeverity;
+  investmentCaseChangeSummary: string;
+  thesisPointStatuses: Array<{ id: string; status: CompanyThesisPointStatus }>;
+  confidence: CompanyConfidence;
+  meaningfulChange: CompanyMeaningfulChange;
 }
 
 export interface CompanyAnalysisBody {
