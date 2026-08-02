@@ -1,0 +1,100 @@
+The Trade Decision Engine is now working well. Please make these focused correctness improvements.
+
+1. Fix Company Monitor selection and identity matching.
+
+Use the shared Company Identity service for all current holdings and Opportunity Finder candidates.
+
+The backend decision profile currently marks all held positions as hasCompanyMonitor: false even though a Novo Nordisk Company Monitor analysis exists.
+
+Ensure that Saxo symbols such as “NOVO B” resolve to the existing Novo analysis.
+
+Only include Company Monitor analyses for:
+
+- current portfolio holdings
+- current Opportunity Finder candidates
+
+Do not include unrelated analyses such as NVDA when the company is neither held nor currently proposed.
+
+The calculated fields must agree with the actual context:
+
+- hasCompanyMonitor
+- positionsWithCompanyMonitorData
+- positionsMissingCompanyMonitorData
+
+2. Standardize sourceModules.
+
+Use one fixed enum throughout prompt, OpenAPI schema, Zod validation, backend and frontend:
+
+- PortfolioManager
+- PortfolioAnalyzer
+- RiskAnalyzer
+- MarketAlerts
+- CompanyMonitor
+- OpportunityFinder
+- EventMonitor
+- SectorMonitor
+- MarketMonitor
+- NewsMonitor
+- Web
+
+Do not allow alternate names with spaces such as “Risk Analyzer”.
+
+Normalize older or AI-returned values before validation when safe, otherwise retry.
+
+3. Prevent dividend-capture reasoning from becoming a standalone decision basis.
+
+Add this prompt rule:
+
+Do not recommend holding or acquiring a stock merely to receive a dividend.
+
+An ex-dividend date is not by itself positive expected return because the market price normally adjusts for the distribution.
+
+A dividend may be supporting context only when the underlying investment case independently justifies the decision.
+
+Consider taxation, currency, transaction costs and the underlying company outlook before referencing dividend income.
+
+Replace decisions such as:
+
+“Hold through ex-dividend”
+
+with a decision based on the actual investment thesis, for example:
+
+“Maintain Microsoft while AI/cloud fundamentals remain supportive; monitor macro and operational risks.”
+
+Do not present dividend capture as a conflict that needs resolution unless it is genuinely material.
+
+4. Make account and FX language precise.
+
+Do not write categorical statements such as:
+
+- “FX neutral”
+- “FX minimal”
+
+Use wording such as:
+
+- “The position is held and traded in DKK, reducing direct transaction FX conversion, but the company may still have underlying currency exposure.”
+- “The position is held in a USD account, avoiding immediate account conversion if sufficient USD cash is available; portfolio value remains exposed to USD/DKK movements.”
+
+Account considerations must distinguish:
+
+- trading/account currency
+- instrument currency
+- investor base-currency exposure
+- underlying company currency exposure
+
+Do not claim instrument eligibility or account suitability unless confirmed.
+
+5. Keep all existing behaviour unchanged otherwise.
+
+Preserve:
+
+- phase-1 safety boundary
+- no Saxo order calls
+- UI layout
+- OpenAI debug dialog
+- timeout and retry handling
+- history
+- System Log
+- repository keys
+- deterministic sorting
+- previous successful result on failure

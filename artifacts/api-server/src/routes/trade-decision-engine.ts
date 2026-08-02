@@ -122,6 +122,7 @@ ROLE AND BEHAVIOUR:
 - Do not assume a strong opportunity automatically justifies a purchase.
 - A decision must not be based on one source alone when other relevant sources are available.
 - Consider portfolio fit, concentration, diversification, risk score, upcoming events, existing cash, account currencies, company-specific evidence, latest alerts and evidence freshness.
+- Do not recommend holding or acquiring a stock merely to receive a dividend. An ex-dividend date is not by itself positive expected return because the market price normally adjusts for the distribution. A dividend may be supporting context only when the underlying investment case independently justifies the decision. Consider taxation, currency, transaction costs and the underlying company outlook before referencing dividend income. Replace decisions such as "Hold through ex-dividend" with a decision based on the actual investment thesis. Do not present dividend capture as a conflict that needs resolution unless it is genuinely material.
 
 ALLOWED DECISION TYPES:
 - Hold: Current position remains acceptable, no immediate change proposed.
@@ -159,13 +160,13 @@ CONSISTENCY RULES:
 - If blockedByEvent is true: blockingEvent must name the event; blockingEventDate must be YYYY-MM-DD or empty string if date is unverified.
 - If blockedByEvent is false: blockingEvent and blockingEventDate must be empty strings "".
 - company and ticker must be empty strings "" for Portfolio-level decisions.
-- sourceModules must list only modules that provided material evidence for that specific decision.
+- sourceModules must list only modules that provided material evidence for that specific decision. Use exactly these values with no spaces: PortfolioManager, PortfolioAnalyzer, RiskAnalyzer, MarketAlerts, CompanyMonitor, OpportunityFinder, EventMonitor, SectorMonitor, MarketMonitor, NewsMonitor, Web.
 - Return 3–8 decisions, most important first.
 - Return 3–6 readiness drivers.
 - Do not create duplicate decisions for the same subject and decision type.
 - decisionReadinessScore: integer 0–100 measuring whether evidence is sufficient to make useful decisions — not a prediction of portfolio return.
 
-ACCOUNT CONSIDERATIONS: Phase 1 may note account currency considerations (e.g. USD cash available, DKK account requiring FX conversion) but must not select accounts or claim instrument eligibility unless confirmed from stored data.
+ACCOUNT CONSIDERATIONS: Account considerations must precisely distinguish: (1) trading/account currency — the currency of the account where the position is held; (2) instrument currency — the currency in which the security is quoted; (3) investor base-currency exposure — movement of the investor's total portfolio value in their home currency; (4) underlying company currency exposure — the company's own revenue and cost currencies. Do not write categorical statements such as "FX neutral" or "FX minimal". Use precise wording, for example: "The position is held and traded in DKK, reducing direct transaction FX conversion, but the company may still have underlying currency exposure." or "The position is held in a USD account, avoiding immediate account conversion if sufficient USD cash is available; portfolio value remains exposed to USD/DKK movements." Do not claim instrument eligibility or account suitability unless confirmed from stored data. Phase 1 must not select accounts or place orders.
 
 You must perform a web search to verify current information for any decision based on earnings, guidance, legal developments, regulatory decisions, significant price moves, analyst actions or macroeconomic events.
 
@@ -215,13 +216,14 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   const opportunityEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
 
   const allRepoEntries = analysisRepository.getAll();
-  const companyEntries = allRepoEntries
-    .filter((e) => e.moduleName.startsWith("company-monitor:"))
-    .map((e) => ({
-      ticker: e.moduleName.replace("company-monitor:", "").toUpperCase(),
-      result: e.result as Record<string, unknown>,
-      updatedAt: e.updatedAt,
-    }));
+
+  // All company-monitor repository entries (full objects for identity resolution + context)
+  const allCmEntries = allRepoEntries.filter((e) => e.moduleName.startsWith("company-monitor:"));
+  // Candidates in the shape expected by CompanyIdentityStore.resolve()
+  const cmCandidates = allCmEntries.map((e) => ({
+    key: e.moduleName,
+    result: e.result as Record<string, unknown>,
+  }));
 
   // ── Warnings ──────────────────────────────────────────────────────────────
 
@@ -274,6 +276,33 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     }
   }
 
+  // ── Company Monitor identity resolution ─────────────────────────────────
+  // Use the CompanyIdentityStore 5-step chain to map Saxo display symbols
+  // (e.g. "NOVO B") to the correct company monitor repository key.
+  // Only monitors that match a current holding or opportunity candidate are used.
+
+  // Resolve for all current holdings
+  const holdingCmKeys = new Map<string, string>(); // position ticker → cm key
+  for (const pos of allPositions) {
+    const resolved = companyIdentityStore.resolve(pos.ticker, { companyName: pos.name }, cmCandidates);
+    if (resolved) holdingCmKeys.set(pos.ticker, resolved.key);
+  }
+
+  // Resolve for opportunity candidates (top 5, skip tickers already held)
+  const opCmKeys = new Map<string, string>(); // opportunity ticker → cm key
+  const rawOpportunities = Array.isArray(opportunityEntry?.result?.topOpportunities)
+    ? (opportunityEntry!.result.topOpportunities as Array<Record<string, unknown>>).slice(0, 5)
+    : [];
+  for (const o of rawOpportunities) {
+    const ticker = String(o.ticker ?? "").toUpperCase();
+    if (!ticker || holdingCmKeys.has(ticker)) continue;
+    const resolved = companyIdentityStore.resolve(ticker, {}, cmCandidates);
+    if (resolved) opCmKeys.set(ticker, resolved.key);
+  }
+
+  // Union of all relevant company monitor repository keys
+  const relevantCmKeys = new Set([...holdingCmKeys.values(), ...opCmKeys.values()]);
+
   const totalInvested   = allPositions.reduce((s, p) => s + p.marketValueBaseCurrency, 0);
   const baseForWeights  = totalValue ?? totalInvested;
   const cashPct         = baseForWeights > 0 && totalAvailableCash != null
@@ -285,7 +314,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       ...p,
       weightOfTotal:    baseForWeights > 0 ? Math.round((p.marketValueBaseCurrency / baseForWeights)  * 1000) / 10 : 0,
       weightOfInvested: totalInvested  > 0 ? Math.round((p.marketValueBaseCurrency / totalInvested)   * 1000) / 10 : 0,
-      hasCompanyMonitor: companyEntries.some((c) => c.ticker === p.ticker),
+      hasCompanyMonitor: holdingCmKeys.has(p.ticker),
     }))
     .sort((a, b) => b.weightOfTotal - a.weightOfTotal);
 
@@ -316,7 +345,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         rank: o.rank, ticker: o.ticker, company: o.company, sector: o.sector,
         confidence: o.confidence, priority: o.priority,
         mainCatalyst: o.mainCatalyst,
-        hasCompanyMonitor: companyEntries.some((c) => c.ticker === String(o.ticker ?? "").toUpperCase()),
+        hasCompanyMonitor: holdingCmKeys.has(String(o.ticker ?? "").toUpperCase()) || opCmKeys.has(String(o.ticker ?? "").toUpperCase()),
       }))
     : [];
 
@@ -442,18 +471,23 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     updatedAt: newsEntry.updatedAt,
   }) : null;
 
-  const companyContextLines = companyEntries.map((c) => {
-    const identity = companyIdentityStore.resolve(
-      c.ticker,
-      { companyName: String(c.result.companyName ?? "") },
-      companyEntries.map((e) => ({ key: `company-monitor:${e.ticker}`, result: e.result }))
-    );
-    return `COMPANY MONITOR — ${c.ticker} (${identity.displayName}, updated: ${c.updatedAt}):\n${JSON.stringify({
-      companyName: c.result.companyName, ticker: c.result.ticker,
-      recommendation: c.result.recommendation, overallScore: c.result.overallScore,
-      priceTarget: c.result.priceTarget, mainConclusion: c.result.mainConclusion,
-      keyStrengths: c.result.keyStrengths, keyRisks: c.result.keyRisks,
-      catalysts: c.result.catalysts, recentDevelopments: c.result.recentDevelopments,
+  // Only include monitors that resolved to a current holding or opportunity candidate
+  const relevantCmEntries = allCmEntries.filter((e) => relevantCmKeys.has(e.moduleName));
+
+  const companyContextLines = relevantCmEntries.map((e) => {
+    const result = e.result as Record<string, unknown>;
+    // Display label: the portfolio ticker(s) this monitor resolved for
+    const matchedTickers = [
+      ...[...holdingCmKeys.entries()].filter(([, key]) => key === e.moduleName).map(([t]) => t),
+      ...[...opCmKeys.entries()].filter(([, key]) => key === e.moduleName).map(([t]) => t),
+    ];
+    const matchLabel = matchedTickers.join("/") || e.moduleName.replace("company-monitor:", "");
+    return `COMPANY MONITOR — ${matchLabel} (updated: ${e.updatedAt}):\n${JSON.stringify({
+      companyName: result.companyName, ticker: result.ticker,
+      recommendation: result.recommendation, overallScore: result.overallScore,
+      priceTarget: result.priceTarget, mainConclusion: result.mainConclusion,
+      keyStrengths: result.keyStrengths, keyRisks: result.keyRisks,
+      catalysts: result.catalysts, recentDevelopments: result.recentDevelopments,
     })}`;
   }).join("\n\n");
 
