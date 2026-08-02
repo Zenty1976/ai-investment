@@ -429,7 +429,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     const identity = companyIdentityStore.resolve(
       c.ticker,
       { companyName: String(c.result.companyName ?? "") },
-      companyEntries.map((e) => e.result)
+      companyEntries.map((e) => ({ key: `company-monitor:${e.ticker}`, result: e.result }))
     );
     return `COMPANY MONITOR — ${c.ticker} (${identity.displayName}, updated: ${c.updatedAt}):\n${JSON.stringify({
       companyName: c.result.companyName, ticker: c.result.ticker,
