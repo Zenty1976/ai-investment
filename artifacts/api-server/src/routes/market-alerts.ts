@@ -117,7 +117,13 @@ IMPORTANCE:
 IF NOTHING IMPORTANT HAS CHANGED:
 Set overallAlertLevel to "Low" and nothingImportantChanged to true.
 Explain briefly in executiveSummary why nothing requires immediate attention.
-Return an empty or minimal alerts array.
+Return alerts as an empty array — if nothingImportantChanged is true, alerts MUST be [].
+
+RESPONSE CONSISTENCY RULES (must not be violated):
+- If nothingImportantChanged is true, the alerts array must be empty ([]).
+- If the alerts array contains one or more items, nothingImportantChanged must be false.
+- Do not return a known upcoming event as a new alert unless genuinely new information about that event has emerged since the previous check.
+- Unchanged alerts (same title, category, and summary as the previous run) do not make the result meaningful — only omit them from the response entirely or mark requiresAttention as false.
 
 Return JSON only — no markdown, no code fences, no extra text.
 Do not include timestamp or analysisDuration — the server sets those.
@@ -603,11 +609,24 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
       const existingHistoryEntries = historyEntry?.result?.entries ?? [];
 
       // ── Determine if this is a meaningful result ──────────────────────────
-      // A result is meaningful when OpenAI found actionable alerts OR
-      // explicitly did NOT declare nothing-important-changed.
-      // A pure "nothing changed / no alerts" result takes the no-change path.
+      // A result is only meaningful when:
+      //   (a) OpenAI explicitly declared nothingImportantChanged = false, AND
+      //   (b) there is at least one New or Updated alert that requires attention.
+      //
+      // This prevents four contradictory states from being saved as meaningful:
+      //   • nothingImportantChanged = true  + alerts present  → NoChange
+      //   • nothingImportantChanged = false + no qualifying alerts → NoChange
+      //   • Unchanged-only alerts                             → NoChange
+      //   • Empty alert list regardless of flag               → NoChange
+      const meaningfulAlerts = alertsWithStatus.filter(
+        (a) =>
+          a.requiresAttention === true &&
+          (a.status === "New" || a.status === "Updated")
+      );
+
       const isMeaningful =
-        !parsed.data.nothingImportantChanged || alertsWithStatus.length > 0;
+        parsed.data.nothingImportantChanged === false &&
+        meaningfulAlerts.length > 0;
 
       // ── MEANINGFUL PATH ───────────────────────────────────────────────────
       if (isMeaningful) {
