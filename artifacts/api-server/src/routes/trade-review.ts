@@ -62,6 +62,24 @@ interface TradeProposal {
   tdeTimestamp: string;
 }
 
+/** Compact read-only summary of a WaitingForReevaluation trade decision */
+interface WaitingDecision {
+  /** Stable id, e.g. "CAT:PrepareToBuy" */
+  id: string;
+  action: "BUY" | "SELL";
+  ticker: string;
+  company: string;
+  /** Concise vocabulary label: "Event blocked" | "Missing analysis" | "Conflicting evidence" | "Stale data" | "Waiting for re-evaluation" */
+  waitingLabel: string;
+  /** Name of the event blocking this decision (empty string when not event-blocked) */
+  blockingEvent: string;
+  /** ISO date of the blocking event, e.g. "2026-08-04" (empty string when unknown) */
+  blockingEventDate: string;
+  /** One-sentence readiness reason (server-computed by TDE) */
+  readinessReason: string;
+  decisionRank: number;
+}
+
 interface TradeReviewStore {
   proposals: TradeProposal[];
   tdeTimestamp: string;
@@ -134,6 +152,53 @@ function computeReasonScore(d: Record<string, unknown>): number {
   return Math.max(0, Math.min(100, confScore + breadthScore + keyScore - blockPenalty - missingPenalty));
 }
 
+function computeWaitingLabel(d: Record<string, unknown>): string {
+  if (d.blockedByEvent === true && d.blockingEvent) return "Event blocked";
+  const reason = String(d.readinessReason ?? "").toLowerCase();
+  if (reason.includes("missing")) return "Missing analysis";
+  if (reason.includes("conflict")) return "Conflicting evidence";
+  if (reason.includes("stale") || reason.includes("outdated")) return "Stale data";
+  return "Waiting for re-evaluation";
+}
+
+/**
+ * Extract WaitingForReevaluation PrepareToBuy/PrepareToReduce decisions for
+ * the compact read-only section in Trade Review. Always derived fresh from TDE
+ * data — no user state to preserve.
+ */
+function computeWaitingDecisions(decisions: Array<Record<string, unknown>>): WaitingDecision[] {
+  const seen = new Set<string>();
+  const result: WaitingDecision[] = [];
+
+  for (const d of decisions) {
+    const decisionType = String(d.decision ?? "");
+    if (decisionType !== "PrepareToBuy" && decisionType !== "PrepareToReduce") continue;
+
+    const readiness       = String(d.readiness ?? "");
+    const isLegacyBlocked = !readiness && d.blockedByEvent === true;
+    if (readiness !== "WaitingForReevaluation" && !isLegacyBlocked) continue;
+
+    const ticker = String(d.ticker ?? "").toUpperCase();
+    const id     = `${ticker}:${decisionType}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    result.push({
+      id,
+      action:           decisionType === "PrepareToBuy" ? "BUY" : "SELL",
+      ticker,
+      company:          String(d.company ?? ""),
+      waitingLabel:     computeWaitingLabel(d),
+      blockingEvent:    String(d.blockingEvent ?? ""),
+      blockingEventDate: String(d.blockingEventDate ?? ""),
+      readinessReason:  String(d.readinessReason ?? ""),
+      decisionRank:     typeof d.rank === "number" ? d.rank : 999,
+    });
+  }
+
+  return result.sort((a, b) => a.decisionRank - b.decisionRank);
+}
+
 const STATUS_ORDER: Record<ProposalStatus, number> = {
   Ready: 0, Waiting: 1, Approved: 2, Rejected: 3, Executed: 4, Cancelled: 5, Superseded: 6,
 };
@@ -166,6 +231,15 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
 
     const tdeTimestamp = String(tdeEntry.result?.timestamp ?? "");
 
+    // Extract TDE decisions early — needed for waiting-decision computation
+    // regardless of whether we serve from cache or regenerate.
+    const allDecisions = Array.isArray(tdeEntry.result?.decisions)
+      ? (tdeEntry.result.decisions as Array<Record<string, unknown>>) : [];
+
+    // WaitingForReevaluation decisions are always derived fresh from TDE data
+    // (they carry no user-mutable state, so there is nothing to preserve).
+    const waitingDecisions = computeWaitingDecisions(allDecisions);
+
     // Return cached proposals when TDE analysis hasn't changed AND the cached
     // proposals are schema-compatible:
     //   - have the fxRate field (introduced in a previous version)
@@ -190,6 +264,7 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
       const cached = storedReview.result as TradeReviewStore;
       return void res.json({
         proposals: cached.proposals,
+        waitingDecisions,
         tdeTimestamp: cached.tdeTimestamp,
         portfolioTotalValue: totalValue || null,
         baseCurrency,
@@ -234,13 +309,10 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
 
     // ── Convert TDE decisions → TradeProposals ───────────────────────────────
 
-    const decisions = Array.isArray(tdeEntry.result?.decisions)
-      ? (tdeEntry.result.decisions as Array<Record<string, unknown>>) : [];
-
     const proposals: TradeProposal[] = [];
     const isMockMode = saxoStore.isMockMode();
 
-    for (const d of decisions) {
+    for (const d of allDecisions) {
       const decisionType = String(d.decision ?? "");
       if (decisionType !== "PrepareToBuy" && decisionType !== "PrepareToReduce") continue;
 
@@ -408,6 +480,7 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
 
     return void res.json({
       proposals,
+      waitingDecisions,
       tdeTimestamp,
       portfolioTotalValue: totalValue || null,
       baseCurrency,

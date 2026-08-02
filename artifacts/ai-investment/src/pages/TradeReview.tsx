@@ -19,6 +19,7 @@ import {
 import type {
   TradeProposal,
   TradeProposalStatus,
+  WaitingTradeDecision,
 } from "@workspace/api-client-react"
 import {
   RefreshCw,
@@ -31,6 +32,7 @@ import {
   AlertTriangle,
   ClipboardList,
   Info,
+  CalendarClock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -109,6 +111,11 @@ function formatEventDate(iso: string | undefined): string {
   try { return format(parseISO(iso), "d MMM yyyy") } catch { return iso }
 }
 
+function formatEventDateShort(iso: string | undefined): string {
+  if (!iso) return ""
+  try { return format(parseISO(iso), "d MMM") } catch { return iso }
+}
+
 function formatTimestamp(iso: string | null | undefined): string {
   if (!iso) return "—"
   try { return format(parseISO(iso), "d MMM, HH:mm") } catch { return "—" }
@@ -144,6 +151,57 @@ function DecisionStrength({ score }: { score: number }) {
         </span>
       </div>
       <span className="text-[10px] text-muted-foreground">{label}</span>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Compact waiting-decision row (read-only, no approval actions)
+// ---------------------------------------------------------------------------
+
+interface WaitingRowProps {
+  item: WaitingTradeDecision
+  isLast: boolean
+  onDetails: () => void
+}
+
+function WaitingDecisionRow({ item, isLast, onDetails }: WaitingRowProps) {
+  // The underlying action is BUY or SELL; Trade Review labels PrepareToReduce as "REDUCE"
+  const actionLabel = item.action === "BUY" ? "BUY" : "REDUCE"
+  const actionColor = item.action === "BUY" ? "text-emerald-500/60" : "text-rose-500/60"
+  const eventDate   = formatEventDateShort(item.blockingEventDate)
+
+  // Second-line text: "Event blocked · Q2 earnings · 4 Aug" or just the readinessReason
+  const hasEvent = !!item.blockingEvent
+  const secondLine = hasEvent
+    ? [item.waitingLabel, item.blockingEvent, eventDate].filter(Boolean).join(" · ")
+    : item.readinessReason || item.waitingLabel
+
+  return (
+    <div className={`flex items-center gap-3 px-3 py-2 group ${!isLast ? "border-b border-border/30" : ""}`}>
+      {/* Left: action + company + ticker */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+          <span className={`text-[11px] font-bold tracking-widest shrink-0 ${actionColor}`}>
+            {actionLabel}
+          </span>
+          <span className="text-[11px] text-muted-foreground/40">·</span>
+          <span className="text-[11px] font-medium text-foreground/70 truncate">{item.company}</span>
+          <span className="text-[11px] text-muted-foreground/60 font-mono shrink-0">{item.ticker}</span>
+        </div>
+        <p className="text-[10px] text-muted-foreground/50 leading-snug mt-0.5 truncate">
+          {secondLine}
+        </p>
+      </div>
+      {/* Details link */}
+      <Button
+        size="sm" variant="ghost"
+        className="h-6 text-[10px] px-1.5 shrink-0 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={onDetails}
+      >
+        <ExternalLink className="h-2.5 w-2.5 mr-1" />
+        Details
+      </Button>
     </div>
   )
 }
@@ -376,6 +434,32 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
 }
 
 // ---------------------------------------------------------------------------
+// Waiting decisions section (shared between empty-state and below-proposals)
+// ---------------------------------------------------------------------------
+
+function WaitingSection({ decisions, onDetails }: { decisions: WaitingTradeDecision[]; onDetails: () => void }) {
+  if (decisions.length === 0) return null
+  return (
+    <div className="space-y-2">
+      <h2 className="text-[11px] font-medium text-muted-foreground/50 uppercase tracking-widest flex items-center gap-1.5 px-0.5">
+        <CalendarClock className="h-3 w-3" />
+        Potential trades waiting for re-evaluation
+      </h2>
+      <div className="rounded-md border border-border/35 bg-muted/[0.04] overflow-hidden">
+        {decisions.map((item, i) => (
+          <WaitingDecisionRow
+            key={item.id}
+            item={item}
+            isLast={i === decisions.length - 1}
+            onDetails={onDetails}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Summary bar
 // ---------------------------------------------------------------------------
 
@@ -467,9 +551,10 @@ export default function TradeReview() {
     )
   }
 
-  const proposals    = data?.proposals ?? []
-  const hasTde       = !!data?.tdeTimestamp
-  const pendingCount = proposals.filter(p => p.status === "Ready" || p.status === "Waiting").length
+  const proposals        = data?.proposals ?? []
+  const waitingDecisions = data?.waitingDecisions ?? []
+  const hasTde           = !!data?.tdeTimestamp
+  const pendingCount     = proposals.filter(p => p.status === "Ready" || p.status === "Waiting").length
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto">
@@ -516,22 +601,38 @@ export default function TradeReview() {
         </Card>
       )}
 
-      {/* ── No ready proposals ── */}
-      {hasTde && proposals.length === 0 && (
+      {/* ── Empty states (no ready proposals) ── */}
+      {hasTde && proposals.length === 0 && waitingDecisions.length === 0 && (
+        /* True empty: nothing ready, nothing waiting */
         <Card className="border-dashed">
           <CardContent className="p-8 flex flex-col items-center text-center gap-3">
             <ClipboardList className="h-8 w-8 text-muted-foreground/50" />
             <div>
-              <p className="text-sm font-medium">No trades are ready for approval.</p>
+              <p className="text-sm font-medium">No current trade proposals.</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Blocked and incomplete decisions remain in Trade Decision until they are re-evaluated.
+                Run the Trade Decision Engine to generate proposals.
               </p>
             </div>
             <Button size="sm" variant="outline" onClick={() => navigate("/decisions")}>
-              View decisions
+              Go to Trade Decision Engine
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* No ready proposals but waiting decisions exist — show compact waiting list */}
+      {hasTde && proposals.length === 0 && waitingDecisions.length > 0 && (
+        <div className="space-y-3">
+          <div className="text-center py-1">
+            <p className="text-sm font-medium">No trades are ready for approval.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {waitingDecisions.length === 1
+                ? "1 potential trade is waiting for re-evaluation."
+                : `${waitingDecisions.length} potential trades are waiting for re-evaluation.`}
+            </p>
+          </div>
+          <WaitingSection decisions={waitingDecisions} onDetails={() => navigate("/decisions")} />
+        </div>
       )}
 
       {/* ── Summary bar ── */}
@@ -573,6 +674,11 @@ export default function TradeReview() {
             />
           ))}
         </div>
+      )}
+
+      {/* ── Potential trades waiting for re-evaluation ── */}
+      {proposals.length > 0 && (
+        <WaitingSection decisions={waitingDecisions} onDetails={() => navigate("/decisions")} />
       )}
 
     </div>

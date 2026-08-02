@@ -1,0 +1,125 @@
+Update the existing Trade Review module so it also shows a compact read-only overview of decisions that are waiting for re-evaluation.
+
+The main purpose of Trade Review remains unchanged:
+
+- ReadyForReview decisions appear as full trade proposals with quantity, price, value and approval actions.
+- WaitingForReevaluation decisions must not be approvable.
+- Informational decisions must not become trade proposals.
+
+Add a new compact section below all ready trade proposals called:
+
+Potential trades waiting for re-evaluation
+
+This section should only appear when one or more relevant waiting decisions exist.
+
+Include only decisions that:
+
+- have readiness === "WaitingForReevaluation"
+- represent a potential future trade
+- use decision type PrepareToBuy or PrepareToReduce
+
+Do not include:
+
+- Hold
+- NoAction
+- ordinary informational Review decisions
+- duplicate decisions
+- superseded decisions
+
+Each waiting item should be displayed as a very compact row, not a full trade card.
+
+Show only:
+
+- BUY or REDUCE
+- company name
+- ticker
+- one short waiting-status badge
+- blocking event or reason
+- event date when known
+- Details link
+
+Examples:
+
+BUY · Caterpillar · CAT
+Event blocked · Q2 earnings · 4 Aug
+
+BUY · Eli Lilly · LLY
+Event blocked · Q2 earnings · 5 Aug
+
+REDUCE · Serve Robotics · SERV
+Missing updated company analysis
+
+Use one of these concise status labels:
+
+- Event blocked
+- Missing analysis
+- Conflicting evidence
+- Stale data
+- Waiting for re-evaluation
+
+Choose the most specific available reason.
+
+Do not display for waiting items:
+
+- quantity
+- share price
+- estimated value
+- target allocation
+- Decision strength
+- Approve
+- Reject
+- Later
+- quantity controls
+
+These values would be provisional and could become outdated before the blocking condition is resolved.
+
+The Details action should navigate to or open the corresponding Trade Decision entry so the user can read the full reason and next review trigger.
+
+Ordering:
+
+1. Ready-for-review trade proposals
+2. Potential trades waiting for re-evaluation
+3. Empty-state information, when relevant
+
+When there are no ready proposals but waiting decisions exist, replace the current empty state with:
+
+“No trades are ready for approval.”
+
+Secondary text:
+
+“2 potential trades are waiting for re-evaluation.”
+
+Then show the compact waiting list directly below.
+
+Do not show:
+
+“No trade proposals”
+
+when potential waiting trades exist.
+
+When neither ready nor waiting trade decisions exist, keep a true empty state such as:
+
+“No current trade proposals.”
+
+Keep this section visually subdued so it does not compete with approvable trades:
+
+- smaller rows
+- muted border/background
+- no large cards
+- no bright BUY/SELL approval styling
+- no more than one or two text lines per item
+
+Preserve all existing behaviour:
+
+- waiting decisions remain owned by Trade Decision Engine
+- no approval of blocked decisions
+- no quantity or price calculation for blocked decisions
+- no execution queue
+- no automatic re-evaluation yet
+- ready proposal sizing and approval flow
+- history and repository storage
+- mock mode
+- quote provider
+- no Saxo order placement
+
+The purpose is to give the user a quiet overview of promising ideas that are waiting for something, without presenting them as actionable trades.

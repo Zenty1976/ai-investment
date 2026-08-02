@@ -818,8 +818,25 @@ export interface TradeProposal {
   tdeTimestamp: string;
 }
 
+/** Compact read-only summary of a WaitingForReevaluation PrepareToBuy/PrepareToReduce decision */
+export interface WaitingTradeDecision {
+  /** Stable id, e.g. "CAT:PrepareToBuy" */
+  id: string;
+  action: 'BUY' | 'SELL';
+  ticker: string;
+  company: string;
+  /** Concise vocabulary label */
+  waitingLabel: string;
+  blockingEvent: string;
+  blockingEventDate: string;
+  readinessReason: string;
+  decisionRank: number;
+}
+
 export interface TradeReviewSummary {
   proposals: TradeProposal[];
+  /** WaitingForReevaluation PrepareToBuy/PrepareToReduce decisions — shown as compact read-only rows */
+  waitingDecisions?: WaitingTradeDecision[];
   tdeTimestamp: string | null;
   portfolioTotalValue: number | null;
   baseCurrency: string;
