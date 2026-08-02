@@ -179,14 +179,18 @@ function WaitingDecisionRow({ item, isLast, onDetails }: WaitingRowProps) {
       className={`px-3 py-2.5 cursor-pointer hover:bg-muted/20 transition-colors ${!isLast ? "border-b border-border/30" : ""}`}
       onClick={onDetails}
     >
-      {/* Line 1: action + company + ticker — single line, no wrapping */}
+      {/* Line 1: action · company · ticker + Details link */}
       <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
         <span className={`text-[11px] font-bold tracking-widest shrink-0 ${actionColor}`}>
           {actionLabel}
         </span>
         <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
         <span className="text-[11px] font-medium text-foreground/80 truncate">{item.company}</span>
+        <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
         <span className="text-[11px] text-muted-foreground/60 font-mono shrink-0">{item.ticker}</span>
+        <span className="ml-auto text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors shrink-0 pl-2">
+          Details →
+        </span>
       </div>
 
       {/* Line 2: badge + event name + date — single line, no wrapping */}
