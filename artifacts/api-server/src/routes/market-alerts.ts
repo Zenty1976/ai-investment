@@ -505,6 +505,26 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
   const previousAlerts: AlertHistoryAlert[] = previousEntry?.alerts ?? [];
 
   // ── AI call with retry ────────────────────────────────────────────────────
+  // Retryable failures (web search not detected, empty response, invalid JSON,
+  // transient OpenAI errors) proceed to the next attempt.  Only a final failed
+  // attempt returns HTTP 500.  The request payload — including tools and
+  // tool_choice — is identical on every attempt.
+
+  const userPromptText = buildUserPrompt(
+    nowIso,
+    hoursSincePrevious,
+    portfolioContext,
+    deltaContext,
+    portfolioAnalyzerContext,
+    riskAnalyzerContext,
+    opportunityFinderContext,
+    marketContext,
+    sectorContext,
+    eventContext,
+    newsContext,
+    companyContexts,
+    alertHistoryContext
+  );
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
@@ -513,31 +533,26 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
     try {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
-        buildUserPrompt(
-          nowIso,
-          hoursSincePrevious,
-          portfolioContext,
-          deltaContext,
-          portfolioAnalyzerContext,
-          riskAnalyzerContext,
-          opportunityFinderContext,
-          marketContext,
-          sectorContext,
-          eventContext,
-          newsContext,
-          companyContexts,
-          alertHistoryContext
-        ),
+        userPromptText,
         { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
       ));
     } catch (err) {
-      req.log.error({ err }, "AI service call failed");
-      systemLog.logError(MODULE_NAME, "Market alerts analysis failed");
-      res.status(500).json({
-        error: err instanceof Error ? err.message : "AI service call failed",
-        _debug: extractAiErrorDebug(err),
-      });
-      return;
+      const isLastAttempt = attempt >= MAX_ATTEMPTS;
+      req.log[isLastAttempt ? "error" : "warn"](
+        { err, attempt },
+        isLastAttempt
+          ? "AI service call failed after all attempts"
+          : "AI service call failed — retrying"
+      );
+      if (isLastAttempt) {
+        systemLog.logError(MODULE_NAME, "Market alerts analysis failed");
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "AI service call failed",
+          _debug: extractAiErrorDebug(err),
+        });
+        return;
+      }
+      continue;
     }
 
     lastDebug = debug;

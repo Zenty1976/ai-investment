@@ -172,6 +172,10 @@ export async function callAiWithWebSearch<T>(
     max_output_tokens: maxTokens,
     temperature,
     tools: [{ type: "web_search" as const, search_context_size: "high" as const }],
+    // "required" forces the model to invoke at least one tool before answering.
+    // Because web_search is the only configured tool this guarantees a web-search
+    // call on every attempt rather than relying on prompt instructions alone.
+    tool_choice: "required" as const,
     input: [
       { role: "system" as const, content: systemPrompt },
       { role: "user" as const, content: userPrompt },
