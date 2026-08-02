@@ -452,6 +452,11 @@ export default function TradeDecisionEngine() {
   const analysis = (mutationData ?? storedAnalysis) as TradeDecisionEngineAnalysis | undefined
   const hasDebug = debugInfo !== null || debugError !== null
 
+  const handleRun = () => {
+    setDebugError(null)
+    runDecisions()
+  }
+
   // ── Loading skeleton ────────────────────────────────────────────────────────
   if (repoLoading) {
     return (
@@ -477,6 +482,22 @@ export default function TradeDecisionEngine() {
           </p>
         </div>
 
+        {/* Error banner */}
+        {mutationError && (
+          <div className="flex items-center gap-2 text-xs text-destructive/80 bg-destructive/8 border border-destructive/20 rounded-md px-3 py-2">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>Analysis failed. No result was saved.</span>
+            {hasDebug && (
+              <button
+                onClick={() => setDebugOpen(true)}
+                className="ml-auto text-muted-foreground hover:text-foreground underline underline-offset-2"
+              >
+                Details
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Safety notice */}
         <Card className="bg-amber-950/20 border-amber-600/20">
           <CardContent className="p-3 flex items-center gap-2.5">
@@ -493,17 +514,35 @@ export default function TradeDecisionEngine() {
             <p className="text-sm text-muted-foreground/60">
               No analysis yet. Run the Decision Engine to generate decision proposals from your portfolio analyses.
             </p>
-            <Button
-              size="sm"
-              onClick={() => runDecisions()}
-              disabled={isPending}
-              className="mt-2"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${isPending ? "animate-spin" : ""}`} />
-              {isPending ? "Analysing…" : "Generate Decisions"}
-            </Button>
+            <div className="flex items-center gap-2 mt-2">
+              <Button
+                size="sm"
+                onClick={handleRun}
+                disabled={isPending}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 mr-2 ${isPending ? "animate-spin" : ""}`} />
+                {isPending ? "Analysing…" : "Generate Decisions"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                onClick={() => setDebugOpen(true)}
+                title="Show debug info"
+                disabled={!hasDebug}
+              >
+                <Info className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
+
+        <DebugDialog
+          open={debugOpen}
+          onClose={() => setDebugOpen(false)}
+          debugInfo={debugInfo}
+          error={debugError}
+        />
       </div>
     )
   }
@@ -606,7 +645,7 @@ export default function TradeDecisionEngine() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => runDecisions()}
+                onClick={handleRun}
                 disabled={isPending}
                 className="h-8 text-xs font-medium"
               >
