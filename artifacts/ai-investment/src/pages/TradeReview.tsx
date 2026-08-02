@@ -69,14 +69,14 @@ function fmt0(n: number) {
 
 function PriceDisplay({ price, currency, fxRate }: { price: number; currency: string; fxRate: number }) {
   if (price <= 0) return <span className="text-muted-foreground/60 italic">—</span>
-  const dkkPrice   = price * fxRate
-  const isNonDkk   = currency !== "DKK" && fxRate > 0 && Math.abs(fxRate - 1) > 0.001
+  const isNonDkk = currency !== "DKK" && fxRate > 0 && Math.abs(fxRate - 1) > 0.001
+  const dkkPrice = price * fxRate
   return (
     <span className="font-mono tabular-nums">
-      {fmt2(dkkPrice)} kr/aktie
+      {fmt2(price)} {currency}
       {isNonDkk && (
         <span className="text-muted-foreground/50 font-normal ml-1.5">
-          ({fmt2(price)} {currency})
+          ({fmt0(dkkPrice)} kr)
         </span>
       )}
     </span>
@@ -88,14 +88,17 @@ const NNBSP = "\u202F"
 function ValueDisplay({ value, currency, fxRate, qty }: { value: number; currency: string; fxRate: number; qty: number }) {
   if (qty === 0) return <span className="text-muted-foreground/60">—</span>
   if (value <= 0) return <span className="text-muted-foreground/60">—</span>
-  const isNonDkk   = currency !== "DKK" && fxRate > 0 && Math.abs(fxRate - 1) > 0.001
-  const origValue  = isNonDkk ? Math.round(value / fxRate) : 0
+  const isNonDkk  = currency !== "DKK" && fxRate > 0 && Math.abs(fxRate - 1) > 0.001
+  // value is in DKK; derive original-currency amount when non-DKK
+  const origValue = isNonDkk ? Math.round(value / fxRate) : 0
   return (
     <span className="font-semibold tabular-nums">
-      {`≈${NNBSP}${fmt0(value)} kr`}
+      {isNonDkk
+        ? `≈${NNBSP}${fmt0(origValue)} ${currency}`
+        : `≈${NNBSP}${fmt0(value)} kr`}
       {isNonDkk && (
         <span className="text-muted-foreground/50 font-normal ml-1.5">
-          {`(≈${NNBSP}${fmt0(origValue)} ${currency})`}
+          {`(≈${NNBSP}${fmt0(value)} kr)`}
         </span>
       )}
     </span>
