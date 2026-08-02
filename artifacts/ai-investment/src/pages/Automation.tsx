@@ -648,11 +648,9 @@ export default function Automation() {
               )}
 
               {/* Last cycle */}
-              {status.lastFullCycleAt && (
-                <span className="text-[10px] text-muted-foreground ml-auto">
-                  Last full cycle: {formatRelative(status.lastFullCycleAt)}
-                </span>
-              )}
+              <span className="text-[10px] text-muted-foreground ml-auto w-36 text-right shrink-0 tabular-nums">
+                {status.lastFullCycleAt ? `Last cycle: ${formatRelative(status.lastFullCycleAt)}` : ""}
+              </span>
             </div>
           </CardContent>
         </Card>
