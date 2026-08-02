@@ -485,28 +485,18 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      const { content, debug } = await callAiWithWebSearch(
+      const { result, debug } = await callAiWithWebSearch(
         SYSTEM_PROMPT,
         userPrompt,
-        { maxTokens: 4000 }
+        { model: "gpt-4o", maxTokens: 6000, temperature: 0.1 }
       );
 
       const analysisDuration = Date.now() - startTime;
       lastDebug = debug;
 
-      // Parse JSON
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Response contained no JSON object");
-      let rawParsed: unknown;
-      try {
-        rawParsed = JSON.parse(jsonMatch[0]);
-      } catch {
-        throw new Error("Response was not valid JSON");
-      }
-
-      // Schema validation
+      // Schema validation (callAiWithWebSearch already parsed the JSON)
       const parsed = RunTradeDecisionEngineResponse.safeParse({
-        ...(rawParsed as Record<string, unknown>),
+        ...(result as Record<string, unknown>),
         timestamp: nowIso,
         analysisDuration,
       });
