@@ -1,1 +1,4 @@
 - [Analysis Repository](analysis-repository.md) — in-memory shared store; every module saves via analysisRepository.save(), reads via .get()/.getAll(); never direct module-to-module calls.
+- [callAiWithWebSearch calling convention](ai-service-calling-convention.md) — positional args, not options object; wrong call shape causes 400 from OpenAI.
+- [CompanyMonitorCandidate shape](company-monitor-candidate.md) — resolve() needs {key, result} objects, not bare result objects; key must be the full moduleName string.
+- [Debug dialog empty-object crash](debug-dialog-partial-debug.md) — lastDebug must be AiDebugInfo|undefined (not = {}); empty object is truthy and causes TypeError in dialog.

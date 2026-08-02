@@ -485,11 +485,11 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      const { content, debug } = await callAiWithWebSearch({
-        systemPrompt: SYSTEM_PROMPT,
+      const { content, debug } = await callAiWithWebSearch(
+        SYSTEM_PROMPT,
         userPrompt,
-        maxTokens: 4000,
-      });
+        { maxTokens: 4000 }
+      );
 
       const analysisDuration = Date.now() - startTime;
       lastDebug = debug;
