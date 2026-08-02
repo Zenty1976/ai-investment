@@ -187,18 +187,18 @@ function WaitingDecisionRow({ item, isLast, onDetails }: WaitingRowProps) {
           <span className="text-[11px] text-muted-foreground/60 font-mono shrink-0">{item.ticker}</span>
         </div>
 
-        {/* Second line: badge + event name + date */}
-        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+        {/* Second line: badge + event name + date — single line, no wrapping */}
+        <div className="flex items-center gap-1.5 mt-1 overflow-hidden whitespace-nowrap">
           <Badge variant={labelVariant} className="text-[9px] px-1.5 py-0 h-4 shrink-0 leading-none">
             {item.waitingLabel}
           </Badge>
           {hasEvent && (
-            <span className="text-[11px] text-muted-foreground/60">
+            <span className="text-[11px] text-muted-foreground/60 truncate">
               {item.blockingEvent}{eventDate ? ` · ${eventDate}` : ""}
             </span>
           )}
           {!hasEvent && item.readinessReason && (
-            <span className="text-[11px] text-muted-foreground/60 leading-snug">
+            <span className="text-[11px] text-muted-foreground/60 truncate">
               {item.readinessReason}
             </span>
           )}
