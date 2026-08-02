@@ -1,0 +1,61 @@
+The new Market Alerts no-change behaviour is mostly correct, but please fix one remaining history-comparison issue.
+
+MARKET ALERTS HISTORY
+
+Do not use the same latest history entry for both elapsed-time calculation and alert comparison.
+
+A NoChange history entry contains an empty alerts array, so using it as the comparison baseline causes previously known alerts to be classified as New after a no-change check.
+
+Resolve two separate entries:
+
+1. previousCheckEntry
+- The newest history entry of any type.
+- Use it for:
+  - hours since previous check
+  - newly detected News Monitor items
+  - events passed since the previous check
+
+2. previousMeaningfulEntry
+- The newest history entry where checkResult === "Meaningful".
+- Use it for:
+  - previousAlerts
+  - New / Updated / Unchanged classification
+  - resolved-alert detection
+  - previous meaningful headline and alert context
+
+A NoChange check must never erase or replace the comparison baseline formed by the latest meaningful alerts.
+
+Keep NoChange entries in compact history, but do not use their empty alert list as the previous meaningful alert list.
+
+OTHER OPENAI MODULES
+
+The shared tool_choice: "required" correction already applies to all modules using callAiWithWebSearch. Do not duplicate that change.
+
+However, apply the same retry handling now used by Market Alerts to all other routes using callAiWithWebSearch:
+
+- Market Monitor
+- Event Monitor
+- News Monitor
+- Sector Monitor
+- Company Monitor
+- Portfolio Analyzer
+- Opportunity Finder
+- Risk Analyzer
+
+For retryable AI failures:
+- web search not detected
+- temporary OpenAI/network failure
+- empty response
+- invalid JSON produced inside the shared helper
+
+continue to the next MAX_ATTEMPTS iteration.
+
+Only return HTTP 500 after all attempts fail.
+
+Ensure every retry uses the identical tools and tool_choice configuration.
+
+On the final failure, include extractAiErrorDebug(error) in the response so the existing OpenAI debug dialog can show the request, raw response and web-search detection details.
+
+Do not add the Market Alerts no-change preservation logic to the other modules. They are snapshot analyses, not delta-alert modules.
+
+Keep all existing prompts, schemas, repository keys, UIs and previous-result fallback behaviour unchanged.

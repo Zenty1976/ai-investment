@@ -283,7 +283,19 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
   const historyEntry = analysisRepository.get<{ entries: AlertHistoryEntry[] }>(
     "market-alerts-history"
   );
-  const previousEntry = historyEntry?.result?.entries?.[0] ?? null;
+  const allHistoryEntries = historyEntry?.result?.entries ?? [];
+
+  // Newest entry of ANY type — for elapsed-time, news-delta and events-delta.
+  // A NoChange entry is fine here: it still carries the correct timestamp,
+  // newsIds and eventTitles from that check.
+  const previousCheckEntry = allHistoryEntries[0] ?? null;
+
+  // Newest entry where meaningful alerts were found — for alert comparison
+  // (New / Updated / Unchanged classification and resolved-alert detection).
+  // A NoChange entry must NEVER be used here because its alert list is empty,
+  // which would incorrectly classify every known alert as New on the next run.
+  const previousMeaningfulEntry =
+    allHistoryEntries.find((e) => e.checkResult === "Meaningful") ?? null;
 
   // ── Calculate delta context ───────────────────────────────────────────────
 
@@ -291,8 +303,8 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
   const passedEvents: string[] = [];
   const newNewsIds: string[] = [];
 
-  if (previousEntry) {
-    const prevDate = new Date(previousEntry.timestamp);
+  if (previousCheckEntry) {
+    const prevDate = new Date(previousCheckEntry.timestamp);
     hoursSincePrevious = (nowDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60);
   }
 
@@ -313,9 +325,9 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  if (previousEntry && eventEntry && Array.isArray(eventEntry.result.events)) {
-    const prevDate = new Date(previousEntry.timestamp);
-    const prevEventTitles = new Set(previousEntry.eventTitles);
+  if (previousCheckEntry && eventEntry && Array.isArray(eventEntry.result.events)) {
+    const prevDate = new Date(previousCheckEntry.timestamp);
+    const prevEventTitles = new Set(previousCheckEntry.eventTitles);
     for (const ev of eventEntry.result.events as Array<Record<string, unknown>>) {
       const evDate = new Date(String(ev.date ?? ""));
       if (!isNaN(evDate.getTime()) && evDate >= prevDate && evDate <= nowDate) {
@@ -347,8 +359,8 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  if (previousEntry && newsEntry && Array.isArray(newsEntry.result.news)) {
-    const prevNewsIds = new Set(previousEntry.newsIds);
+  if (previousCheckEntry && newsEntry && Array.isArray(newsEntry.result.news)) {
+    const prevNewsIds = new Set(previousCheckEntry.newsIds);
     for (const n of newsEntry.result.news as Array<Record<string, unknown>>) {
       const id = String(n.id ?? "");
       if (id && !prevNewsIds.has(id)) {
@@ -357,28 +369,30 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
     }
   }
 
-  // Build delta context block for the prompt
+  // Build delta context block for the prompt.
+  // Time/news/events delta uses previousCheckEntry (most recent check of any kind).
+  // Alert level/titles use previousMeaningfulEntry (last check that had real alerts).
   const deltaLines: string[] = [];
   if (hoursSincePrevious !== null) {
-    deltaLines.push(`- Previous analysis was ${hoursSincePrevious.toFixed(1)} hours ago (${previousEntry!.timestamp})`);
+    deltaLines.push(`- Previous check was ${hoursSincePrevious.toFixed(1)} hours ago (${previousCheckEntry!.timestamp})`);
   }
   if (passedEvents.length > 0) {
-    deltaLines.push(`- Events that occurred since previous analysis: ${passedEvents.join("; ")}`);
+    deltaLines.push(`- Events that occurred since previous check: ${passedEvents.join("; ")}`);
   } else {
-    deltaLines.push("- No tracked events have passed since previous analysis");
+    deltaLines.push("- No tracked events have passed since previous check");
   }
   if (newNewsIds.length > 0) {
-    deltaLines.push(`- Newly added news items (${newNewsIds.length} new vs previous run)`);
-  } else if (previousEntry) {
-    deltaLines.push("- No new news items detected vs previous run");
+    deltaLines.push(`- Newly added news items (${newNewsIds.length} new vs previous check)`);
+  } else if (previousCheckEntry) {
+    deltaLines.push("- No new news items detected vs previous check");
   }
-  if (previousEntry) {
+  if (previousMeaningfulEntry) {
     deltaLines.push(
-      `- Previous alert level: ${previousEntry.overallAlertLevel}, headline: "${previousEntry.headline}"`
+      `- Last meaningful alert level: ${previousMeaningfulEntry.overallAlertLevel}, headline: "${previousMeaningfulEntry.headline}"`
     );
-    if (previousEntry.alerts.length > 0) {
+    if (previousMeaningfulEntry.alerts.length > 0) {
       deltaLines.push(
-        `- Previous alerts (do not repeat unless materially changed): ${previousEntry.alerts.map((a) => a.title).join("; ")}`
+        `- Known alerts (do not repeat unless materially changed): ${previousMeaningfulEntry.alerts.map((a) => a.title).join("; ")}`
       );
     }
   }

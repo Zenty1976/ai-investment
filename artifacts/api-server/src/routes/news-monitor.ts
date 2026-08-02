@@ -18,7 +18,7 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunNewsAnalysisResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, type AiDebugInfo } from "../lib/ai-service";
+import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 
 const router: IRouter = Router();
@@ -174,12 +174,20 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
         { model: "gpt-4o", maxTokens: 2500, temperature: 0.1 }
       ));
     } catch (err) {
-      req.log.error({ err }, "AI service call failed");
-      systemLog.logError("News Monitor", `News analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
-      res.status(500).json({
-        error: err instanceof Error ? err.message : "AI service call failed",
-      });
-      return;
+      const isLastAttempt = attempt >= MAX_ATTEMPTS;
+      req.log[isLastAttempt ? "error" : "warn"](
+        { err, attempt },
+        isLastAttempt ? "AI service call failed after all attempts" : "AI service call failed — retrying"
+      );
+      if (isLastAttempt) {
+        systemLog.logError("News Monitor", `News analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "AI service call failed",
+          _debug: extractAiErrorDebug(err),
+        });
+        return;
+      }
+      continue;
     }
 
     lastDebug = debug;
