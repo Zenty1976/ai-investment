@@ -15,6 +15,7 @@ import tradeReviewRouter from "./trade-review";
 import repositoryRouter from "./repository";
 import settingsRouter from "./settings";
 import systemLogRouter from "./system-log";
+import automationRouter from "./automation";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(tradeReviewRouter);
 router.use(repositoryRouter);
 router.use(settingsRouter);
 router.use(systemLogRouter);
+router.use(automationRouter);
 
 export default router;

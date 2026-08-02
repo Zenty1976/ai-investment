@@ -113,7 +113,12 @@ function buildUserPrompt(nowIso: string, marketContext: string | null, eventCont
 
 router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running news monitor analysis with web search");
-  systemLog.logUser("News Monitor", "User manually started news analysis");
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo("News Monitor", `Scheduled run (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser("News Monitor", "User manually started news analysis");
+  }
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();

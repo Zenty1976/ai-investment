@@ -423,7 +423,7 @@ portfolioRouter.get("/portfolio-manager", (_req, res) => {
 
 // ── POST /portfolio-manager/update ────────────────────────────────────────────
 
-portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
+portfolioRouter.post("/portfolio-manager/update", async (req, res) => {
   const mockMode = saxoStore.isMockMode();
 
   // Saxo authentication is only required when not using mock data.
@@ -443,7 +443,12 @@ portfolioRouter.post("/portfolio-manager/update", async (_req, res) => {
 
   const accessToken = saxoStore.getAccessToken();
   const env = saxoStore.getEnvironment();
-  systemLog.logUser("Portfolio Manager", "User manually started portfolio update");
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo("Portfolio Manager", `Scheduled run (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser("Portfolio Manager", "User manually started portfolio update");
+  }
 
   try {
     if (mockMode) {

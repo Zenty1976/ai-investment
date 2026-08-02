@@ -50,7 +50,12 @@ const MAX_ATTEMPTS = 2;
 
 router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running market analysis with web search");
-  systemLog.logUser("Market Monitor", "User manually started market analysis");
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo("Market Monitor", `Scheduled run (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser("Market Monitor", "User manually started market analysis");
+  }
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();

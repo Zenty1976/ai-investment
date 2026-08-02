@@ -130,7 +130,12 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       ? req.body.companyName.trim()
       : undefined;
   req.log.info({ ticker, companyName }, "Running company monitor analysis with web search");
-  systemLog.logUser("Company Monitor", `User manually started company analysis for ${ticker}`);
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo("Company Monitor", `Scheduled run for ${ticker} (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser("Company Monitor", `User manually started company analysis for ${ticker}`);
+  }
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();

@@ -876,6 +876,103 @@ export interface TradeDecisionEngineAnalysis {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Automation Orchestrator ───────────────────────────────────────────────────
+
+export type AutomationMode = 'Manual' | 'SemiAutomatic' | 'FullAutomatic';
+
+export type ModuleFreshness =
+  | 'Fresh' | 'DueSoon' | 'Stale' | 'Running' | 'Failed'
+  | 'Disabled' | 'WaitingForDependency' | 'NeverRun';
+
+export type ModuleTrigger =
+  | 'Manual' | 'Scheduled' | 'Dependency' | 'EventPassed' | 'ImportantAlert'
+  | 'PortfolioChanged' | 'StaleData' | 'StartupRecovery' | 'RunAllNow';
+
+export type OrchestratorJobStatus =
+  | 'Pending' | 'Running' | 'Completed' | 'Failed' | 'Cancelled' | 'Skipped' | 'WaitingForDependency';
+
+export type OrchestratorModuleId =
+  | 'portfolio-manager' | 'market-monitor' | 'news-monitor' | 'event-monitor'
+  | 'sector-monitor'    | 'company-monitor' | 'market-alerts' | 'risk-analyzer'
+  | 'portfolio-analyzer' | 'opportunity-finder' | 'trade-decision-engine' | 'trade-review';
+
+export interface OrchestratorModuleSettings {
+  enabled: boolean;
+  supportsAutomaticRun: boolean;
+  intervalMinutes: number;
+  staleAfterMinutes: number;
+  priority: number;
+}
+
+export interface OrchestratorModuleDefaults {
+  scheduleType: 'fixed' | 'trigger' | 'after';
+  minimumIntervalMinutes: number;
+  maximumIntervalMinutes: number;
+  dependencies: OrchestratorModuleId[];
+  runAfter: OrchestratorModuleId[];
+}
+
+export interface OrchestratorModuleRuntime {
+  status: 'Idle' | 'Running' | 'Failed' | 'Disabled';
+  lastRunAt: string | null;
+  lastSuccessfulRunAt: string | null;
+  nextRunAt: string | null;
+  lastError: string | null;
+  currentJobId: string | null;
+  waitingForDeps: OrchestratorModuleId[];
+}
+
+export interface OrchestratorModuleStatus {
+  moduleId: OrchestratorModuleId;
+  displayName: string;
+  freshness: ModuleFreshness;
+  settings: OrchestratorModuleSettings;
+  defaults: OrchestratorModuleDefaults;
+  runtime: OrchestratorModuleRuntime;
+  lastUpdatedAt: string | null;
+  nextRunAt: string | null;
+}
+
+export interface OrchestratorJob {
+  id: string;
+  correlationId: string;
+  moduleId: OrchestratorModuleId;
+  ticker?: string;
+  trigger: ModuleTrigger;
+  status: OrchestratorJobStatus;
+  priority: number;
+  requestedAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  durationMs: number | null;
+  attempt: number;
+  maxAttempts: number;
+  error: string | null;
+  affectedTickers: string[];
+  parentJobId: string | null;
+}
+
+export interface OrchestratorStats {
+  running: number;
+  stale: number;
+  failed: number;
+  analysesToday: number;
+  failedToday: number;
+  nextScheduledJobAt: string | null;
+}
+
+export interface OrchestratorStatus {
+  mode: AutomationMode;
+  paused: boolean;
+  modules: OrchestratorModuleStatus[];
+  jobs: OrchestratorJob[];
+  stats: OrchestratorStats;
+  lastFullCycleAt: string | null;
+  cycleInProgress: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface SaxoConfigBody {
   redirectUrlOverride?: string;
 }

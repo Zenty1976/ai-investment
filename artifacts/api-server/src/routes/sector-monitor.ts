@@ -106,7 +106,12 @@ function buildUserPrompt(
 
 router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running sector monitor analysis with web search");
-  systemLog.logUser("Sector Monitor", "User manually started sector analysis");
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo("Sector Monitor", `Scheduled run (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser("Sector Monitor", "User manually started sector analysis");
+  }
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();

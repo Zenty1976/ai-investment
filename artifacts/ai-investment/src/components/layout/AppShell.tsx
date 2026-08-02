@@ -14,6 +14,7 @@ import {
   Bell,
   GitMerge,
   ClipboardList,
+  Cpu,
   History,
   Settings,
   Wifi,
@@ -50,6 +51,7 @@ const NAV_ITEMS = [
   { label: "ALERTS",      href: "/alerts",        icon: Bell,       enabled: true  },
   { label: "DECISIONS",   href: "/decisions",     icon: GitMerge,      enabled: true  },
   { label: "REVIEW",      href: "/trade-review",  icon: ClipboardList, enabled: true  },
+  { label: "AUTOMATE",   href: "/automation",    icon: Cpu,           enabled: true  },
   { label: "LOG & HIST.", href: "/log",           icon: History,    enabled: true  },
   { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]

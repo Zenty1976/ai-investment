@@ -265,7 +265,12 @@ Include targetAllocationPercent, maximumAllocationPercent, sizingConfidence and 
 // ---------------------------------------------------------------------------
 
 router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> => {
-  systemLog.logUser(MODULE_NAME, "User manually started decision analysis");
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo(MODULE_NAME, `Scheduled run (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser(MODULE_NAME, "User manually started decision analysis");
+  }
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();

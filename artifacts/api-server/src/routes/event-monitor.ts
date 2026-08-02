@@ -89,7 +89,12 @@ Search for all significant scheduled financial events within the above 14-day wi
 
 router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
   req.log.info("Running event monitor analysis with web search");
-  systemLog.logUser("Event Monitor", "User manually started event analysis");
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo("Event Monitor", `Scheduled run (trigger: ${orchestratorTrigger})`);
+  } else {
+    systemLog.logUser("Event Monitor", "User manually started event analysis");
+  }
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();

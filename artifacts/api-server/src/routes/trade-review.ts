@@ -206,10 +206,10 @@ const STATUS_ORDER: Record<ProposalStatus, number> = {
 const PRESERVED_STATUSES: ProposalStatus[] = ["Approved", "Rejected", "Executed", "Cancelled"];
 
 // ---------------------------------------------------------------------------
-// GET /trade-review
+// Shared generation logic (GET with cache, POST forced refresh)
 // ---------------------------------------------------------------------------
 
-router.get("/trade-review", async (_req: Request, res: Response) => {
+async function doHandleTradeReview(res: Response, useCache: boolean): Promise<void> {
   try {
     const tdeEntry       = analysisRepository.get<Record<string, unknown>>("trade-decision-engine");
     const portfolioEntry = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
@@ -258,6 +258,7 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
       });
 
     if (
+      useCache &&
       storedReview?.result?.tdeTimestamp === tdeTimestamp &&
       cacheIsCompatible
     ) {
@@ -488,9 +489,31 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    systemLog.logError(MODULE_NAME, `GET /trade-review: ${msg}`);
+    systemLog.logError(MODULE_NAME, `trade-review generation failed: ${msg}`);
     return void res.status(500).json({ error: "Failed to generate trade review" });
   }
+}
+
+// ---------------------------------------------------------------------------
+// GET /trade-review  (cache-aware: returns stored data when TDE unchanged)
+// ---------------------------------------------------------------------------
+
+router.get("/trade-review", (_req: Request, res: Response) => {
+  return doHandleTradeReview(res, true /* useCache */);
+});
+
+// ---------------------------------------------------------------------------
+// POST /trade-review/generate  (orchestration endpoint: always forces refresh)
+// ---------------------------------------------------------------------------
+
+router.post("/trade-review/generate", (req: Request, res: Response) => {
+  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  if (orchestratorTrigger) {
+    systemLog.logInfo(MODULE_NAME, `Orchestrated run (trigger: ${orchestratorTrigger}): generating fresh trade review`);
+  } else {
+    systemLog.logUser(MODULE_NAME, "User requested forced trade review regeneration");
+  }
+  return doHandleTradeReview(res, false /* useCache */);
 });
 
 // ---------------------------------------------------------------------------

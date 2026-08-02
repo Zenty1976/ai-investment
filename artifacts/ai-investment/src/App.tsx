@@ -16,6 +16,7 @@ import TradeDecisionEngine from '@/pages/TradeDecisionEngine';
 import TradeReview from '@/pages/TradeReview';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
+import Automation from '@/pages/Automation';
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ function Router() {
         <Route path="/alerts" component={MarketAlerts} />
         <Route path="/decisions" component={TradeDecisionEngine} />
         <Route path="/trade-review" component={TradeReview} />
+        <Route path="/automation" component={Automation} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />
