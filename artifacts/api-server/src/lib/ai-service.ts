@@ -155,20 +155,12 @@ export async function callAiWithWebSearch<T>(
 
   const response = await client.responses.create(requestPayload);
 
-  // ── Enforce that web search was actually used ───────────────────────────
-  const webSearchItems = response.output.filter(
-    (item) => item.type === "web_search_call"
-  );
-  if (webSearchItems.length === 0) {
-    throw new Error(
-      "Web search was not performed. Market Monitor requires live web data and " +
-        "cannot generate an analysis from model memory alone."
-    );
-  }
-
   // ── Extract text content and URL citation annotations ──────────────────
+  // Do this before the web-search validation so we can report counts in the
+  // error debug payload and in the returned debug info.
   let rawText = "";
   const sources: WebSearchSource[] = [];
+  let citationAnnotationCount = 0;
 
   for (const item of response.output) {
     if (item.type === "message") {
@@ -177,6 +169,7 @@ export async function callAiWithWebSearch<T>(
           rawText += part.text;
           for (const ann of part.annotations) {
             if (ann.type === "url_citation") {
+              citationAnnotationCount++;
               // Deduplicate by URL
               if (!sources.find((s) => s.url === ann.url)) {
                 sources.push({ title: ann.title, url: ann.url });
@@ -186,6 +179,37 @@ export async function callAiWithWebSearch<T>(
         }
       }
     }
+  }
+
+  // ── Robust web-search detection ────────────────────────────────────────
+  // Accept web search as successfully performed when at least one of:
+  //   1. response.output contains an item with type "web_search_call"
+  //   2. a returned message contains URL citations or web annotations
+  //   3. the extracted sources list contains at least one valid web source
+  const outputItemTypes = response.output.map((item) => item.type);
+  const hasWebSearchCall = outputItemTypes.includes("web_search_call");
+  const hasCitations = citationAnnotationCount > 0;
+  const hasSources = sources.length > 0;
+  const webSearchUsed = hasWebSearchCall || hasCitations || hasSources;
+
+  // Build debug payload before potentially throwing so the debug dialog can
+  // display the evidence (or lack thereof).
+  const debugPayload = {
+    outputItemTypes,
+    webSearchCallFound: hasWebSearchCall,
+    citationAnnotationCount,
+    extractedSourceCount: sources.length,
+  };
+
+  if (!webSearchUsed) {
+    logger.warn(
+      { ...debugPayload, model },
+      "Web search not detected in OpenAI response"
+    );
+    throw Object.assign(
+      new Error("Web search was not detected in the OpenAI response."),
+      { _webSearchDebug: debugPayload, _rawResponse: rawText }
+    );
   }
 
   if (!rawText) {
@@ -215,7 +239,7 @@ export async function callAiWithWebSearch<T>(
       total_tokens: response.usage?.total_tokens ?? null,
     },
     calledAt,
-    webSearchUsed: true,
+    webSearchUsed,
   };
 
   return { result: parsed as T, debug, sources };
