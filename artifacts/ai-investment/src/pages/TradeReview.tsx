@@ -175,45 +175,36 @@ function WaitingDecisionRow({ item, isLast, onDetails }: WaitingRowProps) {
   const labelVariant = item.waitingLabel === "Event blocked" ? "warning" : "secondary"
 
   return (
-    <div className={`flex items-start gap-3 px-3 py-2.5 group ${!isLast ? "border-b border-border/30" : ""}`}>
-      {/* Left: action + company + ticker — single line, no wrapping */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
-          <span className={`text-[11px] font-bold tracking-widest shrink-0 ${actionColor}`}>
-            {actionLabel}
-          </span>
-          <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
-          <span className="text-[11px] font-medium text-foreground/80 truncate">{item.company}</span>
-          <span className="text-[11px] text-muted-foreground/60 font-mono shrink-0">{item.ticker}</span>
-        </div>
-
-        {/* Second line: badge + event name + date — single line, no wrapping */}
-        <div className="flex items-center gap-1.5 mt-1 overflow-hidden whitespace-nowrap">
-          <Badge variant={labelVariant} className="text-[9px] px-1.5 py-0 h-4 shrink-0 leading-none">
-            {item.waitingLabel}
-          </Badge>
-          {hasEvent && (
-            <span className="text-[11px] text-muted-foreground/60 truncate">
-              {item.blockingEvent}{eventDate ? ` · ${eventDate}` : ""}
-            </span>
-          )}
-          {!hasEvent && item.readinessReason && (
-            <span className="text-[11px] text-muted-foreground/60 truncate">
-              {item.readinessReason}
-            </span>
-          )}
-        </div>
+    <div
+      className={`px-3 py-2.5 cursor-pointer hover:bg-muted/20 transition-colors ${!isLast ? "border-b border-border/30" : ""}`}
+      onClick={onDetails}
+    >
+      {/* Line 1: action + company + ticker — single line, no wrapping */}
+      <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
+        <span className={`text-[11px] font-bold tracking-widest shrink-0 ${actionColor}`}>
+          {actionLabel}
+        </span>
+        <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
+        <span className="text-[11px] font-medium text-foreground/80 truncate">{item.company}</span>
+        <span className="text-[11px] text-muted-foreground/60 font-mono shrink-0">{item.ticker}</span>
       </div>
 
-      {/* Details link */}
-      <Button
-        size="sm" variant="ghost"
-        className="h-6 text-[10px] px-1.5 shrink-0 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5"
-        onClick={onDetails}
-      >
-        <ExternalLink className="h-2.5 w-2.5 mr-1" />
-        Details
-      </Button>
+      {/* Line 2: badge + event name + date — single line, no wrapping */}
+      <div className="flex items-center gap-1.5 mt-1 overflow-hidden whitespace-nowrap">
+        <Badge variant={labelVariant} className="text-[9px] px-1.5 py-0 h-4 shrink-0 leading-none">
+          {item.waitingLabel}
+        </Badge>
+        {hasEvent && (
+          <span className="text-[11px] text-muted-foreground/60 truncate">
+            {item.blockingEvent}{eventDate ? ` · ${eventDate}` : ""}
+          </span>
+        )}
+        {!hasEvent && item.readinessReason && (
+          <span className="text-[11px] text-muted-foreground/60 truncate">
+            {item.readinessReason}
+          </span>
+        )}
+      </div>
     </div>
   )
 }
