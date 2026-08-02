@@ -778,6 +778,7 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
   const inputMessages: Array<{ role: string; content: string }> = (() => {
     if (!debugInfo) return []
     const req = debugInfo.request
+    if (!req) return []
     if (Array.isArray(req.messages)) return req.messages as Array<{ role: string; content: string }>
     if (Array.isArray(req.input))    return req.input    as Array<{ role: string; content: string }>
     return []
@@ -813,10 +814,10 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                   <div className="space-y-1.5 mb-3">
                     <DebugRow label="API"                  value="Responses API + web_search" />
                     <DebugRow label="Web search confirmed" value={debugInfo.webSearchUsed ? "Yes ✓" : "No ✗ (detection failed)"} />
-                    <DebugRow label="Model"                value={String(debugInfo.request.model ?? "—")} />
-                    <DebugRow label="Temperature"          value={String(debugInfo.request.temperature ?? "—")} />
-                    <DebugRow label="Max tokens"           value={String(debugInfo.request.max_tokens ?? debugInfo.request.max_output_tokens ?? "—")} />
-                    <DebugRow label="Called at"            value={debugInfo.calledAt} />
+                    <DebugRow label="Model"                value={String(debugInfo.request?.model ?? "—")} />
+                    <DebugRow label="Temperature"          value={String(debugInfo.request?.temperature ?? "—")} />
+                    <DebugRow label="Max tokens"           value={String(debugInfo.request?.max_tokens ?? debugInfo.request?.max_output_tokens ?? "—")} />
+                    <DebugRow label="Called at"            value={debugInfo.calledAt ?? "—"} />
                   </div>
                   {inputMessages.map((m, i) => (
                     <div key={i} className="mb-2">

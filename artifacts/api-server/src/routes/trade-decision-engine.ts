@@ -183,7 +183,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
   const nowDate = new Date(nowIso);
-  let lastDebug: Partial<AiDebugInfo> = {};
+  let lastDebug: AiDebugInfo | undefined;
 
   // ── Load all module entries ──────────────────────────────────────────────
 
@@ -625,7 +625,10 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       return;
 
     } catch (err) {
-      lastDebug = { ...lastDebug, ...extractAiErrorDebug(err) };
+      const errDebug = extractAiErrorDebug(err);
+      if (lastDebug || errDebug) {
+        lastDebug = { ...(lastDebug ?? {}), ...(errDebug ?? {}) } as AiDebugInfo;
+      }
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
       req.log[isLastAttempt ? "error" : "warn"](
         { err, attempt },
