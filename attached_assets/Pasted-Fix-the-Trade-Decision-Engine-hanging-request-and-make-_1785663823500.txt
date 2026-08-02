@@ -1,0 +1,138 @@
+Fix the Trade Decision Engine hanging request and make OpenAI debug handling reliable.
+
+The frontend button and mutation are connected correctly. The request hangs because the shared callAiWithWebSearch function has no explicit timeout around:
+
+client.responses.create(…)
+
+If OpenAI web search does not finish, the backend request remains open, isPending stays true, and the UI appears frozen.
+
+Make the fix in the shared AI service so all AI modules benefit.
+
+1. Add a timeout to every OpenAI request
+
+Use a maximum duration of approximately 90 seconds per attempt.
+
+When the timeout is reached:
+
+* abort the OpenAI request
+* throw a clear retryable error:
+    “OpenAI request timed out after 90 seconds”
+* include the full request payload in the error debug data
+* include an empty rawResponse when no response was received
+
+Do not leave an HTTP request pending indefinitely.
+
+2. Preserve debug data for every failure type
+
+Currently request/debug information is attached mainly when web-search detection fails.
+
+Attach debug metadata for all failures occurring after the request payload has been created, including:
+
+* timeout
+* OpenAI API/network error
+* empty response
+* no text content
+* web search not detected
+* invalid JSON
+* schema validation failure
+* prohibited executable language
+
+The final HTTP error response must contain _debug with:
+
+* request payload sent to OpenAI
+* calledAt
+* rawResponse, if any
+* output item types, if available
+* web-search detection data, if available
+* token usage, if available
+* error stage, for example:
+    request | timeout | response | web-search-validation | json-parse | schema-validation | safety-validation
+
+Never include API keys or authorization headers.
+
+3. Save the request debug before awaiting OpenAI
+
+Create the request payload and initial debug object before calling OpenAI.
+
+This ensures that a timeout or network failure can still return exactly what was sent to OpenAI.
+
+Do not wait until the OpenAI call succeeds before making the request information available to error handling.
+
+4. Keep retries bounded
+
+Trade Decision Engine may retry retryable failures, but:
+
+* use the same timeout on every attempt
+* use the same tools and tool_choice configuration
+* use no more than the existing MAX_ATTEMPTS
+* only retry timeout, temporary API/network failure, web-search detection failure, empty response, invalid JSON or schema failure
+* do not retry indefinitely
+* return HTTP 500 after the final failed attempt
+
+The total request must always finish with either success or a visible error.
+
+5. Add a route-level safety timeout
+
+Add a maximum total duration for the Trade Decision Engine route, for example approximately 190 seconds for two 90-second attempts plus processing time.
+
+If the route-level limit is reached:
+
+* stop further retries
+* return HTTP 504 rather than leaving the request open
+* include the latest available _debug data
+
+Ensure no later attempt tries to write another response after the route has already returned.
+
+6. Fix the frontend pending state
+
+The frontend must always leave the pending state when the request succeeds, fails or times out.
+
+Keep the button disabled and show “Analysing…” only while the request is genuinely active.
+
+After an error or timeout:
+
+* restore the Generate Decisions button
+* show:
+    “Analysis failed. No result was saved.”
+* enable the Details button
+* open the existing debug dialog when requested
+
+Do not create a separate manual timeout that only changes the UI while the backend continues running.
+
+7. Improve the debug dialog
+
+On failure, show separate sections when available:
+
+* Error
+* Sent to OpenAI
+* Received from OpenAI
+
+If no OpenAI response was received, show:
+
+“OpenAI did not return a response before the request failed.”
+
+Do not show “No debug data available” when the request payload is available.
+
+The dialog must handle partial debug information safely. It must not assume that these fields always exist:
+
+* rawResponse
+* usage
+* request
+* webSearchDetection
+
+Use safe defaults instead of crashing the dialog.
+
+8. Do not change business logic
+
+Do not change:
+
+* Trade Decision Engine prompt
+* JSON schema
+* decision rules
+* repository keys
+* safety boundary
+* history
+* System Log content
+* Saxo integration
+
+The purpose of this change is only to guarantee that every Generate Decisions request ends predictably and that the debug dialog shows the request and any available response when something fails.

@@ -19,6 +19,8 @@ const router: IRouter = Router();
 const MODULE_NAME = "Trade Decision Engine";
 const MAX_ATTEMPTS = 2;
 const MAX_HISTORY = 20;
+/** Maximum total duration for the route — two 90 s attempts plus processing overhead. */
+const ROUTE_TIMEOUT_MS = 190_000;
 
 // ---------------------------------------------------------------------------
 // History types
@@ -184,6 +186,21 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   const nowIso = new Date().toISOString();
   const nowDate = new Date(nowIso);
   let lastDebug: AiDebugInfo | undefined;
+
+  // ── Route-level safety timeout ───────────────────────────────────────────
+  // Guards against any situation where per-attempt timeouts fail to fire.
+  // Returns 504 and stops further processing if the total duration is exceeded.
+  let routeTimedOut = false;
+  const routeTimeoutHandle = setTimeout(() => {
+    routeTimedOut = true;
+    systemLog.logError(MODULE_NAME, "Decision analysis timed out");
+    if (!res.headersSent) {
+      res.status(504).json({
+        error: "Trade Decision Engine timed out — analysis took too long",
+        _debug: lastDebug,
+      });
+    }
+  }, ROUTE_TIMEOUT_MS);
 
   // ── Load all module entries ──────────────────────────────────────────────
 
@@ -484,6 +501,9 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   // ── Retry loop ───────────────────────────────────────────────────────────
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    // Stop if the route safety timeout already fired and sent a 504.
+    if (routeTimedOut || res.headersSent) break;
+
     try {
       const { result, debug } = await callAiWithWebSearch(
         SYSTEM_PROMPT,
@@ -491,12 +511,39 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         { model: "gpt-4o", maxTokens: 6000, temperature: 0.1 }
       );
 
+      // The route timeout may have fired while we were awaiting OpenAI.
+      if (res.headersSent) { clearTimeout(routeTimeoutHandle); return; }
+
       const analysisDuration = Date.now() - startTime;
       lastDebug = debug;
 
+      // ── Normalize sourceModules ──────────────────────────────────────────
+      // The model sometimes returns human-readable names with spaces
+      // (e.g. "Risk Analyzer") instead of the PascalCase enum values the
+      // schema requires ("RiskAnalyzer"). Strip internal spaces as a
+      // pre-validation normalization step — does not alter any other field.
+      const rawResult = result as Record<string, unknown>;
+      const normalizedResult: Record<string, unknown> = {
+        ...rawResult,
+        decisions: Array.isArray(rawResult.decisions)
+          ? rawResult.decisions.map((d) => {
+              if (!d || typeof d !== "object") return d;
+              const dec = d as Record<string, unknown>;
+              return {
+                ...dec,
+                sourceModules: Array.isArray(dec.sourceModules)
+                  ? dec.sourceModules.map((m) =>
+                      typeof m === "string" ? m.replace(/\s+/g, "") : m
+                    )
+                  : dec.sourceModules,
+              };
+            })
+          : rawResult.decisions,
+      };
+
       // Schema validation (callAiWithWebSearch already parsed the JSON)
       const parsed = RunTradeDecisionEngineResponse.safeParse({
-        ...(result as Record<string, unknown>),
+        ...normalizedResult,
         timestamp: nowIso,
         analysisDuration,
       });
@@ -611,6 +658,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         );
       }
 
+      clearTimeout(routeTimeoutHandle);
       res.json({ ...finalData, _debug: debug });
       return;
 
@@ -624,19 +672,31 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         { err, attempt },
         isLastAttempt ? "AI service call failed after all attempts" : "AI service call failed — retrying"
       );
-      if (isLastAttempt) {
-        systemLog.logError(
-          MODULE_NAME,
-          `Decision analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`
-        );
-        res.status(500).json({
-          error:  err instanceof Error ? err.message : "AI service call failed",
-          _debug: lastDebug,
-        });
+      if (isLastAttempt || routeTimedOut) {
+        clearTimeout(routeTimeoutHandle);
+        if (!res.headersSent) {
+          systemLog.logError(
+            MODULE_NAME,
+            `Decision analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`
+          );
+          res.status(500).json({
+            error:  err instanceof Error ? err.message : "AI service call failed",
+            _debug: lastDebug,
+          });
+        }
         return;
       }
       continue;
     }
+  }
+
+  // Safety: loop exited without sending a response (route timeout fired before any attempt ran)
+  clearTimeout(routeTimeoutHandle);
+  if (!res.headersSent) {
+    res.status(504).json({
+      error: "Trade Decision Engine timed out — analysis took too long",
+      _debug: lastDebug,
+    });
   }
 });
 

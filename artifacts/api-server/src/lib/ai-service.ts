@@ -32,7 +32,7 @@ export interface AiServiceOptions {
 export interface AiDebugInfo {
   /** The full request payload sent to the API */
   request: Record<string, unknown>;
-  /** Raw text string returned by the model */
+  /** Raw text string returned by the model — absent on timeout or network failure */
   rawResponse: string;
   /** Token usage reported by the API */
   usage: {
@@ -51,6 +51,11 @@ export interface AiDebugInfo {
     citationAnnotationCount: number;
     extractedSourceCount: number;
   };
+  /**
+   * Which stage of the pipeline failed, when the debug was captured from an error.
+   * Values: request | timeout | response | web-search-validation | json-parse
+   */
+  errorStage?: string;
 }
 
 /**
@@ -61,8 +66,8 @@ export interface AiDebugInfo {
 export function extractAiErrorDebug(err: unknown): Partial<AiDebugInfo> | null {
   if (!err || typeof err !== "object") return null;
   const e = err as Record<string, unknown>;
-  // Only errors thrown by callAiWithWebSearch carry these private fields
-  if (!e._requestPayload && !e._rawResponse && !e._webSearchDebug) return null;
+  // Only errors enriched by callAiWithWebSearch carry these private fields
+  if (!e._requestPayload && !e._rawResponse && !e._webSearchDebug && !e._errorStage) return null;
   return {
     request: (e._requestPayload ?? {}) as Record<string, unknown>,
     rawResponse: typeof e._rawResponse === "string" ? e._rawResponse : "",
@@ -70,6 +75,7 @@ export function extractAiErrorDebug(err: unknown): Partial<AiDebugInfo> | null {
     calledAt: typeof e._calledAt === "string" ? e._calledAt : new Date().toISOString(),
     usage: { prompt_tokens: null, completion_tokens: null, total_tokens: null },
     webSearchDetection: e._webSearchDebug as AiDebugInfo["webSearchDetection"],
+    errorStage: typeof e._errorStage === "string" ? e._errorStage : undefined,
   };
 }
 
@@ -147,12 +153,19 @@ export async function callAi<T>(
 
 // ── Responses API with web search ─────────────────────────────────────────────
 
+/** Per-attempt timeout — aborts the OpenAI request after this many milliseconds. */
+const WEB_SEARCH_TIMEOUT_MS = 90_000;
+
 /**
  * Call OpenAI via the Responses API with web_search_preview enabled.
  *
  * IMPORTANT: This function throws a clear error if web search was not actually
  * performed. Callers can never silently receive a response generated from
  * model memory when live data was expected.
+ *
+ * Every error thrown after the request payload is built carries these private fields
+ * so callers can surface debug information even on timeout / network failures:
+ *   _requestPayload, _calledAt, _rawResponse, _errorStage, _webSearchDebug?
  *
  * The model is instructed to return a JSON object only. The server is
  * responsible for setting any timestamp fields — do NOT ask the model to
@@ -167,6 +180,8 @@ export async function callAiWithWebSearch<T>(
   const client = getClient();
   const calledAt = new Date().toISOString();
 
+  // Build the request payload BEFORE the network call so it is always
+  // available for debug output even if the call times out or errors.
   const requestPayload = {
     model,
     max_output_tokens: maxTokens,
@@ -182,9 +197,49 @@ export async function callAiWithWebSearch<T>(
     ],
   };
 
+  // ── Error helper ─────────────────────────────────────────────────────────
+  // Attaches debug context to every error thrown from this function.
+  // Typed as `never` so TypeScript knows the function always throws.
+  function fail(
+    stage: string,
+    message: string,
+    rawResponse = "",
+    extra?: Record<string, unknown>
+  ): never {
+    throw Object.assign(new Error(message), {
+      _requestPayload: requestPayload,
+      _calledAt: calledAt,
+      _rawResponse: rawResponse,
+      _errorStage: stage,
+      ...extra,
+    });
+  }
+
   logger.debug({ model }, "Calling OpenAI (Responses API + web search)");
 
-  const response = await client.responses.create(requestPayload);
+  // ── AbortController — enforce per-attempt timeout ─────────────────────
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(
+    () => controller.abort(),
+    WEB_SEARCH_TIMEOUT_MS
+  );
+
+  let response: Awaited<ReturnType<typeof client.responses.create>>;
+  try {
+    response = await client.responses.create(requestPayload, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutHandle);
+  } catch (err) {
+    clearTimeout(timeoutHandle);
+    const isAbort = controller.signal.aborted;
+    fail(
+      isAbort ? "timeout" : "request",
+      isAbort
+        ? `OpenAI request timed out after ${WEB_SEARCH_TIMEOUT_MS / 1000} seconds`
+        : `OpenAI API error: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
 
   // ── Extract text content and URL citation annotations ──────────────────
   // Do this before the web-search validation so we can report counts in the
@@ -223,8 +278,6 @@ export async function callAiWithWebSearch<T>(
   const hasSources = sources.length > 0;
   const webSearchUsed = hasWebSearchCall || hasCitations || hasSources;
 
-  // Build debug payload before potentially throwing so the debug dialog can
-  // display the evidence (or lack thereof).
   const debugPayload = {
     outputItemTypes,
     webSearchCallFound: hasWebSearchCall,
@@ -237,19 +290,13 @@ export async function callAiWithWebSearch<T>(
       { ...debugPayload, model },
       "Web search not detected in OpenAI response"
     );
-    throw Object.assign(
-      new Error("Web search was not detected in the OpenAI response."),
-      {
-        _webSearchDebug: debugPayload,
-        _rawResponse: rawText,
-        _requestPayload: requestPayload,
-        _calledAt: calledAt,
-      }
-    );
+    fail("web-search-validation", "Web search was not detected in the OpenAI response.", rawText, {
+      _webSearchDebug: debugPayload,
+    });
   }
 
   if (!rawText) {
-    throw new Error("OpenAI Responses API returned no text content");
+    fail("response", "OpenAI Responses API returned no text content");
   }
 
   // ── Parse JSON — strip markdown fences if the model wrapped the JSON ───
@@ -261,8 +308,10 @@ export async function callAiWithWebSearch<T>(
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    throw new Error(
-      `OpenAI returned invalid JSON after web search: ${jsonStr.slice(0, 300)}`
+    fail(
+      "json-parse",
+      `OpenAI returned invalid JSON after web search: ${jsonStr.slice(0, 300)}`,
+      rawText
     );
   }
 

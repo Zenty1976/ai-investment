@@ -1,26 +1,5 @@
 [
   {
-    "id": "55cfe956-dc1c-4dc3-86aa-836ab02dbfc7",
-    "timestamp": "2026-08-01T16:36:47.593Z",
-    "module": "Settings",
-    "level": "warning",
-    "message": "Saxo access token refreshed"
-  },
-  {
-    "id": "f3ed41c7-74a0-418f-9588-56a65cd36b4f",
-    "timestamp": "2026-08-01T16:53:44.723Z",
-    "module": "Settings",
-    "level": "info",
-    "message": "Saxo mock data enabled"
-  },
-  {
-    "id": "0d4d1d32-fcbe-4a9a-aa73-04e8c676d7bb",
-    "timestamp": "2026-08-01T16:53:51.295Z",
-    "module": "Portfolio Manager",
-    "level": "user",
-    "message": "User manually started portfolio update"
-  },
-  {
     "id": "bc336f30-25cb-407b-92fb-471b147f5c89",
     "timestamp": "2026-08-01T16:53:51.296Z",
     "module": "Portfolio Manager",
@@ -3498,5 +3477,26 @@
     "module": "Trade Decision Engine",
     "level": "error",
     "message": "Decision analysis failed: OpenAI returned invalid JSON after web search: {\"mainConclusion\":{\"title\":\"Portfolio Review and Strategic Recommendations\",\"reason\":\"The portfolio exhibits a moderate risk profile with concentrated positions in Microsoft Corp (MSFT), Novo Nordisk B (NOVO B), and Serve Robotics Inc (SERV). Upcoming earnings reports and macroeconomic data releases"
+  },
+  {
+    "id": "d9231230-8ef3-47cc-a347-c66256e547ec",
+    "timestamp": "2026-08-02T09:37:49.137Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "7ab16f5c-d06f-4c3f-90ca-d8400bd261c9",
+    "timestamp": "2026-08-02T09:37:49.195Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "2a15dc34-948e-409d-bf13-47f267386ff7",
+    "timestamp": "2026-08-02T09:38:10.299Z",
+    "module": "Trade Decision Engine",
+    "level": "error",
+    "message": "Decision analysis failed: Schema validation failed: decisions.0.sourceModules.0: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Risk Analyzer'; decisions.0.sourceModules.1: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Portfolio Analyzer'; decisions.0.sourceModules.2: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Market Alerts'; decisions.1.sourceModules.0: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Risk Analyzer'; decisions.1.sourceModules.1: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Portfolio Analyzer'; decisions.1.sourceModules.2: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Event Monitor'; decisions.2.sourceModules.0: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Market Alerts'; decisions.2.sourceModules.1: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Portfolio Analyzer'; decisions.3.sourceModules.0: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Opportunity Finder'; decisions.3.sourceModules.1: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Sector Monitor'; decisions.3.sourceModules.2: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Event Monitor'; decisions.4.sourceModules.1: Invalid enum value. Expected 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts' | 'CompanyMonitor' | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor' | 'MarketMonitor' | 'NewsMonitor' | 'Web', received 'Portfolio Analyzer'"
   }
 ]

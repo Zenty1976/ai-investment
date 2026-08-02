@@ -49,11 +49,19 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { format } from "date-fns"
 
 interface AiDebugInfo {
-  request: Record<string, unknown>
-  rawResponse: string
-  webSearchUsed: boolean
-  usage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
-  calledAt: string
+  request?: Record<string, unknown>
+  rawResponse?: string
+  webSearchUsed?: boolean
+  usage?: { prompt_tokens?: number | null; completion_tokens?: number | null; total_tokens?: number | null }
+  calledAt?: string
+  /** Which stage failed — request | timeout | response | web-search-validation | json-parse */
+  errorStage?: string
+  webSearchDetection?: {
+    outputItemTypes: string[]
+    webSearchCallFound: boolean
+    citationAnnotationCount: number
+    extractedSourceCount: number
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -775,13 +783,22 @@ interface DebugDialogProps {
 }
 
 function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
+  const req = debugInfo?.request ?? null
   const inputMessages: Array<{ role: string; content: string }> = (() => {
-    if (!debugInfo) return []
-    const req = debugInfo.request
     if (!req) return []
     if (Array.isArray(req.messages)) return req.messages as Array<{ role: string; content: string }>
     if (Array.isArray(req.input))    return req.input    as Array<{ role: string; content: string }>
     return []
+  })()
+
+  const rawResponse = debugInfo?.rawResponse ?? ""
+  const hasRequest  = req !== null
+  const hasResponse = rawResponse.length > 0
+
+  const prettyResponse = (() => {
+    if (!hasResponse) return ""
+    try { return JSON.stringify(JSON.parse(rawResponse), null, 2) }
+    catch { return rawResponse }
   })()
 
   return (
@@ -795,6 +812,8 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] pr-2">
           <div className="space-y-4 text-xs font-mono">
+
+            {/* ── Error ── */}
             {!!error && (
               <DebugSection label="❌ Error" color="rose">
                 <pre className="whitespace-pre-wrap text-rose-400 break-all">
@@ -804,55 +823,73 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                 </pre>
               </DebugSection>
             )}
-            {debugInfo ? (
-              <>
-                <DebugSection
-                  label="📤 Sent to OpenAI"
-                  color="blue"
-                  copyText={inputMessages.map((m) => `[${m.role}]\n${m.content}`).join("\n\n")}
-                >
-                  <div className="space-y-1.5 mb-3">
-                    <DebugRow label="API"                  value="Responses API + web_search" />
+
+            {/* ── Sent to OpenAI ── shown whenever the request payload is available */}
+            {hasRequest && (
+              <DebugSection
+                label="📤 Sent to OpenAI"
+                color="blue"
+                copyText={inputMessages.map((m) => `[${m.role}]\n${m.content}`).join("\n\n") || undefined}
+              >
+                <div className="space-y-1.5 mb-3">
+                  <DebugRow label="API"                  value="Responses API + web_search" />
+                  {debugInfo?.errorStage && (
+                    <DebugRow label="Failed at stage"    value={debugInfo.errorStage} />
+                  )}
+                  {debugInfo?.webSearchUsed !== undefined && (
                     <DebugRow label="Web search confirmed" value={debugInfo.webSearchUsed ? "Yes ✓" : "No ✗ (detection failed)"} />
-                    <DebugRow label="Model"                value={String(debugInfo.request?.model ?? "—")} />
-                    <DebugRow label="Temperature"          value={String(debugInfo.request?.temperature ?? "—")} />
-                    <DebugRow label="Max tokens"           value={String(debugInfo.request?.max_tokens ?? debugInfo.request?.max_output_tokens ?? "—")} />
-                    <DebugRow label="Called at"            value={debugInfo.calledAt ?? "—"} />
-                  </div>
-                  {inputMessages.map((m, i) => (
+                  )}
+                  <DebugRow label="Model"       value={String(req?.model ?? "—")} />
+                  <DebugRow label="Temperature" value={String(req?.temperature ?? "—")} />
+                  <DebugRow label="Max tokens"  value={String(req?.max_tokens ?? req?.max_output_tokens ?? "—")} />
+                  <DebugRow label="Called at"   value={debugInfo?.calledAt ?? "—"} />
+                </div>
+                {inputMessages.length > 0
+                  ? inputMessages.map((m, i) => (
                     <div key={i} className="mb-2">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">[{m.role}]</p>
                       <pre className="whitespace-pre-wrap text-foreground/80 bg-background/60 rounded p-2 border border-border/40 break-all">
                         {m.content}
                       </pre>
                     </div>
-                  ))}
-                </DebugSection>
-                <DebugSection
-                  label="📥 Received from OpenAI"
-                  color="emerald"
-                  copyText={(() => {
-                    try { return JSON.stringify(JSON.parse(debugInfo.rawResponse), null, 2) }
-                    catch { return debugInfo.rawResponse }
-                  })()}
-                >
-                  <div className="mb-3 flex flex-wrap gap-4 text-muted-foreground">
-                    <span>Web search: <span className={debugInfo.webSearchUsed ? "text-emerald-400" : "text-rose-400"}>{debugInfo.webSearchUsed ? "Yes ✓" : "No ✗"}</span></span>
-                    <span>Prompt tokens: <span className="text-foreground">{debugInfo.usage.prompt_tokens ?? "—"}</span></span>
-                    <span>Completion tokens: <span className="text-foreground">{debugInfo.usage.completion_tokens ?? "—"}</span></span>
-                    <span>Total: <span className="text-foreground">{debugInfo.usage.total_tokens ?? "—"}</span></span>
-                  </div>
-                  <pre className="whitespace-pre-wrap text-emerald-300/90 bg-background/60 rounded p-2 border border-emerald-500/20 break-all">
-                    {(() => {
-                      try { return JSON.stringify(JSON.parse(debugInfo.rawResponse), null, 2) }
-                      catch { return debugInfo.rawResponse }
-                    })()}
-                  </pre>
-                </DebugSection>
-              </>
-            ) : (
+                  ))
+                  : <p className="text-muted-foreground/60 italic">No messages extracted from request payload.</p>
+                }
+              </DebugSection>
+            )}
+
+            {/* ── Received from OpenAI ── shown whenever we have any debug info */}
+            {debugInfo && (
+              <DebugSection
+                label="📥 Received from OpenAI"
+                color="emerald"
+                copyText={prettyResponse || undefined}
+              >
+                <div className="mb-3 flex flex-wrap gap-4 text-muted-foreground">
+                  {debugInfo.webSearchUsed !== undefined && (
+                    <span>
+                      Web search:{" "}
+                      <span className={debugInfo.webSearchUsed ? "text-emerald-400" : "text-rose-400"}>
+                        {debugInfo.webSearchUsed ? "Yes ✓" : "No ✗"}
+                      </span>
+                    </span>
+                  )}
+                  <span>Prompt tokens: <span className="text-foreground">{debugInfo.usage?.prompt_tokens ?? "—"}</span></span>
+                  <span>Completion tokens: <span className="text-foreground">{debugInfo.usage?.completion_tokens ?? "—"}</span></span>
+                  <span>Total: <span className="text-foreground">{debugInfo.usage?.total_tokens ?? "—"}</span></span>
+                </div>
+                {hasResponse
+                  ? <pre className="whitespace-pre-wrap text-emerald-300/90 bg-background/60 rounded p-2 border border-emerald-500/20 break-all">{prettyResponse}</pre>
+                  : <p className="text-muted-foreground/60 italic">OpenAI did not return a response before the request failed.</p>
+                }
+              </DebugSection>
+            )}
+
+            {/* ── Fallback — no debug data at all ── */}
+            {!error && !debugInfo && (
               <p className="text-muted-foreground">No debug data available yet. Run an analysis first.</p>
             )}
+
           </div>
         </ScrollArea>
       </DialogContent>
