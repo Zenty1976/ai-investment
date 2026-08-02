@@ -1,54 +1,5 @@
 [
   {
-    "id": "562615d7-451a-4680-9976-356000ca0ca3",
-    "timestamp": "2026-08-01T17:36:57.568Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "0208bc34-0b36-4930-b53d-543df9245753",
-    "timestamp": "2026-08-01T17:36:57.569Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "82c46c5e-3cf5-47be-9e1a-9758a31812cc",
-    "timestamp": "2026-08-01T17:42:44.811Z",
-    "module": "Settings",
-    "level": "warning",
-    "message": "Saxo access token refreshed"
-  },
-  {
-    "id": "a0fade6b-d2d1-4ea7-9788-c98d9841bd9f",
-    "timestamp": "2026-08-01T17:54:20.296Z",
-    "module": "Portfolio Analyzer",
-    "level": "user",
-    "message": "User manually started portfolio analysis"
-  },
-  {
-    "id": "fec94ff3-99bd-4e9c-b975-6025100bf7f7",
-    "timestamp": "2026-08-01T17:54:20.297Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis is based on mock portfolio data"
-  },
-  {
-    "id": "b20452b1-5c9b-4203-a2e6-6289390f06e0",
-    "timestamp": "2026-08-01T17:54:20.298Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis performed without Company Monitor data for NOVO B"
-  },
-  {
-    "id": "1bce6f8e-d124-48ea-a49d-585b533db064",
-    "timestamp": "2026-08-01T17:54:20.298Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis performed without Company Monitor data for MSFT"
-  },
-  {
     "id": "03106463-db4b-4213-8722-ff9cbb15f8ea",
     "timestamp": "2026-08-01T17:54:20.299Z",
     "module": "Portfolio Analyzer",
@@ -3498,5 +3449,54 @@
     "module": "Trade Decision Engine",
     "level": "internal",
     "message": "1 resolved: portfolio"
+  },
+  {
+    "id": "d6b0863a-abb0-41f3-b077-421fd036c4e3",
+    "timestamp": "2026-08-02T10:14:22.638Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "9de54b2d-2dcd-4f8e-882c-e26b60e54b8d",
+    "timestamp": "2026-08-02T10:14:22.671Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "23066e88-d925-428a-843a-c8255dad9e19",
+    "timestamp": "2026-08-02T10:14:34.260Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "351d9cca-a895-4d05-8500-a680292e4466",
+    "timestamp": "2026-08-02T10:14:34.261Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: WaitForEvents | Readiness: 65/100"
+  },
+  {
+    "id": "5269acfc-3265-4705-be35-30d9c21ec7dc",
+    "timestamp": "2026-08-02T10:14:34.264Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Top decision: [WaitForEvent] Wait for Novo Nordisk Q2 earnings and guidance — High confidence, Immediate urgency"
+  },
+  {
+    "id": "28240475-f6d3-44a0-86b8-e47c498c4af0",
+    "timestamp": "2026-08-02T10:14:34.266Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "1 new decision(s): Review Microsoft ahead of macro data and Xbox developments"
+  },
+  {
+    "id": "fffaaf11-fc4d-4579-9347-924a13875c91",
+    "timestamp": "2026-08-02T10:14:34.268Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "1 resolved: MSFT"
   }
 ]

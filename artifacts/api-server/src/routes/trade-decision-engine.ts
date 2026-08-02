@@ -101,8 +101,23 @@ const EXECUTABLE_PATTERNS = [
   /\bstop\s+loss\s+at\b/i,
 ];
 
-function hasExecutableLanguage(d: { title: string; reason: string }): boolean {
-  return EXECUTABLE_PATTERNS.some((p) => p.test(d.title) || p.test(d.reason));
+function hasExecutableLanguage(d: {
+  title: string; reason: string;
+  supportingEvidence: string[]; opposingEvidence: string[];
+  whatWouldChangeDecision: string[]; missingEvidence: string[];
+  portfolioImpact: string; accountConsiderations: string;
+}): boolean {
+  const textFields: string[] = [
+    d.title,
+    d.reason,
+    d.portfolioImpact,
+    d.accountConsiderations,
+    ...d.supportingEvidence,
+    ...d.opposingEvidence,
+    ...d.whatWouldChangeDecision,
+    ...d.missingEvidence,
+  ];
+  return EXECUTABLE_PATTERNS.some((p) => textFields.some((t) => p.test(t)));
 }
 
 // ---------------------------------------------------------------------------
@@ -483,11 +498,20 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     ];
     const matchLabel = matchedTickers.join("/") || e.moduleName.replace("company-monitor:", "");
     return `COMPANY MONITOR — ${matchLabel} (updated: ${e.updatedAt}):\n${JSON.stringify({
-      companyName: result.companyName, ticker: result.ticker,
-      recommendation: result.recommendation, overallScore: result.overallScore,
-      priceTarget: result.priceTarget, mainConclusion: result.mainConclusion,
-      keyStrengths: result.keyStrengths, keyRisks: result.keyRisks,
-      catalysts: result.catalysts, recentDevelopments: result.recentDevelopments,
+      company:              result.company,
+      executiveSummary:     result.executiveSummary,
+      investmentView:       result.investmentView,
+      currentSituation:     result.currentSituation,
+      catalysts:            result.catalysts,
+      risks:                result.risks,
+      earningsAndGuidance:  result.earningsAndGuidance,
+      competitivePosition:  result.competitivePosition,
+      valuationAssessment:  result.valuationAssessment,
+      bullCase:             result.bullCase,
+      baseCase:             result.baseCase,
+      bearCase:             result.bearCase,
+      keyThingsToWatch:     result.keyThingsToWatch,
+      confidence:           result.confidence,
     })}`;
   }).join("\n\n");
 
@@ -595,7 +619,22 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         );
       }
 
-      // Verify event dates: past dates must not block decisions
+      // Reject WaitForEvent decisions whose blocking event date has already passed.
+      // Silently clearing them would leave an internally inconsistent decision;
+      // a retry forces the model to reassess using the published outcome.
+      const staleWaitFor = parsed.data.decisions.filter((d) => {
+        if (d.decision !== "WaitForEvent") return false;
+        if (!d.blockedByEvent || !d.blockingEventDate) return false;
+        const evDate = new Date(d.blockingEventDate);
+        return !isNaN(evDate.getTime()) && evDate < nowDate;
+      });
+      if (staleWaitFor.length > 0) {
+        throw new Error(
+          `WaitForEvent decision(s) reference past blocking events — retry required: ${staleWaitFor.map((d) => `"${d.title}" (${d.blockingEventDate})`).join("; ")}`
+        );
+      }
+
+      // For non-WaitForEvent decisions: defensively clear stale blocking flags
       const validatedDecisions = parsed.data.decisions.map((d) => {
         if (d.blockedByEvent && d.blockingEventDate) {
           const evDate = new Date(d.blockingEventDate);
@@ -604,6 +643,14 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
           }
         }
         return d;
+      });
+
+      // Remove nextReviewTriggers with verified past dates — past events are not
+      // upcoming triggers. Empty date = unverified, so keep those.
+      const filteredTriggers = parsed.data.nextReviewTriggers.filter((t) => {
+        if (!t.date) return true;
+        const trigDate = new Date(t.date);
+        return isNaN(trigDate.getTime()) || trigDate >= nowDate;
       });
 
       // Sort → dedup → reassign ranks
@@ -638,7 +685,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       // Strip normalizedKey from response (internal field only)
       const responseDecisions = decisionsWithKeys.map(({ normalizedKey: _nk, ...rest }) => rest);
 
-      const finalData = { ...parsed.data, decisions: responseDecisions, timestamp: nowIso, analysisDuration };
+      const finalData = { ...parsed.data, decisions: responseDecisions, nextReviewTriggers: filteredTriggers, timestamp: nowIso, analysisDuration };
 
       // ── Save ─────────────────────────────────────────────────────────────
       analysisRepository.save("trade-decision-engine", finalData);

@@ -1,0 +1,132 @@
+The recent Trade Decision Engine corrections are good. Please make these final correctness improvements.
+
+1. Fix the Company Monitor context serialization.
+
+The shared Company Identity matching is now used correctly, but the Trade Decision Engine builds Company Monitor context using fields such as:
+
+- result.companyName
+- result.ticker
+- result.recommendation
+- result.overallScore
+- result.priceTarget
+- result.mainConclusion
+- result.keyStrengths
+- result.keyRisks
+- result.recentDevelopments
+
+These fields do not match the actual current Company Monitor result structure.
+
+The current Company Monitor result contains fields such as:
+
+- company
+  - name
+  - ticker
+  - sector
+  - industry
+- executiveSummary
+- investmentView
+- currentSituation
+- catalysts
+- risks
+- earningsAndGuidance
+- competitivePosition
+- sectorContext
+- marketSentiment
+- valuationAssessment
+- bullCase
+- baseCase
+- bearCase
+- keyThingsToWatch
+- confidence
+
+Build the Trade Decision Engine Company Monitor context from the actual schema.
+
+For example, include:
+
+{
+  company,
+  executiveSummary,
+  investmentView,
+  currentSituation,
+  catalysts,
+  risks,
+  earningsAndGuidance,
+  competitivePosition,
+  valuationAssessment,
+  bullCase,
+  baseCase,
+  bearCase,
+  keyThingsToWatch,
+  confidence
+}
+
+Do not send undefined legacy fields.
+
+Keep including only Company Monitor analyses that match:
+- current holdings
+- current Opportunity Finder candidates
+
+Continue using the shared Company Identity service.
+
+2. Strengthen the executable-trade safety validation.
+
+The current prohibited-language guard only checks decision.title and decision.reason.
+
+Check all user-visible text within each decision, including:
+
+- title
+- reason
+- supportingEvidence
+- opposingEvidence
+- whatWouldChangeDecision
+- missingEvidence
+- portfolioImpact
+- accountConsiderations
+
+Reject and retry if any field contains:
+
+- direct buy-now or sell-now instructions
+- exact executable quantities
+- exact order prices
+- limit-price instructions
+- stop-loss order instructions
+- instructions to place, modify or execute an order
+
+Do not reject ordinary analytical numbers such as portfolio weights, dates, scores or reported company figures.
+
+3. Validate past blocking events consistently.
+
+The current backend clears blockedByEvent when blockingEventDate is in the past, but it can leave a decision such as:
+
+decision: WaitForEvent
+title: Await company earnings
+
+with no active blocking event.
+
+That is internally inconsistent.
+
+If a decision is WaitForEvent and its verified blocking event date has already passed:
+
+- reject the response and retry, so OpenAI uses the published outcome, or
+- require the decision to be reassessed using the event result
+
+Do not silently convert it into an unblocked WaitForEvent decision.
+
+Also validate nextReviewTriggers:
+
+- remove or reject triggers with past dates
+- do not present past events as upcoming review triggers
+- an empty date is allowed when no date is verified
+
+Preserve everything else:
+
+- current UI
+- prompt structure
+- fixed sourceModules enum
+- Company Identity architecture
+- timeout and retry behaviour
+- debug dialog
+- history
+- repository keys
+- System Log
+- phase-1 prohibition on Saxo order calls
