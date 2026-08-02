@@ -87,6 +87,67 @@ function computeDecisionStatus(
 }
 
 // ---------------------------------------------------------------------------
+// Readiness computation (server-side, deterministic)
+// ---------------------------------------------------------------------------
+
+type ReadinessValue = "WaitingForReevaluation" | "ReadyForReview" | "Informational";
+
+function computeReadiness(d: {
+  decision: string;
+  blockedByEvent: boolean;
+  blockingEvent: string;
+  blockingEventDate: string;
+  sizingReason?: string;
+}): { readiness: ReadinessValue; readinessReason: string } {
+  const type    = d.decision;
+  const blocked = d.blockedByEvent;
+
+  // Pure informational decisions — no trade possible
+  if (type === "Hold" || type === "NoAction") {
+    return { readiness: "Informational", readinessReason: "No trade action required for this position." };
+  }
+
+  // WaitForEvent always waits
+  if (type === "WaitForEvent") {
+    const event = blocked && d.blockingEvent ? d.blockingEvent : null;
+    const date  = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
+    const reason = event
+      ? `Waiting for ${event}${date} — decision cannot be assessed until the event occurs.`
+      : "Decision depends on an upcoming event before it can be assessed.";
+    return { readiness: "WaitingForReevaluation", readinessReason: reason };
+  }
+
+  // Review — blocked means waiting, otherwise informational
+  if (type === "Review") {
+    if (blocked) {
+      const event = d.blockingEvent;
+      const date  = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
+      const reason = event
+        ? `Waiting for ${event}${date} — re-evaluate afterwards.`
+        : "Blocked by an upcoming event — re-evaluate afterwards.";
+      return { readiness: "WaitingForReevaluation", readinessReason: reason };
+    }
+    return { readiness: "Informational", readinessReason: "Requires closer manual assessment before a trade decision can be made." };
+  }
+
+  // PrepareToBuy / PrepareToReduce
+  if (type === "PrepareToBuy" || type === "PrepareToReduce") {
+    if (blocked) {
+      const event = d.blockingEvent;
+      const date  = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
+      const reason = event
+        ? `Waiting for ${event}${date} — trade must be re-evaluated after the event with new price, risk and sizing data.`
+        : "Blocked by an upcoming event — trade must be re-evaluated after the event.";
+      return { readiness: "WaitingForReevaluation", readinessReason: reason };
+    }
+    const reason = d.sizingReason?.trim() || "Decision is current and ready for manual review.";
+    return { readiness: "ReadyForReview", readinessReason: reason };
+  }
+
+  return { readiness: "Informational", readinessReason: "No trade action required." };
+}
+
+// ---------------------------------------------------------------------------
 // Executable-language guard
 // ---------------------------------------------------------------------------
 
@@ -642,11 +703,13 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         );
       }
 
-      // Validate sizing fields on trade-producing decisions.
-      // These fields are required for PrepareToBuy and PrepareToReduce; missing
-      // or zero values indicate the model skipped sizing — trigger a retry.
+      // Validate sizing fields on unblocked trade-producing decisions.
+      // Blocked decisions are WaitingForReevaluation — their sizing is provisional
+      // and not required. Unblocked PrepareToBuy/PrepareToReduce must have valid
+      // sizing so they can be correctly converted to Trade Review proposals.
       const missingSizing = parsed.data.decisions.filter((d) => {
         if (d.decision !== "PrepareToBuy" && d.decision !== "PrepareToReduce") return false;
+        if (d.blockedByEvent === true) return false; // provisional — sizing not required
         const target = d.targetAllocationPercent;
         const max    = d.maximumAllocationPercent;
         const conf   = d.sizingConfidence;
@@ -713,8 +776,11 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       const currentKeys = new Set(decisionsWithKeys.map((d) => d.normalizedKey));
       const resolvedDecisions = previousDecisions.filter((p) => !currentKeys.has(p.normalizedKey));
 
-      // Strip normalizedKey from response (internal field only)
-      const responseDecisions = decisionsWithKeys.map(({ normalizedKey: _nk, ...rest }) => rest);
+      // Strip normalizedKey from response; add server-computed readiness
+      const responseDecisions = decisionsWithKeys.map(({ normalizedKey: _nk, ...rest }) => {
+        const { readiness, readinessReason } = computeReadiness(rest);
+        return { ...rest, readiness, readinessReason };
+      });
 
       const finalData = { ...parsed.data, decisions: responseDecisions, nextReviewTriggers: filteredTriggers, timestamp: nowIso, analysisDuration };
 
@@ -746,6 +812,21 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         MODULE_NAME,
         `Posture: ${finalData.overallDecisionPosture} | Readiness: ${finalData.decisionReadinessScore}/100`
       );
+
+      const readyDecisions    = responseDecisions.filter((d) => d.readiness === "ReadyForReview");
+      const waitingDecisions  = responseDecisions.filter((d) => d.readiness === "WaitingForReevaluation");
+      if (readyDecisions.length > 0) {
+        systemLog.logInfo(
+          MODULE_NAME,
+          `${readyDecisions.length} decision(s) ReadyForReview: ${readyDecisions.map((d) => d.ticker || d.company || "portfolio").join(", ")}`
+        );
+      }
+      if (waitingDecisions.length > 0) {
+        systemLog.logInternal(
+          MODULE_NAME,
+          `${waitingDecisions.length} decision(s) WaitingForReevaluation: ${waitingDecisions.map((d) => d.ticker || d.company || "portfolio").join(", ")}`
+        );
+      }
 
       const topD = responseDecisions[0];
       if (topD) {

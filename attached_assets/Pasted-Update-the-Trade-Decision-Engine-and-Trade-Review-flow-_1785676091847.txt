@@ -1,0 +1,357 @@
+Update the Trade Decision Engine and Trade Review flow so only decisions that are genuinely ready can become approvable trade proposals.
+
+The current flow is too complex because event-blocked decisions are converted into concrete Trade Review proposals with quantity, price and an Approve button, even though the decision must be reassessed after the event.
+
+The new rule is:
+
+A blocked or incomplete decision is not a trade proposal.
+
+It is only a waiting decision that must be re-evaluated later.
+
+No separate Execution Queue module is needed.
+
+⸻
+
+CORE FLOW
+
+Trade Decision Engine evaluates all holdings and opportunities.
+
+Each decision must end in one of two groups:
+
+1. Waiting for re-evaluation
+
+The decision is not ready because:
+
+* an important event has not occurred yet
+* required Company Monitor data is missing
+* price data is unavailable
+* evidence is conflicting
+* data is stale
+* another blocking condition exists
+
+2. Ready for approval
+
+The decision is current, sufficiently supported and not blocked.
+
+Only Ready for approval decisions are converted into Trade Review proposals.
+
+The flow should be:
+
+Trade Decision
+→ Waiting decision OR Ready decision
+
+Waiting decision
+→ remains in Trade Decision
+→ no approval
+→ must be re-evaluated later
+
+Ready decision
+→ Trade Review
+→ user Approve / Reject / Later
+→ future order preview and execution
+
+Do not create a separate queue module.
+
+⸻
+
+TRADE DECISION ENGINE CHANGES
+
+Add an explicit readiness field to each decision:
+
+readiness:
+“WaitingForReevaluation|ReadyForReview|Informational”
+
+Use:
+
+WaitingForReevaluation
+
+when:
+
+* blockedByEvent is true
+* important evidence is missing
+* a decision depends on a future event
+* the analysis is too stale
+* the system is not ready to calculate a valid trade proposal
+
+ReadyForReview
+
+only when:
+
+* the decision is PrepareToBuy or PrepareToReduce
+* blockedByEvent is false
+* no important blocking data is missing
+* the decision is supported by sufficiently fresh evidence
+* valid sizing guidance exists
+* the decision can be presented for approval now
+
+Informational
+
+for:
+
+* Hold
+* Review
+* WaitForEvent
+* NoAction
+
+unless Review specifically represents a future trade that is still waiting, in which case use WaitingForReevaluation.
+
+Add a short field:
+
+readinessReason
+
+Examples:
+
+“Waiting for Q2 earnings before reassessing the investment case.”
+
+“Company Monitor analysis is missing.”
+
+“Decision is current and ready for manual review.”
+
+⸻
+
+EVENT-BLOCKED DECISIONS
+
+If blockedByEvent is true:
+
+* readiness must be WaitingForReevaluation
+* decision must not be ReadyForReview
+* it must not create a Trade Review proposal
+* exact quantity should not be treated as approvable
+* current price should not be treated as an approved reference
+* user must not be able to approve it
+
+The decision can still show analytical sizing guidance inside Trade Decision if useful, but it must be clearly labelled as provisional and must not be copied into Trade Review.
+
+When the event has passed, the system must not automatically execute the old decision.
+
+The relevant modules and Trade Decision must be updated again.
+
+A new ReadyForReview decision may then be created using:
+
+* new event result
+* new market price
+* updated risk
+* updated portfolio
+* updated sizing
+
+⸻
+
+TRADE REVIEW CHANGES
+
+Trade Review must only create proposals from decisions where:
+
+* readiness === “ReadyForReview”
+* decision is PrepareToBuy or PrepareToReduce
+* blockedByEvent === false
+* valid sizing guidance exists
+* valid current quote exists
+
+Do not create TradeProposal objects for WaitingForReevaluation or Informational decisions.
+
+Remove event-blocked proposals from the approvable Trade Review list.
+
+Do not show:
+
+* quantity controls
+* estimated trade value
+* Approve button
+
+for waiting decisions.
+
+Trade Review should answer only:
+
+“What trades are ready for my approval now?”
+
+⸻
+
+WAITING DECISIONS UI
+
+Waiting decisions should remain visible in Trade Decision Engine.
+
+Show them clearly with:
+
+* Waiting for re-evaluation
+* blocking reason
+* blocking event and date when known
+* what must happen before reassessment
+* next review trigger
+
+Example:
+
+CAT
+Waiting for re-evaluation
+
+Reason:
+Q2 earnings must be published before the investment case and sizing can be reassessed.
+
+Next trigger:
+Caterpillar Q2 earnings — 2026-08-04
+
+Do not show Approve in Trade Decision.
+
+Do not show the decision in Trade Review.
+
+⸻
+
+TRADE REVIEW EMPTY STATE
+
+If no decisions are currently ReadyForReview, show:
+
+“No trades are ready for approval.”
+
+Also show a short secondary line:
+
+“Blocked and incomplete decisions remain in Trade Decision until they are re-evaluated.”
+
+Do not copy waiting decisions into Trade Review simply to avoid an empty page.
+
+⸻
+
+RE-EVALUATION
+
+For this version, re-evaluation can remain manual.
+
+After a blocking event occurs, the user updates the relevant modules and runs Trade Decision again.
+
+The architecture should support future automatic re-evaluation, but do not implement autonomous scheduling yet.
+
+Future automation may trigger:
+
+* Event Monitor update
+* Company Monitor update
+* Risk Analyzer update
+* Portfolio Analyzer update
+* Trade Decision update
+
+But the old waiting decision must never become executable automatically without a new Trade Decision result.
+
+⸻
+
+EXISTING TRADE REVIEW PROPOSALS
+
+Handle existing stored proposals safely.
+
+If an existing Trade Review proposal references a decision that is now:
+
+* blockedByEvent
+* WaitingForReevaluation
+* no longer present
+* no longer ReadyForReview
+
+mark the proposal as:
+
+Superseded
+
+or remove it from the active approval list.
+
+Do not allow approval of legacy event-blocked proposals.
+
+Preserve rejected and previously approved records for history, but do not treat them as active proposals.
+
+⸻
+
+SIZING
+
+Sizing should only become actionable when the decision is ReadyForReview.
+
+For ReadyForReview decisions:
+
+* Trade Decision provides targetAllocationPercent
+* maximumAllocationPercent
+* sizingConfidence
+* sizingReason
+
+Trade Review then deterministically calculates:
+
+* quantity
+* current quote
+* estimated trade value
+* resulting allocation
+* remaining cash
+
+For WaitingForReevaluation decisions:
+
+* any sizing is provisional only
+* do not create an approvable quantity
+* do not create an approvable TradeProposal
+
+⸻
+
+APPROVAL MEANING
+
+When the user presses Approve in Trade Review, the approval means:
+
+“I approve this current proposal based on the current analysis, quote and quantity, subject to final order validation.”
+
+Approval must never mean:
+
+“Execute this later after an event using the old analysis and old quantity.”
+
+Later order preview must still validate:
+
+* quote freshness
+* price deviation
+* cash or shares available
+* portfolio state
+* new alerts
+* proposal validity
+
+Execution is not part of this change.
+
+⸻
+
+SYSTEM LOG
+
+Keep logging concise.
+
+Log:
+
+* Decision marked WaitingForReevaluation
+* Decision became ReadyForReview
+* Trade Review proposal created
+* Legacy blocked proposal superseded
+* Proposal approved, rejected or deferred
+
+Do not log every internal check.
+
+⸻
+
+SCHEMA AND STORAGE
+
+Update together:
+
+* OpenAPI schema
+* backend validation
+* generated frontend types
+* Trade Decision repository model
+* Trade Review proposal generation
+* frontend rendering
+* compact history
+
+Add:
+
+readiness
+readinessReason
+
+Do not add a separate queue repository or queue module.
+
+Preserve:
+
+* current Trade Decision analysis detail
+* Trade Review approval workflow
+* quote provider
+* sizing calculations
+* mock mode
+* OpenAI debug dialog
+* history
+* no Saxo order placement
+* previous successful results on failure
+
+The final architecture should be:
+
+Analysis modules
+→ Trade Decision Engine
+→ Waiting for re-evaluation OR Ready for review
+→ Trade Review
+→ future order preview
+→ future Saxo execution

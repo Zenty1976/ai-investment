@@ -17,6 +17,7 @@ import type {
   TradeDecisionConfidence,
   TradeDecisionUrgency,
   TradeDecisionStatus,
+  TradeDecisionReadiness,
 } from "@workspace/api-client-react"
 import {
   RefreshCw,
@@ -183,18 +184,30 @@ function DecisionCard({ decision }: { decision: TradeDecision }) {
                     {decision.status}
                   </Badge>
                 )}
-                {decision.blockedByEvent && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 flex items-center gap-1">
+                {decision.readiness === "WaitingForReevaluation" && (
+                  <Badge variant="warning" className="text-[10px] px-1.5 flex items-center gap-1">
                     <CalendarClock className="h-2.5 w-2.5" />
-                    Blocked
+                    Waiting for re-evaluation
+                  </Badge>
+                )}
+                {decision.readiness === "ReadyForReview" && (
+                  <Badge variant="positive" className="text-[10px] px-1.5 flex items-center gap-1">
+                    <CheckCircle2 className="h-2.5 w-2.5" />
+                    Ready for review
                   </Badge>
                 )}
               </div>
 
               {/* Subject */}
-              <p className="text-sm font-semibold text-foreground leading-snug mb-1.5">
+              <p className="text-sm font-semibold text-foreground leading-snug mb-1">
                 {decision.title}
               </p>
+              {/* Readiness reason — shown only for waiting decisions in collapsed view */}
+              {decision.readiness === "WaitingForReevaluation" && decision.readinessReason && (
+                <p className="text-[11px] text-amber-400/70 leading-snug mb-1.5">
+                  {decision.readinessReason}
+                </p>
+              )}
 
               {/* Meta row */}
               <div className="flex items-center gap-1.5 flex-wrap">

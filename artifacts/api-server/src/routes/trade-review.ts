@@ -20,7 +20,7 @@ const MODULE_NAME = "TradeReview";
 // Types
 // ---------------------------------------------------------------------------
 
-type ProposalStatus = "Waiting" | "Ready" | "Approved" | "Rejected" | "Executed" | "Cancelled";
+type ProposalStatus = "Waiting" | "Ready" | "Approved" | "Rejected" | "Executed" | "Cancelled" | "Superseded";
 
 interface TradeProposal {
   id: string;
@@ -135,7 +135,7 @@ function computeReasonScore(d: Record<string, unknown>): number {
 }
 
 const STATUS_ORDER: Record<ProposalStatus, number> = {
-  Ready: 0, Waiting: 1, Approved: 2, Rejected: 3, Executed: 4, Cancelled: 5,
+  Ready: 0, Waiting: 1, Approved: 2, Rejected: 3, Executed: 4, Cancelled: 5, Superseded: 6,
 };
 
 const PRESERVED_STATUSES: ProposalStatus[] = ["Approved", "Rejected", "Executed", "Cancelled"];
@@ -167,13 +167,21 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
     const tdeTimestamp = String(tdeEntry.result?.timestamp ?? "");
 
     // Return cached proposals when TDE analysis hasn't changed AND the cached
-    // proposals are schema-compatible (have the fxRate field introduced in the
-    // current version). Old cached entries without fxRate are transparently
-    // regenerated so the user doesn't need to manually re-run TDE.
+    // proposals are schema-compatible:
+    //   - have the fxRate field (introduced in a previous version)
+    //   - contain no legacy event-blocked proposals (under the old rules,
+    //     blocked decisions were converted into "Waiting" proposals; under the
+    //     new readiness model they must NOT appear in Trade Review at all)
     const cachedProposals = storedReview?.result?.proposals as TradeProposal[] | undefined;
     const cacheIsCompatible =
       Array.isArray(cachedProposals) &&
-      cachedProposals.every((p) => typeof (p as Record<string, unknown>).fxRate === "number");
+      cachedProposals.every((p) => {
+        const pr = p as Record<string, unknown>;
+        return (
+          typeof pr.fxRate === "number" &&
+          pr.blockedByEvent !== true          // bust if old blocked proposals exist
+        );
+      });
 
     if (
       storedReview?.result?.tdeTimestamp === tdeTimestamp &&
@@ -235,6 +243,28 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
     for (const d of decisions) {
       const decisionType = String(d.decision ?? "");
       if (decisionType !== "PrepareToBuy" && decisionType !== "PrepareToReduce") continue;
+
+      // ── Readiness gate ───────────────────────────────────────────────────
+      // Only ReadyForReview decisions become approvable Trade Review proposals.
+      // WaitingForReevaluation (blocked by event or otherwise incomplete) must
+      // NOT appear in Trade Review — they remain visible in Trade Decision only.
+      // Fall back to blockedByEvent for TDE data that predates the readiness field.
+      const readiness = String(d.readiness ?? "");
+      if (readiness === "WaitingForReevaluation") {
+        systemLog.logInternal(
+          MODULE_NAME,
+          `Decision ${String(d.ticker ?? "")}: WaitingForReevaluation — not converted to proposal`
+        );
+        continue;
+      }
+      if (!readiness && d.blockedByEvent === true) {
+        // Legacy TDE data without readiness field: treat blocked as WaitingForReevaluation
+        systemLog.logInternal(
+          MODULE_NAME,
+          `Decision ${String(d.ticker ?? "")}: legacy blocked — not converted to proposal`
+        );
+        continue;
+      }
 
       const ticker     = String(d.ticker ?? "").toUpperCase();
       const company    = String(d.company ?? "");
@@ -313,21 +343,22 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
         : null;
 
       // ── Status ────────────────────────────────────────────────────────────
-      // Deliberate user decisions (Approved/Rejected/Executed/Cancelled) are
-      // always preserved across TDE re-runs.
-      // Blocked by event → Waiting (execution deferred, sizing is still shown).
+      // Only ReadyForReview decisions reach this point (WaitingForReevaluation
+      // was already filtered out above). Deliberate user decisions are preserved.
       // Sizing unavailable → Waiting (user cannot approve without a quantity).
       // Otherwise Ready when a valid non-zero quantity was calculated.
-      const blocked = d.blockedByEvent === true;
+      const blocked = d.blockedByEvent === true; // always false here (gate above)
       const prev = prevMap.get(decisionId);
       let status: ProposalStatus;
       if (prev && PRESERVED_STATUSES.includes(prev.status)) {
         status = prev.status;
-      } else if (blocked || sizingUnavailableReason !== null || quantity === 0) {
+      } else if (sizingUnavailableReason !== null || quantity === 0) {
         status = "Waiting";
       } else {
         status = "Ready";
       }
+
+      systemLog.logInternal(MODULE_NAME, `Trade Review proposal created: ${action} ${ticker} → ${status}`);
 
       proposals.push({
         id: decisionId,

@@ -722,6 +722,8 @@ export type TradeDecisionPosture = 'ActivelyReview' | 'SelectivePreparation' | '
 export type TradeDecisionConfidence = 'High' | 'Medium' | 'Low';
 export type TradeDecisionUrgency = 'Immediate' | 'Days' | 'Weeks' | 'NoUrgency';
 export type TradeDecisionStatus = 'New' | 'Changed' | 'Unchanged' | 'Resolved';
+/** Server-computed: whether this decision is ready for Trade Review, waiting for re-evaluation, or informational only */
+export type TradeDecisionReadiness = 'WaitingForReevaluation' | 'ReadyForReview' | 'Informational';
 export type TradeDecisionSourceModule =
   | 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts'
   | 'CompanyMonitor'   | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor'
@@ -760,12 +762,16 @@ export interface TradeDecision {
   sizingReason?:             string;
   /** Server-populated: change vs previous analysis */
   status?: TradeDecisionStatus;
+  /** Server-computed: whether this decision is ready for Trade Review, waiting for re-evaluation, or informational */
+  readiness?: TradeDecisionReadiness;
+  /** Server-computed: one-sentence explanation of the readiness state */
+  readinessReason?: string;
 }
 
 // ── Trade Review ─────────────────────────────────────────────────────────────
 
 export type TradeProposalStatus =
-  | 'Waiting' | 'Ready' | 'Approved' | 'Rejected' | 'Executed' | 'Cancelled';
+  | 'Waiting' | 'Ready' | 'Approved' | 'Rejected' | 'Executed' | 'Cancelled' | 'Superseded';
 
 export interface TradeProposal {
   id: string;

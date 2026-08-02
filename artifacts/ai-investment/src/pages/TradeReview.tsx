@@ -31,7 +31,6 @@ import {
   AlertTriangle,
   ClipboardList,
   Info,
-  Calendar,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -165,8 +164,6 @@ interface CardProps {
 function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutating }: CardProps) {
   const isBuy       = proposal.action === "BUY"
   const isDecided   = proposal.status === "Approved" || proposal.status === "Rejected"
-  // Hide the generic status badge when a named blocking event already communicates "Waiting"
-  const hideStatusBadge = proposal.blockedByEvent && proposal.status === "Waiting"
 
   // Scale estimated value (always in DKK base currency) relative to the
   // server-computed suggestion. Fallback uses fxRate so the result stays in DKK.
@@ -198,24 +195,10 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
               <p className="text-[11px] text-muted-foreground font-mono">{proposal.ticker}</p>
             </div>
           </div>
-          {!hideStatusBadge && (
-            <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0 shrink-0 mt-0.5">
-              {proposal.status}
-            </Badge>
-          )}
-        </div>
-
-        {/* ── Event blocking message ── */}
-        {proposal.blockedByEvent && (
-          <Badge variant="warning" className="text-[10px] px-1.5 py-0.5 flex items-center gap-1 w-fit max-w-full flex-wrap">
-            <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
-            <span className="break-words">
-              {proposal.blockingEvent
-                ? `Waiting for ${proposal.blockingEvent}${proposal.blockingEventDate ? ` · ${formatEventDate(proposal.blockingEventDate)}` : ""}`
-                : "Event blocked"}
-            </span>
+          <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0 shrink-0 mt-0.5">
+            {proposal.status}
           </Badge>
-        )}
+        </div>
 
         {/* ── Price / sizing panel ── */}
         <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-1.5">
@@ -487,7 +470,6 @@ export default function TradeReview() {
   const proposals    = data?.proposals ?? []
   const hasTde       = !!data?.tdeTimestamp
   const pendingCount = proposals.filter(p => p.status === "Ready" || p.status === "Waiting").length
-  const blockedCount = proposals.filter(p => p.blockedByEvent).length
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto">
@@ -534,15 +516,15 @@ export default function TradeReview() {
         </Card>
       )}
 
-      {/* ── No actionable decisions ── */}
+      {/* ── No ready proposals ── */}
       {hasTde && proposals.length === 0 && (
         <Card className="border-dashed">
           <CardContent className="p-8 flex flex-col items-center text-center gap-3">
             <ClipboardList className="h-8 w-8 text-muted-foreground/50" />
             <div>
-              <p className="text-sm font-medium">No trade proposals</p>
+              <p className="text-sm font-medium">No trades are ready for approval.</p>
               <p className="text-xs text-muted-foreground mt-1">
-                The current analysis contains no PrepareToBuy or PrepareToReduce decisions.
+                Blocked and incomplete decisions remain in Trade Decision until they are re-evaluated.
               </p>
             </div>
             <Button size="sm" variant="outline" onClick={() => navigate("/decisions")}>
@@ -557,12 +539,6 @@ export default function TradeReview() {
         <div className="flex items-center justify-between gap-4">
           <SummaryBar proposals={proposals} />
           <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-            {blockedCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-500/80">
-                <Calendar className="h-3 w-3" />
-                {blockedCount} waiting for event
-              </span>
-            )}
             {pendingCount > 0 && <span>{pendingCount} pending review</span>}
           </div>
         </div>

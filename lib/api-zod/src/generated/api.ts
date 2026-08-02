@@ -516,7 +516,11 @@ export const RunTradeDecisionEngineResponse = zod.object({
     "sizingConfidence":         zod.enum(['High', 'Medium', 'Low']).optional(),
     "sizingReason":             zod.string().optional(),
     /** Server-populated: change status vs previous analysis */
-    "status": zod.enum(['New', 'Changed', 'Unchanged', 'Resolved']).optional()
+    "status": zod.enum(['New', 'Changed', 'Unchanged', 'Resolved']).optional(),
+    /** Server-computed: whether this decision is ready for Trade Review, waiting for re-evaluation, or informational only */
+    "readiness": zod.enum(['WaitingForReevaluation', 'ReadyForReview', 'Informational']).optional(),
+    /** Server-computed: one-sentence explanation of the readiness state */
+    "readinessReason": zod.string().optional()
   })).min(1).max(8),
   "conflictsResolved": zod.array(zod.object({
     "topic": zod.string(),
