@@ -55,7 +55,7 @@ interface HistoryEntry {
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 3;
 const HISTORY_MAX = 20;
 
 // ---------------------------------------------------------------------------
@@ -699,14 +699,32 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
   // ── AI call with retry ─────────────────────────────────────────────────────
 
+  let lastConsistencyError: string | null = null;
+
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
     let debug: AiDebugInfo;
 
+    // On consistency retries, prepend the validation error so the model can correct it
+    const effectiveUserPrompt = lastConsistencyError
+      ? [
+          "The previous response failed server-side consistency validation.",
+          "",
+          "Validation error:",
+          lastConsistencyError,
+          "",
+          "Correct only the inconsistent fields while preserving the rest of the response.",
+          "",
+          "---",
+          "",
+          userPrompt,
+        ].join("\n")
+      : userPrompt;
+
     try {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
-        userPrompt,
+        effectiveUserPrompt,
         { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
       ));
     } catch (err) {
@@ -782,15 +800,18 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
     const consistencyError = validateConsistency(parsed.data, prevAnalysis, isFirstRun);
     if (consistencyError) {
+      lastConsistencyError = consistencyError;
       req.log.warn({ consistencyError, attempt }, "Consistency validation failed");
       if (attempt < MAX_ATTEMPTS) {
-        req.log.info("Retrying after consistency failure");
+        req.log.info({ attempt }, "Retrying after consistency failure — injecting error into next prompt");
         continue;
       }
-      req.log.error({ consistencyError }, "Consistency validation failed after retry");
-      systemLog.logError("Company Monitor", `Analysis for ${ticker} rejected: ${consistencyError}`);
+      req.log.error({ consistencyError }, "Consistency validation failed after all attempts");
+      systemLog.logError("Company Monitor", `Analysis for ${ticker} rejected after ${attempt} attempts: ${consistencyError}`);
       res.status(500).json({
-        error: `Analysis rejected due to consistency error: ${consistencyError}. Please try again.`,
+        error: "Company Monitor consistency validation failed",
+        validationError: consistencyError,
+        attempt,
         _debug: lastDebug,
       });
       return;
