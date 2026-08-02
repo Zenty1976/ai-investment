@@ -1862,27 +1862,145 @@
   "market-alerts": {
     "moduleName": "market-alerts",
     "result": {
-      "overallAlertLevel": "Medium",
-      "executiveSummary": "Since the last check (~6 minutes ago), no new developments have emerged that materially affect the portfolio. Serve Robotics’ Q2 earnings remain imminent (August 6), and there are no fresh updates on Novo Nordisk or Microsoft that alter the outlook.",
-      "headline": "No new developments since prior update",
-      "alerts": [],
+      "overallAlertLevel": "High",
+      "executiveSummary": "A material development has emerged: Novo Nordisk’s ZEUS Phase 3 trial failed to demonstrate cardiovascular benefit (MACE), triggering a confirmed non‑cash impairment charge in Q3. This significantly alters the near‑term outlook for the healthcare holding and warrants immediate attention ahead of earnings.",
+      "headline": "Novo Nordisk ZEUS Phase 3 failure confirmed; impairment charge flagged",
+      "alerts": [
+        {
+          "title": "Novo Nordisk ZEUS Phase 3 trial failure and Q3 impairment",
+          "category": "Company",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [
+            "Novo Nordisk B"
+          ],
+          "summary": "Novo Nordisk confirmed that although ziltivekimab achieved expected biological effects, it did not reduce major adverse cardiovascular events (MACE) in the ZEUS Phase 3 trial. Management indicated this will result in a non‑cash impairment charge in Q3 2026.",
+          "whyItMatters": "This outcome undermines a key cardiovascular pipeline asset, increases earnings risk via impairment, and may weigh on investor sentiment ahead of Q2 earnings.",
+          "recommendedAttention": "Review",
+          "sourceType": "Web",
+          "status": "New"
+        }
+      ],
       "thingsToWatch": [
-        "Serve Robotics Q2 2026 earnings release and webcast on August 6"
+        "Q2 2026 earnings release (August 5) for updated guidance and impairment details",
+        "Market reaction to Novo Nordisk share price and analyst revisions"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-02T07:07:59.604Z",
-      "analysisDuration": 3757,
-      "lastCheckedAt": "2026-08-02T07:08:16.228Z",
-      "lastMeaningfulUpdateAt": "2026-08-02T07:07:59.604Z",
+      "timestamp": "2026-08-02T07:17:48.396Z",
+      "analysisDuration": 3002,
+      "lastCheckedAt": "2026-08-02T07:18:04.239Z",
+      "lastMeaningfulUpdateAt": "2026-08-02T07:17:48.396Z",
       "noNewDevelopmentsSinceLastCheck": true
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-02T07:08:19.985Z"
+    "updatedAt": "2026-08-02T07:18:07.241Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-02T07:18:04.239Z",
+          "overallAlertLevel": "High",
+          "headline": "Novo Nordisk ZEUS Phase 3 failure confirmed; impairment charge flagged",
+          "alertCount": 0,
+          "alerts": [],
+          "newsIds": [],
+          "eventTitles": [
+            "U.S. Employment Situation (July 2026)",
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026"
+          ],
+          "checkResult": "NoChange"
+        },
+        {
+          "timestamp": "2026-08-02T07:17:48.396Z",
+          "overallAlertLevel": "High",
+          "headline": "Novo Nordisk ZEUS Phase 3 failure confirmed; impairment charge flagged",
+          "alertCount": 1,
+          "alerts": [
+            {
+              "title": "Novo Nordisk ZEUS Phase 3 trial failure and Q3 impairment",
+              "category": "Company",
+              "importance": "High",
+              "summary": "Novo Nordisk confirmed that although ziltivekimab achieved expected biological effects, it did not reduce major adverse cardiovascular events (MACE) in the ZEUS Phase 3 trial. Management indicated this will result in a non‑cash impairment charge in Q3 2026.",
+              "normalizedKey": "novo nordisk zeus phase 3 trial failure and q3 impairment|company"
+            }
+          ],
+          "newsIds": [],
+          "eventTitles": [
+            "U.S. Employment Situation (July 2026)",
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
+        {
+          "timestamp": "2026-08-02T07:17:43.784Z",
+          "overallAlertLevel": "Medium",
+          "headline": "No new material developments; Novo Nordisk ZEUS trial update merits monitoring",
+          "alertCount": 1,
+          "alerts": [
+            {
+              "title": "Novo Nordisk ZEUS Phase 3 trial update",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Novo Nordisk disclosed that although ziltivekimab achieved the expected biological effect in the ZEUS Phase 3 trial (ASCVD, CKD, inflammation), it did not translate into MACE (major adverse cardiovascular events) benefit.",
+              "normalizedKey": "novo nordisk zeus phase 3 trial update|company"
+            }
+          ],
+          "newsIds": [],
+          "eventTitles": [
+            "U.S. Employment Situation (July 2026)",
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
+        {
+          "timestamp": "2026-08-02T07:17:38.234Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Awaiting Serve Robotics Q2 results; Microsoft AI strength continues",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Serve Robotics Q2 2026 earnings scheduled",
+              "category": "Company",
+              "importance": "High",
+              "summary": "Serve Robotics will report its second‑quarter 2026 financial results after market close on August 6, 2026, with a conference call at 5 p.m. ET.",
+              "normalizedKey": "serve robotics q2 2026 earnings scheduled|company"
+            },
+            {
+              "title": "Microsoft AI/cloud earnings momentum",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Microsoft posted better‑than‑expected results from its cloud and AI business, boosting its share price and signaling strength in AI‑driven growth.",
+              "normalizedKey": "microsoft ai/cloud earnings momentum|company"
+            }
+          ],
+          "newsIds": [],
+          "eventTitles": [
+            "U.S. Employment Situation (July 2026)",
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
+        {
+          "timestamp": "2026-08-02T07:17:33.753Z",
+          "overallAlertLevel": "Medium",
+          "headline": "No new developments since prior update",
+          "alertCount": 0,
+          "alerts": [],
+          "newsIds": [],
+          "eventTitles": [
+            "U.S. Employment Situation (July 2026)",
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026"
+          ],
+          "checkResult": "NoChange"
+        },
         {
           "timestamp": "2026-08-02T07:08:16.228Z",
           "overallAlertLevel": "Medium",
@@ -2121,45 +2239,10 @@
             "U.S. Consumer Price Index (CPI) – July 2026",
             "U.S. Producer Price Index (PPI) – July 2026"
           ]
-        },
-        {
-          "timestamp": "2026-08-01T22:11:16.310Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk guidance upgrade and impairment alert; Serve Robotics Q2 date set; Microsoft AI partnerships and layoffs",
-          "alertCount": 3,
-          "alerts": [
-            {
-              "title": "Novo Nordisk raises 2026 guidance but flags Q3 impairment",
-              "category": "Company",
-              "importance": "High",
-              "summary": "Novo Nordisk raised its full‑year 2026 adjusted sales and operating profit guidance, driven by strong uptake of the Wegovy® pill, but separately disclosed a non‑cash impairment charge expected in Q3.",
-              "normalizedKey": "novo nordisk raises 2026 guidance but flags q3 impairment|company"
-            },
-            {
-              "title": "Serve Robotics sets Q2 2026 earnings date and continues expansion",
-              "category": "Company",
-              "importance": "Medium",
-              "summary": "Serve Robotics announced it will report Q2 2026 financial results on August 6, and continues to expand via new verticals and board appointments.",
-              "normalizedKey": "serve robotics sets q2 2026 earnings date and continues expansion|company"
-            },
-            {
-              "title": "Microsoft deepens AI infrastructure partnerships and cuts workforce",
-              "category": "Company",
-              "importance": "Medium",
-              "summary": "Microsoft expanded its strategic AI infrastructure partnerships—extending its Databricks alliance into the 2030s and enhancing Azure AI/HPC with AMD—and announced a reduction of 4,800 jobs (~2.1% of workforce), concentrated in commercial and gaming divisions.",
-              "normalizedKey": "microsoft deepens ai infrastructure partnerships and cuts workforce|company"
-            }
-          ],
-          "newsIds": [],
-          "eventTitles": [
-            "U.S. Employment Situation (July 2026)",
-            "U.S. Consumer Price Index (CPI) – July 2026",
-            "U.S. Producer Price Index (PPI) – July 2026"
-          ]
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-02T07:08:19.986Z"
+    "updatedAt": "2026-08-02T07:18:07.242Z"
   }
 }

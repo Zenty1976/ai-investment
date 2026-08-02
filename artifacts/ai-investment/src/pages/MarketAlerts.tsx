@@ -303,14 +303,23 @@ export default function MarketAlerts() {
                 Market Alerts
               </h1>
               <div className="flex items-center gap-2.5 flex-wrap">
-                {/* Alert level badge — show "No new alerts" when no change, keep level when meaningful */}
-                {isNoChange ? (
+                {/* Main badge — always reflects the meaningful alert level being displayed.
+                    "No alerts detected" only when no meaningful result has ever existed. */}
+                {isNoChange && !hasMeaningfulData ? (
                   <Badge variant="secondary" className="text-xs">
-                    No new alerts
+                    No alerts detected
                   </Badge>
                 ) : (
                   <Badge variant={alertLevelVariant(analysis.overallAlertLevel)} className="text-xs">
                     {analysis.overallAlertLevel} alert level
+                  </Badge>
+                )}
+                {/* Secondary status badge — shown when the last check found no new developments
+                    but a previous meaningful result is still being displayed */}
+                {isNoChange && hasMeaningfulData && (
+                  <Badge variant="secondary" className="text-[10px] flex items-center gap-1 font-normal">
+                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                    No changes since last check
                   </Badge>
                 )}
                 {isPending ? (
