@@ -60,14 +60,46 @@ function statusVariant(s: TradeProposalStatus): BadgeVariant {
   return "outline"
 }
 
-function formatPrice(price: number, currency: string): string {
-  if (price <= 0) return "—"
-  return `${price.toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}/share`
+function fmt2(n: number) {
+  return n.toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+function fmt0(n: number) {
+  return n.toLocaleString("da-DK", { maximumFractionDigits: 0 })
 }
 
-function formatValue(value: number, currency: string): string {
-  if (value <= 0) return "—"
-  return `≈\u202F${value.toLocaleString("da-DK")} ${currency}`
+function PriceDisplay({ price, currency, fxRate }: { price: number; currency: string; fxRate: number }) {
+  if (price <= 0) return <span className="text-muted-foreground/60 italic">—</span>
+  const dkkPrice   = price * fxRate
+  const isNonDkk   = currency !== "DKK" && fxRate > 0 && Math.abs(fxRate - 1) > 0.001
+  return (
+    <span className="font-mono tabular-nums">
+      {fmt2(dkkPrice)} kr/aktie
+      {isNonDkk && (
+        <span className="text-muted-foreground/50 font-normal ml-1.5">
+          ({fmt2(price)} {currency})
+        </span>
+      )}
+    </span>
+  )
+}
+
+const NNBSP = "\u202F"
+
+function ValueDisplay({ value, currency, fxRate, qty }: { value: number; currency: string; fxRate: number; qty: number }) {
+  if (qty === 0) return <span className="text-muted-foreground/60">—</span>
+  if (value <= 0) return <span className="text-muted-foreground/60">—</span>
+  const isNonDkk   = currency !== "DKK" && fxRate > 0 && Math.abs(fxRate - 1) > 0.001
+  const origValue  = isNonDkk ? Math.round(value / fxRate) : 0
+  return (
+    <span className="font-semibold tabular-nums">
+      {`≈${NNBSP}${fmt0(value)} kr`}
+      {isNonDkk && (
+        <span className="text-muted-foreground/50 font-normal ml-1.5">
+          {`(≈${NNBSP}${fmt0(origValue)} ${currency})`}
+        </span>
+      )}
+    </span>
+  )
 }
 
 function formatEventDate(iso: string | undefined): string {
@@ -130,14 +162,15 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
   const isBuy     = proposal.action === "BUY"
   const isDecided = proposal.status === "Approved" || proposal.status === "Rejected"
 
-  // Scale estimated value relative to the server-computed suggestion.
-  // Always show server value when qty matches the suggested quantity.
+  // Scale estimated value (always in DKK base currency) relative to the
+  // server-computed suggestion. Fallback uses fxRate so the result stays in DKK.
+  const safeFx = proposal.fxRate > 0 ? proposal.fxRate : 1
   const scaledValue =
     proposal.quantity > 0
       ? Math.round((qty / proposal.quantity) * proposal.estimatedValue)
       : proposal.estimatedValue > 0 && qty === 0
         ? 0
-        : Math.round(qty * (proposal.estimatedPrice > 0 ? proposal.estimatedPrice : 0))
+        : Math.round(qty * (proposal.estimatedPrice > 0 ? proposal.estimatedPrice * safeFx : 0))
 
   const borderClass = isBuy
     ? "border-emerald-500/25 bg-emerald-500/[0.03]"
@@ -226,11 +259,11 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
               {/* Price */}
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-muted-foreground">Price</span>
-                <span className="font-mono tabular-nums">
-                  {proposal.estimatedPrice > 0
-                    ? formatPrice(proposal.estimatedPrice, proposal.currency)
-                    : <span className="text-muted-foreground/60 italic">—</span>}
-                </span>
+                <PriceDisplay
+                  price={proposal.estimatedPrice}
+                  currency={proposal.currency}
+                  fxRate={safeFx}
+                />
               </div>
 
               {/* Suggested quantity + user override */}
@@ -268,11 +301,12 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
               {/* Estimated value */}
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-muted-foreground">Est. value</span>
-                <span className="font-semibold tabular-nums">
-                  {qty === 0
-                    ? <span className="text-muted-foreground/60">—</span>
-                    : formatValue(scaledValue, proposal.currency)}
-                </span>
+                <ValueDisplay
+                  value={scaledValue}
+                  currency={proposal.currency}
+                  fxRate={safeFx}
+                  qty={qty}
+                />
               </div>
             </>
           )}
@@ -474,7 +508,7 @@ export default function TradeReview() {
           </div>
           <p className="text-xs text-muted-foreground">
             {hasTde
-              ? `From Trade Decision Engine · ${formatTimestamp(data?.tdeTimestamp ?? null)} · ${data?.baseCurrency ?? ""}`
+              ? `From Trade Decision Engine · ${formatTimestamp(data?.tdeTimestamp ?? null)}`
               : "No Trade Decision Engine analysis available"}
           </p>
         </div>
