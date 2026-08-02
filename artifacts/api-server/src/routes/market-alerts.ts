@@ -518,7 +518,7 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
 
   // ── Previous alerts for change tracking ──────────────────────────────────
 
-  const previousAlerts: AlertHistoryAlert[] = previousEntry?.alerts ?? [];
+  const previousAlerts: AlertHistoryAlert[] = previousMeaningfulEntry?.alerts ?? [];
 
   // ── AI call with retry ────────────────────────────────────────────────────
   // Retryable failures (web search not detected, empty response, invalid JSON,
