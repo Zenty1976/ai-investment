@@ -1,0 +1,165 @@
+Please make these final UI refinements to the existing Trade Review module.
+
+Do not change the current architecture, sizing logic, proposal generation, approval workflow, mock quote service, Trade Decision integration or event-blocking behaviour.
+
+The current Trade Review now works correctly. These changes are only intended to make the page faster and clearer to read.
+
+1. Rename the score
+
+The circular score currently uses the label:
+
+Strength
+
+This is too vague.
+
+Rename it to:
+
+Decision strength
+
+Keep the existing 0–100 score and calculation unchanged.
+
+Add a short tooltip or expandable explanation:
+
+“Decision strength measures how strongly the available analyses support this trade idea. It does not indicate whether the trade is ready to execute.”
+
+Do not replace it with Trade Decision confidence. Confidence and decision strength are separate concepts.
+
+2. Improve the price labels
+
+Change:
+
+Price
+
+to:
+
+Share price
+
+Change:
+
+Est. value
+
+to:
+
+Estimated trade
+
+Example:
+
+Share price
+350.00 USD
+
+Estimated trade
+≈ 7,350 USD
+
+Continue showing the approximate value in the portfolio base currency.
+
+Keep the quote source and timestamp available in Details or a tooltip.
+
+3. Make allocation labels clearer
+
+Replace:
+
+Target 8%
+Now 0%
+→ 7.9%
+
+with clearer labels:
+
+Current 0%
+Target 8%
+After trade 7.9%
+
+Keep the same calculations.
+
+On narrow screens, these may remain on one compact line if they fit. Otherwise wrap them cleanly without horizontal scrolling.
+
+4. Hide module count from the main card
+
+Remove the visible text such as:
+
+4 modules
+
+from the collapsed proposal card.
+
+The number and names of supporting modules should remain available under Details.
+
+The main card should only show information needed for a quick trade review.
+
+5. Simplify the status presentation
+
+The current card shows both:
+
+* a Waiting badge
+* a large event-blocked line explaining what it is waiting for
+
+When a proposal is blocked by a named event, the event line already communicates the status clearly.
+
+In that case:
+
+* keep the event line
+* remove the separate generic Waiting badge from the top of the card
+
+For proposals that are waiting for another reason and have no blocking event, keep the Waiting badge.
+
+6. Shorten the visible reason
+
+The short reason on each collapsed card must be one concise sentence.
+
+Maximum approximately 90 characters where practical.
+
+Examples:
+
+“Waiting for earnings before opening a modest position.”
+
+“Strong earnings and improved guidance support a new position.”
+
+“Rising risk supports reducing the current exposure.”
+
+Do not show semicolon-separated analytical summaries in the collapsed card.
+
+Keep the full explanation under Details.
+
+Do not truncate by simply cutting the text mid-sentence. Generate or derive a proper short sentence.
+
+7. Prevent mobile horizontal overflow
+
+The current mobile view appears to have some horizontal overflow near the right side of the cards and action row.
+
+Ensure:
+
+* each proposal card stays within the content width
+* the Decision strength circle remains fully visible
+* Details does not extend outside the viewport
+* action buttons wrap or resize cleanly
+* no horizontal page scrollbar is introduced
+
+The left navigation may remain fixed as it is.
+
+8. Keep the important information compact
+
+The collapsed proposal card should prioritize this order:
+
+* BUY or SELL
+* company and ticker
+* event-blocking message when applicable
+* share price
+* quantity controls
+* estimated trade
+* current / target / after-trade allocation
+* one-sentence reason
+* confidence and urgency
+* Approve / Later / Reject / Details
+* Decision strength indicator
+
+Do not add more explanatory text to the collapsed card.
+
+Preserve all existing functionality:
+
+* quantity editing
+* immediate recalculation
+* mock and Saxo quote support
+* event blocking
+* approval statuses
+* Details navigation
+* proposal persistence
+* no automatic order placement
+* phase-1 warning banner

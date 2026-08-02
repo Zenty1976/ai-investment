@@ -126,11 +126,12 @@ function DecisionStrength({ score }: { score: number }) {
   const dashLen = (score / 100) * circumference
   return (
     <div
-      className="flex flex-col items-center gap-0.5"
-      title={`Decision strength: ${score}/100 — ${label} evidence quality`}
+      className="flex items-center gap-2"
+      title="Decision strength measures how strongly the available analyses support this trade idea. It does not indicate whether the trade is ready to execute."
     >
-      <div className="relative w-9 h-9">
-        <svg viewBox="0 0 32 32" className="w-9 h-9 -rotate-90">
+      <span className="text-[10px] text-muted-foreground">Decision strength</span>
+      <div className="relative w-8 h-8 shrink-0">
+        <svg viewBox="0 0 32 32" className="w-8 h-8 -rotate-90">
           <circle cx="16" cy="16" r="13" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" />
           <circle
             cx="16" cy="16" r="13"
@@ -143,7 +144,7 @@ function DecisionStrength({ score }: { score: number }) {
           {score}
         </span>
       </div>
-      <span className="text-[9px] text-muted-foreground uppercase tracking-wide">Strength</span>
+      <span className="text-[10px] text-muted-foreground">{label}</span>
     </div>
   )
 }
@@ -162,8 +163,10 @@ interface CardProps {
 }
 
 function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutating }: CardProps) {
-  const isBuy     = proposal.action === "BUY"
-  const isDecided = proposal.status === "Approved" || proposal.status === "Rejected"
+  const isBuy       = proposal.action === "BUY"
+  const isDecided   = proposal.status === "Approved" || proposal.status === "Rejected"
+  // Hide the generic status badge when a named blocking event already communicates "Waiting"
+  const hideStatusBadge = proposal.blockedByEvent && proposal.status === "Waiting"
 
   // Scale estimated value (always in DKK base currency) relative to the
   // server-computed suggestion. Fallback uses fxRate so the result stays in DKK.
@@ -181,11 +184,11 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
   const actionColor = isBuy ? "text-emerald-400" : "text-rose-400"
 
   return (
-    <Card className={`border ${borderClass} transition-colors`}>
+    <Card className={`border ${borderClass} transition-colors overflow-hidden`}>
       <CardContent className="p-4 space-y-3">
 
-        {/* ── Row 1: action · company · execution status · decision strength ── */}
-        <div className="flex items-start justify-between gap-3">
+        {/* ── Row 1: BUY/SELL · company/ticker · status badge ── */}
+        <div className="flex items-start justify-between gap-2 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <span className={`text-xs font-bold tracking-widest shrink-0 ${actionColor}`}>
               {proposal.action}
@@ -195,26 +198,26 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
               <p className="text-[11px] text-muted-foreground font-mono">{proposal.ticker}</p>
             </div>
           </div>
-          {/* Right side: Execution Status + Decision Strength — kept visually separate */}
-          <div className="flex items-start gap-2 shrink-0">
-            <div className="flex flex-col items-end gap-1 pt-0.5">
-              <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0">
-                {proposal.status}
-              </Badge>
-              {proposal.blockedByEvent && (
-                <Badge variant="warning" className="text-[10px] px-1.5 py-0 flex items-center gap-0.5">
-                  <AlertTriangle className="h-2.5 w-2.5" />
-                  {proposal.blockingEvent
-                    ? `Waiting for ${proposal.blockingEvent}${proposal.blockingEventDate ? ` · ${formatEventDate(proposal.blockingEventDate)}` : ""}`
-                    : "Event blocked"}
-                </Badge>
-              )}
-            </div>
-            <DecisionStrength score={proposal.reasonScore} />
-          </div>
+          {!hideStatusBadge && (
+            <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0 shrink-0 mt-0.5">
+              {proposal.status}
+            </Badge>
+          )}
         </div>
 
-        {/* ── Row 2: price / sizing panel ── */}
+        {/* ── Event blocking message ── */}
+        {proposal.blockedByEvent && (
+          <Badge variant="warning" className="text-[10px] px-1.5 py-0.5 flex items-center gap-1 w-fit max-w-full flex-wrap">
+            <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
+            <span className="break-words">
+              {proposal.blockingEvent
+                ? `Waiting for ${proposal.blockingEvent}${proposal.blockingEventDate ? ` · ${formatEventDate(proposal.blockingEventDate)}` : ""}`
+                : "Event blocked"}
+            </span>
+          </Badge>
+        )}
+
+        {/* ── Price / sizing panel ── */}
         <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-1.5">
 
           {proposal.sizingUnavailableReason ? (
@@ -227,7 +230,7 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] text-muted-foreground shrink-0">Enter shares manually</span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <Button
                     variant="outline" size="icon" className="h-6 w-6"
                     onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
@@ -236,9 +239,7 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
                     <Minus className="h-2.5 w-2.5" />
                   </Button>
                   <input
-                    type="number"
-                    value={qty}
-                    min={0}
+                    type="number" value={qty} min={0}
                     onChange={(e) => {
                       const v = parseInt(e.target.value, 10)
                       if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
@@ -259,20 +260,16 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
           ) : (
             /* Full sizing data available */
             <>
-              {/* Price */}
+              {/* Share price */}
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Price</span>
-                <PriceDisplay
-                  price={proposal.estimatedPrice}
-                  currency={proposal.currency}
-                  fxRate={safeFx}
-                />
+                <span className="text-muted-foreground shrink-0">Share price</span>
+                <PriceDisplay price={proposal.estimatedPrice} currency={proposal.currency} fxRate={safeFx} />
               </div>
 
-              {/* Suggested quantity + user override */}
+              {/* Quantity controls */}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] text-muted-foreground shrink-0">Shares</span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <Button
                     variant="outline" size="icon" className="h-6 w-6"
                     onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
@@ -281,9 +278,7 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
                     <Minus className="h-2.5 w-2.5" />
                   </Button>
                   <input
-                    type="number"
-                    value={qty}
-                    min={0}
+                    type="number" value={qty} min={0}
                     onChange={(e) => {
                       const v = parseInt(e.target.value, 10)
                       if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
@@ -301,39 +296,34 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
                 </div>
               </div>
 
-              {/* Estimated value */}
+              {/* Estimated trade */}
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Est. value</span>
-                <ValueDisplay
-                  value={scaledValue}
-                  currency={proposal.currency}
-                  fxRate={safeFx}
-                  qty={qty}
-                />
+                <span className="text-muted-foreground shrink-0">Estimated trade</span>
+                <ValueDisplay value={scaledValue} currency={proposal.currency} fxRate={safeFx} qty={qty} />
               </div>
             </>
           )}
 
-          {/* Allocation row — always shown when targets are set */}
+          {/* Allocation row — clearer labels, wraps cleanly */}
           {(proposal.targetAllocationPercent > 0 || proposal.currentAllocationPercent > 0) && (
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/40 pt-1 mt-0.5">
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground border-t border-border/40 pt-1 mt-0.5">
+              <span>Current {proposal.currentAllocationPercent}%</span>
               <span>Target {proposal.targetAllocationPercent}%</span>
-              <span>Now {proposal.currentAllocationPercent}%</span>
               {proposal.resultingAllocationPercent > 0 && qty > 0 && (
-                <span>→ {proposal.resultingAllocationPercent}%</span>
+                <span>After trade {proposal.resultingAllocationPercent}%</span>
               )}
             </div>
           )}
         </div>
 
-        {/* ── Row 3: short reason ── */}
+        {/* ── Short reason ── */}
         {proposal.shortReason && (
-          <p className="text-[11px] text-muted-foreground italic leading-snug">
+          <p className="text-[11px] text-muted-foreground italic leading-snug line-clamp-2">
             {proposal.shortReason}
           </p>
         )}
 
-        {/* ── Row 4: evidence quality badges ── */}
+        {/* ── Confidence / urgency badges ── */}
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant={confidenceVariant(proposal.confidence)} className="text-[10px] px-1.5 py-0">
             {proposal.confidence} confidence
@@ -341,15 +331,10 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
             {urgencyLabel(proposal.urgency)}
           </Badge>
-          {proposal.sourceModules.length > 0 && (
-            <span className="text-[10px] text-muted-foreground ml-auto">
-              {proposal.sourceModules.length} module{proposal.sourceModules.length !== 1 ? "s" : ""}
-            </span>
-          )}
         </div>
 
-        {/* ── Row 5: action buttons ── */}
-        <div className="flex items-center gap-1.5 border-t border-border/50 pt-3">
+        {/* ── Action buttons ── */}
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3">
           {!isDecided && (
             <>
               <Button
@@ -395,6 +380,11 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
             <ExternalLink className="h-3.5 w-3.5 mr-1" />
             Details
           </Button>
+        </div>
+
+        {/* ── Decision strength — at bottom ── */}
+        <div className="border-t border-border/30 pt-2">
+          <DecisionStrength score={proposal.reasonScore} />
         </div>
 
       </CardContent>
