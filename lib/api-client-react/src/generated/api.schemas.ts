@@ -797,6 +797,12 @@ export interface TradeProposal {
   blockingEvent: string;
   /** ISO date of the blocking event, e.g. "2026-08-04" (empty string when not blocked or unverified) */
   blockingEventDate: string;
+  /** Non-null when quantity could not be calculated — explains why (e.g. "Missing target allocation") */
+  sizingUnavailableReason: string | null;
+  /** Instrument price → portfolio base currency conversion rate (1 for DKK instruments) */
+  fxRate: number;
+  /** Current market value of any existing position in base currency (0 for new positions) */
+  currentPositionValueBase: number;
   sizingReason: string;
   sizingConfidence: TradeDecisionConfidence | '';
   createdAt: string;

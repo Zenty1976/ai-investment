@@ -10,6 +10,8 @@
 import { Router, type Request, type Response } from "express";
 import { analysisRepository } from "../lib/analysis-repository";
 import { systemLog } from "../lib/system-log";
+import { getMarketQuote } from "../lib/market-quote-service.js";
+import { saxoStore } from "../lib/saxo-store.js";
 
 const router = Router();
 const MODULE_NAME = "TradeReview";
@@ -45,6 +47,12 @@ interface TradeProposal {
   blockedByEvent: boolean;
   blockingEvent: string;
   blockingEventDate: string;
+  /** Non-null when quantity could not be calculated. Explains why. */
+  sizingUnavailableReason: string | null;
+  /** Instrument price → portfolio base currency rate. Stored for deterministic PATCH recalculation. */
+  fxRate: number;
+  /** Current market value of any existing position in base currency (0 for new positions). */
+  currentPositionValueBase: number;
   sizingReason: string;
   sizingConfidence: "High" | "Medium" | "Low" | "";
   createdAt: string;
@@ -158,10 +166,18 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
 
     const tdeTimestamp = String(tdeEntry.result?.timestamp ?? "");
 
-    // Return cached proposals when TDE analysis hasn't changed
+    // Return cached proposals when TDE analysis hasn't changed AND the cached
+    // proposals are schema-compatible (have the fxRate field introduced in the
+    // current version). Old cached entries without fxRate are transparently
+    // regenerated so the user doesn't need to manually re-run TDE.
+    const cachedProposals = storedReview?.result?.proposals as TradeProposal[] | undefined;
+    const cacheIsCompatible =
+      Array.isArray(cachedProposals) &&
+      cachedProposals.every((p) => typeof (p as Record<string, unknown>).fxRate === "number");
+
     if (
       storedReview?.result?.tdeTimestamp === tdeTimestamp &&
-      Array.isArray(storedReview?.result?.proposals)
+      cacheIsCompatible
     ) {
       const cached = storedReview.result as TradeReviewStore;
       return void res.json({
@@ -214,6 +230,7 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
       ? (tdeEntry.result.decisions as Array<Record<string, unknown>>) : [];
 
     const proposals: TradeProposal[] = [];
+    const isMockMode = saxoStore.isMockMode();
 
     for (const d of decisions) {
       const decisionType = String(d.decision ?? "");
@@ -229,38 +246,60 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
         ? (String(d.sizingConfidence) as "High" | "Medium" | "Low") : ("" as const);
       const sizingReason = String(d.sizingReason ?? "");
 
-      const pos                 = posMap.get(ticker);
-      const currentValueBase    = pos?.marketValueBaseCurrency ?? 0;
-      const currentQty          = pos?.quantity ?? 0;
-      const currentPrice        = pos?.currentPrice ?? 0;
-      const instrumentCurrency  = pos?.currency ?? baseCurrency;
-      // Derive FX rate from stored position data (base / instrument)
-      const fxRate              = (pos && pos.marketValue > 0)
-        ? pos.marketValueBaseCurrency / pos.marketValue : 1;
+      const pos              = posMap.get(ticker);
+      const currentValueBase = pos?.marketValueBaseCurrency ?? 0;
+      const currentQty       = pos?.quantity ?? 0;
+
+      // ── Price lookup ─────────────────────────────────────────────────────
+      // Priority 1: position data from Portfolio Manager (held stocks already
+      //             have a live or mock price from the last portfolio refresh).
+      // Priority 2: market quote service (covers opportunity candidates and
+      //             stocks not yet held — uses mock quotes when in mock mode).
+      const priceFromPos  = pos?.currentPrice ?? 0;
+      const fxRateFromPos = (pos && pos.marketValue > 0)
+        ? pos.marketValueBaseCurrency / pos.marketValue : 0;
+
+      const quote = priceFromPos > 0 ? null : getMarketQuote(ticker, isMockMode);
+
+      const estimatedPrice     = priceFromPos > 0 ? priceFromPos   : (quote?.price    ?? 0);
+      const instrumentCurrency = pos?.currency   || quote?.currency || baseCurrency;
+      const fxRate             = fxRateFromPos > 0 ? fxRateFromPos  : (quote?.fxToBase ?? 1);
 
       const currentAllocPct = totalValue > 0
         ? Math.round((currentValueBase / totalValue) * 1000) / 10 : 0;
 
+      // ── Sizing availability ───────────────────────────────────────────────
+      // Do not display "0 shares" when data is missing — explain the gap instead.
+      let sizingUnavailableReason: string | null = null;
+      if (targetPct <= 0) {
+        sizingUnavailableReason = "Missing target allocation";
+      } else if (estimatedPrice <= 0) {
+        sizingUnavailableReason = "Market price unavailable";
+      } else if (fxRate <= 0) {
+        sizingUnavailableReason = "FX rate unavailable";
+      }
+
+      // ── Quantity calculation ──────────────────────────────────────────────
+      // Runs regardless of blockedByEvent — a blocked trade still has a
+      // proposed position size; only execution is deferred.
       let quantity       = 0;
-      let estimatedPrice = 0;
       let estimatedValue = 0;
 
-      if (currentPrice > 0) {
-        estimatedPrice = currentPrice;
-        const priceInBase = currentPrice * fxRate;
+      if (!sizingUnavailableReason) {
+        const priceInBase = estimatedPrice * fxRate;
 
         if (action === "BUY") {
-          const targetBase  = totalValue * targetPct / 100;
-          const deltaBase   = Math.max(0, targetBase - currentValueBase);
-          const cashCap     = totalAvailableCash != null ? totalAvailableCash : deltaBase;
-          quantity          = priceInBase > 0 ? Math.floor(Math.min(deltaBase, cashCap) / priceInBase) : 0;
+          const targetBase = totalValue * targetPct / 100;
+          const deltaBase  = Math.max(0, targetBase - currentValueBase);
+          const cashCap    = totalAvailableCash != null ? totalAvailableCash : deltaBase;
+          quantity         = priceInBase > 0 ? Math.floor(Math.min(deltaBase, cashCap) / priceInBase) : 0;
         } else {
-          const targetBase  = totalValue * targetPct / 100;
-          const deltaBase   = Math.max(0, currentValueBase - targetBase);
-          quantity          = priceInBase > 0
+          const targetBase = totalValue * targetPct / 100;
+          const deltaBase  = Math.max(0, currentValueBase - targetBase);
+          quantity         = priceInBase > 0
             ? Math.min(Math.floor(deltaBase / priceInBase), currentQty) : 0;
         }
-        estimatedValue = Math.round(quantity * currentPrice * fxRate);
+        estimatedValue = Math.round(quantity * estimatedPrice * fxRate);
       }
 
       const deltaBase         = action === "BUY"
@@ -273,15 +312,18 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
         ? (action === "BUY" ? totalAvailableCash - estimatedValue : totalAvailableCash + estimatedValue)
         : null;
 
-      // Status: preserve deliberate user decisions from previous proposals
+      // ── Status ────────────────────────────────────────────────────────────
+      // Deliberate user decisions (Approved/Rejected/Executed/Cancelled) are
+      // always preserved across TDE re-runs.
+      // Blocked by event → Waiting (execution deferred, sizing is still shown).
+      // Sizing unavailable → Waiting (user cannot approve without a quantity).
+      // Otherwise Ready when a valid non-zero quantity was calculated.
       const blocked = d.blockedByEvent === true;
       const prev = prevMap.get(decisionId);
       let status: ProposalStatus;
       if (prev && PRESERVED_STATUSES.includes(prev.status)) {
         status = prev.status;
-      } else if (blocked || currentPrice === 0 || quantity === 0) {
-        // Blocked by event → always Waiting regardless of calculated quantity.
-        // No price or zero quantity → also Waiting (user must supply qty manually).
+      } else if (blocked || sizingUnavailableReason !== null || quantity === 0) {
         status = "Waiting";
       } else {
         status = "Ready";
@@ -314,6 +356,9 @@ router.get("/trade-review", async (_req: Request, res: Response) => {
         blockedByEvent:           blocked,
         blockingEvent:            String(d.blockingEvent ?? ""),
         blockingEventDate:        String(d.blockingEventDate ?? ""),
+        sizingUnavailableReason,
+        fxRate,
+        currentPositionValueBase: currentValueBase,
         sizingReason,
         sizingConfidence:         sizingConf,
         createdAt:                prev?.createdAt ?? nowIso,
@@ -390,6 +435,12 @@ router.patch("/trade-review/:id/status", async (req: Request, res: Response) => 
       return void res.status(404).json({ error: `Proposal "${id}" not found` });
     }
 
+    // Re-read portfolio totals for allocation recalculation (live values preferred)
+    const portfolioEntry    = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
+    const portfolioResult   = portfolioEntry?.result as Record<string, unknown> | undefined;
+    const totalValue        = typeof portfolioResult?.totalValue         === "number" ? portfolioResult.totalValue         : 0;
+    const totalAvailableCash = typeof portfolioResult?.totalAvailableCash === "number" ? portfolioResult.totalAvailableCash : null;
+
     const now      = new Date().toISOString();
     const original = proposals[idx];
     const proposal: TradeProposal = {
@@ -399,11 +450,32 @@ router.patch("/trade-review/:id/status", async (req: Request, res: Response) => 
       rejectedAt: status === "Rejected" ? (original.rejectedAt ?? now) : null,
     };
 
-    // Quantity change: proportionally scale estimatedValue
+    // Quantity change: deterministic recalculation using stored fxRate and price.
+    // This works even when the original quantity was 0 (e.g. previously missing data).
+    // fxRate falls back to 1 for legacy cached proposals that predate the field.
     if (quantity !== undefined) {
-      proposal.quantity = quantity;
-      if (original.quantity > 0 && original.estimatedValue > 0) {
-        proposal.estimatedValue = Math.round((quantity / original.quantity) * original.estimatedValue);
+      const safeFxRate = (proposal.fxRate > 0 ? proposal.fxRate : null) ?? 1;
+      proposal.quantity       = quantity;
+      proposal.estimatedValue = Math.round(quantity * proposal.estimatedPrice * safeFxRate);
+
+      if (totalValue > 0) {
+        const deltaBase = proposal.action === "BUY"
+          ? quantity * proposal.estimatedPrice * proposal.fxRate
+          : -(quantity * proposal.estimatedPrice * proposal.fxRate);
+        proposal.resultingAllocationPercent = Math.round(
+          ((proposal.currentPositionValueBase + deltaBase) / totalValue) * 1000
+        ) / 10;
+      }
+
+      if (totalAvailableCash !== null) {
+        proposal.availableCashAfterTrade = proposal.action === "BUY"
+          ? totalAvailableCash - proposal.estimatedValue
+          : totalAvailableCash + proposal.estimatedValue;
+      }
+
+      // Clear the unavailability flag if the user has manually supplied a quantity
+      if (quantity > 0 && proposal.sizingUnavailableReason) {
+        proposal.sizingUnavailableReason = null;
       }
     }
 

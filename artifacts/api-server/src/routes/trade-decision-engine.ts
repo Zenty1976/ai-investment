@@ -642,6 +642,29 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         );
       }
 
+      // Validate sizing fields on trade-producing decisions.
+      // These fields are required for PrepareToBuy and PrepareToReduce; missing
+      // or zero values indicate the model skipped sizing — trigger a retry.
+      const missingSizing = parsed.data.decisions.filter((d) => {
+        if (d.decision !== "PrepareToBuy" && d.decision !== "PrepareToReduce") return false;
+        const target = d.targetAllocationPercent;
+        const max    = d.maximumAllocationPercent;
+        const conf   = d.sizingConfidence;
+        const reason = (d.sizingReason ?? "").trim();
+        return (
+          typeof target !== "number" || target <= 0 ||
+          typeof max    !== "number" || max < target ||
+          !["High", "Medium", "Low"].includes(conf ?? "") ||
+          reason === ""
+        );
+      });
+      if (missingSizing.length > 0) {
+        throw new Error(
+          `Trade-producing decision(s) missing valid sizing fields — retry required: ` +
+          missingSizing.map((d) => `"${d.title}" (${d.ticker})`).join("; ")
+        );
+      }
+
       // For non-WaitForEvent decisions: defensively clear stale blocking flags
       const validatedDecisions = parsed.data.decisions.map((d) => {
         if (d.blockedByEvent && d.blockingEventDate) {

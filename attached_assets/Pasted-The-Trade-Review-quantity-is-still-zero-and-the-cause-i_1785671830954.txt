@@ -1,0 +1,161 @@
+The Trade Review quantity is still zero, and the cause is not blockedByEvent.
+
+I verified two separate problems in the code.
+
+1. Trade Decision sizing fields are missing
+
+The Trade Decision prompt requests these fields for PrepareToBuy and PrepareToReduce:
+
+- targetAllocationPercent
+- maximumAllocationPercent
+- sizingConfidence
+- sizingReason
+
+However, the stored Trade Decision result for CAT and LLY does not contain those fields.
+
+Trade Review therefore falls back to:
+
+targetAllocationPercent = 0
+
+and calculates a zero target value.
+
+Make these fields required in the schema for:
+
+- PrepareToBuy
+- PrepareToReduce
+
+They must not merely be optional prompt suggestions.
+
+Add backend consistency validation:
+
+For PrepareToBuy and PrepareToReduce:
+- targetAllocationPercent must be greater than 0
+- maximumAllocationPercent must be greater than or equal to targetAllocationPercent
+- sizingConfidence must be High, Medium or Low
+- sizingReason must be non-empty
+
+For all other decision types, these fields may remain omitted.
+
+If a trade-producing decision is returned without valid sizing fields, reject the response and retry instead of storing it.
+
+2. Trade Review has no price source for new opportunities
+
+Trade Review currently gets currentPrice only from Portfolio Manager positions:
+
+const pos = posMap.get(ticker)
+const currentPrice = pos?.currentPrice ?? 0
+
+This works only for stocks already held.
+
+CAT and LLY are new opportunities, so they are not in the portfolio position map and currentPrice becomes zero.
+
+Add a shared market-price provider for Trade Review.
+
+Price lookup priority should be:
+
+1. Latest valid Saxo quote when connected
+2. Shared stored market-price or instrument quote repository
+3. Development mock quote when Saxo mock mode is enabled
+
+Do not use OpenAI to invent or estimate a price.
+
+For mock mode, add realistic configurable mock quotes for current Trade Review candidates, for example through a centralized mock quote service keyed by ticker.
+
+Do not hardcode prices directly inside Trade Review.
+
+Every price result must include:
+
+- ticker
+- price
+- currency
+- timestamp
+- source: Saxo | StoredQuote | Mock
+- isStale
+
+Trade Review should only calculate quantity when:
+- targetAllocationPercent is valid and greater than 0
+- a positive market price exists
+- currency conversion to base currency is available when required
+
+3. Event blocking must not suppress sizing
+
+Keep the current separation:
+
+- reasonScore = decision strength
+- blockedByEvent/status = execution timing
+- quantity = proposed position size
+
+A blocked proposal should still show:
+- suggested quantity
+- estimated share price
+- estimated trade value
+- target allocation
+
+Its status remains Waiting, and Approve may remain disabled until the event is resolved.
+
+Do not set quantity to zero merely because blockedByEvent is true.
+
+4. Do not silently display zero as a valid proposal
+
+If sizing or price data is unavailable, do not show:
+
+0 shares
+
+as if zero were the calculated recommendation.
+
+Instead show:
+
+Sizing unavailable
+
+and explain the reason briefly, such as:
+
+- Missing target allocation
+- Market price unavailable
+- FX rate unavailable
+
+Keep the proposal in Waiting status.
+
+5. Recalculate all dependent values correctly
+
+Once price and sizing are available, calculate:
+
+For BUY:
+- target position value in base currency
+- current position value
+- required additional value
+- quantity rounded down to whole shares
+- estimated trade value
+- resulting allocation
+- remaining available cash
+
+For SELL:
+- target position value
+- value to reduce
+- quantity capped by current shares held
+- estimated proceeds
+- resulting allocation
+- available cash after sale
+
+6. Quantity edits
+
+When the user manually changes quantity, recalculate using:
+
+estimatedValue = quantity × estimatedPrice × FX rate
+
+Also recalculate:
+- resultingAllocationPercent
+- availableCashAfterTrade
+
+The current PATCH route only proportionally scales estimatedValue when the original quantity was above zero. This does not work for proposals initially created with quantity zero.
+
+Store or provide the FX rate and current position value needed for a complete deterministic recalculation.
+
+Preserve:
+
+- Event blocked behaviour
+- Waiting/Ready statuses
+- Reason Score logic
+- user approval statuses
+- Trade Decision safety boundary
+- no order placement
+- current UI style

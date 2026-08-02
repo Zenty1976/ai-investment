@@ -178,62 +178,106 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
           </div>
         </div>
 
-        {/* ── Row 2: price · quantity controls · estimated value ── */}
+        {/* ── Row 2: price / sizing panel ── */}
         <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2 space-y-1.5">
 
-          {/* Price */}
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Price</span>
-            <span className="font-mono tabular-nums">
-              {proposal.estimatedPrice > 0
-                ? formatPrice(proposal.estimatedPrice, proposal.currency)
-                : <span className="text-muted-foreground/60 italic">No price available</span>}
-            </span>
-          </div>
+          {proposal.sizingUnavailableReason ? (
+            /* Sizing data missing — show reason, allow manual qty entry */
+            <>
+              <div className="flex items-center gap-1.5 text-[11px] text-amber-500/90">
+                <AlertTriangle className="h-3 w-3 shrink-0" />
+                <span className="font-medium">Sizing unavailable</span>
+                <span className="text-muted-foreground ml-1">— {proposal.sizingUnavailableReason}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] text-muted-foreground shrink-0">Enter shares manually</span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline" size="icon" className="h-6 w-6"
+                    onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
+                    disabled={isMutating || qty <= 0}
+                  >
+                    <Minus className="h-2.5 w-2.5" />
+                  </Button>
+                  <input
+                    type="number"
+                    value={qty}
+                    min={0}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10)
+                      if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
+                    }}
+                    className="w-14 text-center text-sm font-mono bg-transparent border border-border rounded-md py-0.5
+                      [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <Button
+                    variant="outline" size="icon" className="h-6 w-6"
+                    onClick={() => onQtyChange(proposal.id, qty + 1)}
+                    disabled={isMutating}
+                  >
+                    <Plus className="h-2.5 w-2.5" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Full sizing data available */
+            <>
+              {/* Price */}
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">Price</span>
+                <span className="font-mono tabular-nums">
+                  {proposal.estimatedPrice > 0
+                    ? formatPrice(proposal.estimatedPrice, proposal.currency)
+                    : <span className="text-muted-foreground/60 italic">—</span>}
+                </span>
+              </div>
 
-          {/* Suggested quantity (server-computed) + user override input */}
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] text-muted-foreground shrink-0">Shares</span>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline" size="icon" className="h-6 w-6"
-                onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
-                disabled={isMutating || qty <= 0}
-              >
-                <Minus className="h-2.5 w-2.5" />
-              </Button>
-              <input
-                type="number"
-                value={qty}
-                min={0}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value, 10)
-                  if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
-                }}
-                className="w-14 text-center text-sm font-mono bg-transparent border border-border rounded-md py-0.5
-                  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <Button
-                variant="outline" size="icon" className="h-6 w-6"
-                onClick={() => onQtyChange(proposal.id, qty + 1)}
-                disabled={isMutating}
-              >
-                <Plus className="h-2.5 w-2.5" />
-              </Button>
-            </div>
-          </div>
+              {/* Suggested quantity + user override */}
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] text-muted-foreground shrink-0">Shares</span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline" size="icon" className="h-6 w-6"
+                    onClick={() => onQtyChange(proposal.id, Math.max(0, qty - 1))}
+                    disabled={isMutating || qty <= 0}
+                  >
+                    <Minus className="h-2.5 w-2.5" />
+                  </Button>
+                  <input
+                    type="number"
+                    value={qty}
+                    min={0}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10)
+                      if (!isNaN(v) && v >= 0) onQtyChange(proposal.id, v)
+                    }}
+                    className="w-14 text-center text-sm font-mono bg-transparent border border-border rounded-md py-0.5
+                      [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <Button
+                    variant="outline" size="icon" className="h-6 w-6"
+                    onClick={() => onQtyChange(proposal.id, qty + 1)}
+                    disabled={isMutating}
+                  >
+                    <Plus className="h-2.5 w-2.5" />
+                  </Button>
+                </div>
+              </div>
 
-          {/* Estimated value */}
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Est. value</span>
-            <span className="font-semibold tabular-nums">
-              {qty === 0
-                ? <span className="text-muted-foreground/60">—</span>
-                : formatValue(scaledValue, proposal.currency)}
-            </span>
-          </div>
+              {/* Estimated value */}
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">Est. value</span>
+                <span className="font-semibold tabular-nums">
+                  {qty === 0
+                    ? <span className="text-muted-foreground/60">—</span>
+                    : formatValue(scaledValue, proposal.currency)}
+                </span>
+              </div>
+            </>
+          )}
 
-          {/* Allocation */}
+          {/* Allocation row — always shown when targets are set */}
           {(proposal.targetAllocationPercent > 0 || proposal.currentAllocationPercent > 0) && (
             <div className="flex items-center justify-between text-[10px] text-muted-foreground border-t border-border/40 pt-1 mt-0.5">
               <span>Target {proposal.targetAllocationPercent}%</span>
