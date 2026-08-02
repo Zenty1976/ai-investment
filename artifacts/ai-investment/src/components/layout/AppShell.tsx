@@ -13,6 +13,7 @@ import {
   Lightbulb,
   Bell,
   GitMerge,
+  ClipboardList,
   History,
   Settings,
   Wifi,
@@ -47,7 +48,8 @@ const NAV_ITEMS = [
   { label: "ANALYZER",    href: "/analyse",      icon: BarChart2,  enabled: true  },
   { label: "OPPORTUNITY", href: "/opportunities", icon: Lightbulb,  enabled: true  },
   { label: "ALERTS",      href: "/alerts",        icon: Bell,       enabled: true  },
-  { label: "DECISIONS",   href: "/decisions",     icon: GitMerge,   enabled: true  },
+  { label: "DECISIONS",   href: "/decisions",     icon: GitMerge,      enabled: true  },
+  { label: "REVIEW",      href: "/trade-review",  icon: ClipboardList, enabled: true  },
   { label: "LOG & HIST.", href: "/log",           icon: History,    enabled: true  },
   { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]

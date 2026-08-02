@@ -1,47 +1,5 @@
 [
   {
-    "id": "03106463-db4b-4213-8722-ff9cbb15f8ea",
-    "timestamp": "2026-08-01T17:54:20.299Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis performed without Company Monitor data for SERV"
-  },
-  {
-    "id": "f328b00d-c8ce-4861-ab6e-92bae0021e97",
-    "timestamp": "2026-08-01T17:54:30.743Z",
-    "module": "Portfolio Analyzer",
-    "level": "error",
-    "message": "Portfolio analysis failed"
-  },
-  {
-    "id": "c6bc57fb-1be5-4fcd-93cb-621b9e6b0902",
-    "timestamp": "2026-08-01T17:54:36.536Z",
-    "module": "Portfolio Analyzer",
-    "level": "user",
-    "message": "User manually started portfolio analysis"
-  },
-  {
-    "id": "96f23a80-0733-4de0-9f39-11d13a0b808a",
-    "timestamp": "2026-08-01T17:54:36.536Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis is based on mock portfolio data"
-  },
-  {
-    "id": "3171e513-f9d7-463a-a893-9920a7f250e6",
-    "timestamp": "2026-08-01T17:54:36.537Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis performed without Company Monitor data for NOVO B"
-  },
-  {
-    "id": "667f7d45-9422-4272-9d74-53b8247204ca",
-    "timestamp": "2026-08-01T17:54:36.538Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis performed without Company Monitor data for MSFT"
-  },
-  {
     "id": "40143ac1-d194-4126-b0f6-07fbfee821a2",
     "timestamp": "2026-08-01T17:54:36.538Z",
     "module": "Portfolio Analyzer",
@@ -3498,5 +3456,47 @@
     "module": "Trade Decision Engine",
     "level": "internal",
     "message": "1 resolved: MSFT"
+  },
+  {
+    "id": "ecd707ca-89a5-4099-bc6c-7d3bcca3fb18",
+    "timestamp": "2026-08-02T10:21:59.935Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "284f07ca-687b-4b5b-942b-1d18bffd7322",
+    "timestamp": "2026-08-02T10:21:59.942Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "cf3b99b1-c363-4c73-b750-74b10168ef2d",
+    "timestamp": "2026-08-02T10:22:10.684Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "134328af-cece-4cce-8ca0-67114cd7ff5d",
+    "timestamp": "2026-08-02T10:22:10.685Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: WaitForEvents | Readiness: 65/100"
+  },
+  {
+    "id": "1eef716e-f9f1-44f5-9dfa-7de8197f6b13",
+    "timestamp": "2026-08-02T10:22:10.687Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Top decision: [WaitForEvent] Wait for Novo Nordisk Q2 earnings and guidance (Aug 5) — High confidence, Immediate urgency"
+  },
+  {
+    "id": "32497252-77ef-4333-9864-964324ac1bec",
+    "timestamp": "2026-08-02T10:22:10.689Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "2 changed: Prepare to add Caterpillar post‑earnings (Aug 4); Prepare to add Eli Lilly post‑earnings (Aug 5)"
   }
 ]

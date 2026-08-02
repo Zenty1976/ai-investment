@@ -753,8 +753,66 @@ export interface TradeDecision {
   portfolioImpact: string;
   accountConsiderations: string;
   sourceModules: TradeDecisionSourceModule[];
+  /** Sizing guidance — present on PrepareToBuy and PrepareToReduce decisions only */
+  targetAllocationPercent?:  number;
+  maximumAllocationPercent?: number;
+  sizingConfidence?:         TradeDecisionConfidence;
+  sizingReason?:             string;
   /** Server-populated: change vs previous analysis */
   status?: TradeDecisionStatus;
+}
+
+// ── Trade Review ─────────────────────────────────────────────────────────────
+
+export type TradeProposalStatus =
+  | 'Waiting' | 'Ready' | 'Approved' | 'Rejected' | 'Executed' | 'Cancelled';
+
+export interface TradeProposal {
+  id: string;
+  decisionId: string;
+  action: 'BUY' | 'SELL';
+  ticker: string;
+  company: string;
+  quantity: number;
+  estimatedPrice: number;
+  /** Estimated trade value in portfolio base currency */
+  estimatedValue: number;
+  currency: string;
+  targetAllocationPercent: number;
+  currentAllocationPercent: number;
+  resultingAllocationPercent: number;
+  availableCashAfterTrade: number | null;
+  confidence: TradeDecisionConfidence;
+  urgency: TradeDecisionUrgency;
+  /** One-sentence rationale, max ~100 chars */
+  shortReason: string;
+  /** Backend-computed evidence score 0–100 */
+  reasonScore: number;
+  status: TradeProposalStatus;
+  decisionTitle: string;
+  decisionRank: number;
+  sourceModules: string[];
+  blockedByEvent: boolean;
+  sizingReason: string;
+  sizingConfidence: TradeDecisionConfidence | '';
+  createdAt: string;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  executedAt: string | null;
+  tdeTimestamp: string;
+}
+
+export interface TradeReviewSummary {
+  proposals: TradeProposal[];
+  tdeTimestamp: string | null;
+  portfolioTotalValue: number | null;
+  baseCurrency: string;
+  generatedAt: string;
+}
+
+export interface UpdateTradeProposalBody {
+  status: 'Waiting' | 'Ready' | 'Approved' | 'Rejected';
+  quantity?: number;
 }
 
 export interface TradeDecisionConflict {

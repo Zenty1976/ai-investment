@@ -510,6 +510,11 @@ export const RunTradeDecisionEngineResponse = zod.object({
       'CompanyMonitor', 'OpportunityFinder', 'EventMonitor', 'SectorMonitor',
       'MarketMonitor', 'NewsMonitor', 'Web'
     ])),
+    /** Sizing guidance — required for PrepareToBuy/PrepareToReduce, omitted for all other decision types */
+    "targetAllocationPercent":  zod.number().int().min(0).max(100).optional(),
+    "maximumAllocationPercent": zod.number().int().min(0).max(100).optional(),
+    "sizingConfidence":         zod.enum(['High', 'Medium', 'Low']).optional(),
+    "sizingReason":             zod.string().optional(),
     /** Server-populated: change status vs previous analysis */
     "status": zod.enum(['New', 'Changed', 'Unchanged', 'Resolved']).optional()
   })).min(1).max(8),

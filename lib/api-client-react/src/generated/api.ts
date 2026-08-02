@@ -32,6 +32,9 @@ import type {
   PortfolioAnalysis,
   RiskAnalysis,
   TradeDecisionEngineAnalysis,
+  TradeReviewSummary,
+  TradeProposal,
+  UpdateTradeProposalBody,
   PortfolioRepositoryEntry,
   RepositoryEntry,
   SaxoConfigBody,
@@ -1046,6 +1049,59 @@ export const useRunTradeDecisionEngine = (options?: {
     Awaited<ReturnType<typeof runTradeDecisionEngine>>,
     void
   > = () => runTradeDecisionEngine(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── Trade Review ─────────────────────────────────────────────────────────────
+
+export const getTradeReviewUrl = () => `/api/trade-review`;
+
+export const getTradeReview = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<TradeReviewSummary>(getTradeReviewUrl(), {
+    method: 'GET',
+    ...options,
+  });
+
+export const useGetTradeReview = (options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getTradeReview>>, ErrorType<unknown>>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<Awaited<ReturnType<typeof getTradeReview>>, ErrorType<unknown>> & { queryKey: QueryKey } => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? ['getTradeReview'];
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTradeReview>>> = () =>
+    getTradeReview(requestOptions);
+  return withQueryKey(useQuery({ queryKey, queryFn, ...queryOptions }), queryKey);
+};
+
+export const updateTradeProposalStatus = (
+  id: string,
+  body: UpdateTradeProposalBody,
+  options?: SecondParameter<typeof customFetch>
+) =>
+  customFetch<TradeProposal>(`/api/trade-review/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    ...options,
+  });
+
+export const useUpdateTradeProposalStatus = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTradeProposalStatus>>,
+    ErrorType<unknown>,
+    { id: string; data: UpdateTradeProposalBody }
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateTradeProposalStatus>>,
+  ErrorType<unknown>,
+  { id: string; data: UpdateTradeProposalBody }
+> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTradeProposalStatus>>,
+    { id: string; data: UpdateTradeProposalBody }
+  > = ({ id, data }) => updateTradeProposalStatus(id, data, requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 

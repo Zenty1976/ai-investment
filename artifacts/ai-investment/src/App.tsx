@@ -13,6 +13,7 @@ import OpportunityFinder from '@/pages/OpportunityFinder';
 import RiskAnalyzer from '@/pages/RiskAnalyzer';
 import MarketAlerts from '@/pages/MarketAlerts';
 import TradeDecisionEngine from '@/pages/TradeDecisionEngine';
+import TradeReview from '@/pages/TradeReview';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 
@@ -43,6 +44,7 @@ function Router() {
         <Route path="/risk" component={RiskAnalyzer} />
         <Route path="/alerts" component={MarketAlerts} />
         <Route path="/decisions" component={TradeDecisionEngine} />
+        <Route path="/trade-review" component={TradeReview} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />
