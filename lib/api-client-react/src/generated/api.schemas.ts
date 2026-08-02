@@ -706,6 +706,12 @@ export interface MarketAlertsAnalysis {
   timestamp: string;
   /** Time taken to complete the analysis in milliseconds */
   analysisDuration: number;
+  /** ISO timestamp of the most recent check (meaningful or no-change) */
+  lastCheckedAt?: string;
+  /** ISO timestamp of the most recent check that found meaningful alerts */
+  lastMeaningfulUpdateAt?: string;
+  /** True when the latest check found no new material developments */
+  noNewDevelopmentsSinceLastCheck?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

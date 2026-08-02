@@ -18,6 +18,7 @@ import {
   Timer,
   Bell,
   CheckCircle2,
+  CalendarCheck,
   Eye,
   Copy,
   Check,
@@ -258,6 +259,12 @@ export default function MarketAlerts() {
     )
   }
 
+  // ── Derived display state ─────────────────────────────────────────────────
+  // noChange: this stored result reflects a check that found no new developments
+  const isNoChange = analysis.noNewDevelopmentsSinceLastCheck === true
+  // hasMeaningful: a previous meaningful analysis exists to display
+  const hasMeaningfulData = !isNoChange || !!analysis.lastMeaningfulUpdateAt
+
   // Sort alerts: High importance first, then New/Updated status
   const sortedAlerts = [...analysis.alerts].sort((a, b) => {
     const imp: Record<string, number> = { High: 0, Medium: 1, Low: 2 }
@@ -296,9 +303,16 @@ export default function MarketAlerts() {
                 Market Alerts
               </h1>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <Badge variant={alertLevelVariant(analysis.overallAlertLevel)} className="text-xs">
-                  {analysis.overallAlertLevel} alert level
-                </Badge>
+                {/* Alert level badge — show "No new alerts" when no change, keep level when meaningful */}
+                {isNoChange ? (
+                  <Badge variant="secondary" className="text-xs">
+                    No new alerts
+                  </Badge>
+                ) : (
+                  <Badge variant={alertLevelVariant(analysis.overallAlertLevel)} className="text-xs">
+                    {analysis.overallAlertLevel} alert level
+                  </Badge>
+                )}
                 {isPending ? (
                   <span className="flex items-center gap-1.5 text-[11px] text-primary/80 animate-pulse ml-1">
                     <RefreshCw className="h-3 w-3 animate-spin" />
@@ -306,20 +320,35 @@ export default function MarketAlerts() {
                   </span>
                 ) : (
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50 ml-1">
-                    <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Clock className="h-3 w-3 shrink-0" />
-                      {format(new Date(analysis.timestamp), "d. MMM HH:mm")}
-                    </span>
-                    <span className="flex items-center gap-1 whitespace-nowrap">
-                      <Timer className="h-3 w-3 shrink-0" />
-                      {formatDuration(analysis.analysisDuration)}
-                    </span>
+                    {isNoChange && analysis.lastCheckedAt ? (
+                      <>
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <RefreshCw className="h-3 w-3 shrink-0" />
+                          Checked {format(new Date(analysis.lastCheckedAt), "d. MMM HH:mm")}
+                        </span>
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <Timer className="h-3 w-3 shrink-0" />
+                          {formatDuration(analysis.analysisDuration)}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <Clock className="h-3 w-3 shrink-0" />
+                          {format(new Date(analysis.lastMeaningfulUpdateAt ?? analysis.timestamp), "d. MMM HH:mm")}
+                        </span>
+                        <span className="flex items-center gap-1 whitespace-nowrap">
+                          <Timer className="h-3 w-3 shrink-0" />
+                          {formatDuration(analysis.analysisDuration)}
+                        </span>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Headline */}
-              {analysis.headline && (
+              {/* Headline — only show when there is meaningful data */}
+              {hasMeaningfulData && analysis.headline && (
                 <p className="text-sm font-semibold text-foreground mt-3 leading-snug">
                   {analysis.headline}
                 </p>
@@ -352,60 +381,83 @@ export default function MarketAlerts() {
         </CardContent>
       </Card>
 
-      {/* ── Executive Summary ── */}
-      <Card className="bg-card/40 border-card-border/40">
-        <CardContent className="p-4">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground mb-2">
-            Executive Summary
-          </p>
-          <p className="text-xs text-foreground/80 leading-relaxed">{analysis.executiveSummary}</p>
-        </CardContent>
-      </Card>
-
-      {/* ── Nothing changed card ── */}
-      {analysis.nothingImportantChanged && (
-        <Card className="bg-emerald-950/20 border-emerald-500/20">
-          <CardContent className="p-4 flex items-start gap-3">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400/70 shrink-0 mt-0.5" />
-            <p className="text-sm text-emerald-300/80 leading-relaxed">
-              No significant developments since the previous update.
-            </p>
+      {/* ── No-change info banner ── */}
+      {isNoChange && (
+        <Card className="bg-slate-900/40 border-slate-600/25">
+          <CardContent className="p-3 flex items-start gap-3">
+            <CalendarCheck className="h-4 w-4 text-slate-400/70 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-300/80 leading-relaxed">
+                {hasMeaningfulData
+                  ? "No new developments detected. The previous alert analysis is still current."
+                  : "No alerts detected yet. No material developments were found in this check."}
+              </p>
+              <div className="flex items-center gap-4 mt-1.5 flex-wrap">
+                {analysis.lastCheckedAt && (
+                  <span className="text-[10px] text-muted-foreground/50 flex items-center gap-1">
+                    <Clock className="h-3 w-3 shrink-0" />
+                    Last checked: {format(new Date(analysis.lastCheckedAt), "d. MMM HH:mm")}
+                  </span>
+                )}
+                {hasMeaningfulData && analysis.lastMeaningfulUpdateAt && (
+                  <span className="text-[10px] text-muted-foreground/50 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                    Last meaningful update: {format(new Date(analysis.lastMeaningfulUpdateAt), "d. MMM HH:mm")}
+                  </span>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* ── Alert cards ── */}
-      {sortedAlerts.length > 0 && (
+      {/* ── No meaningful data yet ── */}
+      {isNoChange && !hasMeaningfulData ? null : (
         <>
-          <div className="flex items-center gap-2 px-1 text-[10px] text-muted-foreground/40">
-            <span className="font-bold uppercase tracking-widest">
-              Alerts ({sortedAlerts.length})
-            </span>
-            <span className="ml-auto italic">click to expand</span>
-          </div>
-          {sortedAlerts.map((alert, i) => (
-            <AlertCard key={i} alert={alert} />
-          ))}
-        </>
-      )}
+          {/* ── Executive Summary ── */}
+          <Card className="bg-card/40 border-card-border/40">
+            <CardContent className="p-4">
+              <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground mb-2">
+                Executive Summary
+              </p>
+              <p className="text-xs text-foreground/80 leading-relaxed">{analysis.executiveSummary}</p>
+            </CardContent>
+          </Card>
 
-      {/* ── Things to Watch ── */}
-      {analysis.thingsToWatch && analysis.thingsToWatch.length > 0 && (
-        <Card className="bg-card/40 border-card-border/40">
-          <CardContent className="p-4">
-            <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground mb-3">
-              Things to Watch
-            </p>
-            <ul className="space-y-2">
-              {analysis.thingsToWatch.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <Eye className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 mt-0.5" />
-                  <span className="text-xs text-foreground/75 leading-relaxed">{item}</span>
-                </li>
+          {/* ── Alert cards ── */}
+          {sortedAlerts.length > 0 && (
+            <>
+              <div className="flex items-center gap-2 px-1 text-[10px] text-muted-foreground/40">
+                <span className="font-bold uppercase tracking-widest">
+                  Alerts ({sortedAlerts.length})
+                </span>
+                <span className="ml-auto italic">click to expand</span>
+              </div>
+              {sortedAlerts.map((alert, i) => (
+                <AlertCard key={i} alert={alert} />
               ))}
-            </ul>
-          </CardContent>
-        </Card>
+            </>
+          )}
+
+          {/* ── Things to Watch ── */}
+          {analysis.thingsToWatch && analysis.thingsToWatch.length > 0 && (
+            <Card className="bg-card/40 border-card-border/40">
+              <CardContent className="p-4">
+                <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground mb-3">
+                  Things to Watch
+                </p>
+                <ul className="space-y-2">
+                  {analysis.thingsToWatch.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <Eye className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0 mt-0.5" />
+                      <span className="text-xs text-foreground/75 leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       <DebugDialog

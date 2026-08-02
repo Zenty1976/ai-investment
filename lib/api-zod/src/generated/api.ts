@@ -461,7 +461,13 @@ export const RunMarketAlertsResponse = zod.object({
   "thingsToWatch": zod.array(zod.string()),
   "nothingImportantChanged": zod.boolean(),
   "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds'),
+  /** Server-set: ISO timestamp of the most recent check (meaningful or no-change) */
+  "lastCheckedAt": zod.string().optional(),
+  /** Server-set: ISO timestamp of the most recent check that found meaningful alerts */
+  "lastMeaningfulUpdateAt": zod.string().optional(),
+  /** Server-set: true when the latest check found no new material developments */
+  "noNewDevelopmentsSinceLastCheck": zod.boolean().optional()
 })
 
 

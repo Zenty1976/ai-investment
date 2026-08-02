@@ -44,6 +44,8 @@ interface AlertHistoryEntry {
   alerts: AlertHistoryAlert[];
   newsIds: string[];       // news item IDs seen, for delta detection
   eventTitles: string[];   // event titles seen, for delta detection
+  /** "Meaningful" = had actionable alerts; "NoChange" = no new material developments */
+  checkResult: "Meaningful" | "NoChange";
 }
 
 // ---------------------------------------------------------------------------
@@ -576,12 +578,7 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
       const currentKeys = new Set(alertsWithStatus.map((a) => normalizeAlertKey(a.title, a.category)));
       const resolvedAlerts = previousAlerts.filter((p) => !currentKeys.has(p.normalizedKey));
 
-      const finalData = { ...parsed.data, alerts: alertsWithStatus };
-
-      // ── Store result ──────────────────────────────────────────────────────
-      analysisRepository.save("market-alerts", finalData);
-
-      // ── Update history ────────────────────────────────────────────────────
+      // ── Shared context for history ────────────────────────────────────────
       const currentNewsIds = Array.isArray(newsEntry?.result?.news)
         ? (newsEntry!.result.news as Array<Record<string, unknown>>).map((n) => String(n.id ?? "")).filter(Boolean)
         : [];
@@ -589,51 +586,112 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
         ? (eventEntry!.result.events as Array<Record<string, unknown>>).map((e) => String(e.title ?? "")).filter(Boolean)
         : [];
 
-      const existingEntries = historyEntry?.result?.entries ?? [];
-      const newHistoryEntry: AlertHistoryEntry = {
+      const existingHistoryEntries = historyEntry?.result?.entries ?? [];
+
+      // ── Determine if this is a meaningful result ──────────────────────────
+      // A result is meaningful when OpenAI found actionable alerts OR
+      // explicitly did NOT declare nothing-important-changed.
+      // A pure "nothing changed / no alerts" result takes the no-change path.
+      const isMeaningful =
+        !parsed.data.nothingImportantChanged || alertsWithStatus.length > 0;
+
+      // ── MEANINGFUL PATH ───────────────────────────────────────────────────
+      if (isMeaningful) {
+        const finalData = {
+          ...parsed.data,
+          alerts: alertsWithStatus,
+          lastCheckedAt: nowIso,
+          lastMeaningfulUpdateAt: nowIso,
+          noNewDevelopmentsSinceLastCheck: false,
+        };
+
+        analysisRepository.save("market-alerts", finalData);
+
+        const newHistoryEntry: AlertHistoryEntry = {
+          timestamp: nowIso,
+          overallAlertLevel: finalData.overallAlertLevel,
+          headline: finalData.headline,
+          alertCount: alertsWithStatus.length,
+          alerts: alertsWithStatus.map((a) => ({
+            title: a.title,
+            category: a.category,
+            importance: a.importance,
+            summary: a.summary,
+            normalizedKey: normalizeAlertKey(a.title, a.category),
+          })),
+          newsIds: currentNewsIds,
+          eventTitles: currentEventTitles,
+          checkResult: "Meaningful",
+        };
+        analysisRepository.save("market-alerts-history", {
+          entries: [newHistoryEntry, ...existingHistoryEntries].slice(0, MAX_HISTORY),
+        });
+
+        // System log
+        systemLog.logInfo(MODULE_NAME, "Market alerts analysis completed");
+
+        const newAlerts = alertsWithStatus.filter((a) => a.status === "New");
+        if (newAlerts.length > 0) {
+          systemLog.logInternal(
+            MODULE_NAME,
+            `${newAlerts.length} new alert(s): ${newAlerts.map((a) => a.title).join("; ")}`
+          );
+        }
+        if (resolvedAlerts.length > 0) {
+          systemLog.logInternal(
+            MODULE_NAME,
+            `${resolvedAlerts.length} alert(s) resolved: ${resolvedAlerts.map((a) => a.title).join("; ")}`
+          );
+        }
+        const highestAlert = alertsWithStatus.find((a) => a.importance === "High") ?? alertsWithStatus[0];
+        if (highestAlert) {
+          systemLog.logInternal(
+            MODULE_NAME,
+            `Highest priority alert: ${highestAlert.title} [${highestAlert.category}]`
+          );
+        }
+
+        res.json({ ...finalData, _debug: debug });
+        return;
+      }
+
+      // ── NO-CHANGE PATH ────────────────────────────────────────────────────
+      // Do not overwrite the previous meaningful alert result.
+      // Load the current stored result and update only the check-metadata fields.
+      const storedEntry = analysisRepository.get<Record<string, unknown>>("market-alerts");
+      const prevStored = storedEntry?.result as Record<string, unknown> | undefined;
+
+      // Base is previous stored result (which already holds the last meaningful data),
+      // or the AI response itself if nothing has been stored yet.
+      const noChangeData: Record<string, unknown> = {
+        ...(prevStored ?? { ...parsed.data, alerts: alertsWithStatus }),
+        // Override only the check-metadata fields
+        lastCheckedAt: nowIso,
+        analysisDuration: parsed.data.analysisDuration,
+        noNewDevelopmentsSinceLastCheck: true,
+        // Preserve lastMeaningfulUpdateAt from whatever was stored previously
+        lastMeaningfulUpdateAt: prevStored?.lastMeaningfulUpdateAt ?? undefined,
+      };
+
+      analysisRepository.save("market-alerts", noChangeData);
+
+      const noChangeHistoryEntry: AlertHistoryEntry = {
         timestamp: nowIso,
-        overallAlertLevel: finalData.overallAlertLevel,
-        headline: finalData.headline,
-        alertCount: alertsWithStatus.length,
-        alerts: alertsWithStatus.map((a) => ({
-          title: a.title,
-          category: a.category,
-          importance: a.importance,
-          summary: a.summary,
-          normalizedKey: normalizeAlertKey(a.title, a.category),
-        })),
+        overallAlertLevel: String(noChangeData.overallAlertLevel ?? "Low"),
+        headline: String(noChangeData.headline ?? ""),
+        alertCount: 0,
+        alerts: [],
         newsIds: currentNewsIds,
         eventTitles: currentEventTitles,
+        checkResult: "NoChange",
       };
-      const updatedHistory = [newHistoryEntry, ...existingEntries].slice(0, MAX_HISTORY);
-      analysisRepository.save("market-alerts-history", { entries: updatedHistory });
+      analysisRepository.save("market-alerts-history", {
+        entries: [noChangeHistoryEntry, ...existingHistoryEntries].slice(0, MAX_HISTORY),
+      });
 
-      // ── System log ────────────────────────────────────────────────────────
-      systemLog.logInfo(MODULE_NAME, "Market alerts analysis completed");
+      systemLog.logInfo(MODULE_NAME, "Market Alerts checked: no new material developments");
 
-      const newAlerts = alertsWithStatus.filter((a) => a.status === "New");
-      if (newAlerts.length > 0) {
-        systemLog.logInternal(
-          MODULE_NAME,
-          `${newAlerts.length} new alert(s): ${newAlerts.map((a) => a.title).join("; ")}`
-        );
-      }
-      if (resolvedAlerts.length > 0) {
-        systemLog.logInternal(
-          MODULE_NAME,
-          `${resolvedAlerts.length} alert(s) resolved: ${resolvedAlerts.map((a) => a.title).join("; ")}`
-        );
-      }
-
-      const highestAlert = alertsWithStatus.find((a) => a.importance === "High") ?? alertsWithStatus[0];
-      if (highestAlert) {
-        systemLog.logInternal(
-          MODULE_NAME,
-          `Highest priority alert: ${highestAlert.title} [${highestAlert.category}]`
-        );
-      }
-
-      res.json({ ...finalData, _debug: debug });
+      res.json({ ...noChangeData, _debug: debug });
       return;
     }
 

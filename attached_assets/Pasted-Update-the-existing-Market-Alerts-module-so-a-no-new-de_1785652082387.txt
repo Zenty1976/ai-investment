@@ -1,0 +1,77 @@
+Update the existing Market Alerts module so a “no new developments” check does not replace the last meaningful alert result.
+
+The module should distinguish between:
+
+* lastCheckedAt: when the latest check was performed
+* lastMeaningfulUpdateAt: when the most recent analysis with one or more meaningful alerts was found
+
+Required behaviour:
+
+1. When a new analysis contains meaningful alerts:
+
+* Save it as the current Market Alerts result.
+* Update both lastCheckedAt and lastMeaningfulUpdateAt.
+* Store it in history as today.
+
+2. When OpenAI returns:
+
+* nothingImportantChanged = true
+* and no meaningful alerts
+
+then:
+
+* Do not overwrite the previous meaningful alert analysis.
+* Keep showing the previous headline, executive summary, alerts and thingsToWatch.
+* Update only:
+    * lastCheckedAt
+    * analysisDuration
+    * a status such as noNewDevelopmentsSinceLastCheck = true
+
+3. Show a small calm information banner above the previous result:
+
+“No new developments detected. The previous alert analysis is still current.”
+
+Also show:
+
+* Last checked: latest check time
+* Last meaningful update: timestamp of the displayed meaningful alert result
+
+4. In the header, show a small status badge such as:
+
+No new alerts
+
+Do not replace the previous overall alert level with a new Low alert level when no change was found. Keep the previous meaningful alert level visible, because it still describes the active alert situation.
+
+5. If no meaningful alert result has ever existed:
+
+* Show “No alerts detected yet”
+* Show the latest check time
+* Do not display empty alert cards
+
+6. History:
+
+* Continue recording each check in compact history if useful.
+* Mark no-change checks as:
+    checkResult: “NoChange”
+* Do not treat them as a new meaningful alert analysis.
+* Keep the latest 20 entries.
+
+7. System Log:
+
+* Log one concise message:
+    “Market Alerts checked: no new material developments”
+* Do not log it as a new alert.
+* Keep existing logging for new, updated and resolved alerts.
+
+8. Preserve:
+
+* manual Update behaviour
+* previous-result fallback on errors
+* OpenAI debug dialog
+* web-search requirement
+* repository architecture
+* existing alert comparison logic
+
+The goal is:
+
+Market Alerts should always show the latest meaningful alert picture, while separately showing that a newer check found no changes.
