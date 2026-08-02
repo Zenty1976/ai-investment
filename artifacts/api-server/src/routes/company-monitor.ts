@@ -700,26 +700,41 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
   // ── AI call with retry ─────────────────────────────────────────────────────
 
   let lastConsistencyError: string | null = null;
+  let lastZodErrors: string | null = null;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
     let debug: AiDebugInfo;
 
-    // On consistency retries, prepend the validation error so the model can correct it
-    const effectiveUserPrompt = lastConsistencyError
-      ? [
-          "The previous response failed server-side consistency validation.",
-          "",
-          "Validation error:",
-          lastConsistencyError,
-          "",
-          "Correct only the inconsistent fields while preserving the rest of the response.",
-          "",
-          "---",
-          "",
-          userPrompt,
-        ].join("\n")
-      : userPrompt;
+    // On retries, prepend the error so the model can correct exactly what was wrong
+    let effectiveUserPrompt = userPrompt;
+    if (lastConsistencyError) {
+      effectiveUserPrompt = [
+        "The previous response failed server-side consistency validation.",
+        "",
+        "Validation error:",
+        lastConsistencyError,
+        "",
+        "Correct only the inconsistent fields while preserving the rest of the response.",
+        "",
+        "---",
+        "",
+        userPrompt,
+      ].join("\n");
+    } else if (lastZodErrors) {
+      effectiveUserPrompt = [
+        "The previous response failed server-side JSON schema validation.",
+        "",
+        "Schema errors:",
+        lastZodErrors,
+        "",
+        "Correct only the invalid fields while preserving the rest of the response.",
+        "",
+        "---",
+        "",
+        userPrompt,
+      ].join("\n");
+    }
 
     try {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
@@ -756,13 +771,23 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (!parsed.success) {
+      const zodSummary = parsed.error.errors
+        .map(e => `${e.path.join(".") || "(root)"}: ${e.message}`)
+        .join("\n");
+      lastZodErrors = zodSummary;
+      lastConsistencyError = null; // clear so the next prompt targets the Zod issue
       if (attempt < MAX_ATTEMPTS) {
-        req.log.warn({ errors: parsed.error.message, attempt }, "Invalid AI response schema — retrying once");
+        req.log.warn({ errors: zodSummary, attempt }, "Invalid AI response schema — retrying with schema errors in prompt");
         continue;
       }
-      req.log.error({ errors: parsed.error.message }, "Invalid AI response schema after retry");
+      req.log.error({ errors: zodSummary }, "Invalid AI response schema after all attempts");
       res.status(500).json({
-        error: "AI returned an invalid response structure. Please try again.",
+        error: "AI returned an invalid response structure",
+        schemaErrors: parsed.error.errors.map(e => ({
+          field: e.path.join(".") || "(root)",
+          message: e.message,
+        })),
+        attempt,
         _debug: lastDebug,
       });
       return;

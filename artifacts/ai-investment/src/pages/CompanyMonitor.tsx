@@ -437,9 +437,11 @@ export default function CompanyMonitor() {
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (err: any) => {
-        const d = err?._debug
+        // ApiError puts the parsed response body in .data — _debug lives there
+        const body = err?.data ?? err
+        const d = body?._debug
         if (d) setDebugInfo(d)
-        setDebugError(err)
+        setDebugError(body)
       },
     },
   })
@@ -1113,6 +1115,10 @@ interface DebugDialogProps {
 }
 
 function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
+  // error is now the parsed response body (not the ApiError wrapper)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const errorBody = error as any
+
   const inputMessages: Array<{ role: string; content: string }> = (() => {
     if (!debugInfo) return []
     const req = debugInfo.request
@@ -1120,6 +1126,13 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
     if (Array.isArray(req.input)) return req.input as Array<{ role: string; content: string }>
     return []
   })()
+
+  // Structured validation fields from the server error body
+  const validationError: string | undefined = errorBody?.validationError
+  const schemaErrors: Array<{ field: string; message: string }> | undefined = errorBody?.schemaErrors
+  const serverErrorMsg: string | undefined = errorBody?.error
+  const attemptCount: number | undefined = errorBody?.attempt
+  const hasStructuredError = !!(validationError || schemaErrors?.length || serverErrorMsg)
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
@@ -1132,7 +1145,40 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
         </DialogHeader>
         <ScrollArea className="max-h-[70vh] pr-2">
           <div className="space-y-4 text-xs font-mono">
-            {!!error && (
+            {hasStructuredError && (
+              <DebugSection label="❌ Server Error" color="rose">
+                {serverErrorMsg && (
+                  <p className="text-rose-400 mb-2 font-semibold">
+                    {serverErrorMsg}
+                    {attemptCount !== undefined && (
+                      <span className="text-rose-400/60 font-normal ml-2">(after {attemptCount} {attemptCount === 1 ? "attempt" : "attempts"})</span>
+                    )}
+                  </p>
+                )}
+                {validationError && (
+                  <div className="mb-2">
+                    <p className="text-[10px] text-rose-400/60 uppercase tracking-widest mb-1">Consistency error</p>
+                    <pre className="whitespace-pre-wrap text-rose-300/90 bg-background/60 rounded p-2 border border-rose-500/20 break-all">
+                      {validationError}
+                    </pre>
+                  </div>
+                )}
+                {schemaErrors && schemaErrors.length > 0 && (
+                  <div>
+                    <p className="text-[10px] text-rose-400/60 uppercase tracking-widest mb-1">Schema errors</p>
+                    <ul className="space-y-1">
+                      {schemaErrors.map((e, i) => (
+                        <li key={i} className="text-rose-300/90 bg-background/60 rounded px-2 py-1 border border-rose-500/20 flex gap-2">
+                          <span className="text-rose-400/60 shrink-0 font-semibold">{e.field}:</span>
+                          <span className="break-all">{e.message}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </DebugSection>
+            )}
+            {!hasStructuredError && !!error && (
               <DebugSection label="❌ Error" color="rose">
                 <pre className="whitespace-pre-wrap text-rose-400 break-all">
                   {error instanceof Error
