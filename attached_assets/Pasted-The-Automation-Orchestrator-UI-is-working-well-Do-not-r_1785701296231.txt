@@ -1,0 +1,180 @@
+The Automation Orchestrator UI is working well. Do not redesign or compact the current page.
+
+Please make only the following backend reliability improvements.
+
+1. Persist full-cycle state and history
+
+The current fields:
+
+* lastFullCycleAt
+* cycleInProgress
+
+exist only in memory.
+
+After an API server restart, the displayed last full-cycle time is lost.
+
+Persist completed full cycles with:
+
+* id
+* correlationId
+* trigger
+* startedAt
+* completedAt
+* durationMs
+* status: Completed | Failed | Aborted
+* failedModuleId
+* error
+* completedModules
+
+Keep the latest 20 full cycles.
+
+On startup:
+
+* restore lastFullCycleAt from the latest completed cycle
+* never restore cycleInProgress as true
+* mark an interrupted persisted cycle as Aborted
+
+Store this in the existing orchestrator persistence architecture, for example:
+
+automation-orchestrator-history
+
+Do not store complete module results in cycle history.
+
+2. Return the correct result when Run all now cannot start
+
+The current POST /automation/run-all route starts runAllNow asynchronously and immediately returns:
+
+Full cycle started
+
+If a cycle is already running, runAllNow rejects asynchronously, but the route still reports success.
+
+Before returning success, check whether a full cycle is already active.
+
+If one is already running, return HTTP 409 with:
+
+{
+“error”: “A full analysis cycle is already in progress.”
+}
+
+Otherwise start the cycle and return:
+
+{
+“ok”: true,
+“message”: “Full cycle started”,
+“correlationId”: “…”
+}
+
+Expose the active cycle correlationId in orchestrator status.
+
+Do not silently swallow an immediate cycle-start rejection.
+
+3. Correct Company Monitor freshness
+
+Company Monitor is a multi-company module, but its current freshness calculation uses the most recently updated company-monitor entry.
+
+This can mark Company Monitor as Fresh when only one ticker is fresh while other required target companies are stale or missing.
+
+Determine the current required Company Monitor targets using the existing targeting logic:
+
+* current portfolio holdings
+* active Trade Decision subjects
+* current Opportunity Finder candidates within the configured target limit
+* explicitly triggered tickers
+
+Calculate Company Monitor aggregate status from all required targets:
+
+* Fresh: every required target is fresh
+* DueSoon: none are stale, but at least one is due soon
+* Stale: one or more required targets are stale
+* NeverRun: one or more required targets have no analysis
+* Running: relevant Company Monitor jobs are active
+* Failed: a required target’s latest run failed and no newer successful result exists
+
+Expose optional aggregate information in the status response:
+
+* targetCount
+* freshTargetCount
+* staleTargetCount
+* missingTargetCount
+* staleOrMissingTickers
+
+The existing UI may show these details only inside the expanded Company Monitor row. Do not add noise to the collapsed row.
+
+4. Add meaningful-change results to the shared module runner contract
+
+A successful HTTP response currently tells the Orchestrator only that the module completed. It does not reliably tell it whether anything meaningful changed.
+
+Add a shared orchestration result returned by each internal module runner:
+
+{
+“success”: true,
+“resultUpdated”: true,
+“meaningfulChange”: “None|Low|Medium|High”,
+“affectedTickers”: [],
+“updatedAt”: “…”
+}
+
+The regular module API response may still include its existing result, but the Orchestrator must be able to extract this standard metadata.
+
+Use deterministic comparison where possible:
+
+* same stored result except timestamps: None
+* small non-material content change: Low
+* changed score, outlook or relevant analysis: Medium
+* important alert, portfolio change, readiness change or new risk: High
+
+Do not ask OpenAI to decide orchestration severity separately.
+
+5. Avoid unnecessary downstream chains
+
+After a successful scheduled module run:
+
+* always run explicit runAfter relationships, such as Trade Review after Trade Decision
+* trigger ordinary dependency chains only when meaningfulChange is Medium or High
+* allow a downstream module’s own scheduled safety refresh when it is due, even if no upstream change occurred
+* do not rerun downstream AI modules merely because an upstream timestamp changed
+
+Examples:
+
+Trade Decision changed a decision from WaitingForReevaluation to ReadyForReview:
+
+* meaningfulChange = High
+* immediately regenerate Trade Review
+
+News Monitor completed but found no materially new news:
+
+* meaningfulChange = None
+* do not trigger Company Monitor, Risk Analyzer or Trade Decision
+
+Portfolio positions or cash changed:
+
+* meaningfulChange = High
+* trigger the relevant analysis chain
+
+6. Store useful job result metadata
+
+Extend orchestrator jobs with:
+
+* resultUpdated
+* meaningfulChange
+* affectedTickers
+
+Show these only in expanded job details or logs when useful.
+
+Do not add more text to the normal Recent Jobs rows.
+
+Preserve everything else:
+
+* current Automation UI
+* Manual and SemiAutomatic modes
+* FullAutomatic disabled
+* current scheduling intervals
+* dependency graph
+* Run all sequencing
+* retries and timeouts
+* module settings
+* current System Log behaviour
+* no trade approval or execution
+* no independent timers inside individual modules
+
+The purpose of these changes is not to redesign the module. It is to make the scheduler’s status accurate, survive server restarts and avoid unnecessary OpenAI calls during long-running semi-automatic operation.

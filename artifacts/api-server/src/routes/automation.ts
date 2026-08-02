@@ -64,11 +64,14 @@ router.post("/automation/resume", (_req, res): void => {
 // ── POST /automation/run-all ──────────────────────────────────────────────────
 
 router.post("/automation/run-all", (_req, res): void => {
-  // Start the full cycle asynchronously; respond immediately
-  automationOrchestrator.runAllNow().catch(() => {
-    // Errors are logged inside the orchestrator; nothing more to do here
-  });
-  res.json({ ok: true, message: "Full cycle started" });
+  try {
+    const correlationId = automationOrchestrator.startRunAllNow();
+    res.json({ ok: true, message: "Full cycle started", correlationId });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    // startRunAllNow throws synchronously when a cycle is already active
+    res.status(409).json({ error: msg });
+  }
 });
 
 // ── POST /automation/run/:moduleId ────────────────────────────────────────────

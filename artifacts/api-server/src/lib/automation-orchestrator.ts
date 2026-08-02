@@ -58,6 +58,10 @@ export type ModuleTrigger =
 export type JobStatus =
   | "Pending" | "Running" | "Completed" | "Failed" | "Cancelled" | "Skipped" | "WaitingForDependency";
 
+export type MeaningfulChange = "None" | "Low" | "Medium" | "High";
+
+export type FullCycleStatus = "InProgress" | "Completed" | "Failed" | "Aborted";
+
 export type ModuleFreshness =
   | "Fresh" | "DueSoon" | "Stale" | "Running" | "Failed" | "Disabled"
   | "WaitingForDependency" | "NeverRun";
@@ -114,6 +118,31 @@ export interface OrchestratorJob {
   error: string | null;
   affectedTickers: string[];
   parentJobId: string | null;
+  /** Set after a successful run — was the stored result actually updated? */
+  resultUpdated?: boolean;
+  /** How materially the result changed relative to the previous stored result */
+  meaningfulChange?: MeaningfulChange;
+}
+
+export interface FullCycleRecord {
+  id: string;
+  correlationId: string;
+  trigger: ModuleTrigger;
+  startedAt: string;
+  completedAt: string | null;
+  durationMs: number | null;
+  status: FullCycleStatus;
+  failedModuleId?: ModuleId;
+  error?: string;
+  completedModules: ModuleId[];
+}
+
+export interface CompanyMonitorAggregate {
+  targetCount: number;
+  freshTargetCount: number;
+  staleTargetCount: number;
+  missingTargetCount: number;
+  staleOrMissingTickers: string[];
 }
 
 export interface OrchestratorSettings {
@@ -131,6 +160,8 @@ export interface OrchestratorModuleStatus {
   runtime: ModuleRuntimeState;
   lastUpdatedAt: string | null;
   nextRunAt: string | null;
+  /** Only present for company-monitor — aggregate freshness across all required targets */
+  companyMonitorAggregate?: CompanyMonitorAggregate;
 }
 
 export interface OrchestratorStats {
@@ -150,6 +181,8 @@ export interface OrchestratorStatus {
   stats: OrchestratorStats;
   lastFullCycleAt: string | null;
   cycleInProgress: boolean;
+  activeCycleCorrelationId: string | null;
+  cycleHistory: FullCycleRecord[];
 }
 
 // ── Default registry ─────────────────────────────────────────────────────────
@@ -352,6 +385,7 @@ const MODULE_ENDPOINTS: Record<ModuleId, { method: "POST" | "GET"; path: string 
 };
 
 const MAX_JOBS = 100;
+const MAX_CYCLE_HISTORY = 20;
 const SCHEDULER_INTERVAL_MS = 30_000;
 const MODULE_NAME = "AutomationOrchestrator";
 
@@ -361,10 +395,12 @@ class AutomationOrchestratorService {
   private settings: OrchestratorSettings;
   private runtimeState: Map<ModuleId, ModuleRuntimeState> = new Map();
   private jobs: OrchestratorJob[] = [];
+  private cycleHistory: FullCycleRecord[] = [];
   private schedulerTimer: ReturnType<typeof setInterval> | null = null;
   private port = 8080;
   private lastFullCycleAt: string | null = null;
   private cycleInProgress = false;
+  private activeCycleCorrelationId: string | null = null;
 
   constructor() {
     this.settings = readJson<OrchestratorSettings>("automation-settings.json", {
@@ -373,6 +409,16 @@ class AutomationOrchestratorService {
       moduleOverrides: {},
     });
     this.jobs = readJson<OrchestratorJob[]>("automation-jobs.json", []);
+    this.cycleHistory = readJson<FullCycleRecord[]>("automation-orchestrator-history.json", []);
+
+    // Restore lastFullCycleAt from the most recently completed/failed/aborted cycle
+    const lastDone = [...this.cycleHistory]
+      .reverse()
+      .find(c => c.status !== "InProgress");
+    if (lastDone?.completedAt) {
+      this.lastFullCycleAt = lastDone.completedAt;
+    }
+
     const savedState = readJson<Record<string, ModuleRuntimeState>>("automation-state.json", {});
 
     for (const def of MODULE_DEFAULTS) {
@@ -404,11 +450,35 @@ class AutomationOrchestratorService {
   }
 
   private _recoverOnStartup(): void {
+    const nowIso = new Date().toISOString();
+
+    // Mark any interrupted (InProgress) cycle in history as Aborted
+    let abortedCycles = 0;
+    for (const cycle of this.cycleHistory) {
+      if (cycle.status === "InProgress") {
+        cycle.status = "Aborted";
+        cycle.completedAt = nowIso;
+        cycle.durationMs = cycle.completedAt
+          ? new Date(nowIso).getTime() - new Date(cycle.startedAt).getTime()
+          : null;
+        cycle.error = "Process restarted while cycle was running";
+        abortedCycles++;
+      }
+    }
+    if (abortedCycles > 0) {
+      this._persistCycleHistory();
+      systemLog.logWarning(MODULE_NAME, `Startup: marked ${abortedCycles} interrupted cycle(s) as Aborted`);
+    }
+
+    // cycleInProgress is never restored as true on startup
+    this.cycleInProgress = false;
+    this.activeCycleCorrelationId = null;
+
     let recovered = 0;
     for (const job of this.jobs) {
       if (job.status === "Running" || job.status === "Pending") {
         job.status = "Failed";
-        job.completedAt = new Date().toISOString();
+        job.completedAt = nowIso;
         job.error = "Process restarted — job abandoned";
         recovered++;
 
@@ -551,14 +621,26 @@ class AutomationOrchestratorService {
     if (st.status === "Running") return "Running";
     if (st.status === "Failed") return "Failed";
 
-    // Company Monitor stores results per ticker under "company-monitor:<TICKER>".
-    // Use the most recently updated per-ticker entry for freshness computation.
-    let entry = analysisRepository.get(moduleId);
-    if (!entry && moduleId === "company-monitor") {
-      const allEntries = analysisRepository.getAll(); // sorted by updatedAt descending
-      const tickerEntry = allEntries.find(e => e.moduleName.startsWith("company-monitor:"));
-      if (tickerEntry) entry = tickerEntry;
+    // Company Monitor: aggregate freshness across all required targets.
+    if (moduleId === "company-monitor") {
+      const agg = this._companyMonitorAggregate(settings.staleAfterMinutes);
+      if (agg.targetCount === 0) return "NeverRun";
+      if (agg.missingTargetCount > 0) return "NeverRun";
+      if (agg.staleTargetCount > 0) return "Stale";
+      // Check DueSoon: any target age ≥ 85% of stale threshold
+      const staleMs = settings.staleAfterMinutes * 60_000;
+      const allEntries = analysisRepository.getAll();
+      const tickers = this._getTargetTickers(10);
+      const due = tickers.some(ticker => {
+        const entry = allEntries.find(e => e.moduleName === `company-monitor:${ticker}`);
+        if (!entry) return false;
+        const ageMs = Date.now() - new Date(entry.updatedAt).getTime();
+        return ageMs >= staleMs * 0.85;
+      });
+      return due ? "DueSoon" : "Fresh";
     }
+
+    const entry = analysisRepository.get(moduleId);
     if (!entry) return "NeverRun";
 
     const ageMs  = Date.now() - new Date(entry.updatedAt).getTime();
@@ -567,6 +649,47 @@ class AutomationOrchestratorService {
     if (ageMs >= staleMs) return "Stale";
     if (ageMs >= staleMs * 0.85) return "DueSoon";
     return "Fresh";
+  }
+
+  /**
+   * Aggregate Company Monitor freshness across all required target tickers.
+   * Required targets = portfolio holdings + TDE subjects + opportunity candidates.
+   */
+  private _companyMonitorAggregate(staleAfterMinutes?: number): CompanyMonitorAggregate {
+    const settings = this._moduleSettings("company-monitor");
+    const staleMs = (staleAfterMinutes ?? settings.staleAfterMinutes) * 60_000;
+    const now = Date.now();
+    const tickers = this._getTargetTickers(10);
+    const allEntries = analysisRepository.getAll();
+
+    let freshTargetCount = 0;
+    let staleTargetCount = 0;
+    let missingTargetCount = 0;
+    const staleOrMissingTickers: string[] = [];
+
+    for (const ticker of tickers) {
+      const entry = allEntries.find(e => e.moduleName === `company-monitor:${ticker}`);
+      if (!entry) {
+        missingTargetCount++;
+        staleOrMissingTickers.push(ticker);
+      } else {
+        const ageMs = now - new Date(entry.updatedAt).getTime();
+        if (ageMs >= staleMs) {
+          staleTargetCount++;
+          staleOrMissingTickers.push(ticker);
+        } else {
+          freshTargetCount++;
+        }
+      }
+    }
+
+    return {
+      targetCount: tickers.length,
+      freshTargetCount,
+      staleTargetCount,
+      missingTargetCount,
+      staleOrMissingTickers,
+    };
   }
 
   private _isFresh(moduleId: ModuleId): boolean {
@@ -692,6 +815,12 @@ class AutomationOrchestratorService {
     }
     this._persist();
 
+    // Snapshot the current stored result so we can detect meaningful changes later
+    const prevEntry = job.moduleId === "company-monitor" && job.ticker
+      ? analysisRepository.getAll().find(e => e.moduleName === `company-monitor:${job.ticker}`)
+      : analysisRepository.get(job.moduleId);
+    const prevUpdatedAt = prevEntry?.updatedAt ?? null;
+
     const ep = MODULE_ENDPOINTS[job.moduleId];
     const url = `http://localhost:${this.port}${ep.path}`;
 
@@ -719,11 +848,22 @@ class AutomationOrchestratorService {
         throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
       }
 
+      // Compute meaningful-change from repository snapshot comparison
+      const newEntry = job.moduleId === "company-monitor" && job.ticker
+        ? analysisRepository.getAll().find(e => e.moduleName === `company-monitor:${job.ticker}`)
+        : analysisRepository.get(job.moduleId);
+      const resultUpdated = !!newEntry && newEntry.updatedAt !== prevUpdatedAt;
+      const meaningfulChange = resultUpdated
+        ? this._computeMeaningfulChange(job.moduleId, prevEntry?.result, newEntry?.result, job.ticker)
+        : "None" as MeaningfulChange;
+
       // Success
       const completedMs = Date.now();
       job.status = "Completed";
       job.completedAt = now;
       job.durationMs = completedMs - new Date(job.startedAt!).getTime();
+      job.resultUpdated = resultUpdated;
+      job.meaningfulChange = meaningfulChange;
 
       if (st) {
         st.status = "Idle";
@@ -737,10 +877,12 @@ class AutomationOrchestratorService {
       }
 
       this._persist();
-      systemLog.logInternal(MODULE_NAME, `${job.moduleId} completed via ${job.trigger} (${job.durationMs}ms)`);
+      systemLog.logInternal(MODULE_NAME,
+        `${job.moduleId} completed via ${job.trigger} (${job.durationMs}ms, change: ${meaningfulChange})`
+      );
 
-      // Trigger downstream modules
-      void this._triggerDownstream(job.moduleId, job.correlationId, job.id);
+      // Trigger downstream modules, gated on meaningfulChange level
+      void this._triggerDownstream(job.moduleId, job.correlationId, job.id, meaningfulChange);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -773,9 +915,94 @@ class AutomationOrchestratorService {
     }
   }
 
+  /**
+   * Deterministic meaningful-change classification — no AI calls.
+   *
+   * None  — result not updated, or content identical once timestamps are stripped.
+   * Low   — result changed but no domain-significant fields differ.
+   * Medium — a score, outlook, recommendation or analysis content changed.
+   * High  — a critical state change: portfolio positions, decision readiness,
+   *          risk level, or an important new alert.
+   */
+  private _computeMeaningfulChange(
+    moduleId: ModuleId,
+    prev: unknown,
+    next: unknown,
+    _ticker?: string
+  ): MeaningfulChange {
+    if (!next) return "None";
+    if (!prev) return "High"; // first-ever result is always significant
+
+    // Strip common timestamp-only fields before comparing
+    const strip = (o: unknown): unknown => {
+      if (!o || typeof o !== "object") return o;
+      const obj = o as Record<string, unknown>;
+      const { timestamp, generatedAt, updatedAt, lastRunAt, fetchedAt, analyzedAt, ...rest } = obj;
+      void timestamp; void generatedAt; void updatedAt; void lastRunAt; void fetchedAt; void analyzedAt;
+      return rest;
+    };
+
+    const prevStr = JSON.stringify(strip(prev));
+    const nextStr = JSON.stringify(strip(next));
+    if (prevStr === nextStr) return "None";
+
+    // Module-specific High signals
+    if (moduleId === "portfolio-manager") {
+      const p = prev as Record<string, unknown>;
+      const n = next as Record<string, unknown>;
+      // Position count changed or cash changed significantly
+      const prevPos = JSON.stringify((p.accounts as unknown[]) ?? []);
+      const nextPos = JSON.stringify((n.accounts as unknown[]) ?? []);
+      if (prevPos !== nextPos) return "High";
+    }
+
+    if (moduleId === "trade-decision-engine") {
+      const p = prev as Record<string, unknown>;
+      const n = next as Record<string, unknown>;
+      const prevDec = JSON.stringify(
+        (Array.isArray(p.decisions) ? p.decisions as Array<Record<string, unknown>> : [])
+          .map(d => ({ ticker: d.ticker, decision: d.decision, readiness: d.readiness }))
+      );
+      const nextDec = JSON.stringify(
+        (Array.isArray(n.decisions) ? n.decisions as Array<Record<string, unknown>> : [])
+          .map(d => ({ ticker: d.ticker, decision: d.decision, readiness: d.readiness }))
+      );
+      if (prevDec !== nextDec) return "High";
+    }
+
+    if (moduleId === "market-alerts") {
+      const p = prev as Record<string, unknown>;
+      const n = next as Record<string, unknown>;
+      const prevAlerts = JSON.stringify(Array.isArray(p.alerts) ? p.alerts : []);
+      const nextAlerts = JSON.stringify(Array.isArray(n.alerts) ? n.alerts : []);
+      if (prevAlerts !== nextAlerts) return "High";
+    }
+
+    if (moduleId === "risk-analyzer") {
+      const p = prev as Record<string, unknown>;
+      const n = next as Record<string, unknown>;
+      if (p.overallRisk !== n.overallRisk || p.riskLevel !== n.riskLevel) return "High";
+    }
+
+    // Medium signals — content changed in a meaningful way
+    const mediumModules: ModuleId[] = [
+      "company-monitor", "portfolio-analyzer", "opportunity-finder",
+      "sector-monitor", "market-monitor",
+    ];
+    if (mediumModules.includes(moduleId)) return "Medium";
+
+    // Default: something changed but not classified as High
+    return "Medium";
+  }
+
   // ── Downstream chaining ─────────────────────────────────────────────────────
 
-  private _triggerDownstream(completedModuleId: ModuleId, correlationId: string, parentJobId: string): void {
+  private _triggerDownstream(
+    completedModuleId: ModuleId,
+    correlationId: string,
+    parentJobId: string,
+    meaningfulChange: MeaningfulChange = "Medium"
+  ): void {
     // Only auto-chain in SemiAutomatic (non-paused)
     if (this.settings.mode !== "SemiAutomatic" || this.settings.paused) return;
 
@@ -787,15 +1014,30 @@ class AutomationOrchestratorService {
       if (!settings.enabled || !settings.supportsAutomaticRun) continue;
       if (this._hasActiveJob(def.moduleId)) continue;
 
-      // Gate 1: the dependent must actually need refreshing.
-      // "runAfter" modules (e.g. Trade Review after TDE) chain immediately;
-      // modules that only have a dependency relationship only run if stale/due.
       const isRunAfter = def.runAfter.includes(completedModuleId);
+
+      // Gate: runAfter relationships always chain (e.g. Trade Review after TDE).
+      // Ordinary dependency chains only trigger when the upstream produced a
+      // meaningful change (Medium or High). Low/None changes should not wake
+      // downstream AI modules unnecessarily.
+      if (!isRunAfter && meaningfulChange !== "Medium" && meaningfulChange !== "High") {
+        // Still allow a module's own scheduled safety refresh when it is due.
+        const st = this.runtimeState.get(def.moduleId)!;
+        const isDue = st.nextRunAt && new Date(st.nextRunAt).getTime() <= now;
+        if (!isDue) {
+          systemLog.logInternal(MODULE_NAME,
+            `${def.moduleId} downstream skipped — upstream change was ${meaningfulChange}`
+          );
+          continue;
+        }
+      }
+
+      // Gate: the dependent must actually need refreshing.
       const freshness = this._freshness(def.moduleId);
       const isStale = freshness === "Stale" || freshness === "NeverRun" || freshness === "DueSoon";
       if (!isRunAfter && !isStale) continue; // still fresh — honour its own interval
 
-      // Gate 2: for scheduled modules, respect nextRunAt unless it's a runAfter chain.
+      // Gate: for scheduled modules, respect nextRunAt unless it's a runAfter chain.
       const st = this.runtimeState.get(def.moduleId)!;
       if (!isRunAfter && st.nextRunAt && new Date(st.nextRunAt).getTime() > now) continue;
 
@@ -847,6 +1089,16 @@ class AutomationOrchestratorService {
       }
     } catch { /* ignore */ }
 
+    // Opportunity Finder candidates (up to configured target limit)
+    try {
+      const of_ = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
+      const candidates = Array.isArray(of_?.result?.candidates) ? of_!.result!.candidates as Array<Record<string, unknown>> : [];
+      for (const c of candidates.slice(0, maxCount)) {
+        const ticker = String(c.ticker ?? "").toUpperCase();
+        if (ticker) tickers.add(ticker);
+      }
+    } catch { /* ignore */ }
+
     return [...tickers].slice(0, maxCount);
   }
 
@@ -870,23 +1122,62 @@ class AutomationOrchestratorService {
 
   // ── Run all now ─────────────────────────────────────────────────────────────
 
-  async runAllNow(): Promise<void> {
+  /**
+   * Starts a full 10-stage analysis cycle.
+   * Returns the correlationId immediately; the cycle runs asynchronously.
+   * Throws synchronously if a cycle is already in progress.
+   */
+  startRunAllNow(): string {
     if (this.cycleInProgress) {
-      throw new Error("A full cycle is already in progress.");
+      throw new Error("A full analysis cycle is already in progress.");
     }
-    this.cycleInProgress = true;
     const corrId = randomUUID();
-    systemLog.logInfo(MODULE_NAME, "Full cycle started (Run all now)");
+    this.cycleInProgress = true;
+    this.activeCycleCorrelationId = corrId;
+
+    const cycle: FullCycleRecord = {
+      id: randomUUID(),
+      correlationId: corrId,
+      trigger: "RunAllNow",
+      startedAt: new Date().toISOString(),
+      completedAt: null,
+      durationMs: null,
+      status: "InProgress",
+      completedModules: [],
+    };
+    this.cycleHistory.push(cycle);
+    if (this.cycleHistory.length > MAX_CYCLE_HISTORY) {
+      this.cycleHistory = this.cycleHistory.slice(-MAX_CYCLE_HISTORY);
+    }
+    this._persistCycleHistory();
+    systemLog.logInfo(MODULE_NAME, `Full cycle started (Run all now) [${corrId}]`);
+
+    // Run asynchronously; errors are captured in the cycle record
+    void this._runFullCycle(cycle, corrId);
+    return corrId;
+  }
+
+  private async _runFullCycle(cycle: FullCycleRecord, corrId: string): Promise<void> {
+    const startMs = new Date(cycle.startedAt).getTime();
+
+    const completeStage = (moduleId: ModuleId) => {
+      if (!cycle.completedModules.includes(moduleId)) {
+        cycle.completedModules.push(moduleId);
+      }
+    };
 
     try {
       // Stage 1: Portfolio Manager
       await this._runStage(["portfolio-manager"], corrId, "RunAllNow");
+      completeStage("portfolio-manager");
 
       // Stage 2: Market Monitor, News Monitor, Event Monitor in parallel
       await this._runStageParallel(["market-monitor", "news-monitor", "event-monitor"], corrId, "RunAllNow");
+      completeStage("market-monitor"); completeStage("news-monitor"); completeStage("event-monitor");
 
       // Stage 3: Sector Monitor
       await this._runStage(["sector-monitor"], corrId, "RunAllNow");
+      completeStage("sector-monitor");
 
       // Stage 4: Company Monitor for each target ticker (sequential)
       const tickers = this._getTargetTickers(5);
@@ -894,33 +1185,57 @@ class AutomationOrchestratorService {
         const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId });
         await this._waitForJob(job.id, 300_000);
       }
+      completeStage("company-monitor");
 
       // Stage 5: Market Alerts
       await this._runStage(["market-alerts"], corrId, "RunAllNow");
+      completeStage("market-alerts");
 
       // Stage 6: Risk Analyzer
       await this._runStage(["risk-analyzer"], corrId, "RunAllNow");
+      completeStage("risk-analyzer");
 
       // Stage 7: Portfolio Analyzer
       await this._runStage(["portfolio-analyzer"], corrId, "RunAllNow");
+      completeStage("portfolio-analyzer");
 
       // Stage 8: Opportunity Finder
       await this._runStage(["opportunity-finder"], corrId, "RunAllNow");
+      completeStage("opportunity-finder");
 
       // Stage 9: Trade Decision Engine
       await this._runStage(["trade-decision-engine"], corrId, "RunAllNow");
+      completeStage("trade-decision-engine");
 
       // Stage 10: Trade Review
       await this._runStage(["trade-review"], corrId, "RunAllNow");
+      completeStage("trade-review");
 
-      this.lastFullCycleAt = new Date().toISOString();
-      systemLog.logInfo(MODULE_NAME, "Full cycle completed");
+      const nowIso = new Date().toISOString();
+      this.lastFullCycleAt = nowIso;
+      cycle.status = "Completed";
+      cycle.completedAt = nowIso;
+      cycle.durationMs = Date.now() - startMs;
+      systemLog.logInfo(MODULE_NAME, `Full cycle completed in ${Math.round(cycle.durationMs / 1000)}s`);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      systemLog.logError(MODULE_NAME, `Full cycle aborted: ${msg}`);
+      const nowIso = new Date().toISOString();
+
+      // Identify which module failed from the error message
+      const failedMod = MODULE_DEFAULTS.find(d => msg.includes(d.moduleId))?.moduleId;
+
+      cycle.status = "Failed";
+      cycle.completedAt = nowIso;
+      cycle.durationMs = Date.now() - startMs;
+      cycle.error = msg;
+      if (failedMod) cycle.failedModuleId = failedMod;
+
+      systemLog.logError(MODULE_NAME, `Full cycle failed: ${msg}`);
     } finally {
       this.cycleInProgress = false;
+      this.activeCycleCorrelationId = null;
+      this._persistCycleHistory();
     }
   }
 
@@ -993,7 +1308,9 @@ class AutomationOrchestratorService {
       const st = this.runtimeState.get(def.moduleId)!;
       const settings = this._moduleSettings(def.moduleId);
       const freshness = this._freshness(def.moduleId);
-      const entry = analysisRepository.get(def.moduleId);
+      const entry = def.moduleId === "company-monitor"
+        ? analysisRepository.getAll().find(e => e.moduleName.startsWith("company-monitor:"))
+        : analysisRepository.get(def.moduleId);
 
       // Compute WaitingForDependency freshness override
       const effectiveFreshness: ModuleFreshness =
@@ -1002,7 +1319,7 @@ class AutomationOrchestratorService {
         st.waitingForDeps && st.waitingForDeps.length > 0 ? "WaitingForDependency" :
         freshness;
 
-      return {
+      const moduleStatus: OrchestratorModuleStatus = {
         moduleId: def.moduleId,
         displayName: def.displayName,
         freshness: effectiveFreshness,
@@ -1018,6 +1335,12 @@ class AutomationOrchestratorService {
         lastUpdatedAt: entry?.updatedAt ?? st.lastSuccessfulRunAt,
         nextRunAt: st.nextRunAt,
       };
+
+      if (def.moduleId === "company-monitor") {
+        moduleStatus.companyMonitorAggregate = this._companyMonitorAggregate();
+      }
+
+      return moduleStatus;
     });
 
     const recentJobs = [...this.jobs].reverse().slice(0, 50);
@@ -1055,6 +1378,8 @@ class AutomationOrchestratorService {
       },
       lastFullCycleAt: this.lastFullCycleAt,
       cycleInProgress: this.cycleInProgress,
+      activeCycleCorrelationId: this.activeCycleCorrelationId,
+      cycleHistory: [...this.cycleHistory].reverse().slice(0, 20),
     };
   }
 
@@ -1079,6 +1404,10 @@ class AutomationOrchestratorService {
     const obj: Record<string, ModuleRuntimeState> = {};
     for (const [k, v] of this.runtimeState) obj[k] = v;
     writeJson("automation-state.json", obj);
+  }
+
+  private _persistCycleHistory(): void {
+    writeJson("automation-orchestrator-history.json", this.cycleHistory);
   }
 
   private _persist(): void {
