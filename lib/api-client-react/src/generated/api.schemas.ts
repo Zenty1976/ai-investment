@@ -714,6 +714,75 @@ export interface MarketAlertsAnalysis {
   noNewDevelopmentsSinceLastCheck?: boolean;
 }
 
+// ── Trade Decision Engine ──────────────────────────────────────────────────────
+
+export type TradeDecisionType = 'Hold' | 'Review' | 'WaitForEvent' | 'PrepareToBuy' | 'PrepareToReduce' | 'NoAction';
+export type TradeDecisionSubjectType = 'Holding' | 'Opportunity' | 'Portfolio';
+export type TradeDecisionPosture = 'ActivelyReview' | 'SelectivePreparation' | 'WaitForEvents' | 'MaintainCurrentPositioning' | 'InsufficientEvidence';
+export type TradeDecisionConfidence = 'High' | 'Medium' | 'Low';
+export type TradeDecisionUrgency = 'Immediate' | 'Days' | 'Weeks' | 'NoUrgency';
+export type TradeDecisionStatus = 'New' | 'Changed' | 'Unchanged' | 'Resolved';
+export type TradeDecisionSourceModule =
+  | 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts'
+  | 'CompanyMonitor'   | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor'
+  | 'MarketMonitor'    | 'NewsMonitor'        | 'Web';
+
+export interface TradeDecisionReadinessDriver {
+  factor: string;
+  impact: 'Positive' | 'Negative';
+  reason: string;
+}
+
+export interface TradeDecision {
+  rank: number;
+  subjectType: TradeDecisionSubjectType;
+  company: string;
+  ticker: string;
+  decision: TradeDecisionType;
+  title: string;
+  reason: string;
+  supportingEvidence: string[];
+  opposingEvidence: string[];
+  confidence: TradeDecisionConfidence;
+  urgency: TradeDecisionUrgency;
+  blockedByEvent: boolean;
+  blockingEvent: string;
+  blockingEventDate: string;
+  whatWouldChangeDecision: string[];
+  missingEvidence: string[];
+  portfolioImpact: string;
+  accountConsiderations: string;
+  sourceModules: TradeDecisionSourceModule[];
+  /** Server-populated: change vs previous analysis */
+  status?: TradeDecisionStatus;
+}
+
+export interface TradeDecisionConflict {
+  topic: string;
+  conflict: string;
+  resolution: string;
+}
+
+export interface TradeDecisionReviewTrigger {
+  trigger: string;
+  date: string;
+  affectedDecisions: string[];
+}
+
+export interface TradeDecisionEngineAnalysis {
+  mainConclusion: { title: string; reason: string };
+  executiveSummary: string;
+  overallDecisionPosture: TradeDecisionPosture;
+  decisionReadinessScore: number;
+  readinessDrivers: TradeDecisionReadinessDriver[];
+  decisions: TradeDecision[];
+  conflictsResolved: TradeDecisionConflict[];
+  nextReviewTriggers: TradeDecisionReviewTrigger[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SaxoConfigBody {

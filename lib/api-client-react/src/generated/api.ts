@@ -31,6 +31,7 @@ import type {
   OpportunityAnalysis,
   PortfolioAnalysis,
   RiskAnalysis,
+  TradeDecisionEngineAnalysis,
   PortfolioRepositoryEntry,
   RepositoryEntry,
   SaxoConfigBody,
@@ -1021,6 +1022,30 @@ export const useRunOpportunityAnalysis = (options?: {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {};
   const mutationFn: MutationFunction<Awaited<ReturnType<typeof runOpportunityAnalysis>>, void> = () =>
     runOpportunityAnalysis(requestOptions);
+  return useMutation({ mutationFn, ...mutationOptions });
+};
+
+// ── Trade Decision Engine ─────────────────────────────────────────────────────
+
+export const runTradeDecisionEngine = (options?: SecondParameter<typeof customFetch>) =>
+  customFetch<TradeDecisionEngineAnalysis>('/api/trade-decision-engine/analyze', {
+    method: 'POST',
+    ...options,
+  });
+
+export const useRunTradeDecisionEngine = (options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof runTradeDecisionEngine>>,
+    ErrorType<unknown>,
+    void
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof runTradeDecisionEngine>>, ErrorType<unknown>, void> => {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof runTradeDecisionEngine>>,
+    void
+  > = () => runTradeDecisionEngine(requestOptions);
   return useMutation({ mutationFn, ...mutationOptions });
 };
 

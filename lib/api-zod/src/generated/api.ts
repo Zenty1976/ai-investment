@@ -471,6 +471,63 @@ export const RunMarketAlertsResponse = zod.object({
 })
 
 
+// ── Trade Decision Engine ──────────────────────────────────────────────────────
+
+export const RunTradeDecisionEngineResponse = zod.object({
+  "mainConclusion": zod.object({
+    "title": zod.string(),
+    "reason": zod.string()
+  }),
+  "executiveSummary": zod.string(),
+  "overallDecisionPosture": zod.enum(['ActivelyReview', 'SelectivePreparation', 'WaitForEvents', 'MaintainCurrentPositioning', 'InsufficientEvidence']),
+  "decisionReadinessScore": zod.number().int().min(0).max(100),
+  "readinessDrivers": zod.array(zod.object({
+    "factor": zod.string(),
+    "impact": zod.enum(['Positive', 'Negative']),
+    "reason": zod.string()
+  })).min(1).max(6),
+  "decisions": zod.array(zod.object({
+    "rank": zod.number().int().min(1),
+    "subjectType": zod.enum(['Holding', 'Opportunity', 'Portfolio']),
+    "company": zod.string(),
+    "ticker": zod.string(),
+    "decision": zod.enum(['Hold', 'Review', 'WaitForEvent', 'PrepareToBuy', 'PrepareToReduce', 'NoAction']),
+    "title": zod.string(),
+    "reason": zod.string(),
+    "supportingEvidence": zod.array(zod.string()),
+    "opposingEvidence": zod.array(zod.string()),
+    "confidence": zod.enum(['High', 'Medium', 'Low']),
+    "urgency": zod.enum(['Immediate', 'Days', 'Weeks', 'NoUrgency']),
+    "blockedByEvent": zod.boolean(),
+    "blockingEvent": zod.string(),
+    "blockingEventDate": zod.string(),
+    "whatWouldChangeDecision": zod.array(zod.string()),
+    "missingEvidence": zod.array(zod.string()),
+    "portfolioImpact": zod.string(),
+    "accountConsiderations": zod.string(),
+    "sourceModules": zod.array(zod.enum([
+      'PortfolioManager', 'PortfolioAnalyzer', 'RiskAnalyzer', 'MarketAlerts',
+      'CompanyMonitor', 'OpportunityFinder', 'EventMonitor', 'SectorMonitor',
+      'MarketMonitor', 'NewsMonitor', 'Web'
+    ])),
+    /** Server-populated: change status vs previous analysis */
+    "status": zod.enum(['New', 'Changed', 'Unchanged', 'Resolved']).optional()
+  })).min(1).max(8),
+  "conflictsResolved": zod.array(zod.object({
+    "topic": zod.string(),
+    "conflict": zod.string(),
+    "resolution": zod.string()
+  })),
+  "nextReviewTriggers": zod.array(zod.object({
+    "trigger": zod.string(),
+    "date": zod.string(),
+    "affectedDecisions": zod.array(zod.string())
+  })),
+  "timestamp": zod.string(),
+  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
+})
+
+
 /**
  * @summary Get a specific module's latest result
  */

@@ -1,0 +1,549 @@
+Create a new module called:
+
+Trade Decision Engine
+
+This is phase 1 only.
+
+It must generate transparent decision proposals, but it must never place, modify or cancel Saxo orders.
+
+Follow the same architecture, layout and coding style as the existing modules.
+
+Create:
+
+* A separate backend module
+* A separate frontend page
+* A new sidebar menu item called “Decisions”
+* Repository persistence
+* Compact decision history
+* System Log integration
+* The same OpenAI debug icon and popup used by Portfolio Analyzer, Opportunity Finder, Risk Analyzer and Market Alerts
+
+Reuse:
+
+* Shared OpenAI Responses API service with web search
+* Shared Analysis Repository
+* Shared Company Identity service
+* Shared System Log
+* Existing retry and debug behaviour
+
+Store the current result under:
+
+trade-decision-engine
+
+Store compact history under:
+
+trade-decision-engine-history
+
+Keep the latest 20 analyses.
+
+⸻
+
+PURPOSE
+
+The module must answer:
+
+“Based on the current portfolio and all available analyses, which decisions should the user consider now, and what evidence supports each decision?”
+
+This module converts analysis into decision proposals.
+
+It must distinguish between:
+
+* an analytical observation
+* a proposed decision
+* an executable trade
+
+Phase 1 may produce proposed decisions.
+
+Phase 1 must never produce or submit an executable Saxo order.
+
+⸻
+
+ALLOWED DECISIONS
+
+Allowed decision types:
+
+* Hold
+* Review
+* WaitForEvent
+* PrepareToBuy
+* PrepareToReduce
+* NoAction
+
+Meaning:
+
+Hold:
+The current position remains acceptable and no immediate change is proposed.
+
+Review:
+The position or opportunity requires closer manual assessment.
+
+WaitForEvent:
+Do not make a decision before a named upcoming event or missing result.
+
+PrepareToBuy:
+The candidate may justify a future purchase, but no order is created.
+
+PrepareToReduce:
+An existing position may justify reduced exposure, but no order is created.
+
+NoAction:
+Available evidence does not justify a change.
+
+Do not use direct imperative language such as:
+
+* Buy now
+* Sell now
+* Execute
+* Place order
+
+⸻
+
+DATA INPUT
+
+Read the latest stored data from:
+
+* Portfolio Manager
+* Portfolio Analyzer
+* Opportunity Finder
+* Risk Analyzer
+* Market Alerts
+* Market Monitor
+* Event Monitor
+* News Monitor
+* Sector Monitor
+* Company Monitor analyses for held positions
+* Company Monitor analyses for proposed opportunities when available
+
+Only read through the Analysis Repository.
+
+Never call Saxo directly.
+
+Never call another module directly.
+
+Never trigger Company Monitor automatically inside this update.
+
+If relevant Company Monitor data is missing, identify it as missing evidence.
+
+⸻
+
+BACKEND-CALCULATED CONTEXT
+
+Before calling OpenAI, calculate a compact decision profile on the backend.
+
+Include:
+
+* total portfolio value in base currency
+* available cash in base currency
+* cash percentage
+* total invested value
+* all current positions
+* position weight as percentage of total portfolio
+* position weight as percentage of invested capital
+* account currency
+* instrument currency
+* existing account cash by currency
+* largest holding
+* current portfolio score and outlook
+* current risk score and change
+* latest meaningful alert level and headline
+* upcoming high-importance events within 14 days
+* highest-ranked Opportunity Finder candidates
+* whether Company Monitor data exists for each relevant company
+* whether portfolio data is mock data
+
+Do not combine balances denominated in different currencies unless they are available in the portfolio base currency.
+
+⸻
+
+OPENAI
+
+Use the shared OpenAI Responses API with web search enabled and required.
+
+Use stored module results as the primary analytical context.
+
+Use web search only to verify current information, event dates and material developments that may affect the proposed decisions.
+
+Require current information for any decision based on:
+
+* earnings
+* guidance
+* legal developments
+* regulatory decisions
+* significant price moves
+* analyst actions
+* macroeconomic events
+
+Do not let web search replace the stored specialist analyses.
+
+⸻
+
+INFORMATION PRIORITY
+
+Use this priority:
+
+1. Current portfolio and backend-calculated exposure metrics
+2. Risk Analyzer
+3. Portfolio Analyzer
+4. Market Alerts
+5. Company Monitor data
+6. Opportunity Finder
+7. Event Monitor
+8. Sector Monitor
+9. Market Monitor
+10. News Monitor
+11. Web search for verification and new developments
+
+A new Market Alert should receive high priority when it materially changes an earlier analysis.
+
+⸻
+
+PROMPT RULES
+
+Tell OpenAI:
+
+You are an institutional investment decision committee.
+
+Your task is to convert the supplied portfolio analyses into cautious, transparent decision proposals for the next 1–3 months.
+
+Do not simply repeat the input modules.
+
+Resolve conflicts between modules.
+
+For each proposed decision:
+
+* identify the subject
+* state the proposed decision
+* explain why
+* identify supporting evidence
+* identify opposing evidence
+* state what could change the decision
+* state whether an upcoming event blocks the decision
+* state which information is missing
+* state confidence
+* state urgency
+
+A decision must not be based on one source alone when other relevant sources are available.
+
+If evidence is conflicting or incomplete, prefer:
+
+* Review
+* WaitForEvent
+* NoAction
+
+Do not fabricate certainty.
+
+Do not create exact order quantities, limit prices or executable instructions.
+
+Do not recommend deploying all available cash.
+
+Do not assume that a strong opportunity automatically justifies a purchase.
+
+Consider:
+
+* portfolio fit
+* concentration
+* diversification
+* risk score
+* upcoming events
+* existing cash
+* account currencies
+* company-specific evidence
+* latest alerts
+* evidence freshness
+
+Clearly distinguish facts, expectations and analytical judgement.
+
+⸻
+
+DECISION TARGETS
+
+The result may contain decisions for:
+
+1. Current holdings
+2. Opportunity Finder candidates
+3. Portfolio-level actions
+
+Examples of portfolio-level actions:
+
+* Wait before deploying cash
+* Review concentration
+* Maintain liquidity
+* Prepare research on a missing sector
+
+Do not create duplicate decisions that express the same conclusion.
+
+Return approximately 3–8 decisions, most important first.
+
+⸻
+
+JSON FORMAT
+
+Return exactly:
+
+{
+“mainConclusion”: {
+“title”: “…”,
+“reason”: “…”
+},
+
+“executiveSummary”: “…”,
+
+“overallDecisionPosture”:
+“ActivelyReview|SelectivePreparation|WaitForEvents|MaintainCurrentPositioning|InsufficientEvidence”,
+
+“decisionReadinessScore”: 0,
+
+“readinessDrivers”: [
+{
+“factor”: “…”,
+“impact”: “Positive|Negative”,
+“reason”: “…”
+}
+],
+
+“decisions”: [
+{
+“rank”: 1,
+“subjectType”: “Holding|Opportunity|Portfolio”,
+“company”: “…”,
+“ticker”: “…”,
+“decision”: “Hold|Review|WaitForEvent|PrepareToBuy|PrepareToReduce|NoAction”,
+“title”: “…”,
+“reason”: “…”,
+“supportingEvidence”: [”…”],
+“opposingEvidence”: [”…”],
+“confidence”: “High|Medium|Low”,
+“urgency”: “Immediate|Days|Weeks|NoUrgency”,
+“blockedByEvent”: true,
+“blockingEvent”: “…”,
+“blockingEventDate”: “YYYY-MM-DD or empty string”,
+“whatWouldChangeDecision”: [”…”],
+“missingEvidence”: [”…”],
+“portfolioImpact”: “…”,
+“accountConsiderations”: “…”,
+“sourceModules”: [
+“PortfolioManager”,
+“PortfolioAnalyzer”,
+“RiskAnalyzer”,
+“MarketAlerts”,
+“CompanyMonitor”,
+“OpportunityFinder”,
+“EventMonitor”,
+“SectorMonitor”,
+“MarketMonitor”,
+“NewsMonitor”,
+“Web”
+]
+}
+],
+
+“conflictsResolved”: [
+{
+“topic”: “…”,
+“conflict”: “…”,
+“resolution”: “…”
+}
+],
+
+“nextReviewTriggers”: [
+{
+“trigger”: “…”,
+“date”: “YYYY-MM-DD or empty string”,
+“affectedDecisions”: [”…”]
+}
+]
+}
+
+Rules:
+
+* decisionReadinessScore is an integer from 0–100.
+* It measures whether the evidence is sufficient to make useful decisions.
+* It is not a prediction of portfolio return.
+* Return 3–6 readiness drivers when sufficient information exists.
+* sourceModules must contain only modules actually used for that decision.
+* company and ticker may be empty for Portfolio-level decisions.
+* blockingEventDate must be empty when no verified date exists.
+* If blockedByEvent is false, blockingEvent and blockingEventDate must be empty.
+* Validate all JSON before storing.
+
+⸻
+
+SERVER-SIDE VALIDATION
+
+After schema validation:
+
+* Sort decisions deterministically by:
+    1. urgency
+    2. confidence
+    3. rank
+* Reassign ranks sequentially starting from 1.
+* Verify event dates against current UTC.
+* A past date must not be treated as a future blocking event.
+* Remove duplicate decisions using normalized subject and decision type.
+* Reject any decision containing direct executable language such as “buy now”, “sell now”, exact order quantities or order prices.
+* Do not store invalid output.
+
+Use retries for:
+
+* temporary OpenAI errors
+* web search not detected
+* empty responses
+* invalid JSON
+* schema validation failure
+* prohibited executable language
+
+Only return HTTP 500 after all retry attempts fail.
+
+Preserve the previous successful result on failure.
+
+⸻
+
+ACCOUNT CONSIDERATIONS
+
+Phase 1 should not select or use a Saxo account for an order.
+
+It may explain considerations such as:
+
+* A USD-listed opportunity may fit available USD cash.
+* Buying from a DKK account may require currency conversion.
+* A position already exists on a specific account.
+* Account eligibility needs verification.
+
+Do not make a final account-selection decision.
+
+Do not claim that an instrument is permitted on a specific account unless that is known from stored data or later verified by Saxo.
+
+⸻
+
+FRONTEND
+
+Use the same dark visual style as the existing modules.
+
+Top section:
+
+* Main Conclusion
+* Overall Decision Posture
+* Decision Readiness Score
+* Last updated
+* Update Analysis button
+* OpenAI debug icon
+
+Display readiness drivers in a collapsed section.
+
+Display each decision as a compact expandable card.
+
+Collapsed card:
+
+* Rank
+* Subject/company
+* Ticker when available
+* Decision badge
+* Confidence
+* Urgency
+* Blocked by event badge when relevant
+
+Expanded card:
+
+* Reason
+* Supporting evidence
+* Opposing evidence
+* Portfolio impact
+* Account considerations
+* Blocking event and date
+* What would change the decision
+* Missing evidence
+* Source modules
+
+Use clear colours, but do not colour PrepareToBuy as if a purchase has already been approved.
+
+Recommended visual meaning:
+
+* Hold: neutral/blue
+* Review: amber
+* WaitForEvent: amber
+* PrepareToBuy: green outline, not solid approval green
+* PrepareToReduce: red outline, not solid execution red
+* NoAction: gray
+
+Display:
+
+* Conflicts Resolved
+* Next Review Triggers
+
+Long text should be collapsed by default.
+
+⸻
+
+HISTORY
+
+Store compact history under:
+
+trade-decision-engine-history
+
+Keep the latest 20 analyses.
+
+For each history entry store:
+
+* timestamp
+* overallDecisionPosture
+* decisionReadinessScore
+* decision subjects
+* decision types
+* confidence
+* urgency
+
+Compare with the previous analysis and calculate:
+
+* New
+* Changed
+* Unchanged
+* Resolved
+
+A decision may be matched using normalized subjectType, ticker/company and decision type.
+
+Display the status on each decision card.
+
+Do not store complete prompts or complete responses in compact history.
+
+⸻
+
+SYSTEM LOG
+
+Keep logging concise.
+
+Log:
+
+* User manually started decision analysis
+* Warning when mock portfolio data is used
+* Warning when required analysis context is unavailable or stale
+* Decision analysis completed
+* Overall decision posture and readiness score
+* Highest-priority proposed decision and its main reason
+* Important changed or resolved decisions
+* Analysis failure
+
+Do not log every decision field.
+
+Do not log complete prompts or responses.
+
+⸻
+
+IMPORTANT SAFETY BOUNDARY
+
+This phase must not:
+
+* call Saxo order endpoints
+* place orders
+* modify orders
+* cancel orders
+* calculate executable quantities
+* create executable prices
+* provide one-click trading
+* automatically trigger another analysis module
+* present a proposal as already approved
+
+Add a visible notice in the UI:
+
+“Decision proposals only. No trades are created or submitted.”
+
+The future order-execution phase must be implemented separately and must require explicit user approval.
