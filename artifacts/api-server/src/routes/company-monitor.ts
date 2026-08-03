@@ -806,7 +806,11 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
         effectiveUserPrompt,
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1, jsonMode: true }
+        // jsonMode is intentionally NOT set here: the OpenAI Responses API
+        // rejects text.format.json_object when a web_search tool is active.
+        // JSON robustness is handled by the prose-extraction fallback in
+        // ai-service.ts and the explicit "begin with {" instruction in retries.
+        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

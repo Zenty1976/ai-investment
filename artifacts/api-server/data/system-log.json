@@ -1,47 +1,5 @@
 [
   {
-    "id": "e3d255dc-c9a1-455d-908b-1357f778721e",
-    "timestamp": "2026-08-01T22:12:49.597Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Serve Robotics execution and dilution risk"
-  },
-  {
-    "id": "046f8574-97e3-4474-a6f7-818d36f2dc2b",
-    "timestamp": "2026-08-01T22:12:49.598Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Macro data and Fed policy shifts"
-  },
-  {
-    "id": "7f302e3a-730c-449b-9d83-1608b009ffda",
-    "timestamp": "2026-08-01T22:12:49.600Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Geopolitical and energy‑driven market shocks"
-  },
-  {
-    "id": "4fc41107-d37f-44b0-9085-9bdfb41687ef",
-    "timestamp": "2026-08-01T22:12:55.510Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "87c3baef-9c23-4ef2-bd50-3a8372a163de",
-    "timestamp": "2026-08-01T22:12:57.396Z",
-    "module": "Market Alerts",
-    "level": "error",
-    "message": "Market alerts analysis failed"
-  },
-  {
-    "id": "64e3cc73-3a51-4989-b0b0-14ed208c1eb2",
-    "timestamp": "2026-08-01T22:13:06.719Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
     "id": "aa275ac4-829d-4591-84f1-aba6dc5328fd",
     "timestamp": "2026-08-01T22:13:08.188Z",
     "module": "Market Alerts",
@@ -3498,5 +3456,47 @@
     "module": "Company Monitor",
     "level": "error",
     "message": "Company analysis failed for SERV: OpenAI returned invalid JSON after web search: Here is the corrected JSON, with only the invalid fields fixed while preserving the rest of the response exactly as before:\n\n{\"updateType\":\"NoMaterialChange\",\"company\":{\"name\":\"Serve Robotics Inc.\",\"ticker\":\"SERV\",\"sector\":\"Technology\",\"industry\":\"Robotics\"},\"executiveSummary\":\"Serve Robotics contin"
+  },
+  {
+    "id": "40268e2b-f075-4b56-8a97-a26e4ae479e0",
+    "timestamp": "2026-08-03T06:05:38.865Z",
+    "module": "Company Monitor",
+    "level": "warning",
+    "message": "Dev reset: runtime state cleared. All targets will use FullAnalysis on next run."
+  },
+  {
+    "id": "b367adbf-0256-4afd-9e8b-36b5562b45f8",
+    "timestamp": "2026-08-03T06:05:38.866Z",
+    "module": "Company Monitor",
+    "level": "warning",
+    "message": "Dev reset: deleted 1 analysis record(s) and 1 history record(s). All Company Monitor targets will run FullAnalysis on next trigger."
+  },
+  {
+    "id": "7c1685da-dab0-4254-87ed-4ac143db784d",
+    "timestamp": "2026-08-03T06:05:53.589Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "9930f052-90bd-487d-b898-3cdf92489e3b",
+    "timestamp": "2026-08-03T06:05:54.355Z",
+    "module": "Company Monitor",
+    "level": "error",
+    "message": "Company analysis failed for SERV: OpenAI API error: 400 Web Search cannot be used with JSON mode."
+  },
+  {
+    "id": "97de83d5-21ec-4010-ba9f-63cfde5e062d",
+    "timestamp": "2026-08-03T06:05:59.704Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "b124d2e8-93f8-4162-88c4-b25f532743dc",
+    "timestamp": "2026-08-03T06:06:00.794Z",
+    "module": "Company Monitor",
+    "level": "error",
+    "message": "Company analysis failed for SERV: OpenAI API error: 400 Web Search cannot be used with JSON mode."
   }
 ]
