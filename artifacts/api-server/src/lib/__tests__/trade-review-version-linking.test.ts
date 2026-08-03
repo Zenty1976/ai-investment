@@ -128,13 +128,177 @@ describe("version linking: fingerprint change (same type)", () => {
     assert.strictEqual(wouldPreserve, false, "Approved must NOT be carried from v1 to v2");
   });
 
-  it("approvedAt is cleared for v2 proposal (no version-specific state carried forward)", () => {
-    // The route uses `samePrev` (undefined when !sameOutcomeVersion)
-    // so all version timestamps come from `undefined?.field ?? nowIso` = nowIso.
-    const samePrev: { approvedAt: string } | undefined = undefined;
-    const approvedAt = "Approved" === "Approved" ? (samePrev?.approvedAt ?? "nowIso") : null;
-    // The resolved value is "nowIso" (the current generation time), not the old timestamp.
-    assert.strictEqual(approvedAt, "nowIso", "approvedAt should reset to current time for the new proposal");
+  it("v2 proposal has null approvedAt, rejectedAt, executedAt and status Ready/Waiting", () => {
+    // When the outcome version changes the route discards all version-specific
+    // state.  The new proposal status is determined purely from sizing
+    // availability — never inherited from the old Approved status.
+    //
+    // This is a full simulation of the route's proposal-building logic:
+    //   sameOutcomeVersion=false  →  samePrev=undefined
+    //   status falls through to sizing check  →  Ready (quantity > 0)
+    //   approvedAt = status === "Approved" ? … : null  →  null
+    //   rejectedAt = status === "Rejected" ? … : null  →  null
+    //   executedAt = samePrev?.executedAt ?? null       →  null
+
+    const prevOutcomeId    = "Holding:CAT_A:v1";
+    const currentOutcomeId = "Holding:CAT_A:v2";
+
+    // Stored proposal from the v1 cycle — user had already approved it
+    const storedPrev = {
+      status:     "Approved" as const,
+      outcomeId:  prevOutcomeId,
+      createdAt:  "2026-07-01T10:00:00.000Z",
+      approvedAt: "2026-07-01T11:00:00.000Z",
+      rejectedAt: null,
+      executedAt: null,
+    };
+
+    // --- Reproduce the route's proposal-building decision tree ---
+    const PRESERVED_STATUSES = ["Approved", "Rejected", "Executed", "Cancelled"] as const;
+    const sameOutcomeVersion = isSameOutcomeVersion(storedPrev.outcomeId, currentOutcomeId);
+    const samePrev           = sameOutcomeVersion ? storedPrev : undefined;
+
+    // Sizing: assume quantity is available and non-zero for this scenario
+    const sizingUnavailableReason: string | null = null;
+    const quantity = 50;
+
+    let status: string;
+    if (sameOutcomeVersion && (PRESERVED_STATUSES as readonly string[]).includes(storedPrev.status)) {
+      status = storedPrev.status;
+    } else if (sizingUnavailableReason !== null || quantity === 0) {
+      status = "Waiting";
+    } else {
+      status = "Ready";
+    }
+
+    const NOW = new Date().toISOString();
+    const proposal = {
+      status,
+      createdAt:  samePrev?.createdAt  ?? NOW,
+      approvedAt: status === "Approved" ? (samePrev?.approvedAt ?? NOW) : null,
+      rejectedAt: status === "Rejected" ? (samePrev?.rejectedAt ?? NOW) : null,
+      executedAt: samePrev?.executedAt ?? null,
+      outcomeId:  currentOutcomeId, // always the current active version
+    };
+    // --- End of route logic reproduction ---
+
+    assert.ok(
+      proposal.status === "Ready" || proposal.status === "Waiting",
+      `status must be Ready or Waiting, got: ${proposal.status}`
+    );
+    assert.strictEqual(proposal.approvedAt, null,  "approvedAt must be null for a new-version proposal");
+    assert.strictEqual(proposal.rejectedAt, null,  "rejectedAt must be null for a new-version proposal");
+    assert.strictEqual(proposal.executedAt, null,  "executedAt must be null for a new-version proposal");
+    assert.strictEqual(proposal.outcomeId,  currentOutcomeId, "outcomeId must be the current active version");
+  });
+
+  it("integration: full proposal-state resolution across the v1→v2 transition", () => {
+    // End-to-end integration test that drives the outcome store, resolves the
+    // active outcomeId, and runs the complete proposal-building decision tree —
+    // mirroring what the Trade Review generation route does on each POST.
+
+    const TICKER            = "CAT_INT";
+    const SUBJECT_DECISION  = `Holding:${TICKER}`;
+    const PRESERVED_STATUSES = ["Approved", "Rejected", "Executed", "Cancelled"] as const;
+
+    // Helper that reproduces the full proposal-building decision tree from the route
+    function buildProposalState(opts: {
+      storedProposal:         { status: string; outcomeId: string | null; approvedAt: string | null; rejectedAt: string | null; executedAt: string | null } | null;
+      activeOutcomeId:        string | null;
+      sizingUnavailable:      boolean;
+      quantity:               number;
+    }) {
+      const { storedProposal: prev, activeOutcomeId, sizingUnavailable, quantity } = opts;
+      const sameOutcomeVersion = isSameOutcomeVersion(prev?.outcomeId, activeOutcomeId);
+      const samePrev           = sameOutcomeVersion ? prev! : null;
+
+      let status: string;
+      if (sameOutcomeVersion && prev && (PRESERVED_STATUSES as readonly string[]).includes(prev.status)) {
+        status = prev.status;
+      } else if (sizingUnavailable || quantity === 0) {
+        status = "Waiting";
+      } else {
+        status = "Ready";
+      }
+
+      const NOW = "NOW";
+      return {
+        status,
+        createdAt:  samePrev?.createdAt  ?? NOW,
+        approvedAt: status === "Approved" ? (samePrev?.approvedAt ?? NOW) : null,
+        rejectedAt: status === "Rejected" ? (samePrev?.rejectedAt ?? NOW) : null,
+        executedAt: samePrev?.executedAt ?? null,
+        outcomeId:  activeOutcomeId,
+        sameOutcomeVersion,
+      };
+    }
+
+    // ── Step 1: TDE produces v1 ──
+    const v1 = recordDecisionOutcome(
+      baseInput({ subjectDecisionId: SUBJECT_DECISION }),
+      "fp-v1-int"
+    );
+    const activeAfterV1 = getOutcomeForDecision(SUBJECT_DECISION)?.id ?? null;
+    assert.strictEqual(activeAfterV1, v1.id);
+
+    // ── Step 2: Trade Review generates first proposal (no stored prev) ──
+    const proposal1 = buildProposalState({
+      storedProposal:  null,
+      activeOutcomeId: activeAfterV1,
+      sizingUnavailable: false,
+      quantity: 100,
+    });
+    assert.strictEqual(proposal1.status,     "Ready");
+    assert.strictEqual(proposal1.approvedAt, null);
+    assert.strictEqual(proposal1.outcomeId,  v1.id);
+    assert.strictEqual(proposal1.sameOutcomeVersion, false, "no prev → sameOutcomeVersion false");
+
+    // ── Step 3: User approves the proposal ──
+    updateDecisionOutcomeFromReview({ outcomeId: v1.id, newStatus: "Approved" });
+    const storedApproved = {
+      status:    "Approved",
+      outcomeId: v1.id,
+      createdAt:  "2026-08-01T09:00:00.000Z",
+      approvedAt: "2026-08-01T10:00:00.000Z",
+      rejectedAt: null,
+      executedAt: null,
+    };
+
+    // ── Step 4: Trade Review re-generates — same v1 outcome, preserves Approved ──
+    const proposal2 = buildProposalState({
+      storedProposal:  storedApproved,
+      activeOutcomeId: activeAfterV1,
+      sizingUnavailable: false,
+      quantity: 100,
+    });
+    assert.strictEqual(proposal2.status,           "Approved",                        "same version → preserve Approved");
+    assert.strictEqual(proposal2.approvedAt,        storedApproved.approvedAt,         "approvedAt preserved for same version");
+    assert.strictEqual(proposal2.sameOutcomeVersion, true);
+
+    // ── Step 5: TDE produces v2 (fingerprint changed) ──
+    const v2 = recordDecisionOutcome(
+      baseInput({ subjectDecisionId: SUBJECT_DECISION, evidenceScore: 55, evidenceBand: "Strong" }),
+      "fp-v2-int"
+    );
+    const activeAfterV2 = getOutcomeForDecision(SUBJECT_DECISION)?.id ?? null;
+    assert.strictEqual(activeAfterV2, v2.id, "active outcome must now be v2");
+
+    // ── Step 6: Trade Review re-generates — v2 is active, old proposal linked to v1 ──
+    const proposal3 = buildProposalState({
+      storedProposal:  storedApproved,   // still stored from before the TDE bump
+      activeOutcomeId: activeAfterV2,
+      sizingUnavailable: false,
+      quantity: 100,
+    });
+    assert.ok(
+      proposal3.status === "Ready" || proposal3.status === "Waiting",
+      `new proposal must be Ready or Waiting, got: ${proposal3.status}`
+    );
+    assert.strictEqual(proposal3.approvedAt,         null,  "approvedAt must be null — not carried from v1");
+    assert.strictEqual(proposal3.rejectedAt,         null);
+    assert.strictEqual(proposal3.executedAt,         null);
+    assert.strictEqual(proposal3.outcomeId,          v2.id, "new proposal must link to v2");
+    assert.strictEqual(proposal3.sameOutcomeVersion, false, "v1 id ≠ v2 id → sameOutcomeVersion false");
   });
 
   it("v1 outcome record stays unchanged in history after v2 approval", () => {
