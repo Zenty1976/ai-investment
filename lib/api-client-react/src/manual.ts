@@ -308,7 +308,7 @@ export type TradeDecisionPosture =
 
 export type TradeDecisionConfidence = "High" | "Medium" | "Low";
 export type TradeDecisionUrgency = "Immediate" | "Days" | "Weeks" | "NoUrgency";
-export type TradeDecisionStatus = "New" | "Changed" | "Unchanged";
+export type TradeDecisionStatus = "New" | "Changed" | "Unchanged" | "Strengthened" | "Weakened";
 export type TradeDecisionReadiness = "WaitingForReevaluation" | "ReadyForReview" | "Informational";
 
 export interface TradeDecision {
@@ -341,6 +341,8 @@ export interface TradeDecision {
   readiness?: TradeDecisionReadiness;
   /** Server-added */
   readinessReason?: string;
+  /** Server-added — ISO timestamp of the last run that validated this decision (preserved Unchanged decisions carry their original creation date as title/reason, but lastValidated reflects the most recent check) */
+  lastValidated?: string;
 }
 
 export interface TradeDecisionEngineAnalysis {

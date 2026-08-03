@@ -298,10 +298,10 @@ export const RunTradeDecisionEngineResponse = zod.object({
       portfolioImpact: zod.string(),
       accountConsiderations: zod.string(),
       sourceModules: zod.array(zod.string()),
-      targetAllocationPercent: zod.number(),
-      maximumAllocationPercent: zod.number(),
-      sizingConfidence: zod.enum(["High", "Medium", "Low"]),
-      sizingReason: zod.string(),
+      targetAllocationPercent: zod.number().optional(),
+      maximumAllocationPercent: zod.number().optional(),
+      sizingConfidence: zod.enum(["High", "Medium", "Low"]).optional(),
+      sizingReason: zod.string().optional(),
     })
   ),
   conflictsResolved: zod.array(
