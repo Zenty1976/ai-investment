@@ -621,7 +621,7 @@ export default function CompanyMonitor() {
               </div>
 
               {/* Timestamp row */}
-              <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50 mt-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground/50 mt-1">
                 {isPending ? (
                   <span className="flex items-center gap-1.5 text-primary/80 animate-pulse">
                     <RefreshCw className="h-3 w-3 animate-spin" />
