@@ -1,96 +1,5 @@
 [
   {
-    "id": "1318025b-3f35-4e8d-98d5-1125d8b9ffe4",
-    "timestamp": "2026-08-02T07:17:43.783Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "19f6493b-3c6e-41d9-8139-83042e0c174e",
-    "timestamp": "2026-08-02T07:17:47.127Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "159be445-698d-46cb-8e61-b0df97c4773b",
-    "timestamp": "2026-08-02T07:17:47.128Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 new alert(s): Novo Nordisk ZEUS Phase 3 trial update"
-  },
-  {
-    "id": "96e8c00b-499c-4b95-b25c-2e842ca4ae6b",
-    "timestamp": "2026-08-02T07:17:47.130Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 alert(s) resolved: Serve Robotics Q2 2026 earnings scheduled; Microsoft AI/cloud earnings momentum"
-  },
-  {
-    "id": "a855383b-fbfa-4e92-8a7f-f5791a7a6cea",
-    "timestamp": "2026-08-02T07:17:47.131Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Novo Nordisk ZEUS Phase 3 trial update [Company]"
-  },
-  {
-    "id": "87d788ec-8fe3-4def-bb86-7d15654b84f3",
-    "timestamp": "2026-08-02T07:17:48.396Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "95e23d4a-bf1d-4bb2-8f78-2d81f7372939",
-    "timestamp": "2026-08-02T07:17:52.276Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "5de91ce8-4745-4adf-a321-e3e780d325eb",
-    "timestamp": "2026-08-02T07:17:52.277Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 new alert(s): Novo Nordisk ZEUS Phase 3 trial failure and Q3 impairment"
-  },
-  {
-    "id": "4c01925c-167e-4105-a9b5-bdf3006c8078",
-    "timestamp": "2026-08-02T07:17:52.278Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 alert(s) resolved: Novo Nordisk ZEUS Phase 3 trial update"
-  },
-  {
-    "id": "72d393c4-897d-4322-9a5e-70d8bff79975",
-    "timestamp": "2026-08-02T07:17:52.280Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Novo Nordisk ZEUS Phase 3 trial failure and Q3 impairment [Company]"
-  },
-  {
-    "id": "5643152b-0c63-4f66-94c4-6876886290e7",
-    "timestamp": "2026-08-02T07:18:04.238Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "5991e878-70eb-4166-806f-0ba9f6934df9",
-    "timestamp": "2026-08-02T07:18:07.244Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked: no new material developments"
-  },
-  {
-    "id": "b6b2eaaa-c939-4a1b-b0f7-c9e5f1bed25d",
-    "timestamp": "2026-08-02T07:31:51.981Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
     "id": "0559bf7d-eec1-49f3-af8a-d238af40cd66",
     "timestamp": "2026-08-02T07:31:55.562Z",
     "module": "Market Alerts",
@@ -3495,6 +3404,97 @@
   {
     "id": "8c5eeb66-3c23-4810-9b16-f985b1526d62",
     "timestamp": "2026-08-03T15:16:51.210Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Gate: 1 decision(s) downgraded"
+  },
+  {
+    "id": "3b24e983-890f-42dc-ac86-49ffd28ce6b1",
+    "timestamp": "2026-08-03T15:44:01.282Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "afe98d2a-333b-4d7c-beac-13ccb490f516",
+    "timestamp": "2026-08-03T15:44:01.372Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "7bfba83b-0b64-46f2-a561-4f24ceab2a1a",
+    "timestamp": "2026-08-03T15:44:28.914Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Diversify healthcare exposure via LLY ahead of earnings\" (LLY): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "adcf643b-a073-49f9-b76a-da7bc0797c74",
+    "timestamp": "2026-08-03T15:44:28.917Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] CAT (PrepareToBuy): score=35 band=Adequate supporting=[OpportunityFinder,PortfolioAnalyzer] opposing=[]"
+  },
+  {
+    "id": "3197be15-0fa9-42bb-b3dd-5ccb2d28bb17",
+    "timestamp": "2026-08-03T15:44:28.935Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] LLY (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "82fa1ccd-546d-4051-bd39-04d4418bbef7",
+    "timestamp": "2026-08-03T15:44:29.153Z",
+    "module": "TradeDecisionOutcome",
+    "level": "internal",
+    "message": "Opportunity:CAT: v3 created (fingerprint changed)"
+  },
+  {
+    "id": "d25d9230-e79f-4a80-8e37-cefa500bbd3a",
+    "timestamp": "2026-08-03T15:44:29.154Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "e6a0c5a2-1416-4e80-95da-c2ebe4d4cfbf",
+    "timestamp": "2026-08-03T15:44:29.156Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "d8d1ef82-d1dd-4e3f-9a63-e6fa7c7acc73",
+    "timestamp": "2026-08-03T15:44:29.158Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 65/100"
+  },
+  {
+    "id": "ab4fefd9-45d8-43a9-ba30-5ae53b5be9c4",
+    "timestamp": "2026-08-03T15:44:29.161Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "1 decision(s) ReadyForReview: CAT"
+  },
+  {
+    "id": "4f571366-1c83-4b90-a1d0-dcd061f084c9",
+    "timestamp": "2026-08-03T15:44:29.163Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "2 WaitingForReevaluation"
+  },
+  {
+    "id": "6f0963d6-b257-4677-9d37-4bdbc25b5bbc",
+    "timestamp": "2026-08-03T15:44:29.166Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Changed: Strengthened Potential industrial diversification via CAT ahead of earnings; Strengthened Diversify healthcare exposure via LLY ahead of earnings"
+  },
+  {
+    "id": "77557025-5211-4271-8b27-92596992b986",
+    "timestamp": "2026-08-03T15:44:29.168Z",
     "module": "Trade Decision Engine",
     "level": "info",
     "message": "Gate: 1 decision(s) downgraded"

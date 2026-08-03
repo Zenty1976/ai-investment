@@ -1,0 +1,382 @@
+The next major milestone is Portfolio Manager v2.
+
+The purpose is no longer only to analyse the current portfolio.
+
+Portfolio Manager should become the portfolio-level "Chief Investment Officer" of the system.
+
+It should continuously evaluate whether today's portfolio is still the optimal portfolio based on all available analyses.
+
+Do not redesign the UI yet.
+
+The work is primarily backend architecture and decision quality.
+
+--------------------------------------------------
+1. Introduce Target Portfolio
+--------------------------------------------------
+
+Separate two concepts:
+
+Current Portfolio
+
+Target Portfolio
+
+Current Portfolio is what the user owns today.
+
+Target Portfolio is what the system believes the portfolio should ideally look like if starting from today's cash and holdings.
+
+The system should maintain a continuously updated Target Portfolio.
+
+Each target position should include:
+
+- ticker
+- company
+- targetAllocationPercent
+- allocationRangeMin
+- allocationRangeMax
+- conviction
+- strategicRole
+- reason
+- supportingModules
+- blockingFactors
+
+Target Portfolio is advisory only.
+
+Do not generate executable trades here.
+
+--------------------------------------------------
+2. Introduce Portfolio Roles
+--------------------------------------------------
+
+Every holding and candidate should have a strategic role.
+
+Example roles:
+
+Core Compounder
+
+Growth
+
+Speculative Growth
+
+Income
+
+Defensive
+
+Cyclical
+
+Turnaround
+
+Watch Candidate
+
+Cash
+
+Diversifier
+
+Each role should influence recommended allocation ranges.
+
+Example:
+
+Core Compounder:
+15–30%
+
+Growth:
+5–15%
+
+Speculative:
+1–5%
+
+Cash:
+5–30%
+
+These ranges should come from configuration.
+
+--------------------------------------------------
+3. Portfolio Health Score
+--------------------------------------------------
+
+Instead of one overall score, calculate deterministic sub-scores.
+
+Examples:
+
+Diversification
+
+Sector Balance
+
+Geographic Balance
+
+Currency Balance
+
+Risk Concentration
+
+Cash Utilization
+
+Event Concentration
+
+Conviction Alignment
+
+Quality Score
+
+Opportunity Cost
+
+Each score:
+
+0–100
+
+Overall Health should be derived from these.
+
+--------------------------------------------------
+4. Detect portfolio drift
+--------------------------------------------------
+
+Continuously compare:
+
+Current Portfolio
+
+Target Portfolio
+
+Detect:
+
+Overweight
+
+Underweight
+
+Missing Exposure
+
+Excess Concentration
+
+Idle Cash
+
+Sector Drift
+
+Currency Drift
+
+Risk Drift
+
+This should become structured backend data.
+
+--------------------------------------------------
+5. Opportunity replacement
+--------------------------------------------------
+
+Portfolio Manager should compare:
+
+existing holdings
+
+vs
+
+best current opportunities
+
+Example:
+
+Would I rather own:
+
+Current:
+Novo
+
+or
+
+Candidate:
+Eli Lilly
+
+If yes,
+
+record this as:
+
+Replacement Opportunity
+
+Do NOT automatically create a trade.
+
+Trade Decision can later use this information.
+
+--------------------------------------------------
+6. Capital Allocation Engine
+--------------------------------------------------
+
+Build deterministic capital allocation.
+
+Given:
+
+available cash
+
+policy profile
+
+current allocations
+
+target allocations
+
+determine:
+
+ideal allocation percentages
+
+priority ranking
+
+maximum additional allocation
+
+minimum allocation
+
+The engine should not decide execution.
+
+Only optimal capital distribution.
+
+--------------------------------------------------
+7. Cash should become a real asset
+--------------------------------------------------
+
+Treat Cash exactly like another portfolio position.
+
+Cash has:
+
+target allocation
+
+current allocation
+
+minimum
+
+maximum
+
+strategic reason
+
+Example:
+
+Cash:
+Current 53%
+
+Target 20%
+
+Reason:
+Waiting for earnings cluster.
+
+--------------------------------------------------
+8. Long-term portfolio memory
+--------------------------------------------------
+
+Store historical snapshots.
+
+Examples:
+
+Daily or whenever Portfolio Manager materially changes.
+
+Track:
+
+overall health
+
+target allocations
+
+major drifts
+
+largest risks
+
+largest opportunities
+
+This enables trend analysis later.
+
+--------------------------------------------------
+9. Explain WHY the portfolio changed
+--------------------------------------------------
+
+Every Target Portfolio update should generate structured changes.
+
+Examples:
+
+Microsoft:
+Target increased
+Reason:
+AI thesis strengthened.
+
+Cash:
+Target reduced
+Reason:
+Event risk resolved.
+
+Novo:
+Target reduced
+Reason:
+Conviction decreased.
+
+These are backend objects.
+
+Trade Review and Dashboard can later summarize them.
+
+--------------------------------------------------
+10. Integrate with existing modules
+--------------------------------------------------
+
+Portfolio Manager should consume:
+
+Company Monitor
+
+Risk Analyzer
+
+Trade Decision
+
+Opportunity Finder
+
+Sector Monitor
+
+Market Alerts
+
+Market Monitor
+
+It should become the highest-level consumer.
+
+It should not duplicate their work.
+
+It should synthesize them.
+
+--------------------------------------------------
+11. Preserve architecture
+--------------------------------------------------
+
+Do not change:
+
+Company Monitor
+
+Trade Decision
+
+Trade Review
+
+Policy Profiles
+
+Outcome Tracking
+
+Automation
+
+UI contracts
+
+Saxo boundaries
+
+The Portfolio Manager should become the strategic brain above the existing modules.
+
+Trade Decision continues deciding individual trades.
+
+Portfolio Manager decides what the portfolio should ideally become.
+
+Those are different responsibilities.
+
+--------------------------------------------------
+12. Future vision
+--------------------------------------------------
+
+When all modules are complete, the overall flow should be:
+
+Market / Company modules
+↓
+
+Risk / Opportunity
+↓
+
+Portfolio Manager
+(What should my portfolio ideally look like?)
+
+↓
+
+Trade Decision
+(Which trades move me toward that target?)
+
+↓
+
+Trade Review
+(User approval)
+
+↓
+
+Execution (future)
