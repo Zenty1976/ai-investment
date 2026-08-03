@@ -70,6 +70,158 @@ export interface PortfolioAccount {
   positions: PortfolioPosition[];
 }
 
+// ── Portfolio Manager v2 types ────────────────────────────────────────────────
+
+export type PortfolioRole =
+  | "Cash"
+  | "CoreHolding"
+  | "GrowthCore"
+  | "SpeculativeGrowth"
+  | "IncomeDividend"
+  | "Defensive"
+  | "CyclicalExposure"
+  | "InternationalDiversifier"
+  | "SectorPlay"
+  | "EventDriven";
+
+export type HealthGrade = "A" | "B" | "C" | "D" | "F";
+
+export interface HealthSubScore {
+  name: string;
+  score: number;
+  weight: number;
+  reason: string;
+}
+
+export interface PortfolioHealthScore {
+  overall: number;
+  grade: HealthGrade;
+  subScores: HealthSubScore[];
+  computedAt: string;
+}
+
+export interface TargetAllocation {
+  ticker: string;
+  company: string;
+  role: PortfolioRole;
+  targetPercent: number;
+  minPercent: number;
+  maxPercent: number;
+  rationale: string;
+}
+
+export interface TargetPortfolio {
+  generatedAt: string;
+  totalEquityTargetPercent: number;
+  cashTargetPercent: number;
+  allocations: TargetAllocation[];
+  strategicRationale: string;
+  keyAssumptions: string[];
+}
+
+export type DriftType =
+  | "Overweight"
+  | "Underweight"
+  | "Missing"
+  | "Excess"
+  | "CashTooHigh"
+  | "CashTooLow"
+  | "SectorOverweight"
+  | "SectorUnderweight";
+
+export interface PortfolioDriftItem {
+  type: DriftType;
+  ticker?: string;
+  sector?: string;
+  currentPercent: number;
+  targetPercent: number;
+  deviationPercent: number;
+  severity: "High" | "Medium" | "Low";
+  action: string;
+}
+
+export interface CapitalAllocationItem {
+  ticker: string;
+  company: string;
+  role: PortfolioRole;
+  currentPercent: number;
+  targetPercent: number;
+  gapPercent: number;
+  suggestedAmountBase: number;
+  priority: "High" | "Medium" | "Low";
+  rationale: string;
+}
+
+export interface CapitalAllocationPlan {
+  availableCashBase: number;
+  totalPortfolioBase: number;
+  cashPercent: number;
+  cashTargetPercent: number;
+  deployableCashBase: number;
+  items: CapitalAllocationItem[];
+  totalSuggestedDeploymentBase: number;
+  residualCashAfterDeploymentBase: number;
+  computedAt: string;
+}
+
+export interface ReplacementOpportunity {
+  holdingTicker: string;
+  holdingCompany: string;
+  holdingCurrentPercent: number;
+  holdingScore: number;
+  candidateTicker: string;
+  candidateCompany: string;
+  candidateOverallScore: number;
+  scoreDelta: number;
+  rationale: string;
+  priority: "High" | "Medium" | "Low";
+}
+
+export type PortfolioChangeType =
+  | "AddedPosition"
+  | "RemovedPosition"
+  | "TargetIncreased"
+  | "TargetDecreased"
+  | "RoleChanged"
+  | "CashTargetChanged";
+
+export interface PortfolioChange {
+  type: PortfolioChangeType;
+  ticker?: string;
+  description: string;
+  previousValue?: number;
+  newValue?: number;
+}
+
+export interface PortfolioV2 {
+  generatedAt: string;
+  durationMs: number;
+  /**
+   * The `updatedAt` timestamp of the PortfolioSnapshot this analysis was
+   * computed from. Matches the snapshot's `updatedAt` when v2 is current;
+   * a mismatch means v2 is stale or the analysis is still pending.
+   */
+  snapshotUpdatedAt: string;
+  health: PortfolioHealthScore;
+  target: TargetPortfolio;
+  drift: PortfolioDriftItem[];
+  capitalAllocation: CapitalAllocationPlan;
+  replacements: ReplacementOpportunity[];
+  changes: PortfolioChange[];
+}
+
+export interface PortfolioV2HistoryEntry {
+  snapshotAt: string;
+  healthOverall: number;
+  healthGrade: HealthGrade;
+  driftItemCount: number;
+  highSeverityDriftCount: number;
+  cashPercent: number;
+  cashTargetPercent: number;
+  totalValue: number | null;
+  positionCount: number;
+}
+
 export interface PortfolioSnapshot {
   updatedAt: string;
   environment: SaxoEnvironment;
@@ -79,6 +231,8 @@ export interface PortfolioSnapshot {
   totalUnrealizedProfitLoss: number;
   accounts: PortfolioAccount[];
   isMockData?: boolean;
+  /** CIO v2 enrichment — present once the async v2 pass has completed */
+  v2?: PortfolioV2;
 }
 
 // ── Portfolio Manager ─────────────────────────────────────────────────────────
@@ -99,6 +253,20 @@ export function useUpdatePortfolio(options?: {
         method: "POST",
       }),
     ...(options?.mutation ?? {}),
+  });
+}
+
+export function useGetPortfolioV2() {
+  return useQuery({
+    queryKey: ["portfolio-v2"],
+    queryFn: () => customFetch<PortfolioV2 | null>("/api/portfolio-manager/v2"),
+  });
+}
+
+export function useGetPortfolioV2History() {
+  return useQuery({
+    queryKey: ["portfolio-v2-history"],
+    queryFn: () => customFetch<PortfolioV2HistoryEntry[]>("/api/portfolio-manager/history"),
   });
 }
 

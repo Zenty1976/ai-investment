@@ -3,11 +3,22 @@
  *
  * Fetches all accounts, their balances, and net positions from Saxo Bank.
  * Stores a normalised multi-account snapshot in the shared Analysis Repository.
- * No OpenAI is used.
+ * No OpenAI is used for the primary snapshot.
+ *
+ * After every successful snapshot a non-blocking v2 "CIO pass" enriches the
+ * result with:
+ *  - Portfolio health score (deterministic)
+ *  - AI-synthesised target portfolio
+ *  - Drift analysis vs target
+ *  - Capital allocation plan
+ *  - Replacement opportunity detection
+ *  - Change explanation vs previous target
  *
  * Endpoints:
- *   GET  /portfolio-manager        → latest stored snapshot (or null)
- *   POST /portfolio-manager/update → fetch fresh data from Saxo, store & return
+ *   GET  /portfolio-manager         → latest stored snapshot (or null)
+ *   POST /portfolio-manager/update  → fetch fresh Saxo data, store & return
+ *   GET  /portfolio-manager/v2      → latest v2 CIO analysis (or null)
+ *   GET  /portfolio-manager/history → v2 history log (capped at 90 entries)
  */
 
 import { Router } from "express";
@@ -15,6 +26,14 @@ import { analysisRepository } from "../lib/analysis-repository.js";
 import { saxoStore } from "../lib/saxo-store.js";
 import { logger } from "../lib/logger.js";
 import { systemLog } from "../lib/system-log.js";
+import { computePortfolioHealth } from "../lib/portfolio-health-engine.js";
+import { synthesiseTargetPortfolio } from "../lib/portfolio-target-synthesiser.js";
+import { detectDrift } from "../lib/portfolio-drift-detector.js";
+import { computeCapitalAllocation } from "../lib/portfolio-capital-allocation-engine.js";
+import { detectReplacements } from "../lib/portfolio-replacement-detector.js";
+import { explainChanges } from "../lib/portfolio-change-explainer.js";
+import { appendV2HistoryEntry } from "../lib/portfolio-history-writer.js";
+import type { PortfolioV2, PortfolioV2HistoryEntry } from "../lib/portfolio-manager-v2-types.js";
 import {
   mockAccounts,
   mockClientBalance,
@@ -152,6 +171,12 @@ export interface PortfolioSnapshot {
   accounts: PortfolioAccount[];
   /** True when this snapshot was built from mock data, not the real Saxo API */
   isMockData?: boolean;
+  /**
+   * CIO (v2) enrichment — populated asynchronously after every snapshot.
+   * Present when the v2 analysis has completed; absent on the very first run
+   * before v2 has finished, or when it has been disabled.
+   */
+  v2?: PortfolioV2;
 }
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
@@ -414,11 +439,241 @@ function buildSnapshotFromMock(env: "sim" | "live"): PortfolioSnapshot {
   };
 }
 
+// ── V2 CIO pass ───────────────────────────────────────────────────────────────
+// Runs non-blocking after every successful snapshot. Failures never affect the
+// primary snapshot response.
+
+const V2_MODULE_NAME    = "portfolio-manager-v2";
+const V2_HISTORY_KEY    = "portfolio-manager-v2-history";
+
+async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
+  const startMs = Date.now();
+  // Capture the exact snapshot version we were called with.
+  // After the async AI call we re-check that this snapshot is still
+  // the current one; if a newer update arrived in the meantime we
+  // discard our result rather than overwriting a more recent v2.
+  const snapshotUpdatedAt = snapshot.updatedAt;
+
+  try {
+    // ── 1. Health score (deterministic, synchronous) ────────────────────────
+    const health = computePortfolioHealth(snapshot);
+
+    // ── 2. Read context from other modules (all optional) ───────────────────
+    const paEntry  = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
+    const riskEntry = analysisRepository.get<Record<string, unknown>>("risk-analyzer");
+    const ofEntry  = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
+
+    const portfolioAnalyzerContext = paEntry
+      ? JSON.stringify({
+          mainConclusion: paEntry.result.mainConclusion,
+          executiveSummary: paEntry.result.executiveSummary,
+          overallRating: paEntry.result.overallRating,
+          overallOutlook: paEntry.result.overallOutlook,
+          strengths: paEntry.result.strengths,
+          weaknesses: paEntry.result.weaknesses,
+          topRisks: paEntry.result.topRisks,
+          topOpportunities: paEntry.result.topOpportunities,
+          positionComments: paEntry.result.positionComments,
+        })
+      : null;
+
+    const riskContext = riskEntry
+      ? JSON.stringify({
+          executiveSummary: riskEntry.result.executiveSummary,
+          overallRiskLevel: riskEntry.result.overallRiskLevel,
+          riskScore: riskEntry.result.riskScore,
+          topRisks: Array.isArray(riskEntry.result.topRisks)
+            ? (riskEntry.result.topRisks as Array<Record<string, unknown>>).slice(0, 5).map(
+                (r) => ({ title: r.title, category: r.category, severity: r.severity })
+              )
+            : [],
+        })
+      : null;
+
+    type OFCandidate = {
+      ticker: string;
+      company: string;
+      overallScore: number;
+      priority?: string;
+      investmentThesis?: string[];
+      mainCatalyst?: string;
+    };
+
+    const ofCandidates: OFCandidate[] = [];
+    const positionAttentions: Array<{ ticker: string; attention: "High" | "Medium" | "Low" }> = [];
+
+    if (ofEntry && Array.isArray((ofEntry.result as Record<string, unknown>).topOpportunities)) {
+      const raw = (ofEntry.result as Record<string, unknown>).topOpportunities as Array<Record<string, unknown>>;
+      for (const c of raw) {
+        if (c.ticker && typeof c.overallScore === "number") {
+          ofCandidates.push({
+            ticker: String(c.ticker),
+            company: String(c.company ?? c.ticker),
+            overallScore: c.overallScore,
+            priority: c.priority as string | undefined,
+            investmentThesis: Array.isArray(c.investmentThesis)
+              ? (c.investmentThesis as string[]).slice(0, 2)
+              : undefined,
+            mainCatalyst: c.mainCatalyst as string | undefined,
+          });
+        }
+      }
+    }
+
+    if (paEntry && Array.isArray((paEntry.result as Record<string, unknown>).positionComments)) {
+      const raw = (paEntry.result as Record<string, unknown>).positionComments as Array<Record<string, unknown>>;
+      for (const pc of raw) {
+        if (pc.ticker && (pc.attention === "High" || pc.attention === "Medium" || pc.attention === "Low")) {
+          positionAttentions.push({ ticker: String(pc.ticker), attention: pc.attention });
+        }
+      }
+    }
+
+    const opportunityContext = ofCandidates.length > 0
+      ? JSON.stringify(ofCandidates.slice(0, 5).map((c) => ({
+          ticker: c.ticker,
+          company: c.company,
+          overallScore: c.overallScore,
+          mainCatalyst: c.mainCatalyst ?? "",
+          investmentThesis: c.investmentThesis ?? [],
+        })))
+      : null;
+
+    // ── 3. Build allowed-ticker set for synthesiser validation ───────────────
+    // Only tickers currently held OR listed as OF candidates are permitted in
+    // the target; the AI must not invent tickers.
+    const allPositions = snapshot.accounts.flatMap((a) => a.positions);
+    const allowedTickers = new Set<string>([
+      ...allPositions.map((p) => p.symbol.toUpperCase().trim()),
+      ...ofCandidates.map((c) => c.ticker.toUpperCase().trim()),
+    ]);
+
+    // ── 4. AI target synthesis (async — may take several seconds) ────────────
+    const target = await synthesiseTargetPortfolio(
+      snapshot,
+      portfolioAnalyzerContext,
+      riskContext,
+      opportunityContext,
+      allowedTickers
+    );
+
+    // ── 5. Version guard — discard if a newer snapshot has arrived ────────────
+    // Between snapshot save and here a second POST /update may have run and
+    // saved a newer snapshot with a different updatedAt. Publishing this v2
+    // would associate it with the wrong (stale) snapshot.
+    const currentSnapshot = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
+    if (currentSnapshot?.result?.updatedAt !== snapshotUpdatedAt) {
+      logger.warn(
+        { snapshotUpdatedAt, currentUpdatedAt: currentSnapshot?.result?.updatedAt },
+        "[portfolio-manager-v2] Snapshot superseded during CIO pass — discarding stale v2 result"
+      );
+      return;
+    }
+
+    // ── 6. Drift detection ───────────────────────────────────────────────────
+    const drift = detectDrift(snapshot, target);
+
+    // ── 7. Capital allocation ────────────────────────────────────────────────
+    const capitalAllocation = computeCapitalAllocation(snapshot, target);
+
+    // ── 8. Replacement detection ─────────────────────────────────────────────
+    const replacements = detectReplacements(snapshot, ofCandidates, positionAttentions);
+
+    // ── 9. Change explanation vs previous target ─────────────────────────────
+    const prevV2Entry = analysisRepository.get<PortfolioV2>(V2_MODULE_NAME);
+    const previousTarget = prevV2Entry?.result?.target ?? null;
+    const changes = explainChanges(target, previousTarget);
+
+    // ── 10. Assemble v2 result ───────────────────────────────────────────────
+    const v2: PortfolioV2 = {
+      generatedAt:        new Date().toISOString(),
+      durationMs:         Date.now() - startMs,
+      snapshotUpdatedAt:  snapshotUpdatedAt,   // binds this result to its source snapshot
+      health,
+      target,
+      drift,
+      capitalAllocation,
+      replacements,
+      changes,
+    };
+
+    // ── 11. Persist (second version guard — re-check immediately before write) ─
+    // A tiny window remains between the first guard and the write; check once
+    // more so the write and the guard are as close together as possible.
+    const latestBeforeWrite = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
+    if (latestBeforeWrite?.result?.updatedAt !== snapshotUpdatedAt) {
+      logger.warn(
+        { snapshotUpdatedAt },
+        "[portfolio-manager-v2] Snapshot superseded just before persist — discarding stale v2 result"
+      );
+      return;
+    }
+    analysisRepository.save<PortfolioV2>(V2_MODULE_NAME, v2);
+
+    // ── 12. History snapshot ─────────────────────────────────────────────────
+    appendV2HistoryEntry(snapshot, v2);
+
+    const driftHigh = drift.filter((d) => d.severity === "High").length;
+    systemLog.logInfo(
+      "Portfolio Manager v2",
+      `CIO analysis complete — health ${v2.health.overall}/100 (${v2.health.grade})` +
+        (driftHigh > 0 ? `, ${driftHigh} high-severity drift item${driftHigh === 1 ? "" : "s"}` : "")
+    );
+    logger.info(
+      { durationMs: v2.durationMs, healthOverall: v2.health.overall, driftItems: drift.length },
+      "[portfolio-manager-v2] CIO pass complete"
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error({ err }, "[portfolio-manager-v2] CIO pass failed");
+    systemLog.logError("Portfolio Manager v2", `CIO analysis failed: ${message}`);
+  }
+}
+
 // ── GET /portfolio-manager ────────────────────────────────────────────────────
 
 portfolioRouter.get("/portfolio-manager", (_req, res) => {
   const entry = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
-  res.json(entry ?? null);
+  if (!entry) {
+    res.json(null);
+    return;
+  }
+  // Only embed v2 when it was computed for this exact snapshot version.
+  // A mismatch means either the async pass hasn't finished yet (pending)
+  // or a new snapshot has arrived but v2 hasn't been updated yet (stale).
+  // In both cases we must not attach analysis of a different portfolio.
+  const v2Entry = analysisRepository.get<PortfolioV2>(V2_MODULE_NAME);
+  const v2IsCurrent =
+    v2Entry?.result?.snapshotUpdatedAt === entry.result.updatedAt;
+  const result: PortfolioSnapshot = v2IsCurrent
+    ? { ...entry.result, v2: v2Entry!.result }
+    : entry.result;
+  res.json({ ...entry, result });
+});
+
+// ── GET /portfolio-manager/v2 ─────────────────────────────────────────────────
+// Returns null when v2 does not correspond to the current snapshot
+// (analysis is pending or no snapshot exists yet).
+
+portfolioRouter.get("/portfolio-manager/v2", (_req, res) => {
+  const snapshotEntry = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
+  if (!snapshotEntry) {
+    res.json(null);
+    return;
+  }
+  const v2Entry = analysisRepository.get<PortfolioV2>(V2_MODULE_NAME);
+  const v2IsCurrent =
+    v2Entry?.result?.snapshotUpdatedAt === snapshotEntry.result.updatedAt;
+  // Return only the unwrapped PortfolioV2 result, not the RepositoryEntry wrapper,
+  // so the response shape matches the declared client hook type (PortfolioV2 | null).
+  res.json(v2IsCurrent ? v2Entry.result : null);
+});
+
+// ── GET /portfolio-manager/history ────────────────────────────────────────────
+
+portfolioRouter.get("/portfolio-manager/history", (_req, res) => {
+  const entry = analysisRepository.get<PortfolioV2HistoryEntry[]>(V2_HISTORY_KEY);
+  res.json(entry?.result ?? []);
 });
 
 // ── POST /portfolio-manager/update ────────────────────────────────────────────
@@ -475,6 +730,10 @@ portfolioRouter.post("/portfolio-manager/update", async (req, res) => {
     if (mockMode) {
       systemLog.logInfo("Portfolio Manager", "Mock portfolio snapshot stored");
     }
+
+    // ── Launch v2 CIO pass (non-blocking — never delays the primary response) ─
+    void runV2Pass(snapshot);
+
     res.json(entry);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
