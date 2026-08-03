@@ -60,10 +60,28 @@ const MAX_ATTEMPTS = 3;
 const HISTORY_MAX = 20;
 
 // ---------------------------------------------------------------------------
-// JSON output template — includes thesis point IDs
+// JSON output templates
+//
+// Two separate templates to avoid the contradiction where a single example
+// simultaneously says "omit this field when unchanged" and "return exactly
+// this JSON that contains the field".
+//
+// JSON_TEMPLATE_BASE  — used for FullAnalysis (first run) and as the base
+//                       for update runs.  Does NOT contain
+//                       investmentCaseStrengthChange so that the model never
+//                       includes that field by default.
+//
+// STRENGTH_CHANGE_ANNOTATION — appended to the UPDATE prompt explaining
+//                              exactly when and how to add the optional field.
 // ---------------------------------------------------------------------------
 
-const JSON_TEMPLATE = `{"updateType":"FullAnalysis|UpdateWithChanges|NoMaterialChange","company":{"name":"...","ticker":"...","sector":"...","industry":"..."},"executiveSummary":"...","investmentView":{"rating":"Strong Buy|Buy|Watch|Avoid|Strong Avoid","outlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","reason":"..."},"investmentThesis":[{"id":"azure-growth","point":"...","status":"Strengthened|Unchanged|Weakened|Invalidated"}],"investmentCaseStrength":85,"investmentCaseChange":{"changed":false,"severity":"None|Low|Medium|High","summary":"...","previousInvestmentView":"N/A","currentInvestmentView":"Buy","reason":"..."},"investmentCaseStrengthChange":{"previousScore":88,"currentScore":82,"reasons":["..."]},"stableProfile":{"businessDescription":"...","competitiveAdvantage":"...","longTermStrengths":["..."],"recurringRisks":["..."]},"currentSituation":"...","catalysts":[{"title":"...","description":"...","timeframe":"Immediate|Within 1 month|Within 3 months","impact":"High|Medium|Low"}],"risks":[{"title":"...","description":"...","impact":"High|Medium|Low"}],"earningsAndGuidance":{"summary":"...","trend":"Improving|Stable|Weakening","nextKnownEvent":"...","nextKnownEventDate":"YYYY-MM-DD or empty string"},"competitivePosition":{"assessment":"Strong|Moderate|Weak","summary":"..."},"sectorContext":"...","marketSentiment":"Positive|Mixed|Negative","valuationAssessment":{"level":"Attractive|Reasonable|Expensive|Unclear","summary":"..."},"bullCase":"...","baseCase":"...","bearCase":"...","keyThingsToWatch":["..."],"confidence":"High|Medium|Low"}`;
+const JSON_TEMPLATE_BASE = `{"updateType":"FullAnalysis|UpdateWithChanges|NoMaterialChange","company":{"name":"...","ticker":"...","sector":"...","industry":"..."},"executiveSummary":"...","investmentView":{"rating":"Strong Buy|Buy|Watch|Avoid|Strong Avoid","outlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","reason":"..."},"investmentThesis":[{"id":"azure-growth","point":"...","status":"Strengthened|Unchanged|Weakened|Invalidated"}],"investmentCaseStrength":85,"investmentCaseChange":{"changed":false,"severity":"None|Low|Medium|High","summary":"...","previousInvestmentView":"N/A","currentInvestmentView":"Buy","reason":"..."},"stableProfile":{"businessDescription":"...","competitiveAdvantage":"...","longTermStrengths":["..."],"recurringRisks":["..."]},"currentSituation":"...","catalysts":[{"title":"...","description":"...","timeframe":"Immediate|Within 1 month|Within 3 months","impact":"High|Medium|Low"}],"risks":[{"title":"...","description":"...","impact":"High|Medium|Low"}],"earningsAndGuidance":{"summary":"...","trend":"Improving|Stable|Weakening","nextKnownEvent":"...","nextKnownEventDate":"YYYY-MM-DD or empty string"},"competitivePosition":{"assessment":"Strong|Moderate|Weak","summary":"..."},"sectorContext":"...","marketSentiment":"Positive|Mixed|Negative","valuationAssessment":{"level":"Attractive|Reasonable|Expensive|Unclear","summary":"..."},"bullCase":"...","baseCase":"...","bearCase":"...","keyThingsToWatch":["..."],"confidence":"High|Medium|Low"}`;
+
+const STRENGTH_CHANGE_ANNOTATION = `
+CONDITIONAL FIELD — investmentCaseStrengthChange:
+- INCLUDE this field ONLY when investmentCaseStrength has actually changed from the previous value.
+- When the score CHANGED, insert this field immediately after "investmentCaseChange": {"previousScore":<previous exact value>,"currentScore":<new exact value>,"reasons":["specific reason 1","specific reason 2"]}
+- OMIT this field entirely when the score is unchanged. Do not set it to null. Do not include an empty object.`;
 
 // ---------------------------------------------------------------------------
 // System prompt — first-time full analysis
@@ -84,24 +102,26 @@ Do not invent financial figures, dates, guidance or events.
 If reliable information is unavailable, state this clearly.
 
 OUTPUT RULES:
-- Return exactly the JSON structure shown below — no markdown, no code fences, no extra text
+- Return a single raw JSON object only — no markdown, no code fences, no introductory text. Your entire response must begin with { and end with }
 - catalysts: maximum 5 items
 - risks: maximum 5 items
-- investmentThesis: 3-5 bullet points stating WHY this company is or is not a compelling investment — these are the permanent thesis points re-evaluated on every future update
+- investmentThesis: 3–6 bullet points stating WHY this company is or is not a compelling investment — these are the permanent thesis points re-evaluated on every future update
   - Each point must have a stable kebab-case "id" (e.g. "azure-growth", "margin-expansion", "regulatory-risk"), a "point" string, and "status": always "Unchanged" for a first analysis
   - IDs must be short, unique, and descriptive — they persist across all future updates
-- investmentCaseStrength: 0–100 score representing how strong the overall investment case is right now
+- investmentCaseStrength: required 0–100 integer — MUST always be present; do not omit or set to null
   - Do NOT move this score based on ordinary daily price movement or minor news
   - Small changes should normally be 1–3 points; larger changes require clearly identified material evidence
 - updateType: always "FullAnalysis" for a first-time analysis
-- investmentCaseChange: set changed=false, severity="None", previousInvestmentView="N/A" for a first-time analysis; do NOT include investmentCaseStrengthChange
+- investmentCaseChange: set changed=false, severity="None", previousInvestmentView="N/A" for a first-time analysis
+- Do NOT include investmentCaseStrengthChange in a first-time analysis
 - stableProfile: core business facts — business model, competitive moat, structural strengths, recurring risks
 - earningsAndGuidance.nextKnownEventDate: must be an ISO date in the future (YYYY-MM-DD) or an empty string — never a past date
-- All enum fields must use exactly the allowed values
+- marketSentiment: company-specific field. Must be exactly "Positive", "Mixed", or "Negative". Do NOT copy the Market Monitor marketSentiment value — that field uses different enum values. When the broader market is neutral but company signals are balanced, use "Mixed"
+- All other enum fields must use exactly the allowed values listed in the template
 - Do not include the timestamp or analysisDuration fields — the server sets those
 
 Return exactly:
-${JSON_TEMPLATE}`;
+${JSON_TEMPLATE_BASE}`;
 
 // ---------------------------------------------------------------------------
 // System prompt — update (previous analysis exists)
@@ -134,12 +154,13 @@ THESIS POINT RULES (critical):
 - IDs are stable identifiers — do not change or reword them
 
 INVESTMENT CASE STRENGTH SCORE RULES:
+- investmentCaseStrength: required 0–100 integer — MUST always be present; do not omit or set to null
 - Do NOT move the score for ordinary daily price movement or minor news
 - Small changes should normally be 1–3 points
 - A change of more than 10 points requires severity="High" and at least 2 concrete reasons in investmentCaseStrengthChange.reasons
 - The score MUST NOT change when updateType="NoMaterialChange"
-- If the score changed, include investmentCaseStrengthChange with previousScore (matching the previous analysis exactly), currentScore, and specific reasons
-- If the score did NOT change, do NOT include investmentCaseStrengthChange
+- If the score changed, include investmentCaseStrengthChange (see CONDITIONAL FIELD below)
+- If the score did NOT change, OMIT investmentCaseStrengthChange entirely
 
 INVESTMENT CASE CHANGE RULES:
 - investmentCaseChange.previousInvestmentView must match the actual previous rating exactly
@@ -150,17 +171,49 @@ DATE RULES:
 - earningsAndGuidance.nextKnownEventDate: must be a future date in YYYY-MM-DD format or an empty string
 - If the previous next event date has now passed, do not repeat it — find the next upcoming event or use an empty string
 
-Return the full CompanyAnalysis JSON every time. The server applies the stable-field preservation rules.
-
 OUTPUT RULES:
-- Return exactly the JSON structure shown below — no markdown, no code fences, no extra text
+- Return a single raw JSON object only — no markdown, no code fences, no introductory text. Your entire response must begin with { and end with }
 - catalysts: maximum 5 items
 - risks: maximum 5 items
-- All enum fields must use exactly the allowed values
+- marketSentiment: company-specific field. Must be exactly "Positive", "Mixed", or "Negative". Do NOT copy the Market Monitor marketSentiment value — that field uses different enum values. When the broader market is neutral but company signals are balanced, use "Mixed"
+- All other enum fields must use exactly the allowed values listed in the template
 - Do not include the timestamp or analysisDuration fields — the server sets those
 
 Return exactly:
-${JSON_TEMPLATE}`;
+${JSON_TEMPLATE_BASE}
+${STRENGTH_CHANGE_ANNOTATION}`;
+
+// ---------------------------------------------------------------------------
+// Safe pre-validation normalization
+//
+// Applied to the raw AI object BEFORE Zod parsing.  Only normalizes known
+// enum aliases that are deterministically equivalent — never touches
+// analytical ratings, scores, or free-text fields.
+// ---------------------------------------------------------------------------
+
+interface NormalizationResult {
+  normalized: Record<string, unknown>;
+  normalizations: string[];
+}
+
+function normalizeRawResponse(raw: unknown): NormalizationResult {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { normalized: raw as Record<string, unknown>, normalizations: [] };
+  }
+  const obj = { ...(raw as Record<string, unknown>) };
+  const normalizations: string[] = [];
+
+  // marketSentiment "Neutral" is invalid in the Company Monitor schema
+  // (valid: Positive | Mixed | Negative). The Market Monitor context uses
+  // "Neutral" as a valid value there, and the model copies it verbatim.
+  // "Mixed" is the correct Company Monitor equivalent for a neutral/balanced view.
+  if (obj.marketSentiment === 'Neutral') {
+    obj.marketSentiment = 'Mixed';
+    normalizations.push('marketSentiment: "Neutral" → "Mixed"');
+  }
+
+  return { normalized: obj, normalizations };
+}
 
 // ---------------------------------------------------------------------------
 // Previous analysis summary for the update prompt
@@ -702,21 +755,27 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
   let lastConsistencyError: string | null = null;
   let lastZodErrors: string | null = null;
+  let lastRawResponse: string | null = null;
+  let lastNormalizations: string[] = [];
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
     let debug: AiDebugInfo;
 
-    // On retries, prepend the error so the model can correct exactly what was wrong
+    // On retries, prepend the error so the model can correct exactly what was wrong.
+    // Always remind the model that its response must be a bare JSON object.
+    const JSON_ONLY_REMINDER = "Your entire response must begin with { and end with }. Do not add introductory text, markdown fences, or any prose outside the JSON.";
+
     let effectiveUserPrompt = userPrompt;
     if (lastConsistencyError) {
       effectiveUserPrompt = [
         "The previous response failed server-side consistency validation.",
         "",
-        "Validation error:",
+        "Consistency error:",
         lastConsistencyError,
         "",
         "Correct only the inconsistent fields while preserving the rest of the response.",
+        JSON_ONLY_REMINDER,
         "",
         "---",
         "",
@@ -724,12 +783,18 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       ].join("\n");
     } else if (lastZodErrors) {
       effectiveUserPrompt = [
-        "The previous response failed server-side JSON schema validation.",
+        "The JSON response below failed server-side schema validation.",
         "",
-        "Schema errors:",
+        "Validation errors:",
         lastZodErrors,
         "",
-        "Correct only the invalid fields while preserving the rest of the response.",
+        ...(lastRawResponse ? [
+          "Invalid response that was received:",
+          lastRawResponse,
+          "",
+        ] : []),
+        "Return the complete corrected JSON object.",
+        JSON_ONLY_REMINDER,
         "",
         "---",
         "",
@@ -741,7 +806,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
         effectiveUserPrompt,
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1, jsonMode: true }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -753,6 +818,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
         systemLog.logError("Company Monitor", `Company analysis failed for ${ticker}: ${err instanceof Error ? err.message : "AI service call failed"}`);
         res.status(500).json({
           error: err instanceof Error ? err.message : "AI service call failed",
+          errorStage: "ai-call",
           _debug: extractAiErrorDebug(err),
         });
         return;
@@ -761,12 +827,25 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     }
 
     lastDebug = debug;
+    lastRawResponse = debug.rawResponse ?? null;
+
+    // ── Safe normalization before schema validation ───────────────────────────
+    // Normalize known enum aliases that are deterministically safe to correct.
+    // This avoids wasting a retry on a harmless vocabulary mismatch (e.g. the
+    // model copies "Neutral" from Market Monitor context into a Company Monitor
+    // field that only accepts Positive|Mixed|Negative).
+
+    const { normalized: normalizedResult, normalizations } = normalizeRawResponse(result);
+    lastNormalizations = normalizations;
+    if (normalizations.length > 0) {
+      req.log.info({ normalizations, attempt }, "Applied safe normalization before schema validation");
+    }
 
     // ── Zod schema validation ────────────────────────────────────────────────
 
     const analysisDuration = Date.now() - startTime;
     const parsed = RunCompanyAnalysisResponse.safeParse({
-      ...(result as Record<string, unknown>),
+      ...(normalizedResult as Record<string, unknown>),
       timestamp: nowIso,
       analysisDuration,
     });
@@ -778,16 +857,18 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       lastZodErrors = zodSummary;
       lastConsistencyError = null; // clear so the next prompt targets the Zod issue
       if (attempt < MAX_ATTEMPTS) {
-        req.log.warn({ errors: zodSummary, attempt }, "Invalid AI response schema — retrying with schema errors in prompt");
+        req.log.warn({ errors: zodSummary, attempt }, "Invalid AI response schema — retrying with schema errors + raw response in prompt");
         continue;
       }
       req.log.error({ errors: zodSummary }, "Invalid AI response schema after all attempts");
       res.status(500).json({
         error: "AI returned an invalid response structure",
+        errorStage: "schema-validation",
         schemaErrors: parsed.error.errors.map(e => ({
           field: e.path.join(".") || "(root)",
           message: e.message,
         })),
+        normalizations: lastNormalizations.length > 0 ? lastNormalizations : undefined,
         attempt,
         _debug: lastDebug,
       });
@@ -836,7 +917,9 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       systemLog.logError("Company Monitor", `Analysis for ${ticker} rejected after ${attempt} attempts: ${consistencyError}`);
       res.status(500).json({
         error: "Company Monitor consistency validation failed",
+        errorStage: "consistency-validation",
         validationError: consistencyError,
+        normalizations: lastNormalizations.length > 0 ? lastNormalizations : undefined,
         attempt,
         _debug: lastDebug,
       });

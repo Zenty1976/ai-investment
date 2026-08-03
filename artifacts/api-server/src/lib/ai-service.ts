@@ -24,6 +24,12 @@ export interface AiServiceOptions {
   model?: string;
   maxTokens?: number;
   temperature?: number;
+  /**
+   * When true, instructs the Responses API to emit only a valid JSON object
+   * (no surrounding prose, no markdown).  Equivalent to `json_object` mode
+   * in Chat Completions.
+   */
+  jsonMode?: boolean;
 }
 
 // ── Debug metadata ────────────────────────────────────────────────────────────
@@ -176,25 +182,28 @@ export async function callAiWithWebSearch<T>(
   userPrompt: string,
   options: AiServiceOptions = {}
 ): Promise<WebSearchAiCallResult<T>> {
-  const { model = "gpt-4o-mini", maxTokens = 1200, temperature = 0.3 } = options;
+  const { model = "gpt-4o-mini", maxTokens = 1200, temperature = 0.3, jsonMode = false } = options;
   const client = getClient();
   const calledAt = new Date().toISOString();
 
   // Build the request payload BEFORE the network call so it is always
   // available for debug output even if the call times out or errors.
-  const requestPayload = {
+  const requestPayload: Record<string, unknown> = {
     model,
     max_output_tokens: maxTokens,
     temperature,
-    tools: [{ type: "web_search" as const, search_context_size: "high" as const }],
+    tools: [{ type: "web_search", search_context_size: "high" }],
     // "required" forces the model to invoke at least one tool before answering.
     // Because web_search is the only configured tool this guarantees a web-search
     // call on every attempt rather than relying on prompt instructions alone.
-    tool_choice: "required" as const,
+    tool_choice: "required",
     input: [
-      { role: "system" as const, content: systemPrompt },
-      { role: "user" as const, content: userPrompt },
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
     ],
+    // When jsonMode is true, instruct the Responses API to emit only a valid
+    // JSON object — prevents the model from wrapping the response in prose.
+    ...(jsonMode ? { text: { format: { type: "json_object" } } } : {}),
   };
 
   // ── Error helper ─────────────────────────────────────────────────────────
@@ -226,7 +235,8 @@ export async function callAiWithWebSearch<T>(
 
   let response: Awaited<ReturnType<typeof client.responses.create>>;
   try {
-    response = await client.responses.create(requestPayload, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    response = await client.responses.create(requestPayload as any, {
       signal: controller.signal,
     });
     clearTimeout(timeoutHandle);
@@ -299,7 +309,13 @@ export async function callAiWithWebSearch<T>(
     fail("response", "OpenAI Responses API returned no text content");
   }
 
-  // ── Parse JSON — strip markdown fences if the model wrapped the JSON ───
+  // ── Parse JSON — strip markdown fences, then extract first {...} object ──
+  // Strategy (in order):
+  // 1. Strip markdown fences (```json ... ```)
+  // 2. Direct JSON.parse on the trimmed text
+  // 3. Extract the first complete top-level {...} object — handles cases where
+  //    the model prefixes the JSON with prose ("Here is the corrected JSON:")
+  // 4. Fail with a clear error including the first 400 chars of raw output
   let jsonStr = rawText.trim();
   const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenceMatch) jsonStr = fenceMatch[1].trim();
@@ -308,11 +324,25 @@ export async function callAiWithWebSearch<T>(
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    fail(
-      "json-parse",
-      `OpenAI returned invalid JSON after web search: ${jsonStr.slice(0, 300)}`,
-      rawText
-    );
+    // Fallback: find the first { … } that parses as an object
+    const braceStart = jsonStr.indexOf("{");
+    const braceEnd = jsonStr.lastIndexOf("}");
+    if (braceStart !== -1 && braceEnd > braceStart) {
+      const candidate = jsonStr.slice(braceStart, braceEnd + 1);
+      try {
+        parsed = JSON.parse(candidate);
+        logger.warn({ model }, "JSON extracted from surrounding prose — model did not return bare JSON");
+      } catch {
+        // fall through to hard fail
+      }
+    }
+    if (parsed === undefined) {
+      fail(
+        "json-parse",
+        `OpenAI returned invalid JSON after web search: ${rawText.slice(0, 400)}`,
+        rawText
+      );
+    }
   }
 
   const debug: AiDebugInfo = {

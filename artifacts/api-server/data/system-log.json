@@ -1,89 +1,5 @@
 [
   {
-    "id": "0920161a-6c0d-461d-98f5-5f131f0bf410",
-    "timestamp": "2026-08-01T22:12:39.547Z",
-    "module": "Risk Analyzer",
-    "level": "warning",
-    "message": "Risk analysis performed using mock portfolio data"
-  },
-  {
-    "id": "29d834eb-9186-4266-8b9d-dcb4fb9b1ac5",
-    "timestamp": "2026-08-01T22:12:39.594Z",
-    "module": "Risk Analyzer",
-    "level": "warning",
-    "message": "Company Monitor data missing for one or more holdings"
-  },
-  {
-    "id": "ad13705f-076a-463a-b275-390f4b628a01",
-    "timestamp": "2026-08-01T22:12:49.583Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Risk analysis completed"
-  },
-  {
-    "id": "b2dcc177-eb7a-4583-b3ab-f0b154ff563e",
-    "timestamp": "2026-08-01T22:12:49.583Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk score: 58 ▼ 7 (was 65)"
-  },
-  {
-    "id": "4013ee9d-203d-4f87-bd6a-6da9d0826ec8",
-    "timestamp": "2026-08-01T22:12:49.585Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Highest portfolio risk: Clustered near‑term earnings events [Event, High severity]"
-  },
-  {
-    "id": "a8f31202-2a04-4607-a775-ffd915d9e190",
-    "timestamp": "2026-08-01T22:12:49.586Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Clustered near‑term earnings events"
-  },
-  {
-    "id": "9470d614-a5df-4c0d-a37f-8fffdea7ca18",
-    "timestamp": "2026-08-01T22:12:49.588Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Novo Nordisk guidance and competitive pressure"
-  },
-  {
-    "id": "df1d82d2-ca4e-42fe-a9cd-f9eeddb4b5f1",
-    "timestamp": "2026-08-01T22:12:49.589Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Serve Robotics execution and valuation risk"
-  },
-  {
-    "id": "cef45612-69d6-4c51-91c8-a04aa14a43de",
-    "timestamp": "2026-08-01T22:12:49.590Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: U.S. macro data and Fed policy shifts"
-  },
-  {
-    "id": "90ae443b-b73c-48f4-a32c-677acbe63d6e",
-    "timestamp": "2026-08-01T22:12:49.592Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Microsoft operational and security update risk"
-  },
-  {
-    "id": "f621713a-39bf-4eaf-96d3-893757c5ec32",
-    "timestamp": "2026-08-01T22:12:49.593Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Clustered near‑term company events"
-  },
-  {
-    "id": "1390b091-0f01-446d-8fa4-8c6ad4a68607",
-    "timestamp": "2026-08-01T22:12:49.595Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Novo Nordisk impairment or weak guidance"
-  },
-  {
     "id": "e3d255dc-c9a1-455d-908b-1357f778721e",
     "timestamp": "2026-08-01T22:12:49.597Z",
     "module": "Risk Analyzer",
@@ -3498,5 +3414,89 @@
     "module": "Company Monitor",
     "level": "warning",
     "message": "Dev reset: deleted 0 analysis record(s) and 0 history record(s). All Company Monitor targets will run FullAnalysis on next trigger."
+  },
+  {
+    "id": "7129e633-e053-4c0b-be06-e603b59bbec7",
+    "timestamp": "2026-08-02T22:13:08.267Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "4a0d71d9-3ddb-4d22-bb5e-12bd394f75fe",
+    "timestamp": "2026-08-02T22:13:16.707Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV: FullAnalysis, rating Watch, strength 55, meaningfulChange=High"
+  },
+  {
+    "id": "d70337ae-e972-452a-b9bd-f7b498868817",
+    "timestamp": "2026-08-02T22:15:42.245Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "22ab9a5e-ea1c-475e-9cb2-daac0018c6d0",
+    "timestamp": "2026-08-02T22:16:06.860Z",
+    "module": "Company Monitor",
+    "level": "error",
+    "message": "Company analysis failed for SERV: OpenAI returned invalid JSON after web search: Here is the corrected JSON with only the invalid field updated (marketSentiment changed from \"Neutral\" to a valid enum value \"Mixed\"), preserving all other fields exactly as in the previous response:\n\n{\"updateType\":\"FullAnalysis\",\"company\":{\"name\":\"Serve Robotics Inc.\",\"ticker\":\"SERV\",\"sector\":\"Robo"
+  },
+  {
+    "id": "02ba9c0f-2ecd-4df7-9a81-5c1a0ad7b300",
+    "timestamp": "2026-08-03T05:49:54.346Z",
+    "module": "Sector Monitor",
+    "level": "user",
+    "message": "User manually started sector analysis"
+  },
+  {
+    "id": "b22ed899-5170-4e74-941b-3f002fc4d1d7",
+    "timestamp": "2026-08-03T05:50:02.948Z",
+    "module": "Sector Monitor",
+    "level": "info",
+    "message": "Sector analysis completed: Healthcare strongest, Biotechnology weakest"
+  },
+  {
+    "id": "e66ac0eb-93b1-4c1f-baee-9d1c53035cb2",
+    "timestamp": "2026-08-03T05:51:08.622Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "0a105e51-b5a5-470d-9766-beedfdf38814",
+    "timestamp": "2026-08-03T05:51:17.107Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV: NoMaterialChange, rating Watch, strength 55, meaningfulChange=None"
+  },
+  {
+    "id": "365531ab-2ee7-4bb0-84ec-9766c479099c",
+    "timestamp": "2026-08-03T05:51:23.460Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "96372816-a4e8-41fc-8190-8e86ef0e6044",
+    "timestamp": "2026-08-03T05:51:38.753Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV: NoMaterialChange, rating Watch, strength 55, meaningfulChange=None"
+  },
+  {
+    "id": "0586c823-2245-46e3-bc75-1bff755605d1",
+    "timestamp": "2026-08-03T05:51:45.775Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV"
+  },
+  {
+    "id": "c04d184d-e765-4bd8-8bd0-41bb8be112a8",
+    "timestamp": "2026-08-03T05:52:11.372Z",
+    "module": "Company Monitor",
+    "level": "error",
+    "message": "Company analysis failed for SERV: OpenAI returned invalid JSON after web search: Here is the corrected JSON, with only the invalid fields fixed while preserving the rest of the response exactly as before:\n\n{\"updateType\":\"NoMaterialChange\",\"company\":{\"name\":\"Serve Robotics Inc.\",\"ticker\":\"SERV\",\"sector\":\"Technology\",\"industry\":\"Robotics\"},\"executiveSummary\":\"Serve Robotics contin"
   }
 ]

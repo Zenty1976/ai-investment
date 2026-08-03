@@ -1,0 +1,159 @@
+The Company Monitor failure is not caused by legacy data.
+
+The first OpenAI response failed because:
+
+- investmentCaseStrength was omitted
+- marketSentiment was returned as "Neutral"
+
+The retry response corrected those fields, but the prompt and response handling still contain inconsistencies that can cause intermittent HTTP 500 errors.
+
+Please make the following corrections.
+
+1. Resolve the marketSentiment enum mismatch
+
+The supplied Market Monitor context uses:
+
+- Bullish/Neutral/etc. or marketSentiment = "Neutral"
+
+But the Company Monitor output currently allows only:
+
+- Positive
+- Mixed
+- Negative
+
+This encourages OpenAI to copy "Neutral" into an invalid output field.
+
+Either:
+
+A. Expand the Company Monitor enum to:
+
+Positive | Mixed | Neutral | Negative
+
+or preferably:
+
+B. Keep the existing Company Monitor enum and explicitly instruct OpenAI:
+
+“Company Monitor marketSentiment is a company-specific sentiment field. It must be Positive, Mixed or Negative. Do not copy the Market Monitor marketSentiment enum directly. When the broader market is Neutral and company signals are balanced, use Mixed.”
+
+Also normalize a returned value of "Neutral" to "Mixed" on the backend before schema validation.
+
+This normalization is safe and deterministic.
+
+2. Remove the contradictory output example
+
+The prompt says:
+
+- investmentCaseStrengthChange must be omitted when the score is unchanged
+
+but the exact JSON example always includes investmentCaseStrengthChange.
+
+Do not use one static JSON example that contains conditionally absent fields.
+
+Either use true structured output with an optional investmentCaseStrengthChange field, or show separate examples:
+
+NoMaterialChange:
+- investmentCaseStrengthChange omitted
+
+UpdateWithChanges with changed score:
+- investmentCaseStrengthChange included
+
+The prompt must not simultaneously say “omit this field” and “return exactly this JSON containing the field”.
+
+3. Make required fields genuinely required through structured output
+
+Use OpenAI Responses API structured output / JSON schema if supported by the existing shared service.
+
+Require:
+
+- investmentCaseStrength
+- marketSentiment
+- all other non-optional CompanyAnalysis fields
+
+Keep investmentCaseStrengthChange optional and conditionally validated.
+
+Do not rely only on a textual JSON example to make fields mandatory.
+
+4. Improve retry prompts
+
+When schema validation fails, include:
+
+- the schema errors
+- the complete raw invalid JSON response
+
+The current retry says:
+
+“Correct only the invalid fields while preserving the rest”
+
+but the model must actually receive the invalid response it is supposed to preserve.
+
+Use a retry prompt such as:
+
+“The JSON below failed validation.
+
+Validation errors:
+...
+
+Invalid JSON:
+...
+
+Return the complete corrected JSON object only.”
+
+Do not resend only the schema errors without the actual invalid response.
+
+5. Enforce JSON-only robustly
+
+The retry response currently begins with:
+
+“Here is the corrected JSON...”
+
+before the object.
+
+Prefer structured output.
+
+As a fallback:
+
+- extract exactly one top-level JSON object
+- preserve the complete raw response in debug
+- reject multiple or ambiguous JSON objects
+- do not fail merely because harmless prose surrounds one unambiguous object
+
+On retry, explicitly state:
+
+“Your entire response must begin with { and end with }. Do not add introductory text.”
+
+6. Apply deterministic safe normalization before retry
+
+Before rejecting an otherwise valid response, safely normalize known enum aliases:
+
+- marketSentiment "Neutral" → "Mixed"
+
+Do not normalize analytical ratings or scores.
+
+After normalization, run schema and consistency validation.
+
+This avoids wasting another OpenAI request on a harmless enum vocabulary mismatch.
+
+7. Separate schema errors from consistency errors in debug
+
+The HTTP error and debug dialog should clearly show:
+
+- attempt number
+- error stage: JSON parse | schema validation | consistency validation
+- schema issues
+- consistency issue
+- raw OpenAI response
+- normalized response, when normalization was applied
+
+Only return HTTP 500 after all configured retries fail.
+
+8. Preserve the existing stateful behaviour
+
+Do not change:
+
+- valid v2 history
+- thesis IDs
+- NoMaterialChange merge rules
+- score discipline
+- previous-analysis comparison
+- current Company Monitor UI
+- Orchestrator integration

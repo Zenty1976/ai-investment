@@ -1132,6 +1132,8 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
   const schemaErrors: Array<{ field: string; message: string }> | undefined = errorBody?.schemaErrors
   const serverErrorMsg: string | undefined = errorBody?.error
   const attemptCount: number | undefined = errorBody?.attempt
+  const errorStage: string | undefined = errorBody?.errorStage
+  const normalizations: string[] | undefined = errorBody?.normalizations
   const hasStructuredError = !!(validationError || schemaErrors?.length || serverErrorMsg)
 
   return (
@@ -1153,7 +1155,20 @@ function DebugDialog({ open, onClose, debugInfo, error }: DebugDialogProps) {
                     {attemptCount !== undefined && (
                       <span className="text-rose-400/60 font-normal ml-2">(after {attemptCount} {attemptCount === 1 ? "attempt" : "attempts"})</span>
                     )}
+                    {errorStage && (
+                      <span className="text-rose-400/50 font-normal ml-2 text-[10px] uppercase tracking-wider">stage: {errorStage}</span>
+                    )}
                   </p>
+                )}
+                {normalizations && normalizations.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-[10px] text-amber-400/60 uppercase tracking-widest mb-1">Applied normalizations</p>
+                    <ul className="space-y-0.5">
+                      {normalizations.map((n, i) => (
+                        <li key={i} className="text-amber-300/80 text-[11px]">✓ {n}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
                 {validationError && (
                   <div className="mb-2">
