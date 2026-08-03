@@ -466,7 +466,7 @@ export default function CompanyMonitor() {
     if (!activeTicker) return
     setExpandedCatalyst(null)
     setExpandedRisk(null)
-    runAnalysis({ ticker: activeTicker, companyName: activeCompanyName || undefined })
+    runAnalysis({ data: { ticker: activeTicker, companyName: activeCompanyName || undefined } })
   }
 
   const toggleCatalyst = (key: string) => {

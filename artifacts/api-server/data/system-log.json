@@ -1,19 +1,5 @@
 [
   {
-    "id": "50f26312-303c-424d-a443-b7b25ff64db3",
-    "timestamp": "2026-08-02T05:56:28.104Z",
-    "module": "Market Alerts",
-    "level": "error",
-    "message": "Market alerts analysis failed"
-  },
-  {
-    "id": "13153a5a-a2c7-4793-b657-583735fb153b",
-    "timestamp": "2026-08-02T05:56:35.580Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
     "id": "c4b3b455-6137-4515-b876-788f995f357e",
     "timestamp": "2026-08-02T05:56:36.799Z",
     "module": "Market Alerts",
@@ -3498,5 +3484,19 @@
     "module": "Company Monitor",
     "level": "info",
     "message": "Company analysis completed for SERV: NoMaterialChange, rating Watch, strength 45, meaningfulChange=None"
+  },
+  {
+    "id": "7b64e630-38ee-4a3d-954a-9010175c4660",
+    "timestamp": "2026-08-03T06:43:11.940Z",
+    "module": "Company Monitor",
+    "level": "warning",
+    "message": "Dev reset: runtime state cleared. All targets will use FullAnalysis on next run."
+  },
+  {
+    "id": "f5307f5f-4f4c-4fc9-8138-98f28c7a17b6",
+    "timestamp": "2026-08-03T06:43:11.941Z",
+    "module": "Company Monitor",
+    "level": "warning",
+    "message": "Dev reset: deleted 1 analysis record(s) and 1 history record(s). All Company Monitor targets will run FullAnalysis on next trigger."
   }
 ]
