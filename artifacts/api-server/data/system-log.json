@@ -1,89 +1,5 @@
 [
   {
-    "id": "cc7812cc-4f91-48e4-837c-77d5f92e2e78",
-    "timestamp": "2026-08-02T06:59:01.275Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "f7b8af5c-5f4c-4076-8a32-a681eb292b6d",
-    "timestamp": "2026-08-02T06:59:04.956Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "7417e8b5-c297-4ecb-ad1a-72204ac692f8",
-    "timestamp": "2026-08-02T06:59:04.956Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 alert(s) resolved: Serve Robotics Q2 2026 earnings release remains imminent"
-  },
-  {
-    "id": "813344eb-9dcd-4dca-b78a-433ab7a15356",
-    "timestamp": "2026-08-02T06:59:11.168Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "53a36573-a87c-4dac-aefd-37d531406e04",
-    "timestamp": "2026-08-02T06:59:13.848Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked: no new material developments"
-  },
-  {
-    "id": "9220d138-d0e4-4024-99fe-7a3c8cbcb8c1",
-    "timestamp": "2026-08-02T06:59:20.287Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "8181cc57-98ed-435a-be62-8231ba55c5b1",
-    "timestamp": "2026-08-02T06:59:24.536Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "bbd8ef27-ce76-409a-8a3c-61322110f92a",
-    "timestamp": "2026-08-02T06:59:24.540Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 new alert(s): Serve Robotics Q2 2026 earnings release remains imminent"
-  },
-  {
-    "id": "a42182fd-6cc0-4675-9aae-3c8f031ec7e1",
-    "timestamp": "2026-08-02T06:59:24.542Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Serve Robotics Q2 2026 earnings release remains imminent [Company]"
-  },
-  {
-    "id": "3d899eff-183b-432b-bf8e-732fa2e6b978",
-    "timestamp": "2026-08-02T06:59:39.700Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "c4183a8f-4a86-45b0-9220-c11490864561",
-    "timestamp": "2026-08-02T06:59:42.424Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked: no new material developments"
-  },
-  {
-    "id": "138ae3c0-1131-42ee-bf02-3d3243ab2e88",
-    "timestamp": "2026-08-02T07:07:59.597Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
     "id": "8e343e73-cc1d-4383-8f5f-1e359891b96a",
     "timestamp": "2026-08-02T07:08:02.475Z",
     "module": "Market Alerts",
@@ -3495,6 +3411,90 @@
   {
     "id": "2fa40a4f-c9d9-432f-bc0d-9ee94b900bb7",
     "timestamp": "2026-08-03T12:14:30.949Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Gate: 1 decision(s) downgraded"
+  },
+  {
+    "id": "64e618cd-f4e8-41b5-aa5a-c7372754b8b6",
+    "timestamp": "2026-08-03T15:04:12.741Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "7d1a955e-59e5-4aeb-ad9f-fb07205af126",
+    "timestamp": "2026-08-03T15:04:12.751Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "53d5164e-67fb-45a6-9dd0-54e0b898ebb0",
+    "timestamp": "2026-08-03T15:04:26.187Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Diversify healthcare exposure via LLY ahead of earnings\" (LLY): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "e1df1920-924a-4bc9-b025-18af7b6c7d4c",
+    "timestamp": "2026-08-03T15:04:26.189Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] CAT (PrepareToBuy): score=35 band=Adequate supporting=[OpportunityFinder,PortfolioAnalyzer] opposing=[]"
+  },
+  {
+    "id": "a8a66324-e5e1-4b3e-a519-538093106878",
+    "timestamp": "2026-08-03T15:04:26.192Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] LLY (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "626ef1d3-188a-4995-9df1-ae6bbaadd9ba",
+    "timestamp": "2026-08-03T15:04:26.335Z",
+    "module": "TradeDecisionOutcome",
+    "level": "internal",
+    "message": "Opportunity:CAT: v1 created (Unchanged)"
+  },
+  {
+    "id": "0136ff09-8a44-4fbd-9a68-5b85a2700897",
+    "timestamp": "2026-08-03T15:04:26.336Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "e21dcf92-9dbb-4ae3-84b9-b5d3b6bb9b6e",
+    "timestamp": "2026-08-03T15:04:26.339Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "26994a07-03e4-49eb-89cc-b298ad95ad84",
+    "timestamp": "2026-08-03T15:04:26.341Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 75/100"
+  },
+  {
+    "id": "0b7abffe-f9c7-473e-b87f-2511608fef01",
+    "timestamp": "2026-08-03T15:04:26.343Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "4 WaitingForReevaluation"
+  },
+  {
+    "id": "a3d43eac-67af-4ad3-9c49-3406fc765bef",
+    "timestamp": "2026-08-03T15:04:26.345Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Preserved Unchanged: CAT"
+  },
+  {
+    "id": "464584de-948e-4703-8636-29e08deb333c",
+    "timestamp": "2026-08-03T15:04:26.346Z",
     "module": "Trade Decision Engine",
     "level": "info",
     "message": "Gate: 1 decision(s) downgraded"

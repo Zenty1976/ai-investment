@@ -1,0 +1,123 @@
+The policy and outcome-tracking corrections are now largely implemented correctly.
+
+One important Trade Review version-linking issue remains.
+
+When Trade Decision creates a new DecisionOutcome version for the same subject, Trade Review correctly resolves the active outcome:
+
+const outcomeId = getOutcomeForDecision(subjectDecisionId)?.id ?? null
+
+However, proposal generation currently stores:
+
+outcomeId: prev?.outcomeId ?? outcomeId
+
+This incorrectly preserves the old outcome version whenever an older Trade Review proposal exists.
+
+The proposal status is also preserved from the previous proposal based only on decisionId, even when the underlying outcome version has changed.
+
+Fix this as follows.
+
+1. Always link a generated proposal to the current active outcome version
+
+Use the newly resolved active outcomeId as the authoritative value.
+
+Do not prefer prev.outcomeId when it differs from the current active outcomeId.
+
+Conceptually:
+
+const sameOutcomeVersion =
+  prev?.outcomeId != null &&
+  prev.outcomeId === outcomeId
+
+proposal.outcomeId = outcomeId
+
+2. Preserve user status only for the same outcome version
+
+Preserve these statuses only when sameOutcomeVersion is true:
+
+- Approved
+- Rejected
+- Executed
+- Cancelled
+
+If the active outcomeId has changed:
+
+- do not preserve Approved
+- do not preserve Rejected
+- do not preserve old approvedAt or rejectedAt
+- calculate the new proposal status from the new decision and sizing
+- normally start it as Ready or Waiting
+
+A materially changed decision must require a new review, even when ticker and decision type are unchanged.
+
+3. Reset version-specific proposal state
+
+When outcomeId changes, reset:
+
+- createdAt to the new proposal creation time
+- approvedAt to null
+- rejectedAt to null
+- executedAt to null
+- manually adjusted quantity, unless the new deterministic sizing independently produces the same quantity
+- any old approval-related state
+
+Do not carry approval from version 1 into version 2.
+
+4. Keep the stable proposal subject identity separate
+
+The current proposal decisionId such as:
+
+CAT:PrepareToBuy
+
+may continue to identify the UI subject/action combination.
+
+But outcomeId must identify the exact decision version, for example:
+
+Opportunity:CAT:v2
+
+Do not use decisionId as a substitute for outcome version identity.
+
+5. Handle an old terminal version safely
+
+If the previous proposal references an outcome that is now:
+
+- Expired
+- Rejected
+- Executed
+- Closed
+
+and a new active outcome exists, build a fresh proposal linked to the new outcome.
+
+Do not attempt to update the terminal record.
+
+6. Add deterministic tests
+
+Add tests for:
+
+- v1 proposal Approved
+- Trade Decision creates v2 with the same ticker and same PrepareToBuy type because the fingerprint changed
+- Trade Review links to v2
+- the new proposal is not automatically Approved
+- approvedAt is cleared
+- actions update v2 only
+- v1 remains unchanged in outcome history
+
+Also test a decision-type change:
+
+PrepareToBuy v1 → PrepareToReduce v2
+
+The new Trade Review proposal must link to v2 and must not inherit the old user status.
+
+Preserve all other implemented improvements:
+
+- backend policy metadata
+- Conservative/Balanced/Aggressive profiles
+- policy validation
+- stable subjectDecisionId
+- decision version history
+- Deferred tracking
+- approvedQuantity
+- exact outcomeId PATCH updates
+- terminal-record protection
+- calibration reporting
+- current UI
+- no Saxo execution

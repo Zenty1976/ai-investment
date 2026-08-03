@@ -438,16 +438,40 @@ async function doHandleTradeReview(res: Response, useCache: boolean): Promise<vo
       // Otherwise Ready when a valid non-zero quantity was calculated.
       const blocked = d.blockedByEvent === true; // always false here (gate above)
       const prev = prevMap.get(decisionId);
+
+      // ── Outcome-version guard ─────────────────────────────────────────────
+      // User decisions (Approved/Rejected/Executed/Cancelled) are only valid
+      // while they reference the same active outcome version.  When the TDE
+      // produces a new fingerprint the outcome store creates a new version
+      // (e.g. "Holding:CAT:v2"), making the previous user decision stale.
+      //
+      // sameOutcomeVersion is true only when the stored proposal already carries
+      // the current active outcome id.  Any mismatch — new version, decision-type
+      // change, or first-time proposal — triggers a fresh review cycle.
+      const sameOutcomeVersion: boolean =
+        prev?.outcomeId != null &&
+        outcomeId      != null &&
+        prev.outcomeId === outcomeId;
+
       let status: ProposalStatus;
-      if (prev && PRESERVED_STATUSES.includes(prev.status)) {
-        status = prev.status;
+      if (sameOutcomeVersion && PRESERVED_STATUSES.includes(prev!.status)) {
+        // Same outcome version AND user already acted — keep their decision.
+        status = prev!.status;
       } else if (sizingUnavailableReason !== null || quantity === 0) {
         status = "Waiting";
       } else {
         status = "Ready";
       }
 
-      systemLog.logInternal(MODULE_NAME, `Trade Review proposal created: ${action} ${ticker} → ${status}`);
+      // When the outcome version changed, discard all version-specific state
+      // so a materially changed decision is never automatically Approved.
+      const samePrev = sameOutcomeVersion ? prev : undefined;
+
+      systemLog.logInternal(
+        MODULE_NAME,
+        `Trade Review proposal created: ${action} ${ticker} → ${status}` +
+        (sameOutcomeVersion ? "" : ` (new outcome version: ${outcomeId ?? "none"})`)
+      );
 
       proposals.push({
         id: decisionId,
@@ -481,13 +505,15 @@ async function doHandleTradeReview(res: Response, useCache: boolean): Promise<vo
         currentPositionValueBase: currentValueBase,
         sizingReason,
         sizingConfidence:         sizingConf,
-        createdAt:                prev?.createdAt ?? nowIso,
-        approvedAt:               status === "Approved" ? (prev?.approvedAt ?? nowIso) : null,
-        rejectedAt:               status === "Rejected" ? (prev?.rejectedAt ?? nowIso) : null,
-        executedAt:               prev?.executedAt ?? null,
+        // Version-specific timestamps: cleared when the outcome version changes
+        createdAt:                samePrev?.createdAt ?? nowIso,
+        approvedAt:               status === "Approved" ? (samePrev?.approvedAt ?? nowIso) : null,
+        rejectedAt:               status === "Rejected" ? (samePrev?.rejectedAt ?? nowIso) : null,
+        executedAt:               samePrev?.executedAt ?? null,
         tdeTimestamp,
         subjectType,
-        outcomeId:                prev?.outcomeId ?? outcomeId,
+        // Always the current active outcome version — never inherit a stale id
+        outcomeId,
       });
     }
 
