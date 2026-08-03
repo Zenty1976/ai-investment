@@ -627,21 +627,6 @@ function SaxoBankSection() {
 
 // ── Trade Decision Policy ─────────────────────────────────────────────────────
 
-const PROFILE_META: Record<PolicyProfile, { label: string; description: string }> = {
-  Conservative: {
-    label: "Conservative",
-    description: "Higher evidence bar (≥35), ≥3 supporting modules, Company Monitor required. Prioritises signal quality over opportunity count.",
-  },
-  Balanced: {
-    label: "Balanced",
-    description: "Standard thresholds (≥25), ≥2 supporting modules. Reproduces the original TDE behaviour exactly.",
-  },
-  Aggressive: {
-    label: "Aggressive",
-    description: "Lower evidence bar (≥15), ≥2 supporting modules, wider staleness tolerance. Surfaces more early-stage ideas.",
-  },
-}
-
 function TradePolicySection() {
   const { data, isLoading, isError } = useGetTradePolicySettings({ query: { staleTime: 30_000 } })
   const mutation = useSetTradePolicyProfile()
@@ -653,8 +638,15 @@ function TradePolicySection() {
     mutation.mutate({ profile })
   }
 
+  // Descriptions come from the backend so they always match the actual config values
+  const getDesc = (profile: PolicyProfile): string => {
+    const meta = data?.profiles?.find(p => p.profile === profile)
+    if (meta) return meta.shortDescription
+    return isLoading ? "Loading…" : profile
+  }
+
   return (
-    <SectionCard title="Trade Decision Policy" status={null}>
+    <SectionCard title="Trade Decision Policy">
       <p className="text-[11px] text-muted-foreground/60 leading-snug mb-3">
         Controls the deterministic backend gates and evidence thresholds applied by the Trade
         Decision Engine. Does not affect the AI reasoning prompt.
@@ -670,7 +662,6 @@ function TradePolicySection() {
 
       <div className="flex flex-col gap-2">
         {(["Conservative", "Balanced", "Aggressive"] as PolicyProfile[]).map(profile => {
-          const meta    = PROFILE_META[profile]
           const active  = current === profile
           const pending = mutation.isPending && mutation.variables?.profile === profile
           return (
@@ -688,14 +679,14 @@ function TradePolicySection() {
             >
               <div className="flex items-center justify-between gap-2">
                 <span className={`text-xs font-semibold ${active ? "text-primary" : ""}`}>
-                  {meta.label}
+                  {profile}
                 </span>
                 <span className="shrink-0 flex items-center gap-1">
                   {pending && <RefreshCw className="h-3 w-3 animate-spin text-primary/70" />}
                   {active && !pending && <Check className="h-3.5 w-3.5 text-primary/70" />}
                 </span>
               </div>
-              <p className="text-[11px] mt-0.5 leading-snug">{meta.description}</p>
+              <p className="text-[11px] mt-0.5 leading-snug">{getDesc(profile)}</p>
             </button>
           )
         })}

@@ -21,6 +21,8 @@ import {
   POLICY_AGGRESSIVE,
   validateAllProfiles,
   validatePolicyConfig,
+  getProfileMetadata,
+  getAllProfileMetadata,
 } from "../trade-decision-policy-config.js";
 
 // ---------------------------------------------------------------------------
@@ -178,5 +180,113 @@ describe("Balanced-specific gates", () => {
       POLICY_BALANCED.gate.requireCompanyMonitorForCompanyTrades,
       false
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. Profile metadata — backend-derived, must match actual config values
+// ---------------------------------------------------------------------------
+
+describe("profile metadata accuracy", () => {
+  it("Aggressive metadata: minimumSupportingModules is 1 (not 2)", () => {
+    // This test prevents the UI description from drifting from the actual config.
+    // The Aggressive profile allows 1 supporting module — getProfileMetadata must
+    // reflect this so the frontend description cannot say "≥2".
+    const meta = getProfileMetadata(POLICY_AGGRESSIVE);
+    assert.strictEqual(
+      meta.minimumSupportingModules,
+      POLICY_AGGRESSIVE.gate.minimumSupportingModules,
+      "metadata.minimumSupportingModules must equal the actual gate config"
+    );
+    assert.strictEqual(meta.minimumSupportingModules, 1);
+  });
+
+  it("Conservative metadata: minimumSupportingModules is 3", () => {
+    const meta = getProfileMetadata(POLICY_CONSERVATIVE);
+    assert.strictEqual(meta.minimumSupportingModules, 3);
+  });
+
+  it("all profile metadata shortDescriptions are non-empty strings", () => {
+    for (const m of getAllProfileMetadata()) {
+      assert.ok(
+        typeof m.shortDescription === "string" && m.shortDescription.trim().length > 0,
+        `${m.profile}: shortDescription must be a non-empty string`
+      );
+    }
+  });
+
+  it("getAllProfileMetadata returns all three profiles in order", () => {
+    const metas = getAllProfileMetadata();
+    assert.strictEqual(metas.length, 3);
+    assert.deepStrictEqual(metas.map(m => m.profile), ["Conservative", "Balanced", "Aggressive"]);
+  });
+
+  it("metadata minimumEvidenceScore matches readyForReview config", () => {
+    for (const [name, cfg] of Object.entries(POLICY_CONFIGS)) {
+      const meta = getProfileMetadata(cfg);
+      assert.strictEqual(
+        meta.minimumEvidenceScore,
+        cfg.readyForReview.minimumEvidenceScore,
+        `${name}: metadata score must equal config score`
+      );
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. Additional validation rules
+// ---------------------------------------------------------------------------
+
+describe("extended validatePolicyConfig", () => {
+  it("rejects downgrade.reviewThreshold >= readyForReview.minimumEvidenceScore", () => {
+    // If reviewThreshold equals minimumEvidenceScore, a decision could be both
+    // ReadyForReview and downgraded at the same time — invalid.
+    const broken = {
+      ...POLICY_BALANCED,
+      profile: "Broken" as never,
+      downgrade: { ...POLICY_BALANCED.downgrade, reviewThreshold: 25 }, // same as minimumEvidenceScore
+    };
+    assert.throws(() => validatePolicyConfig(broken), /reviewThreshold/);
+  });
+
+  it("rejects band value outside [-100, 100]", () => {
+    const broken = {
+      ...POLICY_BALANCED,
+      profile: "Broken" as never,
+      bands: { strongMinimum: 150, adequateMinimum: 25, weakMinimum: 10 },
+    };
+    assert.throws(() => validatePolicyConfig(broken), /bands\.strongMinimum/);
+  });
+
+  it("rejects readyForReview.minimumEvidenceScore below bands.weakMinimum", () => {
+    // Score below weakMinimum means evidence classified as "Insufficient"
+    // could still be ReadyForReview — a logical contradiction.
+    const broken = {
+      ...POLICY_BALANCED,
+      profile: "Broken" as never,
+      readyForReview: { ...POLICY_BALANCED.readyForReview, minimumEvidenceScore: 5 }, // below weakMinimum=10
+    };
+    assert.throws(() => validatePolicyConfig(broken), /weakMinimum/);
+  });
+
+  it("rejects staleness module with unknown ID", () => {
+    const broken = {
+      ...POLICY_BALANCED,
+      profile: "Broken" as never,
+      stalenessHours: { ...POLICY_BALANCED.stalenessHours, "unknown-module": 48 },
+    };
+    assert.throws(() => validatePolicyConfig(broken), /unknown module ID/);
+  });
+
+  it("rejects criticalOpposingModules with unknown module name", () => {
+    const broken = {
+      ...POLICY_BALANCED,
+      profile: "Broken" as never,
+      gate: {
+        ...POLICY_BALANCED.gate,
+        criticalOpposingModules: ["CompanyMonitor", "UnknownModule"],
+      },
+    };
+    assert.throws(() => validatePolicyConfig(broken), /unknown module/);
   });
 });

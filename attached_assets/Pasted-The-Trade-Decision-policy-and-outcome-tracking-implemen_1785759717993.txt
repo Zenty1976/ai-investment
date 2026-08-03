@@ -1,0 +1,186 @@
+The Trade Decision policy and outcome-tracking implementation is generally good.
+
+Please make the following final correctness fixes. Do not redesign the UI or change the current decision logic beyond these issues.
+
+1. Fix the Aggressive profile description mismatch
+
+The actual Aggressive configuration currently uses:
+
+minimumSupportingModules: 1
+
+but the Settings UI says:
+
+“≥2 supporting modules”
+
+Make the UI description match the actual configuration.
+
+Prefer not to hardcode policy thresholds in the frontend.
+
+Return profile metadata from the backend, including:
+
+- profile
+- minimumEvidenceScore
+- minimumSupportingModules
+- minimumConfidence
+- requireCompanyMonitorForCompanyTrades
+- maximumTargetAllocationPercent
+- shortDescription
+
+Use this metadata to render the Settings descriptions, so the UI cannot drift from the backend configuration again.
+
+2. Improve policy configuration validation
+
+The current validation checks that minimumEvidenceScore is non-negative, but it does not fully validate relationships between all thresholds.
+
+Add validation that:
+
+- all evidence band thresholds are within -100 to 100
+- readyForReview.minimumEvidenceScore is within -100 to 100
+- readyForReview.minimumEvidenceScore is at least bands.weakMinimum
+- downgrade.reviewThreshold is below readyForReview.minimumEvidenceScore
+- downgrade.noActionThreshold is below downgrade.reviewThreshold
+- maximumTargetAllocationPercent is valid when provided
+- all criticalOpposingModules exist in the supported module list
+- all staleness modules use known module IDs
+
+Keep startup fail-fast behaviour.
+
+3. Fix outcome identity when a decision type changes
+
+Outcome records currently use a decisionId shaped like:
+
+TICKER:PrepareToBuy
+
+This means a decision changing from PrepareToBuy to Review or PrepareToReduce can become a completely separate identity rather than a new version of the same underlying subject decision.
+
+Use a stable subject identity separately from the decision version/type.
+
+For example:
+
+subjectDecisionId:
+Holding:MSFT
+Opportunity:CAT
+
+Then store decisionType as versioned metadata.
+
+When the same subject materially changes:
+
+- PrepareToBuy → Review
+- Review → PrepareToBuy
+- PrepareToBuy → PrepareToReduce
+
+close or supersede the previous version and create a new linked version under the same subjectDecisionId.
+
+Do not create unrelated outcome histories solely because the decision type changed.
+
+Preserve ticker, subject type and version links.
+
+4. Track the “Later” Trade Review action
+
+The outcome integration currently updates only:
+
+- Approved
+- Rejected
+- Superseded
+
+Trade Review also has a Later/Deferred action.
+
+Add a deterministic outcome status for this, such as:
+
+Deferred
+
+or keep outcomeStatus = Tracking and add:
+
+deferredAt
+deferredCount
+lastDeferredAt
+
+The proposal should remain active and may be presented again after re-evaluation.
+
+Do not treat Later as rejection or expiry.
+
+Update Trade Review integration and tests.
+
+5. Store approved quantity
+
+updateDecisionOutcomeFromReview receives quantity, but the approved quantity is not currently stored in a dedicated field unless future execution occurs.
+
+Add:
+
+approvedQuantity
+
+and store the user-adjusted quantity when the proposal is approved.
+
+Keep executedQuantity separate for the quantity eventually sent to Saxo.
+
+Also preserve:
+
+- approved reference price
+- approved currency
+- approval timestamp
+
+This will later allow comparison between approved and executed orders.
+
+6. Clarify outcome statuses
+
+The current new-record code contains:
+
+outcomeStatus: input.isReadyForReview ? "Tracking" : "Tracking"
+
+Simplify this and make status semantics explicit.
+
+Suggested behaviour:
+
+- Valid trade decision, not yet ready: Tracking
+- Ready for review: Tracking, with becameReadyAt set
+- Approved: AwaitingExecution
+- Deferred: Tracking or Deferred
+- Rejected: Rejected and moved to history
+- Superseded: Expired and moved to history
+- Executed: Executed
+- Closed: Closed
+
+The resolveStatus function currently ignores isReadyForReview and always returns Tracking for non-terminal records. Either remove the unused parameter or implement a meaningful distinction.
+
+Do not add unnecessary statuses if timestamps already represent readiness clearly.
+
+7. Improve outcome lookup by version
+
+Functions such as:
+
+getOutcomeForDecision(decisionId)
+
+and Trade Review updates currently find records only using decisionId.
+
+Once decisions have multiple versions, ensure Trade Review updates the exact outcome version linked to the proposal.
+
+Store outcomeId or decisionVersion on each TradeProposal.
+
+Then use that exact identifier when approving, rejecting, deferring or superseding.
+
+Do not update an older or wrong active version by ticker and decision type alone.
+
+8. Add missing tests
+
+Add deterministic tests for:
+
+- Aggressive frontend/backend metadata consistency
+- policy threshold relationship validation
+- decision type change creating a new linked version
+- Later/Deferred behaviour
+- approvedQuantity persistence
+- exact outcome version updated from Trade Review
+- rejected or superseded records cannot be modified afterward
+
+Preserve:
+
+- centralized policy configuration
+- all three policy profiles
+- Settings selector
+- current evidence calculation
+- hard safety rules
+- outcome history limits
+- future price capture
+- calibration reporting
+- no automatic weight calibration
+- no Saxo execution

@@ -1839,7 +1839,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
           const cmSeverity = cmChange ? String(cmChange?.severity ?? "") || null : null;
 
           const outcomeInput: RecordOutcomeInput = {
-            decisionId:     `${d.ticker}:${d.decision}`,
+            subjectDecisionId: `${(d.subjectType as string) ?? "Opportunity"}:${d.ticker}`,
             ticker:         d.ticker,
             company:        d.company,
             subjectType:    (d.subjectType as "Holding" | "Opportunity" | "Portfolio") ?? "Opportunity",

@@ -12,6 +12,7 @@ import { analysisRepository } from "../lib/analysis-repository";
 import { systemLog } from "../lib/system-log";
 import { getMarketQuote } from "../lib/market-quote-service.js";
 import { saxoStore } from "../lib/saxo-store.js";
+import { getOutcomeForDecision } from "../lib/trade-decision-outcome-store.js";
 
 const router = Router();
 const MODULE_NAME = "TradeReview";
@@ -60,6 +61,15 @@ interface TradeProposal {
   rejectedAt: string | null;
   executedAt: string | null;
   tdeTimestamp: string;
+  /** Subject type — used to reconstruct subjectDecisionId for outcome lookups. */
+  subjectType: "Holding" | "Opportunity" | "Portfolio";
+  /**
+   * Exact DecisionOutcome.id linked to this proposal (e.g. "Holding:AAPL:v2").
+   * Stored at proposal-generation time so PATCH always updates the correct version,
+   * even when multiple outcome versions exist for the same subject.
+   * Null when no outcome record exists (e.g. the decision was not yet tracked).
+   */
+  outcomeId: string | null;
 }
 
 /** Compact read-only summary of a WaitingForReevaluation trade decision */
@@ -344,6 +354,12 @@ async function doHandleTradeReview(res: Response, useCache: boolean): Promise<vo
       const action: "BUY" | "SELL" = decisionType === "PrepareToBuy" ? "BUY" : "SELL";
       const decisionId = `${ticker}:${decisionType}`;
 
+      const subjectType = (["Holding", "Opportunity", "Portfolio"].includes(String(d.subjectType ?? ""))
+        ? String(d.subjectType) : "Opportunity") as "Holding" | "Opportunity" | "Portfolio";
+      const subjectDecisionId = `${subjectType}:${ticker}`;
+      // Link to the current active outcome version so PATCH can find the exact record
+      const outcomeId = getOutcomeForDecision(subjectDecisionId)?.id ?? null;
+
       const targetPct = typeof d.targetAllocationPercent === "number" ? d.targetAllocationPercent : 0;
       const sizingConf = (["High", "Medium", "Low"].includes(String(d.sizingConfidence ?? "")))
         ? (String(d.sizingConfidence) as "High" | "Medium" | "Low") : ("" as const);
@@ -470,6 +486,8 @@ async function doHandleTradeReview(res: Response, useCache: boolean): Promise<vo
         rejectedAt:               status === "Rejected" ? (prev?.rejectedAt ?? nowIso) : null,
         executedAt:               prev?.executedAt ?? null,
         tdeTimestamp,
+        subjectType,
+        outcomeId:                prev?.outcomeId ?? outcomeId,
       });
     }
 
@@ -520,7 +538,7 @@ router.post("/trade-review/generate", (req: Request, res: Response) => {
 // PATCH /trade-review/:id/status
 // ---------------------------------------------------------------------------
 
-const VALID_STATUSES = ["Waiting", "Ready", "Approved", "Rejected"] as const;
+const VALID_STATUSES = ["Waiting", "Ready", "Approved", "Rejected", "Later"] as const;
 type PatchStatus = (typeof VALID_STATUSES)[number];
 
 function parseUpdateBody(
@@ -562,6 +580,26 @@ router.patch("/trade-review/:id/status", async (req: Request, res: Response) => 
       return void res.status(404).json({ error: `Proposal "${id}" not found` });
     }
 
+    const original = proposals[idx];
+
+    // ── "Later" is a special action — keep proposal status unchanged ─────────
+    // Only track the deferral in the outcome store (non-blocking).
+    if (status === "Later") {
+      if (original.outcomeId) {
+        try {
+          const { updateDecisionOutcomeFromReview } = await import("../lib/trade-decision-outcome-store.js");
+          updateDecisionOutcomeFromReview({
+            outcomeId: original.outcomeId,
+            newStatus: "Deferred",
+            note:      "Later in Trade Review",
+          });
+        } catch {
+          // Outcome tracking errors never break the Trade Review response
+        }
+      }
+      return void res.json(original); // proposal unchanged
+    }
+
     // Re-read portfolio totals for allocation recalculation (live values preferred)
     const portfolioEntry    = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
     const portfolioResult   = portfolioEntry?.result as Record<string, unknown> | undefined;
@@ -569,12 +607,13 @@ router.patch("/trade-review/:id/status", async (req: Request, res: Response) => 
     const totalAvailableCash = typeof portfolioResult?.totalAvailableCash === "number" ? portfolioResult.totalAvailableCash : null;
 
     const now      = new Date().toISOString();
-    const original = proposals[idx];
+    // status is now narrowed: "Waiting" | "Ready" | "Approved" | "Rejected"
+    const proposalStatus = status as Exclude<PatchStatus, "Later">;
     const proposal: TradeProposal = {
       ...original,
-      status,
-      approvedAt: status === "Approved" ? (original.approvedAt ?? now) : null,
-      rejectedAt: status === "Rejected" ? (original.rejectedAt ?? now) : null,
+      status:     proposalStatus as TradeProposal["status"],
+      approvedAt: proposalStatus === "Approved" ? (original.approvedAt ?? now) : null,
+      rejectedAt: proposalStatus === "Rejected" ? (original.rejectedAt ?? now) : null,
     };
 
     // Quantity change: deterministic recalculation using stored fxRate and price.
@@ -610,18 +649,18 @@ router.patch("/trade-review/:id/status", async (req: Request, res: Response) => 
     analysisRepository.save("trade-review", { ...stored.result, proposals });
 
     // ── Outcome tracking (non-blocking) ──────────────────────────────────────
-    if (status === "Approved" || status === "Rejected") {
+    // Uses the exact outcomeId stored on the proposal to avoid matching the
+    // wrong version when a subject has multiple outcome record versions.
+    if ((proposalStatus === "Approved" || proposalStatus === "Rejected") && original.outcomeId) {
       try {
         const { updateDecisionOutcomeFromReview } = await import("../lib/trade-decision-outcome-store.js");
-        // decisionId = ticker:decision reconstructed from proposal ticker + action
-        const decisionType = original.action === "BUY" ? "PrepareToBuy" : "PrepareToReduce";
         updateDecisionOutcomeFromReview({
-          decisionId:     `${original.ticker}:${decisionType}`,
-          newStatus:      status as "Approved" | "Rejected",
+          outcomeId:      original.outcomeId,
+          newStatus:      proposalStatus as "Approved" | "Rejected",
           quantity:       proposal.quantity,
           estimatedPrice: proposal.estimatedPrice,
           currency:       original.currency,
-          note:           `${status} in Trade Review`,
+          note:           `${proposalStatus} in Trade Review`,
         });
       } catch {
         // Outcome tracking errors never break the Trade Review response

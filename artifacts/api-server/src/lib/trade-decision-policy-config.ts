@@ -111,6 +111,62 @@ export interface TradePolicyConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Profile metadata (UI-facing summary of key thresholds)
+// ---------------------------------------------------------------------------
+
+export interface PolicyProfileMetadata {
+  profile:                              PolicyProfile;
+  shortDescription:                     string;
+  minimumEvidenceScore:                 number;
+  minimumSupportingModules:             number;
+  minimumConfidence:                    "Medium" | "High";
+  requireCompanyMonitorForCompanyTrades: boolean;
+  maximumTargetAllocationPercent:       number | null;
+}
+
+const PROFILE_DESCRIPTIONS: Record<PolicyProfile, string> = {
+  Conservative:
+    "Higher evidence bar, ≥3 supporting modules, Company Monitor required. Prioritises signal quality over opportunity count.",
+  Balanced:
+    "Standard thresholds, ≥2 supporting modules. Reproduces the original TDE behaviour exactly.",
+  Aggressive:
+    "Lower evidence bar, ≥1 supporting module, wider staleness tolerance. Surfaces more early-stage ideas.",
+};
+
+export function getProfileMetadata(cfg: TradePolicyConfig): PolicyProfileMetadata {
+  return {
+    profile:                              cfg.profile,
+    shortDescription:                     PROFILE_DESCRIPTIONS[cfg.profile],
+    minimumEvidenceScore:                 cfg.readyForReview.minimumEvidenceScore,
+    minimumSupportingModules:             cfg.gate.minimumSupportingModules,
+    minimumConfidence:                    cfg.readyForReview.minimumConfidence,
+    requireCompanyMonitorForCompanyTrades: cfg.gate.requireCompanyMonitorForCompanyTrades,
+    maximumTargetAllocationPercent:       cfg.readyForReview.maximumTargetAllocationPercent,
+  };
+}
+
+/** Returns metadata for all three profiles in Conservative → Balanced → Aggressive order. */
+export function getAllProfileMetadata(): PolicyProfileMetadata[] {
+  return (["Conservative", "Balanced", "Aggressive"] as PolicyProfile[]).map(
+    (p) => getProfileMetadata(POLICY_CONFIGS[p])
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Known module names (used in validation)
+// ---------------------------------------------------------------------------
+
+const KNOWN_MODULE_NAMES = new Set([
+  "CompanyMonitor", "RiskAnalyzer", "OpportunityFinder", "PortfolioAnalyzer", "MarketAlerts",
+]);
+
+const KNOWN_STALENESS_IDS = new Set([
+  "portfolio-manager", "risk-analyzer", "portfolio-analyzer",
+  "market-alerts",     "opportunity-finder", "company-monitor",
+  "event-monitor",     "sector-monitor",
+]);
+
+// ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
 
@@ -122,7 +178,14 @@ export class PolicyConfigValidationError extends Error {
 }
 
 export function validatePolicyConfig(cfg: TradePolicyConfig): void {
-  // Evidence bands must be ordered correctly
+  // ── Evidence bands ────────────────────────────────────────────────────────
+  for (const [key, val] of Object.entries(cfg.bands)) {
+    if (val < -100 || val > 100) {
+      throw new PolicyConfigValidationError(
+        `bands.${key} (${val}) must be in [-100, 100]`
+      );
+    }
+  }
   if (cfg.bands.strongMinimum <= cfg.bands.adequateMinimum) {
     throw new PolicyConfigValidationError(
       `bands.strongMinimum (${cfg.bands.strongMinimum}) must be > bands.adequateMinimum (${cfg.bands.adequateMinimum})`
@@ -133,13 +196,8 @@ export function validatePolicyConfig(cfg: TradePolicyConfig): void {
       `bands.adequateMinimum (${cfg.bands.adequateMinimum}) must be > bands.weakMinimum (${cfg.bands.weakMinimum})`
     );
   }
-  if (cfg.bands.weakMinimum < 0) {
-    throw new PolicyConfigValidationError(
-      `bands.weakMinimum (${cfg.bands.weakMinimum}) must be >= 0`
-    );
-  }
 
-  // Gate requirements
+  // ── Gate requirements ──────────────────────────────────────────────────────
   if (cfg.gate.minimumSupportingModules < 1) {
     throw new PolicyConfigValidationError(
       `gate.minimumSupportingModules must be at least 1, got ${cfg.gate.minimumSupportingModules}`
@@ -150,11 +208,25 @@ export function validatePolicyConfig(cfg: TradePolicyConfig): void {
       "gate.criticalOpposingModules must contain at least one module"
     );
   }
+  for (const mod of cfg.gate.criticalOpposingModules) {
+    if (!KNOWN_MODULE_NAMES.has(mod)) {
+      throw new PolicyConfigValidationError(
+        `gate.criticalOpposingModules contains unknown module "${mod}". ` +
+        `Known modules: ${[...KNOWN_MODULE_NAMES].join(", ")}`
+      );
+    }
+  }
 
-  // Readiness thresholds
-  if (cfg.readyForReview.minimumEvidenceScore < 0) {
+  // ── Readiness thresholds ───────────────────────────────────────────────────
+  const minScore = cfg.readyForReview.minimumEvidenceScore;
+  if (minScore < -100 || minScore > 100) {
     throw new PolicyConfigValidationError(
-      `readyForReview.minimumEvidenceScore must be >= 0, got ${cfg.readyForReview.minimumEvidenceScore}`
+      `readyForReview.minimumEvidenceScore (${minScore}) must be in [-100, 100]`
+    );
+  }
+  if (minScore < cfg.bands.weakMinimum) {
+    throw new PolicyConfigValidationError(
+      `readyForReview.minimumEvidenceScore (${minScore}) must be >= bands.weakMinimum (${cfg.bands.weakMinimum})`
     );
   }
   if (
@@ -167,10 +239,17 @@ export function validatePolicyConfig(cfg: TradePolicyConfig): void {
     );
   }
 
-  // Downgrade thresholds must be within the evidence score range
-  if (cfg.downgrade.reviewThreshold < cfg.downgrade.noActionThreshold) {
+  // ── Downgrade thresholds ───────────────────────────────────────────────────
+  if (cfg.downgrade.reviewThreshold >= minScore) {
     throw new PolicyConfigValidationError(
-      `downgrade.reviewThreshold (${cfg.downgrade.reviewThreshold}) must be >= downgrade.noActionThreshold (${cfg.downgrade.noActionThreshold})`
+      `downgrade.reviewThreshold (${cfg.downgrade.reviewThreshold}) must be < ` +
+      `readyForReview.minimumEvidenceScore (${minScore})`
+    );
+  }
+  if (cfg.downgrade.noActionThreshold >= cfg.downgrade.reviewThreshold) {
+    throw new PolicyConfigValidationError(
+      `downgrade.noActionThreshold (${cfg.downgrade.noActionThreshold}) must be < ` +
+      `downgrade.reviewThreshold (${cfg.downgrade.reviewThreshold})`
     );
   }
   if (cfg.downgrade.reviewThreshold > 100 || cfg.downgrade.noActionThreshold < -100) {
@@ -179,7 +258,7 @@ export function validatePolicyConfig(cfg: TradePolicyConfig): void {
     );
   }
 
-  // Evidence weights per module
+  // ── Evidence weights per module ────────────────────────────────────────────
   for (const [mod, w] of Object.entries(cfg.evidenceWeights)) {
     if (w.supporting < 0) {
       throw new PolicyConfigValidationError(
@@ -203,8 +282,14 @@ export function validatePolicyConfig(cfg: TradePolicyConfig): void {
     }
   }
 
-  // Staleness hours must be positive
+  // ── Staleness hours ────────────────────────────────────────────────────────
   for (const [mod, hours] of Object.entries(cfg.stalenessHours)) {
+    if (!KNOWN_STALENESS_IDS.has(mod)) {
+      throw new PolicyConfigValidationError(
+        `stalenessHours contains unknown module ID "${mod}". ` +
+        `Known IDs: ${[...KNOWN_STALENESS_IDS].join(", ")}`
+      );
+    }
     if (hours <= 0) {
       throw new PolicyConfigValidationError(
         `stalenessHours.${mod} must be > 0`

@@ -225,10 +225,14 @@ import {
   getActivePolicySettings,
   setActivePolicyProfile as _setPolicyProfile,
 } from "../lib/trade-decision-policy-store.js";
-import type { PolicyProfile } from "../lib/trade-decision-policy-config.js";
+import {
+  getAllProfileMetadata,
+  type PolicyProfile,
+} from "../lib/trade-decision-policy-config.js";
 
 settingsRouter.get("/settings/trade-decision-policy", (_req, res) => {
-  res.json(getActivePolicySettings());
+  const settings = getActivePolicySettings();
+  res.json({ ...settings, profiles: getAllProfileMetadata() });
 });
 
 // ── POST /api/settings/trade-decision-policy ─────────────────────────────────

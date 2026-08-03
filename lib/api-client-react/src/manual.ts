@@ -410,6 +410,12 @@ export interface TradeProposal {
   rejectedAt: string | null;
   executedAt: string | null;
   tdeTimestamp: string;
+  subjectType: "Holding" | "Opportunity" | "Portfolio";
+  /**
+   * Exact DecisionOutcome.id linked to this proposal version (e.g. "Holding:AAPL:v2").
+   * Null when no outcome record exists for this subject.
+   */
+  outcomeId: string | null;
 }
 
 export interface WaitingTradeDecision {
@@ -444,14 +450,16 @@ export function useUpdateTradeProposalStatus(options?: {
     mutationFn: ({
       id,
       status,
+      quantity,
     }: {
-      id: string;
-      status: "Approved" | "Rejected" | "Cancelled";
+      id:        string;
+      status:    "Approved" | "Rejected" | "Cancelled" | "Later";
+      quantity?: number;
     }) =>
       customFetch<TradeProposal>(`/api/trade-review/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, ...(quantity !== undefined ? { quantity } : {}) }),
       }),
     ...(options?.mutation ?? {}),
   });
@@ -661,9 +669,22 @@ export interface OrchestratorJob {
 
 export type PolicyProfile = "Conservative" | "Balanced" | "Aggressive";
 
+/** Key threshold snapshot for one profile, as returned by the backend. */
+export interface PolicyProfileMetadata {
+  profile:                              PolicyProfile;
+  shortDescription:                     string;
+  minimumEvidenceScore:                 number;
+  minimumSupportingModules:             number;
+  minimumConfidence:                    "Medium" | "High";
+  requireCompanyMonitorForCompanyTrades: boolean;
+  maximumTargetAllocationPercent:       number | null;
+}
+
 export interface TradePolicySettings {
-  profile: PolicyProfile;
+  profile:   PolicyProfile;
   updatedAt: string | null;
+  /** Metadata for all three profiles, used to render descriptions in the UI. */
+  profiles:  PolicyProfileMetadata[];
 }
 
 export const getGetTradePolicySettingsQueryKey = () => ["trade-decision-policy"] as const;
