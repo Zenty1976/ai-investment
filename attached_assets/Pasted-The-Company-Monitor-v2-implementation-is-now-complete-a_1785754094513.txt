@@ -1,0 +1,261 @@
+The Company Monitor v2 implementation is now complete and working well.
+
+The next step is to make the Trade Decision Engine significantly more disciplined and stateful.
+
+The goal is NOT to change the UI or overall architecture.
+
+The goal is to improve decision quality so that Trade Decision behaves more like an institutional investment committee than a news summarizer.
+
+Implement the following.
+
+--------------------------------------------------
+1. Introduce deterministic evidence scoring
+--------------------------------------------------
+
+Trade Decision should no longer propose PrepareToBuy or PrepareToReduce simply because one module is optimistic.
+
+Before a trade proposal is allowed, the backend should calculate an internal evidence score based on multiple independent sources.
+
+Possible evidence contributors:
+
++ Company Monitor
++ Risk Analyzer
++ Portfolio Analyzer
++ Opportunity Finder
++ Market Alerts
++ Event Monitor
++ Sector Monitor
+
+Each module contributes positive or negative evidence.
+
+Do not expose this numeric score in the UI.
+
+It is an internal backend quality metric.
+
+--------------------------------------------------
+2. Require multiple independent sources
+--------------------------------------------------
+
+PrepareToBuy or PrepareToReduce should normally require confirmation from multiple modules.
+
+For example:
+
+Company Monitor says Buy
++
+Risk Analyzer does not identify unacceptable risk
++
+Portfolio Analyzer indicates portfolio benefit
++
+Opportunity Finder supports timing
+
+A single optimistic module should normally produce:
+
+Review
+
+or
+
+NoAction
+
+instead of a trade proposal.
+
+--------------------------------------------------
+3. Integrate Company Monitor v2 properly
+--------------------------------------------------
+
+Trade Decision should use the new stateful Company Monitor fields directly.
+
+Especially:
+
+investmentCaseStrength
+
+investmentCaseChange
+
+investmentView
+
+investmentThesis
+
+meaningfulChange
+
+keyThingsToWatch
+
+Examples:
+
+NoMaterialChange with unchanged score should rarely generate a new trade proposal.
+
+UpdateWithChanges with weakened thesis may strengthen a PrepareToReduce proposal.
+
+Invalidated thesis points should carry significant weight.
+
+InvestmentCaseStrength changes should influence confidence, not directly trigger trades.
+
+--------------------------------------------------
+4. Compare with previous Trade Decision
+--------------------------------------------------
+
+Trade Decision should become stateful just like Company Monitor.
+
+Store previous Trade Decision.
+
+On each update compare with previous decisions.
+
+Each decision should internally receive one of:
+
+New
+
+Strengthened
+
+Weakened
+
+Unchanged
+
+Withdrawn
+
+Only materially changed decisions should become visible as new recommendations.
+
+If the same recommendation exists unchanged over multiple updates, preserve it instead of creating a new recommendation.
+
+--------------------------------------------------
+5. Backend readiness validation
+--------------------------------------------------
+
+OpenAI proposes decisions.
+
+The backend determines whether they are actually ready.
+
+A proposal should only become ReadyForReview if all required conditions are satisfied.
+
+For example:
+
+not blocked by event
+
+required analyses are present
+
+required data freshness achieved
+
+confidence >= Medium
+
+portfolio information available
+
+no critical consistency conflict
+
+Otherwise downgrade internally to:
+
+Review
+
+WaitForEvent
+
+or
+
+NoAction
+
+This readiness validation must be deterministic and server-side.
+
+--------------------------------------------------
+6. Detect stale supporting evidence
+--------------------------------------------------
+
+Every decision depends on supporting analyses.
+
+Before exposing a decision, verify freshness.
+
+For example:
+
+Company Monitor
+
+Risk Analyzer
+
+Portfolio Analyzer
+
+Market Alerts
+
+If supporting analyses are stale beyond their configured update intervals, reduce confidence or downgrade the proposal.
+
+Trade Decision should not build new recommendations on stale information.
+
+--------------------------------------------------
+7. Explain WHY a decision exists
+--------------------------------------------------
+
+Each decision should internally keep structured reasons.
+
+Not free text.
+
+For example:
+
+PositiveEvidence
+
+NegativeEvidence
+
+BlockingFactors
+
+MissingEvidence
+
+These structures already partially exist.
+
+Expand them so Trade Review can later display concise explanations without asking OpenAI again.
+
+--------------------------------------------------
+8. Do not repeatedly recommend identical actions
+--------------------------------------------------
+
+If yesterday's recommendation was:
+
+PrepareToBuy Caterpillar
+
+and nothing meaningful has changed,
+
+do NOT create another recommendation.
+
+Preserve the previous recommendation.
+
+Update only metadata such as:
+
+lastReviewed
+
+lastValidated
+
+confidence
+
+Only create a new recommendation if the investment case or supporting evidence changed materially.
+
+--------------------------------------------------
+9. Keep OpenAI focused on analysis
+--------------------------------------------------
+
+OpenAI should continue answering:
+
+"What is the best decision based on today's evidence?"
+
+The backend should decide:
+
+Is there sufficient evidence?
+
+Is the recommendation new?
+
+Is it blocked?
+
+Should it appear in Trade Review?
+
+Should an existing recommendation be updated instead?
+
+This keeps analytical judgement inside OpenAI while deterministic workflow rules remain entirely server-side.
+
+--------------------------------------------------
+10. Preserve current UI
+--------------------------------------------------
+
+Do not redesign the Trade Decision UI.
+
+Do not redesign Trade Review.
+
+Do not change existing JSON contracts unless necessary.
+
+This work should primarily improve backend quality, consistency and stateful behaviour.
+
+The user should mainly notice:
+
+- fewer unnecessary recommendations
+- higher confidence recommendations
+- less repetition
+- better reasoning
+- smoother long-term behaviour
