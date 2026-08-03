@@ -629,18 +629,18 @@ export default function CompanyMonitor() {
                   </span>
                 ) : (
                   <>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Clock className="h-3 w-3 shrink-0" />
                       {format(new Date(analysis.timestamp), "d. MMM HH:mm 'UTC'")}
                       {analysis.updateType === "NoMaterialChange" && (
-                        <span className="text-muted-foreground/35 ml-0.5">(no change)</span>
+                        <span className="text-muted-foreground/35">(no change)</span>
                       )}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Timer className="h-3 w-3" />
+                    <span className="flex items-center gap-1 whitespace-nowrap">
+                      <Timer className="h-3 w-3 shrink-0" />
                       {formatDuration(analysis.analysisDuration)}
                     </span>
-                    <span className="text-muted-foreground/40">{analysis.company.sector}</span>
+                    <span className="whitespace-nowrap text-muted-foreground/40">{analysis.company.sector}</span>
                   </>
                 )}
               </div>
