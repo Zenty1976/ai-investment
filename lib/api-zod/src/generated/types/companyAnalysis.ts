@@ -5,36 +5,48 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { CompanyInfo } from './companyInfo';
-import type { CompanyInvestmentView } from './companyInvestmentView';
 import type { CompanyCatalyst } from './companyCatalyst';
-import type { CompanyRisk } from './companyRisk';
-import type { CompanyEarningsAndGuidance } from './companyEarningsAndGuidance';
 import type { CompanyCompetitivePosition } from './companyCompetitivePosition';
+import type { CompanyConfidence } from './companyConfidence';
+import type { CompanyEarningsAndGuidance } from './companyEarningsAndGuidance';
+import type { CompanyInfo } from './companyInfo';
+import type { CompanyInvestmentCaseChange } from './companyInvestmentCaseChange';
+import type { CompanyInvestmentCaseStrengthChange } from './companyInvestmentCaseStrengthChange';
+import type { CompanyInvestmentView } from './companyInvestmentView';
+import type { CompanyMarketSentiment } from './companyMarketSentiment';
+import type { CompanyMeaningfulChange } from './companyMeaningfulChange';
+import type { CompanyRisk } from './companyRisk';
+import type { CompanyStableProfile } from './companyStableProfile';
+import type { CompanyThesisPoint } from './companyThesisPoint';
+import type { CompanyUpdateType } from './companyUpdateType';
 import type { CompanyValuationAssessment } from './companyValuationAssessment';
 
-export type CompanyMarketSentiment = typeof CompanyMarketSentiment[keyof typeof CompanyMarketSentiment];
-
-export const CompanyMarketSentiment = {
-  'Positive': 'Positive',
-  'Mixed': 'Mixed',
-  'Negative': 'Negative',
-} as const;
-
-export type CompanyConfidence = typeof CompanyConfidence[keyof typeof CompanyConfidence];
-
-export const CompanyConfidence = {
-  'High': 'High',
-  'Medium': 'Medium',
-  'Low': 'Low',
-} as const;
-
+/**
+ * Full stateful company investment analysis
+ */
 export interface CompanyAnalysis {
+  /** Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation */
+  updateType: CompanyUpdateType;
   company: CompanyInfo;
   executiveSummary: string;
   investmentView: CompanyInvestmentView;
+  /** The persistent investment thesis — WHY this company is attractive or unattractive */
+  investmentThesis: CompanyThesisPoint[];
+  /**
+     * 0–100 score representing how strong the overall investment case currently is
+     * @minimum 0
+     * @maximum 100
+     */
+  investmentCaseStrength: number;
+  /** Whether and how the investment case changed since the previous analysis */
+  investmentCaseChange: CompanyInvestmentCaseChange;
+  investmentCaseStrengthChange?: CompanyInvestmentCaseStrengthChange;
+  /** Stable company profile — business facts that rarely change */
+  stableProfile: CompanyStableProfile;
   currentSituation: string;
+  /** @maxItems 5 */
   catalysts: CompanyCatalyst[];
+  /** @maxItems 5 */
   risks: CompanyRisk[];
   earningsAndGuidance: CompanyEarningsAndGuidance;
   competitivePosition: CompanyCompetitivePosition;
@@ -49,4 +61,8 @@ export interface CompanyAnalysis {
   timestamp: string;
   /** Time taken to complete the analysis in milliseconds */
   analysisDuration: number;
+  /** Server-computed — how meaningful this update was for downstream orchestration */
+  meaningfulChange?: CompanyMeaningfulChange;
+  /** Server-computed — tickers affected by this analysis result */
+  affectedTickers?: string[];
 }

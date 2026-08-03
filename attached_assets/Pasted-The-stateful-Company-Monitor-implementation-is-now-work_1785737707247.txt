@@ -1,0 +1,69 @@
+The stateful Company Monitor implementation is now working well. Please make only these final consistency corrections.
+
+1. Strengthen NoMaterialChange thesis validation
+
+When updateType === "NoMaterialChange", every previously existing investment thesis point must:
+
+- be present
+- preserve its stable ID
+- have status exactly "Unchanged"
+
+Do not allow:
+
+- Strengthened
+- Weakened
+- Invalidated
+
+A changed thesis status requires updateType === "UpdateWithChanges".
+
+The server-side NoMaterialChange merge should also force every preserved thesis point status to "Unchanged" rather than trusting another returned status.
+
+2. Validate investmentCaseChange view fields consistently
+
+For a first FullAnalysis:
+
+- investmentCaseChange.previousInvestmentView must equal "N/A"
+- investmentCaseChange.currentInvestmentView must equal investmentView.rating
+
+For NoMaterialChange:
+
+- investmentCaseChange.previousInvestmentView must equal the actual previous stored rating
+- investmentCaseChange.currentInvestmentView must equal the current stored rating
+- investmentView rating and outlook must remain identical to the previous analysis
+
+For UpdateWithChanges, keep the existing checks.
+
+Reject and retry inconsistent responses.
+
+3. Change FullAnalysis orchestration severity
+
+A first FullAnalysis creates a new structured baseline but does not by itself prove that the investment case changed materially.
+
+Return:
+
+meaningfulChange = "Medium"
+
+for an ordinary first FullAnalysis.
+
+Only return High during baseline creation if a separate deterministic condition justifies it, such as a critical verified development or explicit high-severity flag.
+
+Keep:
+
+- NoMaterialChange = None
+- UpdateWithChanges based on severity, rating changes, thesis invalidation and score movement
+
+4. Regenerate all API types
+
+The generated standalone CompanyAnalysis TypeScript interface still appears to contain the old schema and does not include fields such as:
+
+- updateType
+- investmentThesis
+- investmentCaseStrength
+- investmentCaseChange
+- stableProfile
+
+Regenerate OpenAPI, api-zod and api-client types so every generated CompanyAnalysis type matches the current v2 schema.
+
+Do not manually edit generated files.
+
+Preserve all other Company Monitor behaviour, UI, history, prompts, retry handling, normalization, server-side merge and Orchestrator integration.

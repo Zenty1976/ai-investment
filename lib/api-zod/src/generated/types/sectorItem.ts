@@ -5,21 +5,17 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SectorConfidence } from './sectorConfidence';
 import type { SectorRating } from './sectorRating';
 import type { SectorTrend } from './sectorTrend';
-import type { SectorConfidence } from './sectorConfidence';
 
-export interface Sector {
+export interface SectorItem {
   name: string;
   rating: SectorRating;
   trend: SectorTrend;
-  /** ≤35 words — current state and near-term thesis */
   summary: string;
-  /** 2-4 specific factors supporting the thesis */
   drivers: string[];
-  /** 1-3 specific risks that could invalidate the view */
   risks: string[];
-  /** One sentence on the 1-3 month outlook */
   outlook: string;
   confidence: SectorConfidence;
 }

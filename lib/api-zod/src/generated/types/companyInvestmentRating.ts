@@ -8,10 +8,11 @@
 
 export type CompanyInvestmentRating = typeof CompanyInvestmentRating[keyof typeof CompanyInvestmentRating];
 
+
 export const CompanyInvestmentRating = {
-  'Strong Buy': 'Strong Buy',
-  'Buy': 'Buy',
-  'Watch': 'Watch',
-  'Avoid': 'Avoid',
-  'Strong Avoid': 'Strong Avoid',
+  Strong_Buy: 'Strong Buy',
+  Buy: 'Buy',
+  Watch: 'Watch',
+  Avoid: 'Avoid',
+  Strong_Avoid: 'Strong Avoid',
 } as const;

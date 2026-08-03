@@ -8,6 +8,5 @@
 
 export interface SectorTopSector {
   name: string;
-  /** ≤30 words explaining why this sector leads */
   reason: string;
 }

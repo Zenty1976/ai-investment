@@ -8,10 +8,11 @@
 
 export type CompanyOutlook = typeof CompanyOutlook[keyof typeof CompanyOutlook];
 
+
 export const CompanyOutlook = {
-  'Bullish': 'Bullish',
-  'Moderately Bullish': 'Moderately Bullish',
-  'Neutral': 'Neutral',
-  'Moderately Bearish': 'Moderately Bearish',
-  'Bearish': 'Bearish',
+  Bullish: 'Bullish',
+  Moderately_Bullish: 'Moderately Bullish',
+  Neutral: 'Neutral',
+  Moderately_Bearish: 'Moderately Bearish',
+  Bearish: 'Bearish',
 } as const;

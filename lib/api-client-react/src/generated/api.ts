@@ -25,30 +25,14 @@ import type {
   ErrorResponse,
   EventMonitorAnalysis,
   HealthStatus,
-  MarketAlertsAnalysis,
   MarketAnalysis,
   NewsAnalysis,
-  OpportunityAnalysis,
-  PortfolioAnalysis,
-  RiskAnalysis,
-  TradeDecisionEngineAnalysis,
-  TradeReviewSummary,
-  TradeProposal,
-  UpdateTradeProposalBody,
-  PortfolioRepositoryEntry,
   RepositoryEntry,
-  ResetCompanyMonitorDataResponse,
-  SaxoConfigBody,
-  SaxoLoginBody,
-  SaxoLoginResponse,
-  SaxoSetEnvironmentBody,
-  SaxoStatus,
-  SectorAnalysis,
-  SystemLogEntry
+  SectorAnalysis
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
-import type { ErrorType } from '../custom-fetch';
+import type { ErrorType , BodyType } from '../custom-fetch';
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -377,7 +361,7 @@ export const getRunSectorAnalysisUrl = () => {
 }
 
 /**
- * Analyses major equity sectors and determines where institutional capital is flowing
+ * Analyses major equity sectors and determines where institutional capital is flowing over the next 1-3 months
  * @summary Run sector monitor analysis
  */
 export const runSectorAnalysis = async ( options?: Parameters<typeof customFetch>[1]): Promise<SectorAnalysis> => {
@@ -390,6 +374,7 @@ export const runSectorAnalysis = async ( options?: Parameters<typeof customFetch
 
   }
 );}
+
 
 
 
@@ -413,6 +398,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
           return  runSectorAnalysis(requestOptions)
         }
+
+
 
 
 
@@ -446,8 +433,8 @@ export const getRunCompanyAnalysisUrl = () => {
 }
 
 /**
- * Evaluates a single company as a possible investment over the next 1-3 months
- * @summary Run company monitor analysis
+ * Calls the AI service to run or update a stateful investment analysis for a single company
+ * @summary Run company analysis
  */
 export const runCompanyAnalysis = async (companyAnalysisBody: CompanyAnalysisBody, options?: Parameters<typeof customFetch>[1]): Promise<CompanyAnalysis> => {
 
@@ -455,18 +442,18 @@ export const runCompanyAnalysis = async (companyAnalysisBody: CompanyAnalysisBod
   {
     ...options,
     method: 'POST',
-    body: JSON.stringify(companyAnalysisBody),
-
-
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(companyAnalysisBody)
   }
 );}
 
 
 
 
+
 export const getRunCompanyAnalysisMutationOptions = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError, CompanyAnalysisBody, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError, CompanyAnalysisBody, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError,{data: BodyType<CompanyAnalysisBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError,{data: BodyType<CompanyAnalysisBody>}, TContext> => {
 
 const mutationKey = ['runCompanyAnalysis'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -478,11 +465,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runCompanyAnalysis>>, CompanyAnalysisBody> = (companyAnalysisBody) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runCompanyAnalysis>>, {data: BodyType<CompanyAnalysisBody>}> = (props) => {
+          const {data} = props ?? {};
 
-
-          return  runCompanyAnalysis(companyAnalysisBody, requestOptions)
+          return  runCompanyAnalysis(data,requestOptions)
         }
+
+
 
 
 
@@ -490,95 +479,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type RunCompanyAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof runCompanyAnalysis>>>
-
+    export type RunCompanyAnalysisMutationBody = BodyType<CompanyAnalysisBody>
     export type RunCompanyAnalysisMutationError = ErrorType<ErrorResponse>
 
     /**
- * @summary Run company monitor analysis
+ * @summary Run company analysis
  */
 export const useRunCompanyAnalysis = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError, CompanyAnalysisBody, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCompanyAnalysis>>, TError,{data: BodyType<CompanyAnalysisBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof runCompanyAnalysis>>,
         TError,
-        CompanyAnalysisBody,
+        {data: BodyType<CompanyAnalysisBody>},
         TContext
       > => {
       return useMutation(getRunCompanyAnalysisMutationOptions(options));
     }
-
-// ── Company Monitor reset (dev only) ─────────────────────────────────────────
-
-export const getResetCompanyMonitorDataUrl = () => `/api/company-monitor/reset`;
-
-/**
- * Delete all Company Monitor analyses and history so every target rebuilds a
- * clean v2 baseline on the next run. Development environments only.
- * @summary Reset all Company Monitor data (dev only)
- */
-export const resetCompanyMonitorData = async (
-  options?: Parameters<typeof customFetch>[1]
-): Promise<ResetCompanyMonitorDataResponse> =>
-  customFetch<ResetCompanyMonitorDataResponse>(getResetCompanyMonitorDataUrl(), {
-    ...options,
-    method: 'DELETE',
-  });
-
-export const getResetCompanyMonitorDataMutationOptions = <
-  TError = ErrorType<ErrorResponse>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof resetCompanyMonitorData>>,
-    TError,
-    void,
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof resetCompanyMonitorData>>,
-  TError,
-  void,
-  TContext
-> => {
-  const mutationKey = ['resetCompanyMonitorData'];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof resetCompanyMonitorData>>,
-    void
-  > = () => resetCompanyMonitorData(requestOptions);
-  return { mutationFn, ...mutationOptions };
-};
-
-export type ResetCompanyMonitorDataMutationResult = NonNullable<
-  Awaited<ReturnType<typeof resetCompanyMonitorData>>
->;
-export type ResetCompanyMonitorDataMutationError = ErrorType<ErrorResponse>;
-
-/** @summary Reset all Company Monitor data (dev only) */
-export const useResetCompanyMonitorData = <
-  TError = ErrorType<ErrorResponse>,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof resetCompanyMonitorData>>,
-    TError,
-    void,
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof resetCompanyMonitorData>>,
-  TError,
-  void,
-  TContext
-> => useMutation(getResetCompanyMonitorDataMutationOptions(options));
-
-// ── Repository ────────────────────────────────────────────────────────────────
 
 export const getListRepositoryEntriesUrl = () => {
 
@@ -730,474 +646,8 @@ export function useGetRepositoryEntry<TData = Awaited<ReturnType<typeof getRepos
 }
 
 
-// ── Saxo Bank settings ────────────────────────────────────────────────────────
 
-export const getSaxoStatus = (
-  options?: SecondParameter<typeof customFetch>,
-  signal?: AbortSignal,
-) => {
-  return customFetch<SaxoStatus>(`/api/settings/saxo/status`, {
-    method: 'GET',
-    ...options,
-    signal,
-  });
-};
 
-export const getGetSaxoStatusQueryKey = () => [`/api/settings/saxo/status`] as const;
 
-export const getGetSaxoStatusQueryOptions = <
-  TData = Awaited<ReturnType<typeof getSaxoStatus>>,
-  TError = ErrorType<unknown>,
->(
-  options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getSaxoStatus>>, TError, TData>;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? getGetSaxoStatusQueryKey();
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSaxoStatus>>> = ({ signal }) =>
-    getSaxoStatus(requestOptions, signal);
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getSaxoStatus>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
 
-export type GetSaxoStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getSaxoStatus>>>;
-export type GetSaxoStatusQueryError = ErrorType<unknown>;
-
-export function useGetSaxoStatus<
-  TData = Awaited<ReturnType<typeof getSaxoStatus>>,
-  TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getSaxoStatus>>, TError, TData>;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetSaxoStatusQueryOptions(options);
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-// ── useSaxoSaveConfig ─────────────────────────────────────────────────────────
-
-export const saxoSaveConfig = (
-  saxoConfigBody: SaxoConfigBody,
-  options?: SecondParameter<typeof customFetch>,
-) => {
-  return customFetch<SaxoStatus>(`/api/settings/saxo/config`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(saxoConfigBody),
-    ...options,
-  });
-};
-
-export const useSaxoSaveConfig = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saxoSaveConfig>>,
-    ErrorType<unknown>,
-    SaxoConfigBody
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof saxoSaveConfig>>,
-  ErrorType<unknown>,
-  SaxoConfigBody
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof saxoSaveConfig>>,
-    SaxoConfigBody
-  > = (vars) => saxoSaveConfig(vars, requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── useSaxoLogin ──────────────────────────────────────────────────────────────
-
-export const saxoLogin = (
-  saxoLoginBody: SaxoLoginBody,
-  options?: SecondParameter<typeof customFetch>,
-) => {
-  return customFetch<SaxoLoginResponse>(`/api/settings/saxo/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(saxoLoginBody),
-    ...options,
-  });
-};
-
-export const useSaxoLogin = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saxoLogin>>,
-    ErrorType<unknown>,
-    SaxoLoginBody
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof saxoLogin>>,
-  ErrorType<unknown>,
-  SaxoLoginBody
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof saxoLogin>>,
-    SaxoLoginBody
-  > = (vars) => saxoLogin(vars, requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── useSaxoLogout ─────────────────────────────────────────────────────────────
-
-export const saxoLogout = (options?: SecondParameter<typeof customFetch>) => {
-  return customFetch<SaxoStatus>(`/api/settings/saxo/logout`, {
-    method: 'POST',
-    ...options,
-  });
-};
-
-export const useSaxoLogout = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saxoLogout>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof saxoLogout>>,
-  ErrorType<unknown>,
-  void
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof saxoLogout>>,
-    void
-  > = () => saxoLogout(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── useGetPortfolio / useUpdatePortfolio ──────────────────────────────────────
-
-export const getPortfolio = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<PortfolioRepositoryEntry | null>(`/api/portfolio-manager`, {
-    method: 'GET',
-    ...options,
-  });
-
-export const useGetPortfolio = (options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getPortfolio>>,
-    ErrorType<unknown>,
-    Awaited<ReturnType<typeof getPortfolio>>,
-    QueryKey
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<Awaited<ReturnType<typeof getPortfolio>>, ErrorType<unknown>> => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey: QueryKey = ['/api/portfolio-manager'];
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPortfolio>>> = () =>
-    getPortfolio(requestOptions);
-  return useQuery({ queryKey, queryFn, ...queryOptions });
-};
-
-export const updatePortfolio = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<PortfolioRepositoryEntry>(`/api/portfolio-manager/update`, {
-    method: 'POST',
-    ...options,
-  });
-
-export const useUpdatePortfolio = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updatePortfolio>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof updatePortfolio>>,
-  ErrorType<unknown>,
-  void
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updatePortfolio>>,
-    void
-  > = () => updatePortfolio(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── useSaxoSetEnvironment ─────────────────────────────────────────────────────
-
-export const saxoSetEnvironment = (
-  body: SaxoSetEnvironmentBody,
-  options?: SecondParameter<typeof customFetch>,
-) => {
-  return customFetch<SaxoStatus>(`/api/settings/saxo/environment`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    ...options,
-  });
-};
-
-export const useSaxoSetEnvironment = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saxoSetEnvironment>>,
-    ErrorType<unknown>,
-    SaxoSetEnvironmentBody
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof saxoSetEnvironment>>,
-  ErrorType<unknown>,
-  SaxoSetEnvironmentBody
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof saxoSetEnvironment>>,
-    SaxoSetEnvironmentBody
-  > = (vars) => saxoSetEnvironment(vars, requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── useSaxoSetMock ────────────────────────────────────────────────────────────
-
-export const saxoSetMock = (
-  body: { useMockData: boolean },
-  options?: SecondParameter<typeof customFetch>,
-) => {
-  return customFetch<SaxoStatus>(`/api/settings/saxo/mock`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    ...options,
-  });
-};
-
-export const useSaxoSetMock = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saxoSetMock>>,
-    ErrorType<unknown>,
-    { useMockData: boolean }
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof saxoSetMock>>,
-  ErrorType<unknown>,
-  { useMockData: boolean }
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof saxoSetMock>>,
-    { useMockData: boolean }
-  > = (vars) => saxoSetMock(vars, requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── System Log ────────────────────────────────────────────────────────────────
-
-export const getGetSystemLogQueryKey = () => ['/api/system-log'] as const;
-
-export const getSystemLog = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<SystemLogEntry[]>('/api/system-log', options);
-
-export const useGetSystemLog = <
-  TData = Awaited<ReturnType<typeof getSystemLog>>,
-  TError = ErrorType<unknown>
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getSystemLog>>, TError, TData>;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = getGetSystemLogQueryKey();
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemLog>>> = () =>
-    getSystemLog(requestOptions);
-  return useQuery({ queryKey, queryFn, ...queryOptions });
-};
-
-export const clearSystemLog = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<{ ok: boolean }>('/api/system-log', {
-    method: 'DELETE',
-    ...options,
-  });
-
-export const useClearSystemLog = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof clearSystemLog>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<Awaited<ReturnType<typeof clearSystemLog>>, ErrorType<unknown>, void> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearSystemLog>>, void> = () =>
-    clearSystemLog(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── Portfolio Analyzer ────────────────────────────────────────────────────────
-
-export const runPortfolioAnalysis = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<PortfolioAnalysis>('/api/portfolio-analyzer/analyze', {
-    method: 'POST',
-    ...options,
-  });
-
-export const useRunPortfolioAnalysis = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof runPortfolioAnalysis>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<Awaited<ReturnType<typeof runPortfolioAnalysis>>, ErrorType<unknown>, void> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runPortfolioAnalysis>>, void> = () =>
-    runPortfolioAnalysis(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── Risk Analyzer ─────────────────────────────────────────────────────────────
-
-export const runRiskAnalysis = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<RiskAnalysis>('/api/risk-analyzer/analyze', {
-    method: 'POST',
-    ...options,
-  });
-
-export const useRunRiskAnalysis = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof runRiskAnalysis>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<Awaited<ReturnType<typeof runRiskAnalysis>>, ErrorType<unknown>, void> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runRiskAnalysis>>, void> = () =>
-    runRiskAnalysis(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── Opportunity Finder ────────────────────────────────────────────────────────
-
-export const runOpportunityAnalysis = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<OpportunityAnalysis>('/api/opportunity-finder/analyze', {
-    method: 'POST',
-    ...options,
-  });
-
-export const useRunOpportunityAnalysis = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof runOpportunityAnalysis>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<Awaited<ReturnType<typeof runOpportunityAnalysis>>, ErrorType<unknown>, void> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runOpportunityAnalysis>>, void> = () =>
-    runOpportunityAnalysis(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── Trade Decision Engine ─────────────────────────────────────────────────────
-
-export const runTradeDecisionEngine = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<TradeDecisionEngineAnalysis>('/api/trade-decision-engine/analyze', {
-    method: 'POST',
-    ...options,
-  });
-
-export const useRunTradeDecisionEngine = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof runTradeDecisionEngine>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<Awaited<ReturnType<typeof runTradeDecisionEngine>>, ErrorType<unknown>, void> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof runTradeDecisionEngine>>,
-    void
-  > = () => runTradeDecisionEngine(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── Trade Review ─────────────────────────────────────────────────────────────
-
-export const getTradeReviewUrl = () => `/api/trade-review`;
-
-export const getTradeReview = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<TradeReviewSummary>(getTradeReviewUrl(), {
-    method: 'GET',
-    ...options,
-  });
-
-export const useGetTradeReview = (options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getTradeReview>>, ErrorType<unknown>>;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<Awaited<ReturnType<typeof getTradeReview>>, ErrorType<unknown>> & { queryKey: QueryKey } => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? ['getTradeReview'];
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTradeReview>>> = () =>
-    getTradeReview(requestOptions);
-  return withQueryKey(useQuery({ queryKey, queryFn, ...queryOptions }), queryKey);
-};
-
-export const updateTradeProposalStatus = (
-  id: string,
-  body: UpdateTradeProposalBody,
-  options?: SecondParameter<typeof customFetch>
-) =>
-  customFetch<TradeProposal>(`/api/trade-review/${encodeURIComponent(id)}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    ...options,
-  });
-
-export const useUpdateTradeProposalStatus = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateTradeProposalStatus>>,
-    ErrorType<unknown>,
-    { id: string; data: UpdateTradeProposalBody }
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof updateTradeProposalStatus>>,
-  ErrorType<unknown>,
-  { id: string; data: UpdateTradeProposalBody }
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updateTradeProposalStatus>>,
-    { id: string; data: UpdateTradeProposalBody }
-  > = ({ id, data }) => updateTradeProposalStatus(id, data, requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
-
-// ── Market Alerts ─────────────────────────────────────────────────────────────
-
-export const runMarketAlerts = (options?: SecondParameter<typeof customFetch>) =>
-  customFetch<MarketAlertsAnalysis>('/api/market-alerts/analyze', {
-    method: 'POST',
-    ...options,
-  });
-
-export const useRunMarketAlerts = (options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof runMarketAlerts>>,
-    ErrorType<unknown>,
-    void
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<Awaited<ReturnType<typeof runMarketAlerts>>, ErrorType<unknown>, void> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof runMarketAlerts>>, void> = () =>
-    runMarketAlerts(requestOptions);
-  return useMutation({ mutationFn, ...mutationOptions });
-};
 

@@ -5,15 +5,7 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-
-export type CompanyValuationLevel = typeof CompanyValuationLevel[keyof typeof CompanyValuationLevel];
-
-export const CompanyValuationLevel = {
-  'Attractive': 'Attractive',
-  'Reasonable': 'Reasonable',
-  'Expensive': 'Expensive',
-  'Unclear': 'Unclear',
-} as const;
+import type { CompanyValuationLevel } from './companyValuationLevel';
 
 export interface CompanyValuationAssessment {
   level: CompanyValuationLevel;

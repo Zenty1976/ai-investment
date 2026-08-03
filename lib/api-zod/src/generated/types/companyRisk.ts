@@ -5,14 +5,7 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-
-export type CompanyRiskImpact = typeof CompanyRiskImpact[keyof typeof CompanyRiskImpact];
-
-export const CompanyRiskImpact = {
-  'High': 'High',
-  'Medium': 'Medium',
-  'Low': 'Low',
-} as const;
+import type { CompanyRiskImpact } from './companyRiskImpact';
 
 export interface CompanyRisk {
   title: string;

@@ -5,17 +5,14 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { Sector } from './sector';
+import type { SectorItem } from './sectorItem';
 import type { SectorTopSector } from './sectorTopSector';
 
 export interface SectorAnalysis {
-  /** ≤80 words — key macro thesis driving sector allocation */
   executiveSummary: string;
-  /** Broad market tone and what it means for sector rotation */
   overallOutlook: string;
   topSector: SectorTopSector;
-  /** Sectors ordered from strongest to weakest */
-  sectors: Sector[];
+  sectors: SectorItem[];
   timestamp: string;
   /** Time taken to complete the analysis in milliseconds */
   analysisDuration: number;

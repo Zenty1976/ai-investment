@@ -5,22 +5,8 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-
-export type CompanyCatalystTimeframe = typeof CompanyCatalystTimeframe[keyof typeof CompanyCatalystTimeframe];
-
-export const CompanyCatalystTimeframe = {
-  'Immediate': 'Immediate',
-  'Within 1 month': 'Within 1 month',
-  'Within 3 months': 'Within 3 months',
-} as const;
-
-export type CompanyCatalystImpact = typeof CompanyCatalystImpact[keyof typeof CompanyCatalystImpact];
-
-export const CompanyCatalystImpact = {
-  'High': 'High',
-  'Medium': 'Medium',
-  'Low': 'Low',
-} as const;
+import type { CompanyCatalystImpact } from './companyCatalystImpact';
+import type { CompanyCatalystTimeframe } from './companyCatalystTimeframe';
 
 export interface CompanyCatalyst {
   title: string;

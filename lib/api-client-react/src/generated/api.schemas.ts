@@ -148,66 +148,6 @@ export interface NewsAnalysis {
   analysisDuration: number;
 }
 
-export type SectorRating = typeof SectorRating[keyof typeof SectorRating];
-
-export const SectorRating = {
-  Strong: 'Strong',
-  'Moderately Strong': 'Moderately Strong',
-  Neutral: 'Neutral',
-  'Moderately Weak': 'Moderately Weak',
-  Weak: 'Weak',
-} as const;
-
-export type SectorTrend = typeof SectorTrend[keyof typeof SectorTrend];
-
-export const SectorTrend = {
-  Improving: 'Improving',
-  Stable: 'Stable',
-  Weakening: 'Weakening',
-} as const;
-
-export type SectorConfidence = typeof SectorConfidence[keyof typeof SectorConfidence];
-
-export const SectorConfidence = {
-  High: 'High',
-  Medium: 'Medium',
-  Low: 'Low',
-} as const;
-
-export interface SectorTopSector {
-  name: string;
-  /** ≤30 words explaining why this sector leads */
-  reason: string;
-}
-
-export interface Sector {
-  name: string;
-  rating: SectorRating;
-  trend: SectorTrend;
-  /** ≤35 words — current state and near-term thesis */
-  summary: string;
-  /** 2-4 specific factors supporting the thesis */
-  drivers: string[];
-  /** 1-3 specific risks that could invalidate the view */
-  risks: string[];
-  /** One sentence on the 1-3 month outlook */
-  outlook: string;
-  confidence: SectorConfidence;
-}
-
-export interface SectorAnalysis {
-  /** ≤80 words — key macro thesis driving sector allocation */
-  executiveSummary: string;
-  /** Broad market tone and what it means for sector rotation */
-  overallOutlook: string;
-  topSector: SectorTopSector;
-  /** Sectors ordered from strongest to weakest */
-  sectors: Sector[];
-  timestamp: string;
-  /** Time taken to complete the analysis in milliseconds */
-  analysisDuration: number;
-}
-
 /**
  * The structured analysis result produced by the module
  */
@@ -231,31 +171,90 @@ export interface ErrorResponse {
   error: string;
 }
 
-export interface CompanyInfo {
+export type SectorRating = typeof SectorRating[keyof typeof SectorRating];
+
+
+export const SectorRating = {
+  Strong: 'Strong',
+  Moderately_Strong: 'Moderately Strong',
+  Neutral: 'Neutral',
+  Moderately_Weak: 'Moderately Weak',
+  Weak: 'Weak',
+} as const;
+
+export type SectorTrend = typeof SectorTrend[keyof typeof SectorTrend];
+
+
+export const SectorTrend = {
+  Improving: 'Improving',
+  Stable: 'Stable',
+  Weakening: 'Weakening',
+} as const;
+
+export type SectorConfidence = typeof SectorConfidence[keyof typeof SectorConfidence];
+
+
+export const SectorConfidence = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface SectorItem {
   name: string;
-  ticker: string;
-  sector: string;
-  industry: string;
+  rating: SectorRating;
+  trend: SectorTrend;
+  summary: string;
+  drivers: string[];
+  risks: string[];
+  outlook: string;
+  confidence: SectorConfidence;
 }
+
+export interface SectorTopSector {
+  name: string;
+  reason: string;
+}
+
+export interface SectorAnalysis {
+  executiveSummary: string;
+  overallOutlook: string;
+  topSector: SectorTopSector;
+  sectors: SectorItem[];
+  timestamp: string;
+  /** Time taken to complete the analysis in milliseconds */
+  analysisDuration: number;
+}
+
+export type CompanyUpdateType = typeof CompanyUpdateType[keyof typeof CompanyUpdateType];
+
+
+export const CompanyUpdateType = {
+  FullAnalysis: 'FullAnalysis',
+  UpdateWithChanges: 'UpdateWithChanges',
+  NoMaterialChange: 'NoMaterialChange',
+} as const;
 
 export type CompanyInvestmentRating = typeof CompanyInvestmentRating[keyof typeof CompanyInvestmentRating];
 
+
 export const CompanyInvestmentRating = {
-  'Strong Buy': 'Strong Buy',
-  'Buy': 'Buy',
-  'Watch': 'Watch',
-  'Avoid': 'Avoid',
-  'Strong Avoid': 'Strong Avoid',
+  Strong_Buy: 'Strong Buy',
+  Buy: 'Buy',
+  Watch: 'Watch',
+  Avoid: 'Avoid',
+  Strong_Avoid: 'Strong Avoid',
 } as const;
 
 export type CompanyOutlook = typeof CompanyOutlook[keyof typeof CompanyOutlook];
 
+
 export const CompanyOutlook = {
-  'Bullish': 'Bullish',
-  'Moderately Bullish': 'Moderately Bullish',
-  'Neutral': 'Neutral',
-  'Moderately Bearish': 'Moderately Bearish',
-  'Bearish': 'Bearish',
+  Bullish: 'Bullish',
+  Moderately_Bullish: 'Moderately Bullish',
+  Neutral: 'Neutral',
+  Moderately_Bearish: 'Moderately Bearish',
+  Bearish: 'Bearish',
 } as const;
 
 export interface CompanyInvestmentView {
@@ -264,109 +263,9 @@ export interface CompanyInvestmentView {
   reason: string;
 }
 
-export type CompanyCatalystTimeframe = typeof CompanyCatalystTimeframe[keyof typeof CompanyCatalystTimeframe];
-
-export const CompanyCatalystTimeframe = {
-  'Immediate': 'Immediate',
-  'Within 1 month': 'Within 1 month',
-  'Within 3 months': 'Within 3 months',
-} as const;
-
-export type CompanyCatalystImpact = typeof CompanyCatalystImpact[keyof typeof CompanyCatalystImpact];
-
-export const CompanyCatalystImpact = {
-  'High': 'High',
-  'Medium': 'Medium',
-  'Low': 'Low',
-} as const;
-
-export interface CompanyCatalyst {
-  title: string;
-  description: string;
-  timeframe: CompanyCatalystTimeframe;
-  impact: CompanyCatalystImpact;
-}
-
-export type CompanyRiskImpact = typeof CompanyRiskImpact[keyof typeof CompanyRiskImpact];
-
-export const CompanyRiskImpact = {
-  'High': 'High',
-  'Medium': 'Medium',
-  'Low': 'Low',
-} as const;
-
-export interface CompanyRisk {
-  title: string;
-  description: string;
-  impact: CompanyRiskImpact;
-}
-
-export type CompanyEarningsTrend = typeof CompanyEarningsTrend[keyof typeof CompanyEarningsTrend];
-
-export const CompanyEarningsTrend = {
-  'Improving': 'Improving',
-  'Stable': 'Stable',
-  'Weakening': 'Weakening',
-} as const;
-
-export interface CompanyEarningsAndGuidance {
-  summary: string;
-  trend: CompanyEarningsTrend;
-  nextKnownEvent: string;
-  nextKnownEventDate: string;
-}
-
-export type CompanyCompetitiveAssessment = typeof CompanyCompetitiveAssessment[keyof typeof CompanyCompetitiveAssessment];
-
-export const CompanyCompetitiveAssessment = {
-  'Strong': 'Strong',
-  'Moderate': 'Moderate',
-  'Weak': 'Weak',
-} as const;
-
-export interface CompanyCompetitivePosition {
-  assessment: CompanyCompetitiveAssessment;
-  summary: string;
-}
-
-export type CompanyMarketSentiment = typeof CompanyMarketSentiment[keyof typeof CompanyMarketSentiment];
-
-export const CompanyMarketSentiment = {
-  'Positive': 'Positive',
-  'Mixed': 'Mixed',
-  'Negative': 'Negative',
-} as const;
-
-export type CompanyValuationLevel = typeof CompanyValuationLevel[keyof typeof CompanyValuationLevel];
-
-export const CompanyValuationLevel = {
-  'Attractive': 'Attractive',
-  'Reasonable': 'Reasonable',
-  'Expensive': 'Expensive',
-  'Unclear': 'Unclear',
-} as const;
-
-export interface CompanyValuationAssessment {
-  level: CompanyValuationLevel;
-  summary: string;
-}
-
-export type CompanyConfidence = typeof CompanyConfidence[keyof typeof CompanyConfidence];
-
-export const CompanyConfidence = {
-  'High': 'High',
-  'Medium': 'Medium',
-  'Low': 'Low',
-} as const;
-
-export type CompanyUpdateType = typeof CompanyUpdateType[keyof typeof CompanyUpdateType];
-export const CompanyUpdateType = {
-  FullAnalysis: 'FullAnalysis',
-  UpdateWithChanges: 'UpdateWithChanges',
-  NoMaterialChange: 'NoMaterialChange',
-} as const;
-
 export type CompanyThesisPointStatus = typeof CompanyThesisPointStatus[keyof typeof CompanyThesisPointStatus];
+
+
 export const CompanyThesisPointStatus = {
   Strengthened: 'Strengthened',
   Unchanged: 'Unchanged',
@@ -374,6 +273,9 @@ export const CompanyThesisPointStatus = {
   Invalidated: 'Invalidated',
 } as const;
 
+/**
+ * A single investment thesis point with a stable ID
+ */
 export interface CompanyThesisPoint {
   /** Stable kebab-case identifier, e.g. "azure-growth" — never changes across updates */
   id: string;
@@ -382,6 +284,8 @@ export interface CompanyThesisPoint {
 }
 
 export type CompanyCaseChangeSeverity = typeof CompanyCaseChangeSeverity[keyof typeof CompanyCaseChangeSeverity];
+
+
 export const CompanyCaseChangeSeverity = {
   High: 'High',
   Medium: 'Medium',
@@ -398,12 +302,26 @@ export interface CompanyInvestmentCaseChange {
   reason: string;
 }
 
+/**
+ * Present only when investmentCaseStrength changed — explains why
+ */
 export interface CompanyInvestmentCaseStrengthChange {
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
   previousScore: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
   currentScore: number;
   reasons: string[];
 }
 
+/**
+ * Stable company profile — business facts that rarely change
+ */
 export interface CompanyStableProfile {
   businessDescription: string;
   competitiveAdvantage: string;
@@ -411,7 +329,113 @@ export interface CompanyStableProfile {
   recurringRisks: string[];
 }
 
+export type CompanyCatalystTimeframe = typeof CompanyCatalystTimeframe[keyof typeof CompanyCatalystTimeframe];
+
+
+export const CompanyCatalystTimeframe = {
+  Immediate: 'Immediate',
+  Within_1_month: 'Within 1 month',
+  Within_3_months: 'Within 3 months',
+} as const;
+
+export type CompanyCatalystImpact = typeof CompanyCatalystImpact[keyof typeof CompanyCatalystImpact];
+
+
+export const CompanyCatalystImpact = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface CompanyCatalyst {
+  title: string;
+  description: string;
+  timeframe: CompanyCatalystTimeframe;
+  impact: CompanyCatalystImpact;
+}
+
+export type CompanyRiskImpact = typeof CompanyRiskImpact[keyof typeof CompanyRiskImpact];
+
+
+export const CompanyRiskImpact = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export interface CompanyRisk {
+  title: string;
+  description: string;
+  impact: CompanyRiskImpact;
+}
+
+export type CompanyEarningsTrend = typeof CompanyEarningsTrend[keyof typeof CompanyEarningsTrend];
+
+
+export const CompanyEarningsTrend = {
+  Improving: 'Improving',
+  Stable: 'Stable',
+  Weakening: 'Weakening',
+} as const;
+
+export interface CompanyEarningsAndGuidance {
+  summary: string;
+  trend: CompanyEarningsTrend;
+  nextKnownEvent: string;
+  /** YYYY-MM-DD or empty string */
+  nextKnownEventDate: string;
+}
+
+export type CompanyCompetitiveAssessment = typeof CompanyCompetitiveAssessment[keyof typeof CompanyCompetitiveAssessment];
+
+
+export const CompanyCompetitiveAssessment = {
+  Strong: 'Strong',
+  Moderate: 'Moderate',
+  Weak: 'Weak',
+} as const;
+
+export interface CompanyCompetitivePosition {
+  assessment: CompanyCompetitiveAssessment;
+  summary: string;
+}
+
+export type CompanyMarketSentiment = typeof CompanyMarketSentiment[keyof typeof CompanyMarketSentiment];
+
+
+export const CompanyMarketSentiment = {
+  Positive: 'Positive',
+  Mixed: 'Mixed',
+  Negative: 'Negative',
+} as const;
+
+export type CompanyValuationLevel = typeof CompanyValuationLevel[keyof typeof CompanyValuationLevel];
+
+
+export const CompanyValuationLevel = {
+  Attractive: 'Attractive',
+  Reasonable: 'Reasonable',
+  Expensive: 'Expensive',
+  Unclear: 'Unclear',
+} as const;
+
+export interface CompanyValuationAssessment {
+  level: CompanyValuationLevel;
+  summary: string;
+}
+
+export type CompanyConfidence = typeof CompanyConfidence[keyof typeof CompanyConfidence];
+
+
+export const CompanyConfidence = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
 export type CompanyMeaningfulChange = typeof CompanyMeaningfulChange[keyof typeof CompanyMeaningfulChange];
+
+
 export const CompanyMeaningfulChange = {
   None: 'None',
   Low: 'Low',
@@ -419,6 +443,16 @@ export const CompanyMeaningfulChange = {
   High: 'High',
 } as const;
 
+export interface CompanyInfo {
+  name: string;
+  ticker: string;
+  sector: string;
+  industry: string;
+}
+
+/**
+ * Full stateful company investment analysis
+ */
 export interface CompanyAnalysis {
   /** Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation */
   updateType: CompanyUpdateType;
@@ -427,16 +461,21 @@ export interface CompanyAnalysis {
   investmentView: CompanyInvestmentView;
   /** The persistent investment thesis — WHY this company is attractive or unattractive */
   investmentThesis: CompanyThesisPoint[];
-  /** 0–100 score representing how strong the overall investment case currently is */
+  /**
+     * 0–100 score representing how strong the overall investment case currently is
+     * @minimum 0
+     * @maximum 100
+     */
   investmentCaseStrength: number;
   /** Whether and how the investment case changed since the previous analysis */
   investmentCaseChange: CompanyInvestmentCaseChange;
-  /** Present only when investmentCaseStrength changed — explains why */
   investmentCaseStrengthChange?: CompanyInvestmentCaseStrengthChange;
   /** Stable company profile — business facts that rarely change */
   stableProfile: CompanyStableProfile;
   currentSituation: string;
+  /** @maxItems 5 */
   catalysts: CompanyCatalyst[];
+  /** @maxItems 5 */
   risks: CompanyRisk[];
   earningsAndGuidance: CompanyEarningsAndGuidance;
   competitivePosition: CompanyCompetitivePosition;
@@ -451,640 +490,41 @@ export interface CompanyAnalysis {
   timestamp: string;
   /** Time taken to complete the analysis in milliseconds */
   analysisDuration: number;
-  /** Server-computed: how meaningful this update was for downstream orchestration */
+  /** Server-computed — how meaningful this update was for downstream orchestration */
   meaningfulChange?: CompanyMeaningfulChange;
-  /** Server-computed: tickers affected by this analysis result */
+  /** Server-computed — tickers affected by this analysis result */
   affectedTickers?: string[];
 }
 
-/** Compact history entry stored under company-monitor-history:<TICKER> */
+export type CompanyMonitorHistoryEntryThesisPointStatusesItem = {
+  id: string;
+  status: CompanyThesisPointStatus;
+};
+
+/**
+ * Compact history entry stored under company-monitor-history:<TICKER>
+ */
 export interface CompanyMonitorHistoryEntry {
   timestamp: string;
   updateType: CompanyUpdateType;
   investmentViewRating: CompanyInvestmentRating;
   investmentViewOutlook: CompanyOutlook;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
   investmentCaseStrength: number;
   investmentCaseChangeSeverity: CompanyCaseChangeSeverity;
   investmentCaseChangeSummary: string;
-  thesisPointStatuses: Array<{ id: string; status: CompanyThesisPointStatus }>;
+  thesisPointStatuses: CompanyMonitorHistoryEntryThesisPointStatusesItem[];
   confidence: CompanyConfidence;
   meaningfulChange: CompanyMeaningfulChange;
 }
 
 export interface CompanyAnalysisBody {
+  /** Stock ticker symbol, e.g. "AAPL" */
   ticker: string;
+  /** Optional full company name to improve AI accuracy */
   companyName?: string;
-}
-
-// ── Saxo Bank connection ─────────────────────────────────────────────────────
-
-export type SaxoEnvironment = 'sim' | 'live';
-
-export interface SaxoStatus {
-  configured: boolean;
-  appKeyConfigured: boolean;
-  appSecretConfigured: boolean;
-  connected: boolean;
-  environment: SaxoEnvironment;
-  /** Auto-detected callback URL built from REPLIT_DEV_DOMAIN on the server */
-  detectedCallbackUrl: string;
-  redirectUrlOverride?: string;
-  expiresAt?: string;
-  connectedAt?: string;
-  error?: string;
-  /** Development/debug flag — use mock Saxo data instead of real API calls */
-  useMockSaxoData: boolean;
-}
-
-export interface SaxoSetEnvironmentBody {
-  environment: SaxoEnvironment;
-}
-
-// ── Portfolio Manager ─────────────────────────────────────────────────────────
-
-export interface PortfolioPosition {
-  id: string;
-  name: string;
-  symbol: string;
-  assetType: string;
-  exchange: string;
-  currency: string;
-  /** AccountKey this position belongs to */
-  accountKey: string;
-  quantity: number;
-  direction: string;
-  averageOpenPrice: number;
-  currentPrice: number;
-  marketValue: number;
-  marketValueBaseCurrency: number;
-  profitLoss: number;
-  dayChangePercent: number;
-  priceDelayMinutes: number;
-  isMarketOpen: boolean;
-}
-
-export interface PortfolioAccount {
-  accountKey: string;
-  accountId: string;
-  accountName: string;
-  accountType: string;
-  currency: string;
-  availableCash: number;
-  accountValue: number;
-  unrealizedProfitLoss: number;
-  positions: PortfolioPosition[];
-}
-
-export interface PortfolioSnapshot {
-  updatedAt: string;
-  environment: SaxoEnvironment;
-  /** Base currency of the primary account */
-  baseCurrency: string;
-  /** null when the client-level field was absent (never a cross-currency sum) */
-  totalValue: number | null;
-  /** null when the client-level field was absent */
-  totalAvailableCash: number | null;
-  totalUnrealizedProfitLoss: number;
-  accounts: PortfolioAccount[];
-  /** True when this snapshot was built from mock data, not the real Saxo API */
-  isMockData?: boolean;
-}
-
-export interface PortfolioRepositoryEntry {
-  moduleName: string;
-  result: PortfolioSnapshot;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// ── System Log ───────────────────────────────────────────────────────────────
-
-export type SystemLogLevel = 'user' | 'info' | 'warning' | 'error' | 'internal';
-
-export interface SystemLogEntry {
-  id: string;
-  timestamp: string;
-  module: string;
-  level: SystemLogLevel;
-  message: string;
-  details?: unknown;
-}
-
-// ── Portfolio Analyzer ────────────────────────────────────────────────────────
-
-export type PortfolioAnalysisOverallRating = 'Excellent' | 'Good' | 'Fair' | 'Weak';
-export type PortfolioAnalysisOverallOutlook = 'Bullish' | 'Moderately Bullish' | 'Neutral' | 'Moderately Bearish' | 'Bearish';
-
-export interface PortfolioAnalysisMainConclusion {
-  title: string;
-  reason: string;
-}
-
-export interface PortfolioAnalysisScoreDriver {
-  factor: string;
-  impact: 'Positive' | 'Negative';
-  reason: string;
-}
-
-export interface PortfolioAnalysisRisk {
-  title: string;
-  reason: string;
-  severity: 'High' | 'Medium' | 'Low';
-}
-
-export interface PortfolioAnalysisOpportunity {
-  title: string;
-  reason: string;
-  confidence: 'High' | 'Medium' | 'Low';
-}
-
-export interface PortfolioAnalysisPositionComment {
-  ticker: string;
-  summary: string;
-  attention: 'High' | 'Medium' | 'Low';
-}
-
-export interface PortfolioAnalysisAction {
-  action: string;
-  reason: string;
-  priority: 'High' | 'Medium' | 'Low';
-}
-
-export interface PortfolioAnalysis {
-  mainConclusion: PortfolioAnalysisMainConclusion;
-  scoreDrivers: PortfolioAnalysisScoreDriver[];
-  executiveSummary: string;
-  overallRating: PortfolioAnalysisOverallRating;
-  overallOutlook: PortfolioAnalysisOverallOutlook;
-  /** Integer 0–100 */
-  portfolioScore: number;
-  strengths: string[];
-  weaknesses: string[];
-  topRisks: PortfolioAnalysisRisk[];
-  topOpportunities: PortfolioAnalysisOpportunity[];
-  sectorAssessment: string;
-  positionComments: PortfolioAnalysisPositionComment[];
-  recommendedActions: PortfolioAnalysisAction[];
-  thingsToWatch: string[];
-  timestamp: string;
-  /** Time taken to complete the analysis in milliseconds */
-  analysisDuration: number;
-}
-
-// ── Opportunity Finder ────────────────────────────────────────────────────────
-
-export interface OpportunityFinderSource {
-  title: string;
-  url: string;
-  published: string;
-}
-
-export interface OpportunityFinderOpportunity {
-  rank: number;
-  company: string;
-  ticker: string;
-  exchange: string;
-  sector: string;
-  country: string;
-  overallScore: number;
-  portfolioFit: number;
-  diversificationBenefit: number;
-  sectorMacroFit: number;
-  timing: number;
-  riskReward: number;
-  scoreReason: string;
-  investmentThesis: string[];
-  whyNow: string[];
-  whyThisPortfolio: string[];
-  mainCatalyst: string;
-  catalystDate: string;
-  mainRisk: string;
-  confidence: 'High' | 'Medium' | 'Low';
-  priority: 'High' | 'Medium' | 'Low';
-  positionSizeSuitability: 'Small' | 'Medium' | 'Large';
-  positionSizeReason: string;
-  companyAnalysisAvailable: boolean;
-  sources: OpportunityFinderSource[];
-  status?: 'New' | 'Up' | 'Down' | 'Unchanged';
-}
-
-export interface OpportunityFinderSectorIdea {
-  sector: string;
-  reason: string;
-}
-
-export interface OpportunityAnalysis {
-  executiveSummary: string;
-  overallOpportunityLevel: 'High' | 'Medium' | 'Low';
-  topOpportunities: OpportunityFinderOpportunity[];
-  sectorIdeas: OpportunityFinderSectorIdea[];
-  thingsToResearch: string[];
-  timestamp: string;
-  /** Time taken to complete the analysis in milliseconds */
-  analysisDuration: number;
-}
-
-export interface RiskScoreDriver {
-  factor: string;
-  impact: 'Positive' | 'Negative';
-  reason: string;
-}
-
-export type RiskCategory =
-  | 'Concentration'
-  | 'Company'
-  | 'Sector'
-  | 'Macro'
-  | 'Currency'
-  | 'Liquidity'
-  | 'Event'
-  | 'Geopolitical'
-  | 'Diversification';
-
-export interface RiskProfileItem {
-  category: RiskCategory;
-  score: number;
-  level: 'Low' | 'Moderate' | 'High';
-  reason: string;
-}
-
-export interface RiskItem {
-  title: string;
-  category: RiskCategory;
-  probability: 'Low' | 'Medium' | 'High';
-  severity: 'Low' | 'Medium' | 'High';
-  timeHorizon: 'Immediate' | 'Weeks' | 'Months';
-  eventDate: string;
-  affectedHoldings: string[];
-  reason: string;
-  portfolioImpact: string;
-  interactionWithOtherRisks: string;
-  monitor: string;
-  /** Server-populated: change vs previous analysis */
-  status?: 'New' | 'Increased' | 'Reduced' | 'Unchanged';
-}
-
-export interface RiskInteraction {
-  title: string;
-  reason: string;
-  affectedHoldings: string[];
-  severity: 'Low' | 'Medium' | 'High';
-}
-
-export interface ResolvedRisk {
-  title: string;
-  category: RiskCategory;
-  severity: 'Low' | 'Medium' | 'High';
-  probability: 'Low' | 'Medium' | 'High';
-}
-
-export interface RiskAnalysis {
-  executiveSummary: string;
-  overallRiskLevel: 'Low' | 'Moderate' | 'High';
-  mainConclusion: {
-    title: string;
-    reason: string;
-  };
-  riskScore: number;
-  /** Previous riskScore — absent when no history exists */
-  previousRiskScore?: number;
-  scoreDrivers: RiskScoreDriver[];
-  riskProfile: RiskProfileItem[];
-  topRisks: RiskItem[];
-  riskInteractions: RiskInteraction[];
-  /** Server-populated: risks from previous analysis no longer in current Top Risks */
-  resolvedRisks?: ResolvedRisk[];
-  portfolioWeaknesses: string[];
-  portfolioStrengths: string[];
-  watchClosely: string[];
-  timestamp: string;
-  /** Time taken to complete the analysis in milliseconds */
-  analysisDuration: number;
-}
-
-// ── Market Alerts ─────────────────────────────────────────────────────────────
-
-export type AlertCategory = 'Portfolio' | 'Company' | 'Macro' | 'Sector' | 'Event' | 'Geopolitical' | 'Currency';
-export type AlertImportance = 'High' | 'Medium' | 'Low';
-export type AlertStatus = 'New' | 'Updated' | 'Unchanged';
-export type AlertAttention = 'Monitor' | 'Review' | 'Prepare' | 'Watch';
-export type AlertSourceType = 'Web' | 'NewsMonitor' | 'CompanyMonitor' | 'EventMonitor';
-export type AlertLevel = 'High' | 'Medium' | 'Low';
-
-export interface MarketAlert {
-  title: string;
-  category: AlertCategory;
-  importance: AlertImportance;
-  isNew: boolean;
-  requiresAttention: boolean;
-  affectedHoldings: string[];
-  summary: string;
-  whyItMatters: string;
-  recommendedAttention: AlertAttention;
-  sourceType: AlertSourceType;
-  /** Server-populated: change status vs previous analysis */
-  status?: AlertStatus;
-}
-
-export interface MarketAlertsAnalysis {
-  overallAlertLevel: AlertLevel;
-  executiveSummary: string;
-  headline: string;
-  alerts: MarketAlert[];
-  thingsToWatch: string[];
-  nothingImportantChanged: boolean;
-  timestamp: string;
-  /** Time taken to complete the analysis in milliseconds */
-  analysisDuration: number;
-  /** ISO timestamp of the most recent check (meaningful or no-change) */
-  lastCheckedAt?: string;
-  /** ISO timestamp of the most recent check that found meaningful alerts */
-  lastMeaningfulUpdateAt?: string;
-  /** True when the latest check found no new material developments */
-  noNewDevelopmentsSinceLastCheck?: boolean;
-}
-
-// ── Trade Decision Engine ──────────────────────────────────────────────────────
-
-export type TradeDecisionType = 'Hold' | 'Review' | 'WaitForEvent' | 'PrepareToBuy' | 'PrepareToReduce' | 'NoAction';
-export type TradeDecisionSubjectType = 'Holding' | 'Opportunity' | 'Portfolio';
-export type TradeDecisionPosture = 'ActivelyReview' | 'SelectivePreparation' | 'WaitForEvents' | 'MaintainCurrentPositioning' | 'InsufficientEvidence';
-export type TradeDecisionConfidence = 'High' | 'Medium' | 'Low';
-export type TradeDecisionUrgency = 'Immediate' | 'Days' | 'Weeks' | 'NoUrgency';
-export type TradeDecisionStatus = 'New' | 'Changed' | 'Unchanged' | 'Resolved';
-/** Server-computed: whether this decision is ready for Trade Review, waiting for re-evaluation, or informational only */
-export type TradeDecisionReadiness = 'WaitingForReevaluation' | 'ReadyForReview' | 'Informational';
-export type TradeDecisionSourceModule =
-  | 'PortfolioManager' | 'PortfolioAnalyzer' | 'RiskAnalyzer' | 'MarketAlerts'
-  | 'CompanyMonitor'   | 'OpportunityFinder' | 'EventMonitor' | 'SectorMonitor'
-  | 'MarketMonitor'    | 'NewsMonitor'        | 'Web';
-
-export interface TradeDecisionReadinessDriver {
-  factor: string;
-  impact: 'Positive' | 'Negative';
-  reason: string;
-}
-
-export interface TradeDecision {
-  rank: number;
-  subjectType: TradeDecisionSubjectType;
-  company: string;
-  ticker: string;
-  decision: TradeDecisionType;
-  title: string;
-  reason: string;
-  supportingEvidence: string[];
-  opposingEvidence: string[];
-  confidence: TradeDecisionConfidence;
-  urgency: TradeDecisionUrgency;
-  blockedByEvent: boolean;
-  blockingEvent: string;
-  blockingEventDate: string;
-  whatWouldChangeDecision: string[];
-  missingEvidence: string[];
-  portfolioImpact: string;
-  accountConsiderations: string;
-  sourceModules: TradeDecisionSourceModule[];
-  /** Sizing guidance — present on PrepareToBuy and PrepareToReduce decisions only */
-  targetAllocationPercent?:  number;
-  maximumAllocationPercent?: number;
-  sizingConfidence?:         TradeDecisionConfidence;
-  sizingReason?:             string;
-  /** Server-populated: change vs previous analysis */
-  status?: TradeDecisionStatus;
-  /** Server-computed: whether this decision is ready for Trade Review, waiting for re-evaluation, or informational */
-  readiness?: TradeDecisionReadiness;
-  /** Server-computed: one-sentence explanation of the readiness state */
-  readinessReason?: string;
-}
-
-// ── Trade Review ─────────────────────────────────────────────────────────────
-
-export type TradeProposalStatus =
-  | 'Waiting' | 'Ready' | 'Approved' | 'Rejected' | 'Executed' | 'Cancelled' | 'Superseded';
-
-export interface TradeProposal {
-  id: string;
-  decisionId: string;
-  action: 'BUY' | 'SELL';
-  ticker: string;
-  company: string;
-  quantity: number;
-  estimatedPrice: number;
-  /** Estimated trade value in portfolio base currency */
-  estimatedValue: number;
-  currency: string;
-  targetAllocationPercent: number;
-  currentAllocationPercent: number;
-  resultingAllocationPercent: number;
-  availableCashAfterTrade: number | null;
-  confidence: TradeDecisionConfidence;
-  urgency: TradeDecisionUrgency;
-  /** One-sentence rationale, max ~100 chars */
-  shortReason: string;
-  /** Backend-computed evidence score 0–100 */
-  reasonScore: number;
-  status: TradeProposalStatus;
-  decisionTitle: string;
-  decisionRank: number;
-  sourceModules: string[];
-  blockedByEvent: boolean;
-  /** Name of the event blocking this trade (empty string when not blocked) */
-  blockingEvent: string;
-  /** ISO date of the blocking event, e.g. "2026-08-04" (empty string when not blocked or unverified) */
-  blockingEventDate: string;
-  /** Non-null when quantity could not be calculated — explains why (e.g. "Missing target allocation") */
-  sizingUnavailableReason: string | null;
-  /** Instrument price → portfolio base currency conversion rate (1 for DKK instruments) */
-  fxRate: number;
-  /** Current market value of any existing position in base currency (0 for new positions) */
-  currentPositionValueBase: number;
-  sizingReason: string;
-  sizingConfidence: TradeDecisionConfidence | '';
-  createdAt: string;
-  approvedAt: string | null;
-  rejectedAt: string | null;
-  executedAt: string | null;
-  tdeTimestamp: string;
-}
-
-/** Compact read-only summary of a WaitingForReevaluation PrepareToBuy/PrepareToReduce decision */
-export interface WaitingTradeDecision {
-  /** Stable id, e.g. "CAT:PrepareToBuy" */
-  id: string;
-  action: 'BUY' | 'SELL';
-  ticker: string;
-  company: string;
-  /** Concise vocabulary label */
-  waitingLabel: string;
-  blockingEvent: string;
-  blockingEventDate: string;
-  readinessReason: string;
-  decisionRank: number;
-}
-
-export interface TradeReviewSummary {
-  proposals: TradeProposal[];
-  /** WaitingForReevaluation PrepareToBuy/PrepareToReduce decisions — shown as compact read-only rows */
-  waitingDecisions?: WaitingTradeDecision[];
-  tdeTimestamp: string | null;
-  portfolioTotalValue: number | null;
-  baseCurrency: string;
-  generatedAt: string;
-}
-
-export interface UpdateTradeProposalBody {
-  status: 'Waiting' | 'Ready' | 'Approved' | 'Rejected';
-  quantity?: number;
-}
-
-export interface TradeDecisionConflict {
-  topic: string;
-  conflict: string;
-  resolution: string;
-}
-
-export interface TradeDecisionReviewTrigger {
-  trigger: string;
-  date: string;
-  affectedDecisions: string[];
-}
-
-export interface TradeDecisionEngineAnalysis {
-  mainConclusion: { title: string; reason: string };
-  executiveSummary: string;
-  overallDecisionPosture: TradeDecisionPosture;
-  decisionReadinessScore: number;
-  readinessDrivers: TradeDecisionReadinessDriver[];
-  decisions: TradeDecision[];
-  conflictsResolved: TradeDecisionConflict[];
-  nextReviewTriggers: TradeDecisionReviewTrigger[];
-  timestamp: string;
-  /** Time taken to complete the analysis in milliseconds */
-  analysisDuration: number;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ── Automation Orchestrator ───────────────────────────────────────────────────
-
-export type AutomationMode = 'Manual' | 'SemiAutomatic' | 'FullAutomatic';
-
-export type ModuleFreshness =
-  | 'Fresh' | 'DueSoon' | 'Stale' | 'Running' | 'Failed'
-  | 'Disabled' | 'WaitingForDependency' | 'NeverRun';
-
-export type ModuleTrigger =
-  | 'Manual' | 'Scheduled' | 'Dependency' | 'EventPassed' | 'ImportantAlert'
-  | 'PortfolioChanged' | 'StaleData' | 'StartupRecovery' | 'RunAllNow';
-
-export type OrchestratorJobStatus =
-  | 'Pending' | 'Running' | 'Completed' | 'Failed' | 'Cancelled' | 'Skipped' | 'WaitingForDependency';
-
-export type OrchestratorModuleId =
-  | 'portfolio-manager' | 'market-monitor' | 'news-monitor' | 'event-monitor'
-  | 'sector-monitor'    | 'company-monitor' | 'market-alerts' | 'risk-analyzer'
-  | 'portfolio-analyzer' | 'opportunity-finder' | 'trade-decision-engine' | 'trade-review';
-
-export interface OrchestratorModuleSettings {
-  enabled: boolean;
-  supportsAutomaticRun: boolean;
-  intervalMinutes: number;
-  staleAfterMinutes: number;
-  priority: number;
-}
-
-export interface OrchestratorModuleDefaults {
-  scheduleType: 'fixed' | 'trigger' | 'after';
-  minimumIntervalMinutes: number;
-  maximumIntervalMinutes: number;
-  dependencies: OrchestratorModuleId[];
-  runAfter: OrchestratorModuleId[];
-}
-
-export interface OrchestratorModuleRuntime {
-  status: 'Idle' | 'Running' | 'Failed' | 'Disabled';
-  lastRunAt: string | null;
-  lastSuccessfulRunAt: string | null;
-  nextRunAt: string | null;
-  lastError: string | null;
-  currentJobId: string | null;
-  waitingForDeps: OrchestratorModuleId[];
-}
-
-export interface OrchestratorModuleStatus {
-  moduleId: OrchestratorModuleId;
-  displayName: string;
-  freshness: ModuleFreshness;
-  settings: OrchestratorModuleSettings;
-  defaults: OrchestratorModuleDefaults;
-  runtime: OrchestratorModuleRuntime;
-  lastUpdatedAt: string | null;
-  nextRunAt: string | null;
-}
-
-export interface OrchestratorJob {
-  id: string;
-  correlationId: string;
-  moduleId: OrchestratorModuleId;
-  ticker?: string;
-  trigger: ModuleTrigger;
-  status: OrchestratorJobStatus;
-  priority: number;
-  requestedAt: string;
-  startedAt: string | null;
-  completedAt: string | null;
-  durationMs: number | null;
-  attempt: number;
-  maxAttempts: number;
-  error: string | null;
-  affectedTickers: string[];
-  parentJobId: string | null;
-}
-
-export interface OrchestratorStats {
-  running: number;
-  stale: number;
-  failed: number;
-  analysesToday: number;
-  failedToday: number;
-  nextScheduledJobAt: string | null;
-}
-
-export interface OrchestratorStatus {
-  mode: AutomationMode;
-  paused: boolean;
-  modules: OrchestratorModuleStatus[];
-  jobs: OrchestratorJob[];
-  stats: OrchestratorStats;
-  lastFullCycleAt: string | null;
-  cycleInProgress: boolean;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface SaxoConfigBody {
-  redirectUrlOverride?: string;
-}
-
-export interface SaxoLoginBody {
-  redirectUrl: string;
-  returnUrl: string;
-}
-
-export interface SaxoLoginResponse {
-  authUrl: string;
-}
-
-/** Response from the development-only Company Monitor data reset endpoint. */
-export interface ResetCompanyMonitorDataResponse {
-  /** Total repository entries deleted */
-  deletedEntries: number;
-  /** Latest-analysis entries deleted */
-  deletedAnalyses: number;
-  /** History entries deleted */
-  deletedHistoryEntries: number;
-  /** Human-readable summary */
-  message: string;
 }
 

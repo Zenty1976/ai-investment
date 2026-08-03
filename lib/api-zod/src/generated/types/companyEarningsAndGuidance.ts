@@ -5,18 +5,12 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-
-export type CompanyEarningsTrend = typeof CompanyEarningsTrend[keyof typeof CompanyEarningsTrend];
-
-export const CompanyEarningsTrend = {
-  'Improving': 'Improving',
-  'Stable': 'Stable',
-  'Weakening': 'Weakening',
-} as const;
+import type { CompanyEarningsTrend } from './companyEarningsTrend';
 
 export interface CompanyEarningsAndGuidance {
   summary: string;
   trend: CompanyEarningsTrend;
   nextKnownEvent: string;
+  /** YYYY-MM-DD or empty string */
   nextKnownEventDate: string;
 }

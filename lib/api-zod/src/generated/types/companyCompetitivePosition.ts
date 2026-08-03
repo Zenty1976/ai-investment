@@ -5,14 +5,7 @@
  * AI Investment API specification
  * OpenAPI spec version: 0.1.0
  */
-
-export type CompanyCompetitiveAssessment = typeof CompanyCompetitiveAssessment[keyof typeof CompanyCompetitiveAssessment];
-
-export const CompanyCompetitiveAssessment = {
-  'Strong': 'Strong',
-  'Moderate': 'Moderate',
-  'Weak': 'Weak',
-} as const;
+import type { CompanyCompetitiveAssessment } from './companyCompetitiveAssessment';
 
 export interface CompanyCompetitivePosition {
   assessment: CompanyCompetitiveAssessment;

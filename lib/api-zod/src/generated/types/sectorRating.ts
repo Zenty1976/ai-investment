@@ -11,8 +11,8 @@ export type SectorRating = typeof SectorRating[keyof typeof SectorRating];
 
 export const SectorRating = {
   Strong: 'Strong',
-  'Moderately Strong': 'Moderately Strong',
+  Moderately_Strong: 'Moderately Strong',
   Neutral: 'Neutral',
-  'Moderately Weak': 'Moderately Weak',
+  Moderately_Weak: 'Moderately Weak',
   Weak: 'Weak',
 } as const;

@@ -112,7 +112,7 @@ OUTPUT RULES:
   - Do NOT move this score based on ordinary daily price movement or minor news
   - Small changes should normally be 1–3 points; larger changes require clearly identified material evidence
 - updateType: always "FullAnalysis" for a first-time analysis
-- investmentCaseChange: set changed=false, severity="None", previousInvestmentView="N/A" for a first-time analysis
+- investmentCaseChange: set changed=false, severity="None", previousInvestmentView="N/A", currentInvestmentView must equal the exact rating string you are returning in investmentView.rating
 - Do NOT include investmentCaseStrengthChange in a first-time analysis
 - stableProfile: core business facts — business model, competitive moat, structural strengths, recurring risks
 - earningsAndGuidance.nextKnownEventDate: must be an ISO date in the future (YYYY-MM-DD) or an empty string — never a past date
@@ -139,9 +139,10 @@ Primary objectives:
 
 A VALID OUTCOME is to confirm nothing material has changed:
 - Set updateType="NoMaterialChange"
-- Keep all thesis point IDs and return them with status="Unchanged"
+- Keep ALL previous thesis point IDs and return every one with status EXACTLY "Unchanged" — do NOT use Strengthened, Weakened, or Invalidated; any changed thesis point requires updateType="UpdateWithChanges"
 - Update only the dynamic information (currentSituation, earningsAndGuidance, catalysts, risks, keyThingsToWatch, confidence)
 - Keep investmentCaseChange.changed=false, severity="None"
+- investmentCaseChange.previousInvestmentView must equal the previous analysis rating; investmentCaseChange.currentInvestmentView must equal the rating you are returning (they will be the same on NoMaterialChange)
 - The investmentView, investmentCaseStrength, stableProfile, bullCase, baseCase, bearCase, competitivePosition must exactly match the previous analysis
 
 Only set updateType="UpdateWithChanges" if the investment case or a thesis point has GENUINELY changed.
@@ -267,6 +268,10 @@ function validateConsistency(
     if (data.investmentCaseChange.previousInvestmentView !== 'N/A') {
       return `First run: previousInvestmentView must be "N/A", got "${data.investmentCaseChange.previousInvestmentView}"`;
     }
+    // currentInvestmentView must reflect the actual rating being returned
+    if (data.investmentCaseChange.currentInvestmentView !== data.investmentView.rating) {
+      return `First run: currentInvestmentView "${data.investmentCaseChange.currentInvestmentView}" must match investmentView.rating "${data.investmentView.rating}"`;
+    }
     if (data.investmentCaseStrengthChange !== undefined) {
       return 'First run: investmentCaseStrengthChange must be absent';
     }
@@ -287,20 +292,28 @@ function validateConsistency(
     if (prevView && data.investmentView.outlook !== prevOutlook) {
       return `NoMaterialChange: investmentView.outlook "${data.investmentView.outlook}" differs from previous "${prevOutlook}"`;
     }
+    // investmentCaseChange view fields must mirror the actual stored/current rating
+    if (prevView && data.investmentCaseChange.previousInvestmentView !== prevRating) {
+      return `NoMaterialChange: previousInvestmentView "${data.investmentCaseChange.previousInvestmentView}" must match previous rating "${prevRating}"`;
+    }
+    if (data.investmentCaseChange.currentInvestmentView !== data.investmentView.rating) {
+      return `NoMaterialChange: currentInvestmentView "${data.investmentCaseChange.currentInvestmentView}" must match investmentView.rating "${data.investmentView.rating}"`;
+    }
     if (prevStrength !== undefined && data.investmentCaseStrength !== prevStrength) {
       return `NoMaterialChange: investmentCaseStrength ${data.investmentCaseStrength} differs from previous ${prevStrength}`;
     }
     if (data.investmentCaseStrengthChange !== undefined) {
       return 'NoMaterialChange: investmentCaseStrengthChange must be absent';
     }
-    // No previous thesis point may be removed or marked Invalidated
+    // Every previous thesis point must be present with status exactly "Unchanged".
+    // Strengthened/Weakened/Invalidated all require updateType="UpdateWithChanges".
     for (const prevPt of prevThesis) {
       const found = data.investmentThesis.find(p => p.id === prevPt.id);
       if (!found) {
-        return `NoMaterialChange: thesis point id "${prevPt.id}" was omitted (must be returned with Unchanged status)`;
+        return `NoMaterialChange: thesis point id "${prevPt.id}" was omitted (must be returned with status "Unchanged")`;
       }
-      if (found.status === 'Invalidated') {
-        return `NoMaterialChange: thesis point "${prevPt.id}" may not be Invalidated`;
+      if (found.status !== 'Unchanged') {
+        return `NoMaterialChange: thesis point "${prevPt.id}" has status "${found.status}" — only "Unchanged" is permitted; use updateType="UpdateWithChanges" if a thesis point changed`;
       }
     }
     return null;
@@ -374,15 +387,15 @@ function mergeNoMaterialChange(
 ): ParsedAnalysis {
   const prevThesis = (prev.investmentThesis as Array<{ id: string; point: string; status: string }> | undefined) ?? [];
 
-  // Preserve thesis text; apply new status only when ID matches
-  const mergedThesis = prevThesis.map(prevPt => {
-    const match = newData.investmentThesis.find(p => p.id === prevPt.id);
-    return {
-      id: prevPt.id,
-      point: prevPt.point, // always preserve original text
-      status: (match?.status ?? 'Unchanged') as 'Strengthened' | 'Unchanged' | 'Weakened' | 'Invalidated',
-    };
-  });
+  // Preserve thesis text; force every status to "Unchanged" — validation already
+  // guarantees the model returned Unchanged for all points, but this is a hard
+  // server-side safety net so a bug in the validation path can never let a
+  // changed status slip through on a NoMaterialChange merge.
+  const mergedThesis = prevThesis.map(prevPt => ({
+    id: prevPt.id,
+    point: prevPt.point, // always preserve original text
+    status: 'Unchanged' as const,
+  }));
 
   const prevView = prev.investmentView as ParsedAnalysis['investmentView'];
   const prevStrength = prev.investmentCaseStrength as number;
@@ -488,7 +501,10 @@ function computeMeaningfulChange(
   prevAnalysis: Record<string, unknown> | undefined
 ): MeaningfulChange {
   if (data.updateType === 'FullAnalysis') {
-    return 'High';
+    // A first baseline analysis establishes a structured record but does not by
+    // itself prove the investment case changed materially — return Medium so
+    // downstream modules trigger at a moderate priority.
+    return 'Medium';
   }
 
   if (data.updateType === 'NoMaterialChange') {

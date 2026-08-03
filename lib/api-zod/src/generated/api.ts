@@ -88,14 +88,14 @@ export const RunNewsAnalysisResponse = zod.object({
   "importance": zod.enum(['High', 'Medium', 'Low'])
 }),
   "news": zod.array(zod.object({
-  "id": zod.string().describe('Stable kebab-case identifier, e.g. "fed-rate-cut-2026-07-31"'),
+  "id": zod.string().describe('Stable kebab-case identifier, e.g. \"fed-rate-cut-2026-07-31\"'),
   "title": zod.string(),
   "summary": zod.string(),
   "category": zod.string(),
   "importance": zod.enum(['High', 'Medium', 'Low']),
   "affectedMarkets": zod.array(zod.string()),
   "whyItMatters": zod.string(),
-  "marketImpact": zod.string().describe('Short sentence describing the market impact, e.g. "Positive for AI stocks"'),
+  "marketImpact": zod.string().describe('Short sentence describing the market impact, e.g. \"Positive for AI stocks\" or \"Negative for government bonds\"'),
   "confidence": zod.number().min(runNewsAnalysisResponseNewsItemConfidenceMin).max(runNewsAnalysisResponseNewsItemConfidenceMax),
   "source": zod.string(),
   "publishedAt": zod.string().describe('ISO 8601 date or datetime')
@@ -106,108 +106,122 @@ export const RunNewsAnalysisResponse = zod.object({
 
 
 /**
- * Analyses major equity sectors and determines where institutional capital is flowing
+ * Analyses major equity sectors and determines where institutional capital is flowing over the next 1-3 months
  * @summary Run sector monitor analysis
  */
 export const RunSectorAnalysisResponse = zod.object({
   "executiveSummary": zod.string(),
   "overallOutlook": zod.string(),
   "topSector": zod.object({
-    "name": zod.string(),
-    "reason": zod.string()
-  }),
+  "name": zod.string(),
+  "reason": zod.string()
+}),
   "sectors": zod.array(zod.object({
-    "name": zod.string(),
-    "rating": zod.enum(['Strong', 'Moderately Strong', 'Neutral', 'Moderately Weak', 'Weak']),
-    "trend": zod.enum(['Improving', 'Stable', 'Weakening']),
-    "summary": zod.string(),
-    "drivers": zod.array(zod.string()),
-    "risks": zod.array(zod.string()),
-    "outlook": zod.string(),
-    "confidence": zod.enum(['High', 'Medium', 'Low'])
-  })),
+  "name": zod.string(),
+  "rating": zod.enum(['Strong', 'Moderately Strong', 'Neutral', 'Moderately Weak', 'Weak']),
+  "trend": zod.enum(['Improving', 'Stable', 'Weakening']),
+  "summary": zod.string(),
+  "drivers": zod.array(zod.string()),
+  "risks": zod.array(zod.string()),
+  "outlook": zod.string(),
+  "confidence": zod.enum(['High', 'Medium', 'Low'])
+})),
   "timestamp": zod.string(),
   "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
 })
 
 
 /**
- * Evaluates a single company as a possible investment over the next 1-3 months
- * @summary Run company monitor analysis
+ * Calls the AI service to run or update a stateful investment analysis for a single company
+ * @summary Run company analysis
  */
+export const RunCompanyAnalysisBody = zod.object({
+  "ticker": zod.string().describe('Stock ticker symbol, e.g. \"AAPL\"'),
+  "companyName": zod.string().optional().describe('Optional full company name to improve AI accuracy')
+})
+
+export const runCompanyAnalysisResponseInvestmentCaseStrengthMin = 0;
+export const runCompanyAnalysisResponseInvestmentCaseStrengthMax = 100;
+
+export const runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMin = 0;
+export const runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMax = 100;
+
+export const runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMin = 0;
+export const runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMax = 100;
+
+export const runCompanyAnalysisResponseCatalystsMax = 5;
+
+export const runCompanyAnalysisResponseRisksMax = 5;
+
+
+
 export const RunCompanyAnalysisResponse = zod.object({
-  /** Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation */
-  "updateType": zod.enum(['FullAnalysis', 'UpdateWithChanges', 'NoMaterialChange']),
+  "updateType": zod.enum(['FullAnalysis', 'UpdateWithChanges', 'NoMaterialChange']).describe('Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation'),
   "company": zod.object({
-    "name": zod.string(),
-    "ticker": zod.string(),
-    "sector": zod.string(),
-    "industry": zod.string()
-  }),
+  "name": zod.string(),
+  "ticker": zod.string(),
+  "sector": zod.string(),
+  "industry": zod.string()
+}),
   "executiveSummary": zod.string(),
   "investmentView": zod.object({
-    "rating": zod.enum(['Strong Buy', 'Buy', 'Watch', 'Avoid', 'Strong Avoid']),
-    "outlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),
-    "reason": zod.string()
-  }),
-  /** The persistent investment thesis — WHY this company is attractive or unattractive */
+  "rating": zod.enum(['Strong Buy', 'Buy', 'Watch', 'Avoid', 'Strong Avoid']),
+  "outlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),
+  "reason": zod.string()
+}),
   "investmentThesis": zod.array(zod.object({
-    "id": zod.string().describe('Stable kebab-case identifier, e.g. "azure-growth" — never changes across updates'),
-    "point": zod.string(),
-    "status": zod.enum(['Strengthened', 'Unchanged', 'Weakened', 'Invalidated'])
-  })),
-  /** 0–100 score representing how strong the overall investment case currently is */
-  "investmentCaseStrength": zod.number().min(0).max(100),
-  /** Structured description of whether and how the investment case changed since the previous analysis */
+  "id": zod.string().describe('Stable kebab-case identifier, e.g. \"azure-growth\" — never changes across updates'),
+  "point": zod.string(),
+  "status": zod.enum(['Strengthened', 'Unchanged', 'Weakened', 'Invalidated'])
+}).describe('A single investment thesis point with a stable ID')).describe('The persistent investment thesis — WHY this company is attractive or unattractive'),
+  "investmentCaseStrength": zod.number().min(runCompanyAnalysisResponseInvestmentCaseStrengthMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthMax).describe('0–100 score representing how strong the overall investment case currently is'),
   "investmentCaseChange": zod.object({
-    "changed": zod.boolean(),
-    "severity": zod.enum(['High', 'Medium', 'Low', 'None']),
-    "summary": zod.string(),
-    "previousInvestmentView": zod.string(),
-    "currentInvestmentView": zod.string(),
-    "reason": zod.string()
-  }),
-  /** Only present when investmentCaseStrength has changed — explains why */
+  "changed": zod.boolean(),
+  "severity": zod.enum(['High', 'Medium', 'Low', 'None']),
+  "summary": zod.string(),
+  "previousInvestmentView": zod.string(),
+  "currentInvestmentView": zod.string(),
+  "reason": zod.string()
+}).describe('Whether and how the investment case changed since the previous analysis'),
   "investmentCaseStrengthChange": zod.object({
-    "previousScore": zod.number().min(0).max(100),
-    "currentScore": zod.number().min(0).max(100),
-    "reasons": zod.array(zod.string())
-  }).optional(),
-  /** Stable company profile — business facts that rarely change */
+  "previousScore": zod.number().min(runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMax),
+  "currentScore": zod.number().min(runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMax),
+  "reasons": zod.array(zod.string())
+}).optional().describe('Present only when investmentCaseStrength changed — explains why'),
   "stableProfile": zod.object({
-    "businessDescription": zod.string(),
-    "competitiveAdvantage": zod.string(),
-    "longTermStrengths": zod.array(zod.string()),
-    "recurringRisks": zod.array(zod.string())
-  }),
+  "businessDescription": zod.string(),
+  "competitiveAdvantage": zod.string(),
+  "longTermStrengths": zod.array(zod.string()),
+  "recurringRisks": zod.array(zod.string())
+}).describe('Stable company profile — business facts that rarely change'),
   "currentSituation": zod.string(),
   "catalysts": zod.array(zod.object({
-    "title": zod.string(),
-    "description": zod.string(),
-    "timeframe": zod.enum(['Immediate', 'Within 1 month', 'Within 3 months']),
-    "impact": zod.enum(['High', 'Medium', 'Low'])
-  })).max(5),
+  "title": zod.string(),
+  "description": zod.string(),
+  "timeframe": zod.enum(['Immediate', 'Within 1 month', 'Within 3 months']),
+  "impact": zod.enum(['High', 'Medium', 'Low'])
+})).max(runCompanyAnalysisResponseCatalystsMax),
   "risks": zod.array(zod.object({
-    "title": zod.string(),
-    "description": zod.string(),
-    "impact": zod.enum(['High', 'Medium', 'Low'])
-  })).max(5),
+  "title": zod.string(),
+  "description": zod.string(),
+  "impact": zod.enum(['High', 'Medium', 'Low'])
+})).max(runCompanyAnalysisResponseRisksMax),
   "earningsAndGuidance": zod.object({
-    "summary": zod.string(),
-    "trend": zod.enum(['Improving', 'Stable', 'Weakening']),
-    "nextKnownEvent": zod.string(),
-    "nextKnownEventDate": zod.string()
-  }),
+  "summary": zod.string(),
+  "trend": zod.enum(['Improving', 'Stable', 'Weakening']),
+  "nextKnownEvent": zod.string(),
+  "nextKnownEventDate": zod.string().describe('YYYY-MM-DD or empty string')
+}),
   "competitivePosition": zod.object({
-    "assessment": zod.enum(['Strong', 'Moderate', 'Weak']),
-    "summary": zod.string()
-  }),
+  "assessment": zod.enum(['Strong', 'Moderate', 'Weak']),
+  "summary": zod.string()
+}),
   "sectorContext": zod.string(),
   "marketSentiment": zod.enum(['Positive', 'Mixed', 'Negative']),
   "valuationAssessment": zod.object({
-    "level": zod.enum(['Attractive', 'Reasonable', 'Expensive', 'Unclear']),
-    "summary": zod.string()
-  }),
+  "level": zod.enum(['Attractive', 'Reasonable', 'Expensive', 'Unclear']),
+  "summary": zod.string()
+}),
   "bullCase": zod.string(),
   "baseCase": zod.string(),
   "bearCase": zod.string(),
@@ -215,95 +229,9 @@ export const RunCompanyAnalysisResponse = zod.object({
   "confidence": zod.enum(['High', 'Medium', 'Low']),
   "timestamp": zod.string(),
   "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds'),
-  /** Server-computed: how meaningful this update was for downstream orchestration */
-  "meaningfulChange": zod.enum(['None', 'Low', 'Medium', 'High']).optional(),
-  /** Server-computed: tickers affected by this analysis result */
-  "affectedTickers": zod.array(zod.string()).optional()
-})
-
-
-/**
- * @summary Get Saxo Bank connection status
- */
-export const GetSaxoStatusResponse = zod.object({
-  "configured": zod.boolean(),
-  "appKeyConfigured": zod.boolean(),
-  "appSecretConfigured": zod.boolean(),
-  "connected": zod.boolean(),
-  "environment": zod.enum(['sim', 'live']),
-  "detectedCallbackUrl": zod.string(),
-  "redirectUrlOverride": zod.string().optional(),
-  "expiresAt": zod.string().optional(),
-  "connectedAt": zod.string().optional(),
-  "error": zod.string().optional(),
-})
-
-export const SaxoSetEnvironmentBody = zod.object({
-  "environment": zod.enum(['sim', 'live']),
-})
-
-// ── Portfolio Manager ─────────────────────────────────────────────────────────
-
-export const PortfolioPosition = zod.object({
-  "id": zod.string(),
-  "name": zod.string(),
-  "symbol": zod.string(),
-  "assetType": zod.string(),
-  "exchange": zod.string(),
-  "currency": zod.string(),
-  "accountKey": zod.string(),
-  "quantity": zod.number(),
-  "direction": zod.string(),
-  "averageOpenPrice": zod.number(),
-  "currentPrice": zod.number(),
-  "marketValue": zod.number(),
-  "marketValueBaseCurrency": zod.number(),
-  "profitLoss": zod.number(),
-  "dayChangePercent": zod.number(),
-  "priceDelayMinutes": zod.number(),
-  "isMarketOpen": zod.boolean(),
-})
-
-export const PortfolioAccount = zod.object({
-  "accountKey": zod.string(),
-  "accountId": zod.string(),
-  "accountName": zod.string(),
-  "accountType": zod.string(),
-  "currency": zod.string(),
-  "availableCash": zod.number(),
-  "accountValue": zod.number(),
-  "unrealizedProfitLoss": zod.number(),
-  "positions": zod.array(PortfolioPosition),
-})
-
-export const PortfolioSnapshot = zod.object({
-  "updatedAt": zod.string(),
-  "environment": zod.enum(['sim', 'live']),
-  "baseCurrency": zod.string(),
-  "totalValue": zod.number(),
-  "totalAvailableCash": zod.number(),
-  "totalUnrealizedProfitLoss": zod.number(),
-  "accounts": zod.array(PortfolioAccount),
-})
-
-/**
- * @summary Save non-secret Saxo config (redirect URL override)
- */
-export const SaxoConfigBody = zod.object({
-  "redirectUrlOverride": zod.string().optional(),
-})
-
-/**
- * @summary Initiate Saxo OAuth login
- */
-export const SaxoLoginBody = zod.object({
-  "redirectUrl": zod.string(),
-  "returnUrl": zod.string(),
-})
-
-export const SaxoLoginResponse = zod.object({
-  "authUrl": zod.string(),
-})
+  "meaningfulChange": zod.enum(['None', 'Low', 'Medium', 'High']).optional().describe('Server-computed — how meaningful this update was for downstream orchestration'),
+  "affectedTickers": zod.array(zod.string()).optional().describe('Server-computed — tickers affected by this analysis result')
+}).describe('Full stateful company investment analysis')
 
 
 /**
@@ -320,260 +248,6 @@ export const ListRepositoryEntriesResponse = zod.array(ListRepositoryEntriesResp
 
 
 /**
- * Performs a complete AI-powered portfolio analysis for a 1–3 month investment horizon
- * @summary Run portfolio analysis
- */
-export const RunPortfolioAnalysisResponse = zod.object({
-  "mainConclusion": zod.object({
-    "title": zod.string(),
-    "reason": zod.string()
-  }),
-  "scoreDrivers": zod.array(zod.object({
-    "factor": zod.string(),
-    "impact": zod.enum(['Positive', 'Negative']),
-    "reason": zod.string()
-  })).min(3).max(6),
-  "executiveSummary": zod.string(),
-  "overallRating": zod.enum(['Excellent', 'Good', 'Fair', 'Weak']),
-  "overallOutlook": zod.enum(['Bullish', 'Moderately Bullish', 'Neutral', 'Moderately Bearish', 'Bearish']),
-  "portfolioScore": zod.number().int().min(0).max(100),
-  "strengths": zod.array(zod.string()),
-  "weaknesses": zod.array(zod.string()),
-  "topRisks": zod.array(zod.object({
-    "title": zod.string(),
-    "reason": zod.string(),
-    "severity": zod.enum(['High', 'Medium', 'Low'])
-  })),
-  "topOpportunities": zod.array(zod.object({
-    "title": zod.string(),
-    "reason": zod.string(),
-    "confidence": zod.enum(['High', 'Medium', 'Low'])
-  })),
-  "sectorAssessment": zod.string(),
-  "positionComments": zod.array(zod.object({
-    "ticker": zod.string(),
-    "summary": zod.string(),
-    "attention": zod.enum(['High', 'Medium', 'Low'])
-  })),
-  "recommendedActions": zod.array(zod.object({
-    "action": zod.string(),
-    "reason": zod.string(),
-    "priority": zod.enum(['High', 'Medium', 'Low'])
-  })),
-  "thingsToWatch": zod.array(zod.string()),
-  "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
-})
-
-
-/**
- * Identifies the best investment opportunities for the next 1–3 months that complement the existing portfolio
- * @summary Run opportunity finder analysis
- */
-export const RunOpportunityFinderResponse = zod.object({
-  "executiveSummary": zod.string(),
-  "overallOpportunityLevel": zod.enum(['High', 'Medium', 'Low']),
-  "topOpportunities": zod.array(zod.object({
-    "rank": zod.number().int().min(1),
-    "company": zod.string(),
-    "ticker": zod.string(),
-    "exchange": zod.string(),
-    "sector": zod.string(),
-    "country": zod.string(),
-    "overallScore": zod.number().int().min(0).max(100),
-    "portfolioFit": zod.number().int().min(1).max(5),
-    "diversificationBenefit": zod.number().int().min(1).max(5),
-    "sectorMacroFit": zod.number().int().min(1).max(5),
-    "timing": zod.number().int().min(1).max(5),
-    "riskReward": zod.number().int().min(1).max(5),
-    "scoreReason": zod.string(),
-    "investmentThesis": zod.array(zod.string()).min(1).max(3),
-    "whyNow": zod.array(zod.string()).min(1).max(3),
-    "whyThisPortfolio": zod.array(zod.string()).min(1).max(3),
-    "mainCatalyst": zod.string(),
-    "catalystDate": zod.string(),
-    "mainRisk": zod.string(),
-    "confidence": zod.enum(['High', 'Medium', 'Low']),
-    "priority": zod.enum(['High', 'Medium', 'Low']),
-    "positionSizeSuitability": zod.enum(['Small', 'Medium', 'Large']),
-    "positionSizeReason": zod.string(),
-    "companyAnalysisAvailable": zod.boolean(),
-    "sources": zod.array(zod.object({
-      "title": zod.string(),
-      "url": zod.string(),
-      "published": zod.string()
-    })).min(1).max(3),
-    "status": zod.enum(['New', 'Up', 'Down', 'Unchanged']).optional()
-  })),
-  "sectorIdeas": zod.array(zod.object({
-    "sector": zod.string(),
-    "reason": zod.string()
-  })),
-  "thingsToResearch": zod.array(zod.string()),
-  "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
-})
-
-
-// ── Risk Analyzer ─────────────────────────────────────────────────────────────
-
-/** AI-supplied risk profile category. Server adds status after parsing. */
-export const RunRiskAnalyzerResponse = zod.object({
-  "executiveSummary": zod.string(),
-  "overallRiskLevel": zod.enum(['Low', 'Moderate', 'High']),
-  "mainConclusion": zod.object({
-    "title": zod.string(),
-    "reason": zod.string()
-  }),
-  "riskScore": zod.number().int().min(0).max(100),
-  /** Server-populated: previous riskScore for delta display. Absent when no history. */
-  "previousRiskScore": zod.number().int().min(0).max(100).optional(),
-  "scoreDrivers": zod.array(zod.object({
-    "factor": zod.string(),
-    "impact": zod.enum(['Positive', 'Negative']),
-    "reason": zod.string()
-  })).min(1),
-  "riskProfile": zod.array(zod.object({
-    "category": zod.enum(['Concentration', 'Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
-    "score": zod.number().int().min(0).max(100),
-    "level": zod.enum(['Low', 'Moderate', 'High']),
-    "reason": zod.string()
-  })),
-  "topRisks": zod.array(zod.object({
-    "title": zod.string(),
-    "category": zod.enum(['Concentration', 'Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
-    "probability": zod.enum(['Low', 'Medium', 'High']),
-    "severity": zod.enum(['Low', 'Medium', 'High']),
-    "timeHorizon": zod.enum(['Immediate', 'Weeks', 'Months']),
-    "eventDate": zod.string(),
-    "affectedHoldings": zod.array(zod.string()),
-    "reason": zod.string(),
-    "portfolioImpact": zod.string(),
-    "interactionWithOtherRisks": zod.string(),
-    "monitor": zod.string(),
-    /** Server-populated: change status vs previous analysis. */
-    "status": zod.enum(['New', 'Increased', 'Reduced', 'Unchanged']).optional()
-  })).min(1),
-  "riskInteractions": zod.array(zod.object({
-    "title": zod.string(),
-    "reason": zod.string(),
-    "affectedHoldings": zod.array(zod.string()),
-    "severity": zod.enum(['Low', 'Medium', 'High'])
-  })),
-  /** Server-populated: risks present in previous analysis but no longer in current Top Risks. */
-  "resolvedRisks": zod.array(zod.object({
-    "title": zod.string(),
-    "category": zod.enum(['Concentration', 'Company', 'Sector', 'Macro', 'Currency', 'Liquidity', 'Event', 'Geopolitical', 'Diversification']),
-    "severity": zod.enum(['Low', 'Medium', 'High']),
-    "probability": zod.enum(['Low', 'Medium', 'High'])
-  })).optional(),
-  "portfolioWeaknesses": zod.array(zod.string()),
-  "portfolioStrengths": zod.array(zod.string()),
-  "watchClosely": zod.array(zod.string()),
-  "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
-})
-
-// ── Market Alerts ─────────────────────────────────────────────────────────────
-
-export const RunMarketAlertsResponse = zod.object({
-  "overallAlertLevel": zod.enum(['High', 'Medium', 'Low']),
-  "executiveSummary": zod.string(),
-  "headline": zod.string(),
-  "alerts": zod.array(zod.object({
-    "title": zod.string(),
-    "category": zod.enum(['Portfolio', 'Company', 'Macro', 'Sector', 'Event', 'Geopolitical', 'Currency']),
-    "importance": zod.enum(['High', 'Medium', 'Low']),
-    "isNew": zod.boolean(),
-    "requiresAttention": zod.boolean(),
-    "affectedHoldings": zod.array(zod.string()),
-    "summary": zod.string(),
-    "whyItMatters": zod.string(),
-    "recommendedAttention": zod.enum(['Monitor', 'Review', 'Prepare', 'Watch']),
-    "sourceType": zod.enum(['Web', 'NewsMonitor', 'CompanyMonitor', 'EventMonitor']),
-    /** Server-populated: change status vs previous analysis */
-    "status": zod.enum(['New', 'Updated', 'Unchanged']).optional()
-  })).max(8),
-  "thingsToWatch": zod.array(zod.string()),
-  "nothingImportantChanged": zod.boolean(),
-  "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds'),
-  /** Server-set: ISO timestamp of the most recent check (meaningful or no-change) */
-  "lastCheckedAt": zod.string().optional(),
-  /** Server-set: ISO timestamp of the most recent check that found meaningful alerts */
-  "lastMeaningfulUpdateAt": zod.string().optional(),
-  /** Server-set: true when the latest check found no new material developments */
-  "noNewDevelopmentsSinceLastCheck": zod.boolean().optional()
-})
-
-
-// ── Trade Decision Engine ──────────────────────────────────────────────────────
-
-export const RunTradeDecisionEngineResponse = zod.object({
-  "mainConclusion": zod.object({
-    "title": zod.string(),
-    "reason": zod.string()
-  }),
-  "executiveSummary": zod.string(),
-  "overallDecisionPosture": zod.enum(['ActivelyReview', 'SelectivePreparation', 'WaitForEvents', 'MaintainCurrentPositioning', 'InsufficientEvidence']),
-  "decisionReadinessScore": zod.number().int().min(0).max(100),
-  "readinessDrivers": zod.array(zod.object({
-    "factor": zod.string(),
-    "impact": zod.enum(['Positive', 'Negative']),
-    "reason": zod.string()
-  })).min(1).max(6),
-  "decisions": zod.array(zod.object({
-    "rank": zod.number().int().min(1),
-    "subjectType": zod.enum(['Holding', 'Opportunity', 'Portfolio']),
-    "company": zod.string(),
-    "ticker": zod.string(),
-    "decision": zod.enum(['Hold', 'Review', 'WaitForEvent', 'PrepareToBuy', 'PrepareToReduce', 'NoAction']),
-    "title": zod.string(),
-    "reason": zod.string(),
-    "supportingEvidence": zod.array(zod.string()),
-    "opposingEvidence": zod.array(zod.string()),
-    "confidence": zod.enum(['High', 'Medium', 'Low']),
-    "urgency": zod.enum(['Immediate', 'Days', 'Weeks', 'NoUrgency']),
-    "blockedByEvent": zod.boolean(),
-    "blockingEvent": zod.string(),
-    "blockingEventDate": zod.string(),
-    "whatWouldChangeDecision": zod.array(zod.string()),
-    "missingEvidence": zod.array(zod.string()),
-    "portfolioImpact": zod.string(),
-    "accountConsiderations": zod.string(),
-    "sourceModules": zod.array(zod.enum([
-      'PortfolioManager', 'PortfolioAnalyzer', 'RiskAnalyzer', 'MarketAlerts',
-      'CompanyMonitor', 'OpportunityFinder', 'EventMonitor', 'SectorMonitor',
-      'MarketMonitor', 'NewsMonitor', 'Web'
-    ])),
-    /** Sizing guidance — required for PrepareToBuy/PrepareToReduce, omitted for all other decision types */
-    "targetAllocationPercent":  zod.number().int().min(0).max(100).optional(),
-    "maximumAllocationPercent": zod.number().int().min(0).max(100).optional(),
-    "sizingConfidence":         zod.enum(['High', 'Medium', 'Low']).optional(),
-    "sizingReason":             zod.string().optional(),
-    /** Server-populated: change status vs previous analysis */
-    "status": zod.enum(['New', 'Changed', 'Unchanged', 'Resolved']).optional(),
-    /** Server-computed: whether this decision is ready for Trade Review, waiting for re-evaluation, or informational only */
-    "readiness": zod.enum(['WaitingForReevaluation', 'ReadyForReview', 'Informational']).optional(),
-    /** Server-computed: one-sentence explanation of the readiness state */
-    "readinessReason": zod.string().optional()
-  })).min(1).max(8),
-  "conflictsResolved": zod.array(zod.object({
-    "topic": zod.string(),
-    "conflict": zod.string(),
-    "resolution": zod.string()
-  })),
-  "nextReviewTriggers": zod.array(zod.object({
-    "trigger": zod.string(),
-    "date": zod.string(),
-    "affectedDecisions": zod.array(zod.string())
-  })),
-  "timestamp": zod.string(),
-  "analysisDuration": zod.number().describe('Time taken to complete the analysis in milliseconds')
-})
-
-
-/**
  * @summary Get a specific module's latest result
  */
 export const GetRepositoryEntryParams = zod.object({
@@ -587,14 +261,4 @@ export const GetRepositoryEntryResponse = zod.object({
   "updatedAt": zod.string().describe('ISO 8601 — when this module last saved a result')
 }).describe('A module\'s latest stored analysis result with metadata')
 
-/**
- * Development-only: delete all Company Monitor analyses and history so every
- * target rebuilds a clean v2 baseline on the next run.
- * @summary Reset all Company Monitor data (dev only)
- */
-export const ResetCompanyMonitorDataResponse = zod.object({
-  "deletedEntries": zod.number().describe('Total repository entries deleted'),
-  "deletedAnalyses": zod.number().describe('Latest-analysis entries deleted'),
-  "deletedHistoryEntries": zod.number().describe('History entries deleted'),
-  "message": zod.string().describe('Human-readable summary of what was deleted')
-})
+

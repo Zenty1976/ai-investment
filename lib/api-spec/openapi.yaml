@@ -18,6 +18,8 @@ tags:
     description: News Monitor — AI-curated market-moving news from the last 24-72 hours
   - name: sector-monitor
     description: Sector Monitor — equity sector rotation analysis over the next 1-3 months
+  - name: company-monitor
+    description: Company Monitor — stateful per-company investment analysis updated incrementally
   - name: repository
     description: Analysis Repository — shared read interface for all module results
 paths:
@@ -110,6 +112,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SectorAnalysis"
+        "500":
+          description: Analysis failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /company-monitor/analyze:
+    post:
+      operationId: runCompanyAnalysis
+      tags: [company-monitor]
+      summary: Run company analysis
+      description: Calls the AI service to run or update a stateful investment analysis for a single company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyAnalysisBody"
+      responses:
+        "200":
+          description: Company analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyAnalysis"
         "500":
           description: Analysis failed
           content:
@@ -426,3 +453,435 @@ components:
           type: string
       required:
         - error
+
+    # ── Sector Monitor ────────────────────────────────────────────────────────
+
+    SectorRating:
+      type: string
+      enum: [Strong, Moderately Strong, Neutral, Moderately Weak, Weak]
+
+    SectorTrend:
+      type: string
+      enum: [Improving, Stable, Weakening]
+
+    SectorConfidence:
+      type: string
+      enum: [High, Medium, Low]
+
+    SectorItem:
+      type: object
+      properties:
+        name:
+          type: string
+        rating:
+          $ref: "#/components/schemas/SectorRating"
+        trend:
+          $ref: "#/components/schemas/SectorTrend"
+        summary:
+          type: string
+        drivers:
+          type: array
+          items:
+            type: string
+        risks:
+          type: array
+          items:
+            type: string
+        outlook:
+          type: string
+        confidence:
+          $ref: "#/components/schemas/SectorConfidence"
+      required: [name, rating, trend, summary, drivers, risks, outlook, confidence]
+
+    SectorTopSector:
+      type: object
+      properties:
+        name:
+          type: string
+        reason:
+          type: string
+      required: [name, reason]
+
+    SectorAnalysis:
+      type: object
+      properties:
+        executiveSummary:
+          type: string
+        overallOutlook:
+          type: string
+        topSector:
+          $ref: "#/components/schemas/SectorTopSector"
+        sectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/SectorItem"
+        timestamp:
+          type: string
+        analysisDuration:
+          type: number
+          description: Time taken to complete the analysis in milliseconds
+      required: [executiveSummary, overallOutlook, topSector, sectors, timestamp, analysisDuration]
+
+    # ── Company Monitor ────────────────────────────────────────────────────────
+
+    CompanyUpdateType:
+      type: string
+      enum: [FullAnalysis, UpdateWithChanges, NoMaterialChange]
+
+    CompanyInvestmentRating:
+      type: string
+      enum: [Strong Buy, Buy, Watch, Avoid, Strong Avoid]
+
+    CompanyOutlook:
+      type: string
+      enum: [Bullish, Moderately Bullish, Neutral, Moderately Bearish, Bearish]
+
+    CompanyInvestmentView:
+      type: object
+      properties:
+        rating:
+          $ref: "#/components/schemas/CompanyInvestmentRating"
+        outlook:
+          $ref: "#/components/schemas/CompanyOutlook"
+        reason:
+          type: string
+      required: [rating, outlook, reason]
+
+    CompanyThesisPointStatus:
+      type: string
+      enum: [Strengthened, Unchanged, Weakened, Invalidated]
+
+    CompanyThesisPoint:
+      type: object
+      description: A single investment thesis point with a stable ID
+      properties:
+        id:
+          type: string
+          description: Stable kebab-case identifier, e.g. "azure-growth" — never changes across updates
+        point:
+          type: string
+        status:
+          $ref: "#/components/schemas/CompanyThesisPointStatus"
+      required: [id, point, status]
+
+    CompanyCaseChangeSeverity:
+      type: string
+      enum: [High, Medium, Low, None]
+
+    CompanyInvestmentCaseChange:
+      type: object
+      properties:
+        changed:
+          type: boolean
+        severity:
+          $ref: "#/components/schemas/CompanyCaseChangeSeverity"
+        summary:
+          type: string
+        previousInvestmentView:
+          type: string
+        currentInvestmentView:
+          type: string
+        reason:
+          type: string
+      required: [changed, severity, summary, previousInvestmentView, currentInvestmentView, reason]
+
+    CompanyInvestmentCaseStrengthChange:
+      type: object
+      description: Present only when investmentCaseStrength changed — explains why
+      properties:
+        previousScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        currentScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        reasons:
+          type: array
+          items:
+            type: string
+      required: [previousScore, currentScore, reasons]
+
+    CompanyStableProfile:
+      type: object
+      description: Stable company profile — business facts that rarely change
+      properties:
+        businessDescription:
+          type: string
+        competitiveAdvantage:
+          type: string
+        longTermStrengths:
+          type: array
+          items:
+            type: string
+        recurringRisks:
+          type: array
+          items:
+            type: string
+      required: [businessDescription, competitiveAdvantage, longTermStrengths, recurringRisks]
+
+    CompanyCatalystTimeframe:
+      type: string
+      enum: [Immediate, Within 1 month, Within 3 months]
+
+    CompanyCatalystImpact:
+      type: string
+      enum: [High, Medium, Low]
+
+    CompanyCatalyst:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        timeframe:
+          $ref: "#/components/schemas/CompanyCatalystTimeframe"
+        impact:
+          $ref: "#/components/schemas/CompanyCatalystImpact"
+      required: [title, description, timeframe, impact]
+
+    CompanyRiskImpact:
+      type: string
+      enum: [High, Medium, Low]
+
+    CompanyRisk:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        impact:
+          $ref: "#/components/schemas/CompanyRiskImpact"
+      required: [title, description, impact]
+
+    CompanyEarningsTrend:
+      type: string
+      enum: [Improving, Stable, Weakening]
+
+    CompanyEarningsAndGuidance:
+      type: object
+      properties:
+        summary:
+          type: string
+        trend:
+          $ref: "#/components/schemas/CompanyEarningsTrend"
+        nextKnownEvent:
+          type: string
+        nextKnownEventDate:
+          type: string
+          description: YYYY-MM-DD or empty string
+      required: [summary, trend, nextKnownEvent, nextKnownEventDate]
+
+    CompanyCompetitiveAssessment:
+      type: string
+      enum: [Strong, Moderate, Weak]
+
+    CompanyCompetitivePosition:
+      type: object
+      properties:
+        assessment:
+          $ref: "#/components/schemas/CompanyCompetitiveAssessment"
+        summary:
+          type: string
+      required: [assessment, summary]
+
+    CompanyMarketSentiment:
+      type: string
+      enum: [Positive, Mixed, Negative]
+
+    CompanyValuationLevel:
+      type: string
+      enum: [Attractive, Reasonable, Expensive, Unclear]
+
+    CompanyValuationAssessment:
+      type: object
+      properties:
+        level:
+          $ref: "#/components/schemas/CompanyValuationLevel"
+        summary:
+          type: string
+      required: [level, summary]
+
+    CompanyConfidence:
+      type: string
+      enum: [High, Medium, Low]
+
+    CompanyMeaningfulChange:
+      type: string
+      enum: [None, Low, Medium, High]
+
+    CompanyInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        ticker:
+          type: string
+        sector:
+          type: string
+        industry:
+          type: string
+      required: [name, ticker, sector, industry]
+
+    CompanyAnalysis:
+      type: object
+      description: Full stateful company investment analysis
+      properties:
+        updateType:
+          $ref: "#/components/schemas/CompanyUpdateType"
+          description: Whether this is a first-time full analysis, an update with material changes, or a no-change confirmation
+        company:
+          $ref: "#/components/schemas/CompanyInfo"
+        executiveSummary:
+          type: string
+        investmentView:
+          $ref: "#/components/schemas/CompanyInvestmentView"
+        investmentThesis:
+          type: array
+          description: The persistent investment thesis — WHY this company is attractive or unattractive
+          items:
+            $ref: "#/components/schemas/CompanyThesisPoint"
+        investmentCaseStrength:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: 0–100 score representing how strong the overall investment case currently is
+        investmentCaseChange:
+          $ref: "#/components/schemas/CompanyInvestmentCaseChange"
+          description: Whether and how the investment case changed since the previous analysis
+        investmentCaseStrengthChange:
+          $ref: "#/components/schemas/CompanyInvestmentCaseStrengthChange"
+        stableProfile:
+          $ref: "#/components/schemas/CompanyStableProfile"
+          description: Stable company profile — business facts that rarely change
+        currentSituation:
+          type: string
+        catalysts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompanyCatalyst"
+          maxItems: 5
+        risks:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompanyRisk"
+          maxItems: 5
+        earningsAndGuidance:
+          $ref: "#/components/schemas/CompanyEarningsAndGuidance"
+        competitivePosition:
+          $ref: "#/components/schemas/CompanyCompetitivePosition"
+        sectorContext:
+          type: string
+        marketSentiment:
+          $ref: "#/components/schemas/CompanyMarketSentiment"
+        valuationAssessment:
+          $ref: "#/components/schemas/CompanyValuationAssessment"
+        bullCase:
+          type: string
+        baseCase:
+          type: string
+        bearCase:
+          type: string
+        keyThingsToWatch:
+          type: array
+          items:
+            type: string
+        confidence:
+          $ref: "#/components/schemas/CompanyConfidence"
+        timestamp:
+          type: string
+        analysisDuration:
+          type: number
+          description: Time taken to complete the analysis in milliseconds
+        meaningfulChange:
+          $ref: "#/components/schemas/CompanyMeaningfulChange"
+          description: Server-computed — how meaningful this update was for downstream orchestration
+        affectedTickers:
+          type: array
+          description: Server-computed — tickers affected by this analysis result
+          items:
+            type: string
+      required:
+        - updateType
+        - company
+        - executiveSummary
+        - investmentView
+        - investmentThesis
+        - investmentCaseStrength
+        - investmentCaseChange
+        - stableProfile
+        - currentSituation
+        - catalysts
+        - risks
+        - earningsAndGuidance
+        - competitivePosition
+        - sectorContext
+        - marketSentiment
+        - valuationAssessment
+        - bullCase
+        - baseCase
+        - bearCase
+        - keyThingsToWatch
+        - confidence
+        - timestamp
+        - analysisDuration
+
+    CompanyMonitorHistoryEntry:
+      type: object
+      description: Compact history entry stored under company-monitor-history:<TICKER>
+      properties:
+        timestamp:
+          type: string
+        updateType:
+          $ref: "#/components/schemas/CompanyUpdateType"
+        investmentViewRating:
+          $ref: "#/components/schemas/CompanyInvestmentRating"
+        investmentViewOutlook:
+          $ref: "#/components/schemas/CompanyOutlook"
+        investmentCaseStrength:
+          type: number
+          minimum: 0
+          maximum: 100
+        investmentCaseChangeSeverity:
+          $ref: "#/components/schemas/CompanyCaseChangeSeverity"
+        investmentCaseChangeSummary:
+          type: string
+        thesisPointStatuses:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              status:
+                $ref: "#/components/schemas/CompanyThesisPointStatus"
+            required: [id, status]
+        confidence:
+          $ref: "#/components/schemas/CompanyConfidence"
+        meaningfulChange:
+          $ref: "#/components/schemas/CompanyMeaningfulChange"
+      required:
+        - timestamp
+        - updateType
+        - investmentViewRating
+        - investmentViewOutlook
+        - investmentCaseStrength
+        - investmentCaseChangeSeverity
+        - investmentCaseChangeSummary
+        - thesisPointStatuses
+        - confidence
+        - meaningfulChange
+
+    CompanyAnalysisBody:
+      type: object
+      properties:
+        ticker:
+          type: string
+          description: Stock ticker symbol, e.g. "AAPL"
+        companyName:
+          type: string
+          description: Optional full company name to improve AI accuracy
+      required: [ticker]
