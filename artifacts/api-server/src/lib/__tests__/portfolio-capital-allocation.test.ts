@@ -15,7 +15,11 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { computeCapitalAllocation } from "../portfolio-capital-allocation-engine.js";
 import type { PortfolioSnapshot } from "../../routes/portfolio-manager.js";
-import type { TargetPortfolio, TargetAllocation } from "../portfolio-manager-v2-types.js";
+import type {
+  TargetPortfolio,
+  TargetAllocation,
+  LegacyTargetPortfolio,
+} from "../portfolio-manager-v2-types.js";
 
 // ── Minimal fixture helpers ──────────────────────────────────────────────────
 
@@ -316,8 +320,10 @@ describe("portfolio capital allocation engine — missing allocationStatus", () 
       { symbol: "MSFT", marketValueBaseCurrency: 600_000 },
     ]);
 
-    // Build a target where AAPL has no allocationStatus
-    const targetWithMissing: TargetPortfolio = {
+    // Build a pre-v2.1 legacy target where AAPL has no allocationStatus.
+    // LegacyTargetPortfolio is the correct type for this scenario — it represents
+    // stored targets generated before strict validation was enforced.
+    const targetWithMissing: LegacyTargetPortfolio = {
       generatedAt: "2026-01-01T00:00:00.000Z",
       totalEquityTargetPercent: 90,
       cashTargetPercent: 10,
@@ -332,8 +338,7 @@ describe("portfolio capital allocation engine — missing allocationStatus", () 
           minPercent: 0,
           maxPercent: 50,
           rationale: "Old target",
-          // allocationStatus intentionally absent (undefined)
-          allocationStatus: undefined,
+          // allocationStatus intentionally absent — simulates pre-v2.1 stored target
         },
         {
           ticker: "MSFT",
@@ -372,7 +377,7 @@ describe("portfolio capital allocation engine — missing allocationStatus", () 
     const snapshot = makeSnapshot(1_000_000, 400_000, [
       { symbol: "MSFT", marketValueBaseCurrency: 600_000 },
     ]);
-    const targetWithMissing: TargetPortfolio = {
+    const targetWithMissing: LegacyTargetPortfolio = {
       generatedAt: "2026-01-01T00:00:00.000Z",
       totalEquityTargetPercent: 90,
       cashTargetPercent: 10,
@@ -386,7 +391,7 @@ describe("portfolio capital allocation engine — missing allocationStatus", () 
         minPercent: 0,
         maxPercent: 50,
         rationale: "Old",
-        allocationStatus: undefined,
+        // allocationStatus absent — simulates pre-v2.1 stored target
       }],
     };
 

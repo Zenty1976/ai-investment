@@ -56,16 +56,44 @@ export interface TargetAllocation {
   maxPercent: number;
   rationale: string;
   /** How strongly the CIO believes this allocation is correct */
-  conviction?: Conviction;
+  conviction: Conviction;
   /** Lifecycle status: only StrategicTarget allocations are immediately deployable */
-  allocationStatus?: AllocationStatus;
+  allocationStatus: AllocationStatus;
   /** Human-readable explanation for the chosen status */
-  reasonForStatus?: string;
-  /** Factors that block or limit this allocation */
-  blockingFactors?: string[];
+  reasonForStatus: string;
+  /** Factors that block or limit this allocation (empty array for non-Blocked statuses) */
+  blockingFactors: string[];
   /** Modules whose data directly supports this allocation recommendation */
-  supportingModules?: SupportingModule[];
+  supportingModules: SupportingModule[];
 }
+
+/**
+ * Legacy allocation shape — used when reading stored targets generated before
+ * strict validation was enforced (prior to v2.1).  The five structured fields
+ * that are now required on TargetAllocation were previously optional.
+ *
+ * IMPORTANT: never use LegacyTargetAllocation as input to the capital allocation
+ * engine or the synthesiser — use it only for reading/displaying historical records.
+ */
+export type LegacyTargetAllocation = Omit<
+  TargetAllocation,
+  "conviction" | "allocationStatus" | "reasonForStatus" | "blockingFactors" | "supportingModules"
+> & {
+  conviction?: Conviction;
+  allocationStatus?: AllocationStatus;
+  reasonForStatus?: string;
+  blockingFactors?: string[];
+  supportingModules?: SupportingModule[];
+};
+
+/**
+ * Legacy portfolio shape — TargetPortfolio whose allocations may be incomplete.
+ * Use for test fixtures that intentionally omit required fields, or when reading
+ * pre-v2.1 stored data.
+ */
+export type LegacyTargetPortfolio = Omit<TargetPortfolio, "allocations"> & {
+  allocations: LegacyTargetAllocation[];
+};
 
 export interface TargetPortfolio {
   generatedAt: string;

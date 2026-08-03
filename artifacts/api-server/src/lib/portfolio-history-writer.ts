@@ -44,11 +44,12 @@ export function appendV2HistoryEntry(
       : 0;
 
   // ── Compact target allocations ─────────────────────────────────────────────
+  // allocationStatus is now required on TargetAllocation; no fallback needed.
   const targetAllocations = v2.target.allocations.map((a) => ({
     ticker:  a.ticker,
     percent: a.targetPercent,
     role:    a.role,
-    status:  a.allocationStatus ?? "StrategicTarget",
+    status:  a.allocationStatus,
   }));
 
   // ── Source freshness summary ───────────────────────────────────────────────

@@ -21,6 +21,8 @@ import type {
   TargetPortfolio,
   PortfolioChange,
   PortfolioChangeType,
+  AllocationStatus,
+  Conviction,
 } from "./portfolio-manager-v2-types.js";
 
 export function explainChanges(
@@ -107,9 +109,11 @@ export function explainChanges(
       });
     }
 
-    // Status change (e.g. Provisional → StrategicTarget — actionable signal)
-    const prevStatus = prev.allocationStatus ?? "StrategicTarget";
-    const newStatus  = newAlloc.allocationStatus ?? "StrategicTarget";
+    // Status change — "Unknown" is the safe label for pre-v2.1 stored targets
+    // that lack allocationStatus.  A missing historical status must never be
+    // represented as StrategicTarget (i.e. approved for deployment).
+    const prevStatus = (prev.allocationStatus as AllocationStatus | undefined) ?? "Unknown";
+    const newStatus  = (newAlloc.allocationStatus as AllocationStatus | undefined) ?? "Unknown";
     if (prevStatus !== newStatus) {
       changes.push({
         type: "StatusChanged",
@@ -118,9 +122,10 @@ export function explainChanges(
       });
     }
 
-    // Conviction change
-    const prevConv = prev.conviction ?? "Medium";
-    const newConv  = newAlloc.conviction ?? "Medium";
+    // Conviction change — "Unknown" for pre-v2.1 targets that lack conviction,
+    // avoiding a false Medium → X interpretation.
+    const prevConv = (prev.conviction as Conviction | undefined) ?? "Unknown";
+    const newConv  = (newAlloc.conviction as Conviction | undefined) ?? "Unknown";
     if (prevConv !== newConv) {
       changes.push({
         type: "ConvictionChanged",
