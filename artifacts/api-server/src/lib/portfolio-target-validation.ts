@@ -157,9 +157,38 @@ function validateSupportingModules(
       `supportingModules must be an array (may be empty []).`
     );
   }
-  return raw
-    .filter((m) => VALID_MODULES.has(m as SupportingModule))
-    .filter((m) => suppliedModules.size === 0 || suppliedModules.has(m)) as SupportingModule[];
+
+  // Deduplicate deterministically (first occurrence wins)
+  const seen = new Set<string>();
+  const deduped: string[] = [];
+  for (const m of raw) {
+    if (!seen.has(m)) { seen.add(m); deduped.push(m); }
+  }
+
+  // Reject unknown module names — fabricated names must never pass through
+  const unknownModules = deduped.filter((m) => !VALID_MODULES.has(m as SupportingModule));
+  if (unknownModules.length > 0) {
+    throw new Error(
+      `Target synthesiser: allocation ${ticker} lists unknown supportingModules: ` +
+      `[${unknownModules.map((m) => JSON.stringify(m)).join(", ")}]. ` +
+      `Valid values are: ${[...VALID_MODULES].join(", ")}.`
+    );
+  }
+
+  // Reject modules that were not actually supplied as context — the AI must not
+  // claim evidence from modules whose output it never received.
+  if (suppliedModules.size > 0) {
+    const unavailableModules = deduped.filter((m) => !suppliedModules.has(m));
+    if (unavailableModules.length > 0) {
+      throw new Error(
+        `Target synthesiser: allocation ${ticker} claims support from modules not available ` +
+        `in this synthesis pass: [${unavailableModules.map((m) => JSON.stringify(m)).join(", ")}]. ` +
+        `Modules actually supplied: [${[...suppliedModules].join(", ")}].`
+      );
+    }
+  }
+
+  return deduped as SupportingModule[];
 }
 
 // ── Main validation function ──────────────────────────────────────────────────

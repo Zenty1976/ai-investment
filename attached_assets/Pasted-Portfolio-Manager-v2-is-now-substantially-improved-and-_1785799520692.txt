@@ -1,0 +1,78 @@
+Portfolio Manager v2 is now substantially improved and the requested architecture is largely correct.
+
+Please make only these final defensive validation fixes.
+
+1. Remove the StrategicTarget fallback from capital allocation
+
+In portfolio-capital-allocation-engine.ts the code still uses:
+
+const cioStatus =
+  alloc.allocationStatus ?? "StrategicTarget";
+
+allocationStatus is now required by target validation, so missing status must never silently become deployable.
+
+Change this behaviour.
+
+Preferred rule:
+
+- if allocationStatus is missing, throw a clear validation error and do not calculate an actionable capital plan
+
+If backward compatibility with old stored targets is needed:
+
+- treat missing status as Provisional
+- suggestedAmountBase must remain zero
+- explain that the target must be regenerated
+
+Never default missing status to StrategicTarget.
+
+Also update the file comments that currently mention:
+
+“missing → treated as StrategicTarget”
+
+Add a test proving that a missing allocationStatus cannot create an actionable capital-allocation item.
+
+2. Reject invalid or unsupported supportingModules
+
+validateSupportingModules currently silently filters:
+
+- unknown module names
+- modules that were not actually supplied to the CIO synthesis
+
+Do not silently remove these values.
+
+Validation rules:
+
+- supportingModules must be an array
+- every value must be a known SupportingModule enum
+- every listed module must have actually been supplied as context
+- duplicates should be removed or rejected deterministically
+
+If an unknown or unavailable module is listed:
+
+- reject the AI result
+- include the ticker and invalid module name in the validation error
+- retry synthesis
+
+An empty array remains valid for Provisional, Blocked or Excluded allocations when appropriate.
+
+For StrategicTarget allocations, consider requiring at least one genuine supporting module. If this would change current behaviour too much, keep an empty array valid for now, but never accept fabricated module names.
+
+Add tests for:
+
+- unknown supporting module fails validation
+- known but unsupplied module fails validation
+- supplied known modules pass
+- duplicate modules are normalized or rejected consistently
+
+Preserve all other Portfolio Manager v2 behaviour:
+
+- strict conviction and allocationStatus validation
+- immutable Target Portfolio
+- material CIO fingerprint
+- relevant Company Monitor filtering
+- actionable/blocked/provisional/excluded groups
+- replacement provisional reasons
+- source provenance
+- history
+- snapshot guards
+- no order creation or Saxo execution

@@ -496,3 +496,103 @@ describe("validateAndNormaliseTarget — v2.1 strict required fields", () => {
     );
   });
 });
+
+// ── v2.2: Strict supportingModules validation ─────────────────────────────────
+
+describe("validateAndNormaliseTarget — v2.2 strict supportingModules", () => {
+  const SUPPLIED = new Set(["PortfolioAnalyzer", "RiskAnalyzer", "CompanyMonitor", "TradeDecisionEngine"]);
+
+  it("throws when supportingModules contains an unknown module name", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({
+          ticker: "AAPL",
+          supportingModules: ["PortfolioAnalyzer", "AIOracle"],   // AIOracle is not a valid module
+        }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH, SUPPLIED),
+      /unknown.*supportingModules|supportingModules.*unknown|AIOracle/i
+    );
+  });
+
+  it("throws when supportingModules contains a known but unsupplied module", () => {
+    // OpportunityFinder is a valid module, but it was not supplied in SUPPLIED
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({
+          ticker: "AAPL",
+          supportingModules: ["PortfolioAnalyzer", "OpportunityFinder"],
+        }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH, SUPPLIED),
+      /not available|unsupplied|unavailable|OpportunityFinder/i
+    );
+  });
+
+  it("passes when all supportingModules are known and were supplied", () => {
+    // Use 5-position fixture so equity budget is feasible within role bounds.
+    const five = makeFivePosition();
+    const raw: AiTargetPortfolioResponse = {
+      ...five,
+      allocations: five.allocations.map((a, i) => ({
+        ...a,
+        supportingModules: i % 2 === 0
+          ? ["PortfolioAnalyzer", "CompanyMonitor"]
+          : ["RiskAnalyzer", "TradeDecisionEngine"],
+      })),
+    };
+    assert.doesNotThrow(() => validateAndNormaliseTarget(raw, ALLOWED_FIVE, SUPPLIED));
+  });
+
+  it("duplicate modules are de-duplicated without throwing", () => {
+    const five = makeFivePosition();
+    const raw: AiTargetPortfolioResponse = {
+      ...five,
+      allocations: five.allocations.map((a, i) => ({
+        ...a,
+        supportingModules: i === 0
+          ? ["PortfolioAnalyzer", "PortfolioAnalyzer", "CompanyMonitor"] // duplicate
+          : ["RiskAnalyzer"],
+      })),
+    };
+    let result: ReturnType<typeof validateAndNormaliseTarget> | undefined;
+    assert.doesNotThrow(() => { result = validateAndNormaliseTarget(raw, ALLOWED_FIVE, SUPPLIED); });
+    const first = result!.allocations[0];
+    assert.ok(first, "First allocation must be in the result");
+    const portAnalyzerCount = first.supportingModules.filter((m) => m === "PortfolioAnalyzer").length;
+    assert.equal(portAnalyzerCount, 1, "Duplicate PortfolioAnalyzer should appear only once after de-dup");
+  });
+
+  it("empty supportingModules array is valid for Provisional allocation", () => {
+    const five = makeFivePosition();
+    const raw: AiTargetPortfolioResponse = {
+      ...five,
+      allocations: five.allocations.map((a, i) => ({
+        ...a,
+        allocationStatus: i === 0 ? ("Provisional" as const) : ("StrategicTarget" as const),
+        reasonForStatus: i === 0
+          ? "Insufficient evidence to form a view."
+          : "Strong Buy rating with full coverage.",
+        blockingFactors: [],
+        supportingModules: i === 0 ? [] : ["RiskAnalyzer"],
+      })),
+    };
+    assert.doesNotThrow(() => validateAndNormaliseTarget(raw, ALLOWED_FIVE, SUPPLIED));
+  });
+
+  it("empty supportingModules is accepted when no modules were supplied (suppliedModules empty)", () => {
+    // When suppliedModules is empty the validator skips the availability check
+    const five = makeFivePosition();
+    const raw: AiTargetPortfolioResponse = {
+      ...five,
+      allocations: five.allocations.map((a) => ({ ...a, supportingModules: [] })),
+    };
+    assert.doesNotThrow(() => validateAndNormaliseTarget(raw, ALLOWED_FIVE));
+  });
+});

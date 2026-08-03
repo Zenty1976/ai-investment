@@ -84,7 +84,10 @@ function makeTarget(
       minPercent: 0,
       maxPercent: 50,
       rationale: "Test",
-      allocationStatus: a.allocationStatus,
+      // Default to StrategicTarget in fixtures — mirrors what strict validation
+      // now enforces. Tests that exercise missing-status behaviour set
+      // allocationStatus: undefined explicitly on individual TargetPortfolio objects.
+      allocationStatus: a.allocationStatus ?? "StrategicTarget",
     })),
   };
 }
@@ -300,5 +303,99 @@ describe("portfolio capital allocation engine — Excluded allocations", () => {
       ...plan.provisionalItems,
     ].find((i) => i.ticker === "AAPL");
     assert.equal(aapl, undefined, "AAPL should not appear in actionable/blocked/provisional");
+  });
+});
+
+// ── Missing allocationStatus — never actionable ───────────────────────────────
+
+describe("portfolio capital allocation engine — missing allocationStatus", () => {
+  it("a missing allocationStatus cannot create an actionable capital-allocation item", () => {
+    // Simulates a stored target from before strict validation was added.
+    // The allocation has no allocationStatus field (undefined).
+    const snapshot = makeSnapshot(1_000_000, 400_000, [
+      { symbol: "MSFT", marketValueBaseCurrency: 600_000 },
+    ]);
+
+    // Build a target where AAPL has no allocationStatus
+    const targetWithMissing: TargetPortfolio = {
+      generatedAt: "2026-01-01T00:00:00.000Z",
+      totalEquityTargetPercent: 90,
+      cashTargetPercent: 10,
+      strategicRationale: "Old target without allocationStatus",
+      keyAssumptions: [],
+      allocations: [
+        {
+          ticker: "AAPL",
+          company: "Apple",
+          role: "CoreHolding",
+          targetPercent: 20,
+          minPercent: 0,
+          maxPercent: 50,
+          rationale: "Old target",
+          // allocationStatus intentionally absent (undefined)
+          allocationStatus: undefined,
+        },
+        {
+          ticker: "MSFT",
+          company: "Microsoft",
+          role: "CoreHolding",
+          targetPercent: 70,
+          minPercent: 0,
+          maxPercent: 80,
+          rationale: "Core holding",
+          allocationStatus: "StrategicTarget",
+        },
+      ],
+    };
+
+    const plan = computeCapitalAllocation(snapshot, targetWithMissing);
+
+    // AAPL must NOT appear in actionableItems — missing status is not StrategicTarget
+    const aaplActionable = plan.actionableItems.find((i) => i.ticker === "AAPL");
+    assert.equal(
+      aaplActionable,
+      undefined,
+      "Allocation with missing allocationStatus must never become actionable"
+    );
+
+    // AAPL should appear in provisionalItems (the safe fallback) with zero suggested amount
+    const aaplProvisional = plan.provisionalItems.find((i) => i.ticker === "AAPL");
+    assert.ok(aaplProvisional, "Allocation with missing allocationStatus should be in provisionalItems");
+    assert.equal(
+      aaplProvisional!.suggestedAmountBase,
+      0,
+      "No capital must be suggested for an allocation with missing status"
+    );
+  });
+
+  it("missing allocationStatus blocking reason mentions regeneration", () => {
+    const snapshot = makeSnapshot(1_000_000, 400_000, [
+      { symbol: "MSFT", marketValueBaseCurrency: 600_000 },
+    ]);
+    const targetWithMissing: TargetPortfolio = {
+      generatedAt: "2026-01-01T00:00:00.000Z",
+      totalEquityTargetPercent: 90,
+      cashTargetPercent: 10,
+      strategicRationale: "Old target",
+      keyAssumptions: [],
+      allocations: [{
+        ticker: "AAPL",
+        company: "Apple",
+        role: "CoreHolding",
+        targetPercent: 20,
+        minPercent: 0,
+        maxPercent: 50,
+        rationale: "Old",
+        allocationStatus: undefined,
+      }],
+    };
+
+    const plan = computeCapitalAllocation(snapshot, targetWithMissing);
+    const aaplProvisional = plan.provisionalItems.find((i) => i.ticker === "AAPL");
+    assert.ok(aaplProvisional, "AAPL must be in provisionalItems");
+    assert.ok(
+      /regenerat/i.test(aaplProvisional!.blockingReason ?? ""),
+      `blockingReason should mention regeneration; got: "${aaplProvisional!.blockingReason}"`
+    );
   });
 });

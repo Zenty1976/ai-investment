@@ -5,7 +5,8 @@
  * the current portfolio and the target allocation.
  *
  * Deployment gates (items are only actionable when ALL conditions hold):
- *  1. allocationStatus === "StrategicTarget" (missing → treated as StrategicTarget)
+ *  1. allocationStatus === "StrategicTarget"
+ *     (missing → treated as Provisional with suggestedAmount = 0; target must be regenerated)
  *  2. No TDE entry exists for the ticker, OR TDE readiness === "ReadyForReview"
  *  3. TDE blockedByEvent === false (or no TDE entry)
  *
@@ -107,8 +108,12 @@ export function computeCapitalAllocation(
     const gapPct      = alloc.targetPercent - currentPct;
     if (gapPct < 1) continue; // at or above target
 
-    // Read the CIO-assigned status (never mutated from here)
-    const cioStatus: AllocationStatus = alloc.allocationStatus ?? "StrategicTarget";
+    // Read the CIO-assigned status (never mutated from here).
+    // allocationStatus is required by target validation. If a stored target
+    // pre-dates strict validation (missing status), treat it as Provisional so
+    // no capital is ever deployed to an unvalidated allocation.  The UI should
+    // prompt the user to regenerate the target.
+    const cioStatus: AllocationStatus = alloc.allocationStatus ?? "Provisional";
 
     // Compute effective deployment status locally — does NOT write back to alloc
     let effectiveStatus: AllocationStatus = cioStatus;
@@ -117,7 +122,11 @@ export function computeCapitalAllocation(
     if (cioStatus === "Blocked") {
       blockingReason = alloc.blockingFactors?.join("; ") ?? alloc.reasonForStatus ?? "Allocation is blocked.";
     } else if (cioStatus === "Provisional") {
-      blockingReason = alloc.reasonForStatus ?? "Allocation is provisional — evidence incomplete.";
+      // alloc.allocationStatus being absent means the stored target pre-dates
+      // strict validation — surface a specific message so operators can act.
+      blockingReason = alloc.allocationStatus === undefined || alloc.allocationStatus === null
+        ? "allocationStatus is missing — this target must be regenerated before capital can be deployed."
+        : (alloc.reasonForStatus ?? "Allocation is provisional — evidence incomplete.");
     } else if (cioStatus === "Excluded") {
       blockingReason = alloc.reasonForStatus ?? "Allocation is excluded from capital deployment.";
     } else {
