@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { maybeSaxoRefresh } from "./routes/settings";
 import { automationOrchestrator } from "./lib/automation-orchestrator";
+import { initPolicyStore } from "./lib/trade-decision-policy-store";
 
 const rawPort = process.env["PORT"];
 
@@ -16,6 +17,11 @@ const port = Number(rawPort);
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
+
+// Initialise the trade decision policy store before accepting requests.
+// This validates all built-in profiles (fail-fast) and loads the persisted
+// profile selection from the analysis repository.
+initPolicyStore();
 
 app.listen(port, (err) => {
   if (err) {

@@ -13,8 +13,10 @@ import {
   useSaxoSetEnvironment,
   useSaxoSetMock,
   useResetCompanyMonitorData,
+  useGetTradePolicySettings,
+  useSetTradePolicyProfile,
 } from "@workspace/api-client-react"
-import type { SaxoStatus } from "@workspace/api-client-react"
+import type { SaxoStatus, PolicyProfile } from "@workspace/api-client-react"
 import {
   AlertCircle,
   CheckCircle2,
@@ -623,6 +625,96 @@ function SaxoBankSection() {
   )
 }
 
+// ── Trade Decision Policy ─────────────────────────────────────────────────────
+
+const PROFILE_META: Record<PolicyProfile, { label: string; description: string }> = {
+  Conservative: {
+    label: "Conservative",
+    description: "Higher evidence bar (≥35), ≥3 supporting modules, Company Monitor required. Prioritises signal quality over opportunity count.",
+  },
+  Balanced: {
+    label: "Balanced",
+    description: "Standard thresholds (≥25), ≥2 supporting modules. Reproduces the original TDE behaviour exactly.",
+  },
+  Aggressive: {
+    label: "Aggressive",
+    description: "Lower evidence bar (≥15), ≥2 supporting modules, wider staleness tolerance. Surfaces more early-stage ideas.",
+  },
+}
+
+function TradePolicySection() {
+  const { data, isLoading, isError } = useGetTradePolicySettings({ query: { staleTime: 30_000 } })
+  const mutation = useSetTradePolicyProfile()
+
+  const current: PolicyProfile = data?.profile ?? "Balanced"
+
+  const handleSelect = (profile: PolicyProfile) => {
+    if (profile === current || mutation.isPending) return
+    mutation.mutate({ profile })
+  }
+
+  return (
+    <SectionCard title="Trade Decision Policy" status={null}>
+      <p className="text-[11px] text-muted-foreground/60 leading-snug mb-3">
+        Controls the deterministic backend gates and evidence thresholds applied by the Trade
+        Decision Engine. Does not affect the AI reasoning prompt.
+        Changes apply from the next Trade Decision run.
+      </p>
+
+      {isError && (
+        <div className="flex items-center gap-1.5 text-xs text-destructive/70 mb-3">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>Failed to load policy settings</span>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        {(["Conservative", "Balanced", "Aggressive"] as PolicyProfile[]).map(profile => {
+          const meta    = PROFILE_META[profile]
+          const active  = current === profile
+          const pending = mutation.isPending && mutation.variables?.profile === profile
+          return (
+            <button
+              key={profile}
+              role="radio"
+              aria-checked={active}
+              onClick={() => handleSelect(profile)}
+              disabled={isLoading || mutation.isPending}
+              className={`w-full text-left rounded-md border px-3 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                active
+                  ? "border-primary/40 bg-primary/8 text-foreground"
+                  : "border-border/40 bg-muted/20 text-muted-foreground hover:border-border/60 hover:bg-muted/30"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className={`text-xs font-semibold ${active ? "text-primary" : ""}`}>
+                  {meta.label}
+                </span>
+                <span className="shrink-0 flex items-center gap-1">
+                  {pending && <RefreshCw className="h-3 w-3 animate-spin text-primary/70" />}
+                  {active && !pending && <Check className="h-3.5 w-3.5 text-primary/70" />}
+                </span>
+              </div>
+              <p className="text-[11px] mt-0.5 leading-snug">{meta.description}</p>
+            </button>
+          )
+        })}
+      </div>
+
+      {mutation.isSuccess && (
+        <p className="text-[11px] text-green-500/70 mt-2">
+          Policy updated to <strong>{mutation.data?.profile}</strong>. New threshold applies from the next Trade Decision run.
+        </p>
+      )}
+      {mutation.isError && (
+        <p className="text-[11px] text-destructive/70 mt-2">
+          Failed to update policy: {String((mutation.error as Error)?.message ?? mutation.error)}
+        </p>
+      )}
+    </SectionCard>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Settings() {
@@ -641,6 +733,8 @@ export default function Settings() {
       </Card>
 
       <SaxoBankSection />
+
+      <TradePolicySection />
 
       {import.meta.env.DEV && <CompanyMonitorResetSection />}
 

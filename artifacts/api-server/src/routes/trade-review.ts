@@ -609,6 +609,25 @@ router.patch("/trade-review/:id/status", async (req: Request, res: Response) => 
     proposals[idx] = proposal;
     analysisRepository.save("trade-review", { ...stored.result, proposals });
 
+    // ── Outcome tracking (non-blocking) ──────────────────────────────────────
+    if (status === "Approved" || status === "Rejected") {
+      try {
+        const { updateDecisionOutcomeFromReview } = await import("../lib/trade-decision-outcome-store.js");
+        // decisionId = ticker:decision reconstructed from proposal ticker + action
+        const decisionType = original.action === "BUY" ? "PrepareToBuy" : "PrepareToReduce";
+        updateDecisionOutcomeFromReview({
+          decisionId:     `${original.ticker}:${decisionType}`,
+          newStatus:      status as "Approved" | "Rejected",
+          quantity:       proposal.quantity,
+          estimatedPrice: proposal.estimatedPrice,
+          currency:       original.currency,
+          note:           `${status} in Trade Review`,
+        });
+      } catch {
+        // Outcome tracking errors never break the Trade Review response
+      }
+    }
+
     return void res.json(proposal);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

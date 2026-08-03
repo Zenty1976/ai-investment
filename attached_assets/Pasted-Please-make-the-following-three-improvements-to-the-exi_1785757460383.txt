@@ -1,0 +1,363 @@
+Please make the following three improvements to the existing Trade Decision Engine backend.
+
+Do not redesign the Trade Decision UI or Trade Review UI.
+
+Do not change the current OpenAI prompt architecture, decision schema, sizing flow, Company Monitor integration, approval flow or Saxo safety boundary unless explicitly required below.
+
+⸻
+
+1. Centralize all evidence weights and thresholds
+
+⸻
+
+The Trade Decision Engine currently contains hardcoded evidence scores and readiness thresholds inside the decision-classification logic.
+
+Move all configurable decision-quality values into one central configuration module.
+
+Create something similar to:
+
+trade-decision-policy-config.ts
+
+The configuration should contain:
+
+* evidence weights for each module
+* supporting weights
+* opposing weights
+* neutral behaviour
+* evidence-band thresholds
+* minimum supporting-module count
+* minimum confidence for ReadyForReview
+* minimum evidence score for a trade proposal
+* maximum tolerated opposing evidence
+* stale-data penalties
+* missing-data penalties
+* score thresholds for downgrade behaviour
+
+Example structure:
+
+{
+“evidenceWeights”: {
+“CompanyMonitor”: {
+“supporting”: 30,
+“opposing”: -35,
+“neutral”: 0,
+“stale”: -10,
+“missing”: -10
+},
+“RiskAnalyzer”: {
+“supporting”: 10,
+“opposing”: -30,
+“neutral”: 0,
+“stale”: -10,
+“missing”: -10
+}
+},
+“bands”: {
+“strongMinimum”: 50,
+“adequateMinimum”: 25,
+“weakMinimum”: 10
+},
+“readyForReview”: {
+“minimumScore”: 25,
+“minimumSupportingModules”: 2,
+“minimumConfidence”: “Medium”
+}
+}
+
+Use one source of truth.
+
+Do not duplicate the same thresholds in:
+
+* evidence scoring
+* readiness validation
+* decision comparison
+* logging
+* tests
+
+All backend logic should read from the shared policy configuration.
+
+The initial values may match the current behaviour exactly.
+
+The purpose is not to change current decisions yet. The purpose is to make future tuning safe and understandable.
+
+Add backend validation for the configuration:
+
+* supporting weights must be zero or positive
+* opposing weights must be zero or negative
+* evidence thresholds must be ordered correctly
+* minimum supporting-module count must be at least one
+* score thresholds must stay within the supported evidence-score range
+
+Fail clearly during startup if the policy configuration is invalid.
+
+⸻
+
+2. Add configurable decision-policy profiles
+
+⸻
+
+Build a small deterministic policy-profile system on top of the centralized configuration.
+
+Add three profiles:
+
+* Conservative
+* Balanced
+* Aggressive
+
+Balanced should remain the default and should reproduce the current Trade Decision behaviour as closely as possible.
+
+The profiles must only affect deterministic backend rules.
+
+They must not change the OpenAI prompt or ask OpenAI to behave more aggressively or conservatively.
+
+Profiles may adjust:
+
+* minimum evidence score
+* minimum number of supporting modules
+* minimum confidence
+* handling of opposing evidence
+* stale-data tolerance
+* missing Company Monitor tolerance
+* maximum target allocation limits
+* readiness requirements
+
+Suggested direction:
+
+Conservative:
+
+* higher evidence threshold
+* more supporting modules required
+* Company Monitor required for company-specific trades
+* stricter stale-data rules
+* lower maximum target allocation
+* any critical opposing evidence blocks ReadyForReview
+
+Balanced:
+
+* current behaviour
+* at least two supporting modules
+* Medium confidence or higher
+* normal freshness requirements
+* moderate allocation limits
+
+Aggressive:
+
+* lower evidence threshold
+* fewer supporting modules may be sufficient
+* greater tolerance for missing secondary analysis
+* still no tolerance for critical safety failures
+* still no event-blocked approval
+* still no stale critical portfolio or price data
+* still no direct executable orders
+
+Important:
+
+Aggressive must never bypass these hard safety rules:
+
+* blockedByEvent must be false
+* valid current portfolio data is required
+* valid price and sizing data are required
+* critical contradictions must not be ignored
+* no direct order creation
+* no Saxo execution
+* no Low-confidence ReadyForReview
+* no readiness based on one unsupported OpenAI conclusion
+
+Store the selected profile centrally and persist it.
+
+Add the setting to the existing Settings or Automation page rather than creating a new main module.
+
+Show:
+
+Decision policy:
+Conservative | Balanced | Aggressive
+
+Include a short description for each option.
+
+Changing the profile should affect future Trade Decision processing.
+
+Do not silently rewrite previously stored decisions when the profile changes.
+
+Mark current decisions as requiring re-evaluation, or apply the new profile on the next Trade Decision update.
+
+Log policy changes concisely in System Log.
+
+⸻
+
+3. Add outcome tracking for future calibration
+
+⸻
+
+Create the data foundation for measuring whether Trade Decision proposals later proved useful.
+
+Do not implement automatic machine learning or automatic weight changes yet.
+
+The first version should only collect clean historical outcome data.
+
+Create a persistent Decision Outcome record linked to each trade-producing decision.
+
+Suggested fields:
+
+* id
+* decisionId
+* decisionVersion
+* ticker
+* company
+* subjectType
+* decisionType
+* decisionStatus
+* policyProfile
+* createdAt
+* becameReadyAt
+* approvedAt
+* rejectedAt
+* executedAt
+* closedAt
+* evidenceScore
+* evidenceBand
+* confidence
+* urgency
+* targetAllocationPercent
+* supportingModules
+* opposingModules
+* companyMonitorStrength
+* companyMonitorCaseChangeSeverity
+* portfolioValueAtDecision
+* referencePrice
+* referencePriceCurrency
+* referencePriceTimestamp
+* executedPrice
+* executedQuantity
+* outcomePrice1Day
+* outcomePrice5Days
+* outcomePrice20Days
+* outcomeReturn1DayPercent
+* outcomeReturn5DaysPercent
+* outcomeReturn20DaysPercent
+* maximumFavourableMovePercent
+* maximumAdverseMovePercent
+* realizedReturnPercent
+* outcomeStatus
+
+Suggested outcome statuses:
+
+* Tracking
+* AwaitingExecution
+* Rejected
+* Expired
+* Executed
+* Closed
+* InsufficientData
+
+For the current phase:
+
+* create outcome records when a new PrepareToBuy or PrepareToReduce decision is accepted by backend validation
+* update the record when the decision becomes ReadyForReview
+* update it when Trade Review marks the proposal Approved, Rejected, Later or Superseded
+* do not require Saxo execution yet
+* leave execution-related fields empty until execution is implemented
+
+Use stable decision IDs and versions so repeated updates of the same subject do not create unrelated duplicate outcome records.
+
+If a materially changed decision replaces an earlier one:
+
+* close or supersede the previous version
+* create a new version
+* preserve the historical link
+
+Add a backend service interface for later price-outcome collection.
+
+Example:
+
+recordDecisionOutcome(…)
+updateDecisionOutcome(…)
+captureReferencePrice(…)
+captureFuturePrice(…)
+
+Do not fetch future prices automatically yet unless the existing quote service already supports it safely.
+
+Do not use OpenAI to judge whether a decision was successful.
+
+Future success measurement must be deterministic and based on market prices and portfolio results.
+
+⸻
+
+FUTURE CALIBRATION SUPPORT
+
+Prepare an internal reporting function that can later aggregate results such as:
+
+* average return by evidence band
+* average return by confidence
+* average return by policy profile
+* average return by supporting-module combination
+* false-positive rate
+* percentage of ReadyForReview decisions later rejected
+* percentage of event-blocked ideas that later became ReadyForReview
+* average maximum adverse move
+* average maximum favourable move
+
+Do not add a large new UI now.
+
+A small developer/debug summary is sufficient, or keep the reporting backend-only for this phase.
+
+Do not automatically modify evidence weights from these results.
+
+Any future calibration must require an explicit implementation and review.
+
+⸻
+
+PERSISTENCE
+
+Use bounded persistent history.
+
+Suggested repository keys:
+
+trade-decision-policy-settings
+
+trade-decision-outcomes
+
+trade-decision-outcome-history
+
+Keep sufficient records for meaningful later analysis.
+
+Do not store full OpenAI prompts or raw OpenAI responses in outcome records.
+
+Store only structured decision evidence and result metadata.
+
+⸻
+
+TESTING
+
+Add deterministic tests for:
+
+* Balanced profile reproducing current behaviour
+* Conservative profile requiring stricter evidence
+* Aggressive profile never bypassing hard safety rules
+* policy changes not mutating historical decisions
+* invalid policy configuration rejected at startup
+* same decision update preserving outcome identity
+* materially changed decision creating a new version
+* rejected and superseded decisions updating outcome status correctly
+* evidence weights loaded only from the centralized configuration
+
+⸻
+
+PRESERVE
+
+Preserve all existing behaviour unless changed above:
+
+* directional evidence classification
+* evidence score and bands
+* stateful decision comparison
+* readiness validation
+* Company Monitor v2 integration
+* Trade Review integration
+* event blocking
+* sizing
+* history
+* debug information
+* timeout and retry behaviour
+* no automatic approval
+* no Saxo order placement
+
+The goal is to make Trade Decision easier to tune, support different deterministic risk preferences, and start collecting the historical data needed for future evidence-based calibration.

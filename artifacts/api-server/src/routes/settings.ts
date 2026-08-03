@@ -219,6 +219,36 @@ settingsRouter.post("/settings/saxo/mock", (req, res) => {
   res.json(saxoStore.getPublicStatus(appKeyConfigured, appSecretConfigured));
 });
 
+// ── GET /api/settings/trade-decision-policy ──────────────────────────────────
+
+import {
+  getActivePolicySettings,
+  setActivePolicyProfile as _setPolicyProfile,
+} from "../lib/trade-decision-policy-store.js";
+import type { PolicyProfile } from "../lib/trade-decision-policy-config.js";
+
+settingsRouter.get("/settings/trade-decision-policy", (_req, res) => {
+  res.json(getActivePolicySettings());
+});
+
+// ── POST /api/settings/trade-decision-policy ─────────────────────────────────
+
+settingsRouter.post("/settings/trade-decision-policy", (req, res) => {
+  const { profile } = req.body as { profile?: string };
+  const VALID: PolicyProfile[] = ["Conservative", "Balanced", "Aggressive"];
+  if (!profile || !VALID.includes(profile as PolicyProfile)) {
+    return void res.status(400).json({ error: `profile must be one of: ${VALID.join(", ")}` });
+  }
+  try {
+    _setPolicyProfile(profile as PolicyProfile);
+    const updatedAt = new Date().toISOString();
+    return void res.json({ profile, updatedAt });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return void res.status(400).json({ error: msg });
+  }
+});
+
 export default settingsRouter;
 
 // ── Token refresh helper (called from index.ts on an interval) ───────────────

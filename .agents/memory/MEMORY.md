@@ -4,3 +4,5 @@
 - [Debug dialog empty-object crash](debug-dialog-partial-debug.md) — lastDebug must be AiDebugInfo|undefined (not = {}); empty object is truthy and causes TypeError in dialog.
 - [Codegen wipes manual additions](codegen-manual-split.md) — orval --clean deletes everything in generated/; all non-spec types and hooks must live in manual.ts files, never in generated/.
 - [Web search + JSON mode incompatible](openai-websearch-jsonmode.md) — OpenAI Responses API rejects text.format.json_object when web_search tool is active; never pass jsonMode:true with web search.
+- [TDE policy config architecture](tde-policy-config.md) — evidence weights/thresholds live in trade-decision-policy-config.ts; active profile loaded synchronously via getActivePolicyConfig(); initPolicyStore() called at server startup.
+- [Test runner — vitest blocked](test-runner-node-test.md) — vitest is blocked by package firewall; use node:test with a custom esbuild runner (run-tests.mjs); set spawn cwd to a fresh tmpdir so analysis-repository starts empty.

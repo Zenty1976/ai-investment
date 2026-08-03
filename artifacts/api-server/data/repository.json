@@ -2288,36 +2288,36 @@
     "result": {
       "mainConclusion": {
         "title": "Maintain cautious, event‑driven posture with selective preparation for diversification",
-        "reason": "High cash buffer and concentrated holdings amid clustered earnings and macro risks warrant active monitoring and selective positioning ahead of key events."
+        "reason": "High cash (~53%) and concentrated exposure in three names amid clustered near‑term earnings and macro risks warrant active monitoring and selective positioning into diversified opportunities."
       },
-      "executiveSummary": "The portfolio remains concentrated in three names—Microsoft, Novo Nordisk, and Serve Robotics—with over 53% in cash providing flexibility. Near‑term risks include clustered earnings (Novo on August 5, Serve on August 6), a negative ZEUS trial update for Novo, macro data (U.S. jobs on August 7, CPI on August 12), and energy‑driven inflation. Sector rotation favors cyclicals and value. We maintain existing WaitForEvent and Review decisions for current holdings, and continue PrepareToBuy for Caterpillar and Eli Lilly, supported by multiple modules. No new trade proposals are warranted at this time; focus remains on monitoring and diversification readiness.",
+      "executiveSummary": "The portfolio remains concentrated in Microsoft, Novo Nordisk, and Serve Robotics, with significant near‑term event risk from earnings and macro data. High liquidity provides flexibility. We maintain existing WaitForEvent and Review decisions for current holdings. We continue to PrepareToBuy Caterpillar (CAT) and now also PrepareToBuy Eli Lilly (LLY), supported by multiple independent modules and confirmed earnings dates. Microsoft remains under Review ahead of macro data and ex‑dividend. No new PrepareToReduce proposals are warranted at this time.",
       "overallDecisionPosture": "SelectivePreparation",
       "decisionReadinessScore": 75,
       "readinessDrivers": [
         {
-          "factor": "High cash (~53%)",
+          "factor": "High cash buffer",
           "impact": "Positive",
-          "reason": "Provides flexibility to act on opportunities or adjust exposures."
+          "reason": "~53% cash allows tactical deployment into diversified opportunities."
         },
         {
           "factor": "Clustered earnings events",
           "impact": "Negative",
-          "reason": "Simultaneous earnings for Novo and Serve increase short‑term volatility risk."
+          "reason": "Earnings for Novo Nordisk (Aug 5) and Serve Robotics (Aug 6) pose high short‑term volatility risk."
         },
         {
-          "factor": "Negative ZEUS trial result",
+          "factor": "Macro data risk",
           "impact": "Negative",
-          "reason": "Novo Nordisk’s failed Phase 3 outcome raises downside risk ahead of earnings."
+          "reason": "Upcoming U.S. jobs (Aug 7) and CPI (Aug 12) could shift sentiment, especially for tech exposure."
         },
         {
-          "factor": "Sector rotation into cyclicals",
+          "factor": "Sector rotation trend",
           "impact": "Positive",
-          "reason": "Opportunity to diversify into Industrials and U.S. pharma amid rotation away from tech/AI."
+          "reason": "Rotation into Industrials and Healthcare supports diversification into CAT and LLY."
         },
         {
-          "factor": "Upcoming macro data (jobs, CPI)",
+          "factor": "Novo Nordisk ZEUS trial failure",
           "impact": "Negative",
-          "reason": "Could shift Fed outlook and affect tech sentiment, impacting Microsoft."
+          "reason": "New negative clinical outcome increases downside risk ahead of earnings."
         }
       ],
       "decisions": [
@@ -2328,10 +2328,10 @@
           "ticker": "NOVO B",
           "decision": "WaitForEvent",
           "title": "Await Q2 earnings and guidance post‑ZEUS trial failure",
-          "reason": "Negative ZEUS Phase 3 result increases downside risk; earnings on August 5 will clarify impairment or guidance revisions.",
+          "reason": "Recent ZEUS Phase 3 trial failure increases downside risk; earnings on August 5 will be key to reassessing pipeline and guidance.",
           "supportingEvidence": [
-            "MarketAlerts flagged ZEUS trial failure increasing downside risk",
-            "PortfolioAnalyzer and RiskAnalyzer highlight high severity event risk around Novo earnings"
+            "MarketAlerts: ZEUS trial failure raises downside risk ahead of Q2 earnings",
+            "PortfolioAnalyzer: Novo’s weak guidance clouds near‑term outlook"
           ],
           "opposingEvidence": [],
           "confidence": "High",
@@ -2341,22 +2341,21 @@
           "blockingEventDate": "2026-08-05",
           "whatWouldChangeDecision": [
             "Positive earnings surprise or reaffirmed guidance",
-            "Management commentary mitigating ZEUS impact"
+            "Pipeline updates or impairment disclosures"
           ],
           "missingEvidence": [
-            "Q2 earnings results and guidance"
+            "Actual Q2 results and management commentary"
           ],
-          "portfolioImpact": "Clarifies near‑term direction for ~22% of portfolio",
-          "accountConsiderations": "Instrument and account currency both DKK; no FX impact here",
+          "portfolioImpact": "High weight (~22%)—earnings could drive significant movement.",
+          "accountConsiderations": "Instrument and account in DKK; FX impact limited.",
           "sourceModules": [
             "MarketAlerts",
-            "PortfolioAnalyzer",
-            "RiskAnalyzer"
+            "PortfolioAnalyzer"
           ],
           "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
           "readinessReason": "Waiting for Novo Nordisk Q2 earnings (2026-08-05) — decision cannot be assessed until the event occurs.",
-          "lastValidated": "2026-08-03T11:11:52.626Z"
+          "lastValidated": "2026-08-03T11:38:19.780Z"
         },
         {
           "rank": 2,
@@ -2365,10 +2364,10 @@
           "ticker": "SERV",
           "decision": "WaitForEvent",
           "title": "Await Q2 earnings to assess execution and valuation risk",
-          "reason": "High execution and valuation risk; Q2 results on August 6 will inform growth trajectory and cash burn.",
+          "reason": "No material change in investment case; Q2 results on August 6 will clarify execution, utilization, and cash burn risks.",
           "supportingEvidence": [
-            "CompanyMonitor indicates no material change and high uncertainty ahead of earnings",
-            "RiskAnalyzer flags execution risk and event clustering around Serve earnings"
+            "CompanyMonitor: NoMaterialChange; Q2 earnings pending",
+            "RiskAnalyzer: Execution and valuation risk high ahead of Q2 results"
           ],
           "opposingEvidence": [],
           "confidence": "Medium",
@@ -2377,14 +2376,14 @@
           "blockingEvent": "Serve Robotics Q2 earnings",
           "blockingEventDate": "2026-08-06",
           "whatWouldChangeDecision": [
-            "Strong revenue growth, improved utilization, or positive guidance",
-            "Weak results or cash burn concerns"
+            "Strong revenue growth or improved utilization metrics",
+            "Guidance reaffirmation or extension of cash runway"
           ],
           "missingEvidence": [
-            "Q2 revenue, EPS, guidance, utilization metrics"
+            "Q2 revenue, EPS, utilization, cash burn details"
           ],
-          "portfolioImpact": "Impacts speculative ~2% position and overall sentiment",
-          "accountConsiderations": "USD‑denominated holding; FX volatility may amplify outcomes",
+          "portfolioImpact": "Small weight (~2%), but high volatility potential.",
+          "accountConsiderations": "USD‑denominated; FX exposure to USD/DKK.",
           "sourceModules": [
             "CompanyMonitor",
             "RiskAnalyzer"
@@ -2392,7 +2391,7 @@
           "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
           "readinessReason": "Waiting for Serve Robotics Q2 earnings (2026-08-06) — decision cannot be assessed until the event occurs.",
-          "lastValidated": "2026-08-03T11:11:52.626Z"
+          "lastValidated": "2026-08-03T11:38:19.780Z"
         },
         {
           "rank": 3,
@@ -2401,10 +2400,10 @@
           "ticker": "MSFT",
           "decision": "Review",
           "title": "Review exposure post‑rally ahead of macro data and ex‑dividend",
-          "reason": "Strong AI/cloud momentum and upcoming ex‑dividend (Aug 20) support upside, but macro data (jobs Aug 7, CPI Aug 12) could shift sentiment.",
+          "reason": "Strong AI/cloud momentum and upcoming ex‑dividend (Aug 20) support upside, but macro data (jobs, CPI) and high valuation warrant reassessment.",
           "supportingEvidence": [
-            "PortfolioAnalyzer notes AI/cloud momentum and ex‑dividend support",
-            "RiskAnalyzer highlights macro data risk to tech sentiment"
+            "PortfolioAnalyzer: AI/cloud momentum and recent rally support upside",
+            "RiskAnalyzer: Macro data risk could affect tech sentiment"
           ],
           "opposingEvidence": [],
           "confidence": "High",
@@ -2413,14 +2412,14 @@
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Macro data confirming soft inflation or strong jobs supporting tech",
-            "Weak macro data or Fed hawkish shift"
+            "Soft U.S. jobs or CPI data weakening sentiment",
+            "Valuation pullback or dividend capture strategy"
           ],
           "missingEvidence": [
-            "Post‑data market reaction and valuation re‑assessment"
+            "Updated valuation metrics post‑rally"
           ],
-          "portfolioImpact": "Clarifies direction for ~23% of portfolio",
-          "accountConsiderations": "USD‑denominated; FX exposure to USD/DKK remains unhedged",
+          "portfolioImpact": "Largest holding (~23%); macro‑driven volatility could impact portfolio significantly.",
+          "accountConsiderations": "USD‑denominated; FX exposure to USD/DKK.",
           "sourceModules": [
             "PortfolioAnalyzer",
             "RiskAnalyzer"
@@ -2428,7 +2427,7 @@
           "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
-          "lastValidated": "2026-08-03T11:11:52.626Z"
+          "lastValidated": "2026-08-03T11:38:19.780Z"
         },
         {
           "rank": 4,
@@ -2437,29 +2436,26 @@
           "ticker": "CAT",
           "decision": "PrepareToBuy",
           "title": "Potential industrial diversification via CAT ahead of earnings",
-          "reason": "Diversifies away from tech/healthcare; Q2 earnings on August 4 may offer entry point if results are solid.",
+          "reason": "CAT offers industrial/capex exposure underrepresented in portfolio; earnings on August 4 provide catalyst; supported by sector rotation trends.",
           "supportingEvidence": [
-            "Opportunity Finder flags CAT as top diversification candidate",
-            "Sector Monitor shows Industrials improving trend"
+            "OpportunityFinder identifies CAT as top opportunity for diversification",
+            "SectorMonitor notes improving Industrials trend"
           ],
-          "opposingEvidence": [
-            "High valuation (~40× P/E) and cyclical sensitivity may limit upside"
-          ],
-          "confidence": "Low",
+          "opposingEvidence": [],
+          "confidence": "Medium",
           "urgency": "Weeks",
           "blockedByEvent": true,
           "blockingEvent": "Caterpillar Q2 earnings",
           "blockingEventDate": "2026-08-04",
           "whatWouldChangeDecision": [
-            "Strong earnings and backlog conversion",
-            "Weak macro or cost pressure commentary"
+            "Strong earnings and guidance",
+            "Weak capex demand or macro slowdown"
           ],
           "missingEvidence": [
-            "Q2 results and guidance",
-            "Confidence reduced (Medium → Low) — stale analysis data: CompanyMonitor."
+            "Q2 results and management commentary"
           ],
-          "portfolioImpact": "Adds cyclical/value exposure to balance concentrated holdings.",
-          "accountConsiderations": "Would be held in USD account; adds USD exposure; underlying industrial revenue global.",
+          "portfolioImpact": "Adds cyclical/industrial exposure to balance tech/healthcare concentration",
+          "accountConsiderations": "Instrument USD, account DKK; introduces USD exposure",
           "sourceModules": [
             "OpportunityFinder",
             "SectorMonitor"
@@ -2467,66 +2463,57 @@
           "targetAllocationPercent": 8,
           "maximumAllocationPercent": 12,
           "sizingConfidence": "Low",
-          "sizingReason": "Awaiting earnings clarity before committing; moderate allocation for diversification.",
+          "sizingReason": "Moderate volatility; small‑to‑medium allocation prudent ahead of earnings",
           "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
           "readinessReason": "Waiting for Caterpillar Q2 earnings (2026-08-04) — trade must be re-evaluated after the event with new price, risk and sizing data.",
-          "lastValidated": "2026-08-03T11:11:52.626Z"
+          "lastValidated": "2026-08-03T11:38:19.780Z"
         },
         {
           "rank": 5,
           "subjectType": "Opportunity",
           "company": "Eli Lilly and Company",
           "ticker": "LLY",
-          "decision": "PrepareToBuy",
-          "title": "Consider U.S. pharma exposure via LLY post‑earnings",
-          "reason": "Balances healthcare exposure; strong GLP‑1 pipeline and upcoming earnings on August 5 may offer positive catalyst.",
+          "decision": "Review",
+          "title": "Diversify healthcare exposure via LLY ahead of earnings",
+          "reason": "LLY offers U.S. pharma exposure and GLP‑1 leadership; earnings on August 5 provide catalyst; complements Novo Nordisk and offsets its near‑term risk.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
           "supportingEvidence": [
-            "Opportunity Finder ranks LLY second; strong pipeline momentum",
-            "Company Monitor notes high-impact obesity drug data and manufacturing ramp"
+            "OpportunityFinder: High‑conviction opportunity with diversification benefits",
+            "Web search: Confirmed Q2 earnings date August 5 for LLY"
           ],
           "opposingEvidence": [
-            "Regulatory and pricing risks, high valuation (~40× P/E) remain"
+            "SectorMonitor: Healthcare strong but regulatory/pricing risks exist"
           ],
-          "confidence": "Low",
+          "confidence": "Medium",
           "urgency": "Weeks",
           "blockedByEvent": true,
           "blockingEvent": "Eli Lilly Q2 earnings",
           "blockingEventDate": "2026-08-05",
           "whatWouldChangeDecision": [
-            "Earnings beat and positive pipeline commentary",
-            "Regulatory delays or weak guidance"
+            "Positive earnings surprise or strong guidance",
+            "Pipeline updates or regulatory setbacks"
           ],
           "missingEvidence": [
-            "Q2 results and guidance",
-            "Confidence reduced (Medium → Low) — stale analysis data: CompanyMonitor."
+            "Q2 results and guidance details",
+            "Missing/stale: CompanyMonitor. Additional independent analyses required before a trade proposal can be issued."
           ],
-          "portfolioImpact": "Diversifies healthcare exposure and offsets Novo Nordisk concentration.",
-          "accountConsiderations": "Would be held in USD account; adds USD exposure; underlying pharma revenue global.",
+          "portfolioImpact": "Diversifies healthcare exposure and offsets Novo concentration.",
+          "accountConsiderations": "Instrument in USD; FX exposure to USD/DKK.",
           "sourceModules": [
             "OpportunityFinder",
-            "SectorMonitor"
+            "Web"
           ],
-          "targetAllocationPercent": 6,
-          "maximumAllocationPercent": 10,
-          "sizingConfidence": "Low",
-          "sizingReason": "Awaiting earnings and regulatory clarity; moderate allocation for diversification.",
           "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
-          "readinessReason": "Waiting for Eli Lilly Q2 earnings (2026-08-05) — trade must be re-evaluated after the event with new price, risk and sizing data.",
-          "lastValidated": "2026-08-03T11:11:52.626Z"
+          "readinessReason": "Waiting for Eli Lilly Q2 earnings (2026-08-05) — re-evaluate afterwards.",
+          "lastValidated": "2026-08-03T11:38:19.780Z"
         }
       ],
       "conflictsResolved": [
         {
-          "topic": "Novo vs Eli Lilly healthcare exposure",
-          "conflict": "Novo’s near‑term risk vs need for healthcare diversification",
-          "resolution": "Maintain Novo WaitForEvent; prepare to buy LLY post‑earnings to diversify if Novo remains weak."
-        },
-        {
-          "topic": "Tech exposure via Microsoft vs macro risk",
-          "conflict": "Strong momentum vs macro sensitivity",
-          "resolution": "Keep MSFT under Review pending macro data rather than increasing or reducing now."
+          "topic": "Diversification vs concentration",
+          "conflict": "Need to diversify into cyclicals/healthcare while managing near‑term event risk",
+          "resolution": "Maintain WaitForEvent for current holdings; PrepareToBuy CAT and LLY to diversify post‑earnings."
         }
       ],
       "nextReviewTriggers": [
@@ -2545,30 +2532,208 @@
           ]
         },
         {
-          "trigger": "U.S. Nonfarm Payrolls data",
-          "date": "2026-08-07",
+          "trigger": "Caterpillar Q2 earnings release",
+          "date": "2026-08-04",
           "affectedDecisions": [
-            "Review exposure post‑rally ahead of macro data and ex‑dividend"
+            "Potential industrial diversification via CAT ahead of earnings"
           ]
         },
         {
-          "trigger": "U.S. CPI data",
-          "date": "2026-08-12",
+          "trigger": "Eli Lilly Q2 earnings release",
+          "date": "2026-08-05",
           "affectedDecisions": [
-            "Review exposure post‑rally ahead of macro data and ex‑dividend"
+            "Diversify healthcare exposure via LLY ahead of earnings"
           ]
         }
       ],
-      "timestamp": "2026-08-03T11:11:52.626Z",
-      "analysisDuration": 26100
+      "timestamp": "2026-08-03T11:38:19.780Z",
+      "analysisDuration": 11866
     },
     "createdAt": "2026-08-02T09:52:12.533Z",
-    "updatedAt": "2026-08-03T11:12:18.744Z"
+    "updatedAt": "2026-08-03T11:38:31.656Z"
   },
   "trade-decision-engine-history": {
     "moduleName": "trade-decision-engine-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-03T11:38:19.780Z",
+          "overallDecisionPosture": "SelectivePreparation",
+          "decisionReadinessScore": 75,
+          "decisions": [
+            {
+              "subjectKey": "holding|novo b",
+              "normalizedKey": "holding|novo b|waitforevent",
+              "subjectType": "Holding",
+              "company": "Novo Nordisk A/S",
+              "ticker": "NOVO B",
+              "decision": "WaitForEvent",
+              "confidence": "High",
+              "urgency": "Immediate",
+              "readiness": "WaitingForReevaluation",
+              "blockedByEvent": true,
+              "blockingEvent": "Novo Nordisk Q2 earnings",
+              "blockingEventDate": "2026-08-05",
+              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"High\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Novo Nordisk Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|serv",
+              "normalizedKey": "holding|serv|waitforevent",
+              "subjectType": "Holding",
+              "company": "Serve Robotics Inc",
+              "ticker": "SERV",
+              "decision": "WaitForEvent",
+              "confidence": "Medium",
+              "urgency": "Immediate",
+              "readiness": "WaitingForReevaluation",
+              "blockedByEvent": true,
+              "blockingEvent": "Serve Robotics Q2 earnings",
+              "blockingEventDate": "2026-08-06",
+              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"Medium\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Serve Robotics Q2 earnings\",\"bed\":\"2026-08-06\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|msft",
+              "normalizedKey": "holding|msft|review",
+              "subjectType": "Holding",
+              "company": "Microsoft Corporation",
+              "ticker": "MSFT",
+              "decision": "Review",
+              "confidence": "High",
+              "urgency": "Days",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"High\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|cat",
+              "normalizedKey": "opportunity|cat|preparetobuy",
+              "subjectType": "Opportunity",
+              "company": "Caterpillar Inc.",
+              "ticker": "CAT",
+              "decision": "PrepareToBuy",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 35,
+              "evidenceBand": "Adequate",
+              "blockedByEvent": true,
+              "blockingEvent": "Caterpillar Q2 earnings",
+              "blockingEventDate": "2026-08-04",
+              "targetAllocationPercent": 5,
+              "maximumAllocationPercent": 7,
+              "sizingConfidence": "Medium",
+              "fingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Caterpillar Q2 earnings\",\"bed\":\"2026-08-04\",\"r\":\"WaitingForReevaluation\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Adequate\",\"sm\":\"OpportunityFinder,PortfolioAnalyzer\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|lly",
+              "normalizedKey": "opportunity|lly|review",
+              "subjectType": "Opportunity",
+              "company": "Eli Lilly and Company",
+              "ticker": "LLY",
+              "decision": "Review",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 20,
+              "evidenceBand": "Weak",
+              "blockedByEvent": true,
+              "blockingEvent": "Eli Lilly Q2 earnings",
+              "blockingEventDate": "2026-08-05",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Eli Lilly Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
+            }
+          ]
+        },
+        {
+          "timestamp": "2026-08-03T11:38:02.893Z",
+          "overallDecisionPosture": "SelectivePreparation",
+          "decisionReadinessScore": 75,
+          "decisions": [
+            {
+              "subjectKey": "holding|novo b",
+              "normalizedKey": "holding|novo b|waitforevent",
+              "subjectType": "Holding",
+              "company": "Novo Nordisk A/S",
+              "ticker": "NOVO B",
+              "decision": "WaitForEvent",
+              "confidence": "High",
+              "urgency": "Immediate",
+              "readiness": "WaitingForReevaluation",
+              "blockedByEvent": true,
+              "blockingEvent": "Novo Nordisk Q2 earnings",
+              "blockingEventDate": "2026-08-05",
+              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"High\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Novo Nordisk Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|serv",
+              "normalizedKey": "holding|serv|waitforevent",
+              "subjectType": "Holding",
+              "company": "Serve Robotics Inc",
+              "ticker": "SERV",
+              "decision": "WaitForEvent",
+              "confidence": "Medium",
+              "urgency": "Immediate",
+              "readiness": "WaitingForReevaluation",
+              "blockedByEvent": true,
+              "blockingEvent": "Serve Robotics Q2 earnings",
+              "blockingEventDate": "2026-08-06",
+              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"Medium\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Serve Robotics Q2 earnings\",\"bed\":\"2026-08-06\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|msft",
+              "normalizedKey": "holding|msft|review",
+              "subjectType": "Holding",
+              "company": "Microsoft Corporation",
+              "ticker": "MSFT",
+              "decision": "Review",
+              "confidence": "High",
+              "urgency": "Days",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"High\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|cat",
+              "normalizedKey": "opportunity|cat|preparetobuy",
+              "subjectType": "Opportunity",
+              "company": "Caterpillar Inc.",
+              "ticker": "CAT",
+              "decision": "PrepareToBuy",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 35,
+              "evidenceBand": "Adequate",
+              "blockedByEvent": true,
+              "blockingEvent": "Caterpillar Q2 earnings",
+              "blockingEventDate": "2026-08-04",
+              "targetAllocationPercent": 8,
+              "maximumAllocationPercent": 12,
+              "sizingConfidence": "Low",
+              "fingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Caterpillar Q2 earnings\",\"bed\":\"2026-08-04\",\"r\":\"WaitingForReevaluation\",\"ta\":8,\"ma\":12,\"sc\":\"Low\",\"eb\":\"Adequate\",\"sm\":\"OpportunityFinder,PortfolioAnalyzer\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|lly",
+              "normalizedKey": "opportunity|lly|review",
+              "subjectType": "Opportunity",
+              "company": "Eli Lilly and Company",
+              "ticker": "LLY",
+              "decision": "Review",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 20,
+              "evidenceBand": "Weak",
+              "blockedByEvent": true,
+              "blockingEvent": "Eli Lilly Q2 earnings",
+              "blockingEventDate": "2026-08-05",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Eli Lilly Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
+            }
+          ]
+        },
         {
           "timestamp": "2026-08-03T11:11:52.626Z",
           "overallDecisionPosture": "SelectivePreparation",
@@ -3216,7 +3381,7 @@
       ]
     },
     "createdAt": "2026-08-02T09:52:12.535Z",
-    "updatedAt": "2026-08-03T11:12:18.748Z"
+    "updatedAt": "2026-08-03T11:38:31.659Z"
   },
   "trade-review": {
     "moduleName": "trade-review",
@@ -3592,5 +3757,601 @@
     },
     "createdAt": "2026-08-03T07:15:16.846Z",
     "updatedAt": "2026-08-03T07:52:48.593Z"
+  },
+  "trade-decision-outcomes": {
+    "moduleName": "trade-decision-outcomes",
+    "result": {
+      "outcomes": [
+        {
+          "id": "AAPL:PrepareToBuy:v5",
+          "decisionId": "AAPL:PrepareToBuy",
+          "decisionVersion": 5,
+          "lastFingerprint": "fp-v1",
+          "ticker": "AAPL",
+          "company": "Apple Inc",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:08:20.788Z",
+          "becameReadyAt": "2026-08-03T12:08:20.795Z",
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Tracking",
+          "statusNote": null,
+          "supersededId": "AAPL:PrepareToBuy:v4"
+        },
+        {
+          "id": "GOOGL:PrepareToBuy:v1",
+          "decisionId": "GOOGL:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-googl",
+          "ticker": "GOOGL",
+          "company": "Alphabet",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.404Z",
+          "becameReadyAt": "2026-08-03T12:07:54.404Z",
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 28,
+          "evidenceBand": "Adequate",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Tracking",
+          "statusNote": null,
+          "supersededId": null
+        },
+        {
+          "id": "META:PrepareToBuy:v1",
+          "decisionId": "META:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-meta",
+          "ticker": "META",
+          "company": "Meta",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.401Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Tracking",
+          "statusNote": null,
+          "supersededId": null
+        },
+        {
+          "id": "TSLA:PrepareToReduce:v1",
+          "decisionId": "TSLA:PrepareToReduce",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-tsla",
+          "ticker": "TSLA",
+          "company": "Tesla",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToReduce",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.231Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": 200,
+          "referencePriceCurrency": "USD",
+          "referencePriceTimestamp": "2026-08-03T12:08:20.820Z",
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": 190,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": 5,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Tracking",
+          "statusNote": null,
+          "supersededId": null
+        },
+        {
+          "id": "NVDA:PrepareToBuy:v1",
+          "decisionId": "NVDA:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-nvda",
+          "ticker": "NVDA",
+          "company": "NVIDIA",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.224Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": 200,
+          "referencePriceCurrency": "USD",
+          "referencePriceTimestamp": "2026-08-03T12:08:20.812Z",
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": 210,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": 5,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Tracking",
+          "statusNote": null,
+          "supersededId": null
+        },
+        {
+          "id": "MSFT:PrepareToBuy:v1",
+          "decisionId": "MSFT:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-msft",
+          "ticker": "MSFT",
+          "company": "Microsoft",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.208Z",
+          "becameReadyAt": null,
+          "approvedAt": "2026-08-03T12:07:54.211Z",
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "AwaitingExecution",
+          "statusNote": "Approved in Trade Review",
+          "supersededId": null
+        }
+      ],
+      "updatedAt": "2026-08-03T12:08:20.828Z"
+    },
+    "createdAt": "2026-08-03T12:07:54.106Z",
+    "updatedAt": "2026-08-03T12:08:20.828Z"
+  },
+  "trade-decision-outcome-history": {
+    "moduleName": "trade-decision-outcome-history",
+    "result": {
+      "entries": [
+        {
+          "id": "AMZN:PrepareToBuy:v1",
+          "decisionId": "AMZN:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-amzn",
+          "ticker": "AMZN",
+          "company": "Amazon",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:08:20.801Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": "2026-08-03T12:08:20.805Z",
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Rejected",
+          "statusNote": "Rejected in Trade Review",
+          "supersededId": null
+        },
+        {
+          "id": "AAPL:PrepareToBuy:v4",
+          "decisionId": "AAPL:PrepareToBuy",
+          "decisionVersion": 4,
+          "lastFingerprint": "fp-v2",
+          "ticker": "AAPL",
+          "company": "Apple Inc",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:08:20.778Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": "2026-08-03T12:08:20.788Z",
+          "evidenceScore": 20,
+          "evidenceBand": "Adequate",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Expired",
+          "statusNote": "Superseded by version 5",
+          "supersededId": "AAPL:PrepareToBuy:v3"
+        },
+        {
+          "id": "AAPL:PrepareToBuy:v3",
+          "decisionId": "AAPL:PrepareToBuy",
+          "decisionVersion": 3,
+          "lastFingerprint": "fp-v1",
+          "ticker": "AAPL",
+          "company": "Apple Inc",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.198Z",
+          "becameReadyAt": "2026-08-03T12:07:54.206Z",
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": "2026-08-03T12:08:20.778Z",
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Expired",
+          "statusNote": "Superseded by version 4",
+          "supersededId": "AAPL:PrepareToBuy:v2"
+        },
+        {
+          "id": "AMZN:PrepareToBuy:v1",
+          "decisionId": "AMZN:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-amzn",
+          "ticker": "AMZN",
+          "company": "Amazon",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.214Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": "2026-08-03T12:07:54.218Z",
+          "executedAt": null,
+          "closedAt": null,
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Rejected",
+          "statusNote": "Rejected in Trade Review",
+          "supersededId": null
+        },
+        {
+          "id": "AAPL:PrepareToBuy:v2",
+          "decisionId": "AAPL:PrepareToBuy",
+          "decisionVersion": 2,
+          "lastFingerprint": "fp-v2",
+          "ticker": "AAPL",
+          "company": "Apple Inc",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.131Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": "2026-08-03T12:07:54.198Z",
+          "evidenceScore": 20,
+          "evidenceBand": "Adequate",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Expired",
+          "statusNote": "Superseded by version 3",
+          "supersededId": "AAPL:PrepareToBuy:v1"
+        },
+        {
+          "id": "AAPL:PrepareToBuy:v1",
+          "decisionId": "AAPL:PrepareToBuy",
+          "decisionVersion": 1,
+          "lastFingerprint": "fp-v1",
+          "ticker": "AAPL",
+          "company": "Apple Inc",
+          "subjectType": "Holding",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "New",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-03T12:07:54.106Z",
+          "becameReadyAt": null,
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": "2026-08-03T12:07:54.131Z",
+          "evidenceScore": 40,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Days",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 80,
+          "companyMonitorCaseChangeSeverity": null,
+          "portfolioValueAtDecision": 500000,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Expired",
+          "statusNote": "Superseded by version 2",
+          "supersededId": null
+        }
+      ],
+      "updatedAt": "2026-08-03T12:08:20.807Z"
+    },
+    "createdAt": "2026-08-03T12:07:54.134Z",
+    "updatedAt": "2026-08-03T12:08:20.807Z"
   }
 }

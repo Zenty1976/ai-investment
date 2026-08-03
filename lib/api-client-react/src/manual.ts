@@ -657,6 +657,41 @@ export interface OrchestratorJob {
   meaningfulChange?: "None" | "Low" | "Medium" | "High";
 }
 
+// ── Trade Decision Policy ─────────────────────────────────────────────────────
+
+export type PolicyProfile = "Conservative" | "Balanced" | "Aggressive";
+
+export interface TradePolicySettings {
+  profile: PolicyProfile;
+  updatedAt: string | null;
+}
+
+export const getGetTradePolicySettingsQueryKey = () => ["trade-decision-policy"] as const;
+
+export function useGetTradePolicySettings(options?: {
+  query?: Parameters<typeof useQuery>[0];
+}) {
+  return useQuery({
+    queryKey: getGetTradePolicySettingsQueryKey(),
+    queryFn: () => customFetch<TradePolicySettings>("/api/settings/trade-decision-policy"),
+    ...(options?.query ?? {}),
+  });
+}
+
+export function useSetTradePolicyProfile(options?: {
+  mutation?: Parameters<typeof useMutation>[0];
+}) {
+  return useMutation({
+    mutationFn: (body: { profile: PolicyProfile }) =>
+      customFetch<TradePolicySettings>("/api/settings/trade-decision-policy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+    ...(options?.mutation ?? {}),
+  });
+}
+
 export interface OrchestratorStatus {
   mode: AutomationMode;
   paused: boolean;

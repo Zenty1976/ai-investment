@@ -22,6 +22,9 @@ import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../l
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import type { RepositoryEntry } from "../lib/analysis-repository.js";
+import { getActivePolicyConfig, getActivePolicyProfile } from "../lib/trade-decision-policy-store.js";
+import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
+import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
 const router: IRouter = Router();
 
@@ -31,41 +34,13 @@ const MAX_HISTORY  = 20;
 const ROUTE_TIMEOUT_MS = 190_000;
 
 // ---------------------------------------------------------------------------
-// Staleness thresholds (hours)
+// Evidence weights and thresholds
 // ---------------------------------------------------------------------------
-
-const STALE_HOURS: Record<string, number> = {
-  "portfolio-manager":   4,
-  "risk-analyzer":      48,
-  "portfolio-analyzer": 48,
-  "market-alerts":      24,
-  "opportunity-finder": 72,
-  "company-monitor":    72,
-  "event-monitor":      72,
-  "sector-monitor":    168,
-};
-
-// ---------------------------------------------------------------------------
-// Evidence / readiness thresholds  ← single source of truth for all gates
-// ---------------------------------------------------------------------------
-
-const EVIDENCE = {
-  /** Score band boundaries */
-  STRONG:      50,   // score ≥ 50 → "Strong"
-  ADEQUATE:    25,   // score ≥ 25 → "Adequate"
-  WEAK:        10,   // score ≥ 10 → "Weak"
-  // score  < 10 → "Insufficient"
-
-  /** Minimum evidenceScore for a Prepare* to remain ReadyForReview */
-  READY_MIN:   25,
-  /** Below this → downgrade decision type to Review */
-  REVIEW_THRESHOLD: 10,
-  /** Below this → downgrade decision type to NoAction */
-  NOACTION_THRESHOLD: 0,
-
-  /** Minimum Supporting modules for gate to pass */
-  MIN_SUPPORTING: 2,
-} as const;
+// All configurable values (staleness hours, evidence band thresholds, gate
+// requirements, readiness thresholds) are loaded from the active policy config
+// at request time.  See:
+//   artifacts/api-server/src/lib/trade-decision-policy-config.ts  — profiles
+//   artifacts/api-server/src/lib/trade-decision-policy-store.ts   — active selection
 
 // Confidence rank (ascending)
 const CONFIDENCE_RANK: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
@@ -198,75 +173,93 @@ interface ModuleData {
 function classifyDecisionEvidence(
   decisionType: "PrepareToBuy" | "PrepareToReduce",
   ticker:       string,
-  data:         ModuleData
+  data:         ModuleData,
+  policy:       TradePolicyConfig
 ): DirectionalEvidenceResult {
   const buy  = decisionType === "PrepareToBuy";
   const contributions: ModuleContribution[] = [];
+  const sh   = policy.stalenessHours;
+  const ew   = policy.evidenceWeights;
 
   const add = (mod: string, cls: EvidenceClassification, score: number, reason: string) =>
     contributions.push({ module: mod, classification: cls, scoreContribution: score, reason });
 
   // ── Company Monitor (ticker-specific) ────────────────────────────────────
-  const cm = data.cmEntry;
+  const cm  = data.cmEntry;
+  const wCM = ew.CompanyMonitor;
+
   if (!cm) {
-    add("CompanyMonitor", "Missing", buy ? -5 : -5, "No Company Monitor data available for this ticker");
-  } else if (!isModuleFresh(cm, STALE_HOURS["company-monitor"])) {
-    add("CompanyMonitor", "Stale", buy ? -10 : -10, `Data is ${formatAge(cm)} old (limit 72h)`);
+    // Conservative: company-specific trades require CM data — fail gate via a strong penalty
+    const missScore = policy.gate.requireCompanyMonitorForCompanyTrades ? wCM.opposing : wCM.missing;
+    add("CompanyMonitor", "Missing", missScore,
+      policy.gate.requireCompanyMonitorForCompanyTrades
+        ? `Company Monitor data is required by the active policy profile (${policy.profile}) but none is available`
+        : "No Company Monitor data available for this ticker");
+  } else if (!isModuleFresh(cm, sh["company-monitor"])) {
+    // Conservative: stale CM treated more severely than missing with requireCM
+    const staleScore = policy.gate.requireCompanyMonitorForCompanyTrades ? wCM.opposing : wCM.stale;
+    add("CompanyMonitor", "Stale", staleScore,
+      `Data is ${formatAge(cm)} old (limit ${sh["company-monitor"]}h)` +
+      (policy.gate.requireCompanyMonitorForCompanyTrades ? " — required and stale" : ""));
   } else {
-    const rv  = cm.result as Record<string, unknown>;
-    const iv  = rv?.investmentView as Record<string, unknown> | null | undefined;
+    const rv   = cm.result as Record<string, unknown>;
+    const iv   = rv?.investmentView as Record<string, unknown> | null | undefined;
     const rating = String(iv?.rating ?? "");
     const ics    = typeof rv?.investmentCaseStrength === "number" ? rv.investmentCaseStrength as number : null;
 
-    const thesis        = Array.isArray(rv?.investmentThesis)
+    const thesis      = Array.isArray(rv?.investmentThesis)
       ? rv.investmentThesis as Array<Record<string, unknown>>
       : [];
-    const invalidated   = thesis.filter(p => p.status === "Invalidated").length;
-    const weakened      = thesis.filter(p => p.status === "Weakened").length;
+    const invalidated = thesis.filter(p => p.status === "Invalidated").length;
+    const weakened    = thesis.filter(p => p.status === "Weakened").length;
 
-    // Invalidated thesis always overrides rating direction
+    // Scores derived from config weights; ratios preserve current relative proportions
+    const strongBuyScore   = wCM.supporting;                                    // 40 balanced
+    const buyScore         = Math.round(wCM.supporting * 0.75);                 // 30 balanced
+    const avoidScore       = Math.round(wCM.opposing   * (30 / 35));            // -30 balanced
+    const invalidatedScore = wCM.opposing;                                       // -35 balanced
+    const weakPenalty      = Math.round(Math.abs(wCM.supporting) * 0.125);      // 5 balanced
+
     if (invalidated > 0) {
-      const score = buy ? -35 : +35;
+      const score = buy ? invalidatedScore : Math.abs(invalidatedScore);
       add("CompanyMonitor", buy ? "Opposing" : "Supporting", score,
         `${invalidated} invalidated thesis point(s)`);
     } else if (rating === "Strong Avoid" || rating === "Avoid") {
-      const score = buy ? -30 : +30;
-      add("CompanyMonitor", buy ? "Opposing" : "Supporting", score,
+      add("CompanyMonitor", buy ? "Opposing" : "Supporting", buy ? avoidScore : Math.abs(avoidScore),
         `Company Monitor rating: ${rating}`);
     } else if (rating === "Strong Buy" || rating === "Buy") {
-      // Low investmentCaseStrength overrides a Buy rating to Neutral
       const weakIcs = ics !== null && ics < 45;
       if (weakIcs) {
-        const score = buy ? +5 : -5;
-        add("CompanyMonitor", "Neutral", score,
+        const neutralScore = Math.round(Math.abs(wCM.supporting) * 0.125) * (buy ? 1 : -1);
+        add("CompanyMonitor", "Neutral", neutralScore,
           `${rating} rating but investmentCaseStrength is low (${ics}/100)`);
       } else {
         const baseScore = buy
-          ? (rating === "Strong Buy" ? +40 : +30)
-          : (rating === "Strong Buy" ? -35 : -25);
-        const weakPenalty = weakened * (buy ? -5 : +5);
-        add("CompanyMonitor", buy ? "Supporting" : "Opposing", baseScore + weakPenalty,
+          ? (rating === "Strong Buy" ? strongBuyScore  : buyScore)
+          : (rating === "Strong Buy" ? invalidatedScore : avoidScore); // Buy ratings oppose Reduce
+        const wp = weakened * (buy ? -weakPenalty : +weakPenalty);
+        add("CompanyMonitor", buy ? "Supporting" : "Opposing", baseScore + wp,
           `Company Monitor rating: ${rating}${ics !== null ? `, strength: ${ics}/100` : ""}` +
           (weakened > 0 ? `, ${weakened} weakened thesis point(s)` : ""));
       }
     } else if (weakened >= 2 && !buy) {
-      // Eroding case — meaningful for PrepareToReduce
-      add("CompanyMonitor", "Supporting", +20,
+      add("CompanyMonitor", "Supporting", Math.round(wCM.supporting * 0.5),
         `${weakened} weakened thesis points indicate eroding investment case`);
     } else {
-      add("CompanyMonitor", "Neutral", 0,
-        `Company Monitor rating: ${rating || "Unknown"}`);
+      add("CompanyMonitor", "Neutral", 0, `Company Monitor rating: ${rating || "Unknown"}`);
     }
   }
 
   // ── Risk Analyzer ────────────────────────────────────────────────────────
   const risk = data.riskEntry;
+  const wRA  = ew.RiskAnalyzer;
+
   if (!risk) {
-    add("RiskAnalyzer", "Missing", buy ? -5 : -5, "No Risk Analyzer data available");
-  } else if (!isModuleFresh(risk, STALE_HOURS["risk-analyzer"])) {
-    add("RiskAnalyzer", "Stale", buy ? -10 : -10, `Data is ${formatAge(risk)} old (limit 48h)`);
+    add("RiskAnalyzer", "Missing", wRA.missing, "No Risk Analyzer data available");
+  } else if (!isModuleFresh(risk, sh["risk-analyzer"])) {
+    add("RiskAnalyzer", "Stale", wRA.stale, `Data is ${formatAge(risk)} old (limit ${sh["risk-analyzer"]}h)`);
   } else {
-    const rr       = risk.result as Record<string, unknown>;
+    const rr        = risk.result as Record<string, unknown>;
     const riskScore = typeof rr?.riskScore === "number" ? rr.riskScore as number : null;
     const riskLevel = String(rr?.overallRiskLevel ?? "");
     const topRisks  = Array.isArray(rr?.topRisks)
@@ -280,27 +273,29 @@ function classifyDecisionEvidence(
       (tr.affectedHoldings as string[]).some(h => h.toLowerCase().includes(tickerLow))
     ).length;
 
+    const raUnitScore = Math.round(wRA.opposing * (20 / 30));   // -20 balanced
+
     if (highTickerRisks > 0) {
-      // High-severity ticker-specific risk: Opposing for Buy, Supporting for Reduce
       const score = buy
-        ? Math.max(-30, highTickerRisks * -20)
-        : Math.min(+30, highTickerRisks * +20);
+        ? Math.max(wRA.opposing, highTickerRisks * raUnitScore)
+        : Math.min(wRA.supporting, highTickerRisks * Math.abs(raUnitScore));
       add("RiskAnalyzer", buy ? "Opposing" : "Supporting", score,
         `${highTickerRisks} high-severity risk(s) affecting ${ticker}`);
     } else if (riskScore !== null) {
       if (buy) {
         if (riskScore > 75 || riskLevel === "High") {
-          add("RiskAnalyzer", "Opposing", -20, `Portfolio risk score ${riskScore}/100, level: ${riskLevel}`);
+          add("RiskAnalyzer", "Opposing", raUnitScore, `Portfolio risk score ${riskScore}/100, level: ${riskLevel}`);
         } else if (riskScore < 40 && riskLevel === "Low") {
-          add("RiskAnalyzer", "Supporting", +20, `Low portfolio risk score ${riskScore}/100`);
+          add("RiskAnalyzer", "Supporting", wRA.supporting, `Low portfolio risk score ${riskScore}/100`);
         } else {
           add("RiskAnalyzer", "Neutral", 0, `Risk score ${riskScore}/100 — no critical ticker risk`);
         }
       } else {
         if (riskScore > 75 || riskLevel === "High") {
-          add("RiskAnalyzer", "Supporting", +20, `High portfolio risk score ${riskScore}/100 — supports reducing`);
+          add("RiskAnalyzer", "Supporting", wRA.supporting, `High portfolio risk score ${riskScore}/100 — supports reducing`);
         } else if (riskScore < 40) {
-          add("RiskAnalyzer", "Opposing", -15, `Low portfolio risk score ${riskScore}/100 — case for reducing is weak`);
+          const weakReduceScore = Math.round(wRA.opposing * (15 / 30)); // -15 balanced
+          add("RiskAnalyzer", "Opposing", weakReduceScore, `Low portfolio risk score ${riskScore}/100 — case for reducing is weak`);
         } else {
           add("RiskAnalyzer", "Neutral", 0, `Risk score ${riskScore}/100`);
         }
@@ -311,11 +306,13 @@ function classifyDecisionEvidence(
   }
 
   // ── Opportunity Finder ────────────────────────────────────────────────────
-  const opp = data.opportunityEntry;
+  const opp  = data.opportunityEntry;
+  const wOF  = ew.OpportunityFinder;
+
   if (!opp) {
-    add("OpportunityFinder", "Missing", buy ? -5 : 0, "No Opportunity Finder data available");
-  } else if (!isModuleFresh(opp, STALE_HOURS["opportunity-finder"])) {
-    add("OpportunityFinder", "Stale", buy ? -5 : 0, `Data is ${formatAge(opp)} old (limit 72h)`);
+    add("OpportunityFinder", "Missing", buy ? wOF.missing : 0, "No Opportunity Finder data available");
+  } else if (!isModuleFresh(opp, sh["opportunity-finder"])) {
+    add("OpportunityFinder", "Stale", buy ? wOF.stale : 0, `Data is ${formatAge(opp)} old (limit ${sh["opportunity-finder"]}h)`);
   } else {
     const or      = opp.result as Record<string, unknown>;
     const opps    = Array.isArray(or?.topOpportunities)
@@ -325,21 +322,24 @@ function classifyDecisionEvidence(
     const oppIdx   = opps.findIndex(o => String(o.ticker ?? "").toUpperCase() === tickerUp);
     const conf     = oppIdx >= 0 ? String(opps[oppIdx].confidence ?? "") : "";
 
+    const ofTopScore    = wOF.supporting;                             // 25 balanced
+    const ofOtherScore  = Math.round(wOF.supporting * 0.6);          // 15 balanced
+    const ofNeutralScore = Math.round(wOF.supporting * 0.2);         // 5 balanced
+
     if (buy) {
       if (oppIdx >= 0 && (conf === "High" || conf === "Medium")) {
-        const score = oppIdx < 2 ? +25 : +15;
+        const score = oppIdx < 2 ? ofTopScore : ofOtherScore;
         add("OpportunityFinder", "Supporting", score,
           `${ticker} is rank ${oppIdx + 1} opportunity with ${conf} confidence`);
       } else if (oppIdx >= 0) {
-        add("OpportunityFinder", "Neutral", +5,
+        add("OpportunityFinder", "Neutral", ofNeutralScore,
           `${ticker} is in opportunities but confidence is ${conf}`);
       } else {
         add("OpportunityFinder", "Neutral", 0, `${ticker} not listed as a top opportunity`);
       }
     } else {
-      // Reduce: ticker as active opportunity is Opposing
       if (oppIdx >= 0 && (conf === "High" || conf === "Medium")) {
-        add("OpportunityFinder", "Opposing", -15,
+        add("OpportunityFinder", "Opposing", wOF.opposing,
           `${ticker} is an active ${conf}-confidence opportunity — reducing is premature`);
       } else {
         add("OpportunityFinder", "Neutral", 0, `${ticker} not an active top opportunity`);
@@ -349,10 +349,12 @@ function classifyDecisionEvidence(
 
   // ── Portfolio Analyzer ────────────────────────────────────────────────────
   const analyzer = data.analyzerEntry;
+  const wPA      = ew.PortfolioAnalyzer;
+
   if (!analyzer) {
-    add("PortfolioAnalyzer", "Missing", buy ? -5 : -5, "No Portfolio Analyzer data available");
-  } else if (!isModuleFresh(analyzer, STALE_HOURS["portfolio-analyzer"])) {
-    add("PortfolioAnalyzer", "Stale", buy ? -8 : -8, `Data is ${formatAge(analyzer)} old (limit 48h)`);
+    add("PortfolioAnalyzer", "Missing", wPA.missing, "No Portfolio Analyzer data available");
+  } else if (!isModuleFresh(analyzer, sh["portfolio-analyzer"])) {
+    add("PortfolioAnalyzer", "Stale", wPA.stale, `Data is ${formatAge(analyzer)} old (limit ${sh["portfolio-analyzer"]}h)`);
   } else {
     const ar       = analyzer.result as Record<string, unknown>;
     const comments = Array.isArray(ar?.positionComments)
@@ -366,36 +368,35 @@ function classifyDecisionEvidence(
     const comment   = comments.find(c => String(c.ticker ?? "").toLowerCase() === tickerLow);
     const inTopOpps = topOpps.some(o => String(o.title ?? "").toLowerCase().includes(tickerLow));
 
+    const paLowAttnScore = Math.round(wPA.supporting * (10 / 15)); // 10 balanced
+
     if (comment) {
       if (comment.attention === "High") {
-        // High attention = concern
-        const score = buy ? -15 : +15;
-        add("PortfolioAnalyzer", buy ? "Opposing" : "Supporting", score,
+        add("PortfolioAnalyzer", buy ? "Opposing" : "Supporting", buy ? wPA.opposing : wPA.supporting,
           `High-attention position comment for ${ticker}`);
       } else if (comment.attention === "Low" && buy) {
-        add("PortfolioAnalyzer", "Supporting", +10,
-          `Low-concern position comment — stable holding`);
+        add("PortfolioAnalyzer", "Supporting", paLowAttnScore, `Low-concern position comment — stable holding`);
       } else {
-        add("PortfolioAnalyzer", "Neutral", 0,
-          `${comment.attention ?? "Unknown"}-attention position comment`);
+        add("PortfolioAnalyzer", "Neutral", 0, `${comment.attention ?? "Unknown"}-attention position comment`);
       }
     } else if (inTopOpps && buy) {
-      add("PortfolioAnalyzer", "Supporting", +15,
+      add("PortfolioAnalyzer", "Supporting", wPA.supporting,
         `${ticker} identified in Portfolio Analyzer top opportunities`);
     } else {
-      add("PortfolioAnalyzer", "Neutral", 0,
-        "No specific position comment for this ticker");
+      add("PortfolioAnalyzer", "Neutral", 0, "No specific position comment for this ticker");
     }
   }
 
   // ── Market Alerts ─────────────────────────────────────────────────────────
   const alerts = data.alertsEntry;
+  const wMA    = ew.MarketAlerts;
+
   if (!alerts) {
-    add("MarketAlerts", "Missing", buy ? -5 : -5, "No Market Alerts data available");
-  } else if (!isModuleFresh(alerts, STALE_HOURS["market-alerts"])) {
-    add("MarketAlerts", "Stale", buy ? -8 : -8, `Data is ${formatAge(alerts)} old (limit 24h)`);
+    add("MarketAlerts", "Missing", wMA.missing, "No Market Alerts data available");
+  } else if (!isModuleFresh(alerts, sh["market-alerts"])) {
+    add("MarketAlerts", "Stale", wMA.stale, `Data is ${formatAge(alerts)} old (limit ${sh["market-alerts"]}h)`);
   } else {
-    const alr     = alerts.result as Record<string, unknown>;
+    const alr       = alerts.result as Record<string, unknown>;
     const allAlerts = Array.isArray(alr?.alerts)
       ? alr.alerts as Array<Record<string, unknown>>
       : [];
@@ -407,16 +408,19 @@ function classifyDecisionEvidence(
       (a.affectedHoldings as string[]).some(h => h.toLowerCase().includes(tickerLow))
     );
 
+    const maUnitScore   = Math.round(wMA.opposing * (15 / 25));    // -15 balanced
+    const maMonitorScore = Math.round(wMA.opposing * (5  / 25));   // -5 balanced
+
     if (highForTicker.length > 0) {
       const requiresAttention = highForTicker.some(a => a.requiresAttention === true);
       if (requiresAttention) {
         const score = buy
-          ? Math.max(-25, highForTicker.length * -15)
-          : Math.min(+25, highForTicker.length * +15);
+          ? Math.max(wMA.opposing, highForTicker.length * maUnitScore)
+          : Math.min(wMA.supporting, highForTicker.length * Math.abs(maUnitScore));
         add("MarketAlerts", buy ? "Opposing" : "Supporting", score,
           `${highForTicker.length} high-importance alert(s) requiring attention affect ${ticker}`);
       } else {
-        add("MarketAlerts", "Neutral", buy ? -5 : +5,
+        add("MarketAlerts", "Neutral", buy ? maMonitorScore : Math.abs(maMonitorScore),
           `${highForTicker.length} high-importance alert(s) for ${ticker} (monitoring, no action required)`);
       }
     } else {
@@ -425,13 +429,13 @@ function classifyDecisionEvidence(
   }
 
   // ── Compute summary ───────────────────────────────────────────────────────
-  const rawScore     = contributions.reduce((s, c) => s + c.scoreContribution, 0);
+  const rawScore      = contributions.reduce((s, c) => s + c.scoreContribution, 0);
   const evidenceScore = Math.max(-100, Math.min(100, rawScore));
 
   const evidenceBand: EvidenceBand =
-    evidenceScore >= EVIDENCE.STRONG    ? "Strong" :
-    evidenceScore >= EVIDENCE.ADEQUATE  ? "Adequate" :
-    evidenceScore >= EVIDENCE.WEAK      ? "Weak" :
+    evidenceScore >= policy.bands.strongMinimum   ? "Strong"      :
+    evidenceScore >= policy.bands.adequateMinimum ? "Adequate"    :
+    evidenceScore >= policy.bands.weakMinimum     ? "Weak"        :
     "Insufficient";
 
   const supportingModules = contributions.filter(c => c.classification === "Supporting").map(c => c.module);
@@ -440,19 +444,18 @@ function classifyDecisionEvidence(
   const missingModules    = contributions.filter(c => c.classification === "Missing").map(c => c.module);
   const staleModules      = contributions.filter(c => c.classification === "Stale").map(c => c.module);
 
-  // Critical Opposing = CompanyMonitor or RiskAnalyzer classified as Opposing
-  const CRITICAL_MODULES  = new Set(["CompanyMonitor", "RiskAnalyzer"]);
-  const criticalOpposing  = opposingModules.filter(m => CRITICAL_MODULES.has(m));
+  const criticalModules   = new Set(policy.gate.criticalOpposingModules);
+  const criticalOpposing  = opposingModules.filter(m => criticalModules.has(m));
 
-  const supportingCount   = supportingModules.length;
+  const supportingCount = supportingModules.length;
   const gatePassed =
-    supportingCount >= EVIDENCE.MIN_SUPPORTING &&
+    supportingCount >= policy.gate.minimumSupportingModules &&
     criticalOpposing.length === 0;
 
   const gateReasons: string[] = [];
-  if (supportingCount < EVIDENCE.MIN_SUPPORTING) {
+  if (supportingCount < policy.gate.minimumSupportingModules) {
     gateReasons.push(
-      `Only ${supportingCount}/${EVIDENCE.MIN_SUPPORTING} required Supporting modules ` +
+      `Only ${supportingCount}/${policy.gate.minimumSupportingModules} required Supporting modules ` +
       `(${supportingModules.join(", ") || "none"})`
     );
   }
@@ -530,6 +533,7 @@ function applyEvidenceGate(
   analyzerEntry:  RepositoryEntry | undefined,
   alertsEntry:    RepositoryEntry | undefined,
   opportunityEntry: RepositoryEntry | undefined,
+  policy:         TradePolicyConfig,
 ): { decisions: ParsedDecision[]; evidenceMap: Map<number, DirectionalEvidenceResult>; gateLog: string[] } {
   const evidenceMap = new Map<number, DirectionalEvidenceResult>();
   const gateLog: string[] = [];
@@ -543,7 +547,8 @@ function applyEvidenceGate(
     const ev = classifyDecisionEvidence(
       d.decision as "PrepareToBuy" | "PrepareToReduce",
       d.ticker,
-      { cmEntry, riskEntry, analyzerEntry, alertsEntry, opportunityEntry }
+      { cmEntry, riskEntry, analyzerEntry, alertsEntry, opportunityEntry },
+      policy
     );
     evidenceMap.set(idx, ev);
 
@@ -572,10 +577,12 @@ function applyEvidenceGate(
     }
 
     // ── 2. Score-based downgrade ──────────────────────────────────────────
-    if (ev.evidenceScore < EVIDENCE.REVIEW_THRESHOLD) {
-      const target = ev.evidenceScore < EVIDENCE.NOACTION_THRESHOLD ? "NoAction" : "Review";
+    if (ev.evidenceScore < policy.downgrade.reviewThreshold) {
+      const target = ev.evidenceScore < policy.downgrade.noActionThreshold ? "NoAction" : "Review";
       const note = `Evidence score ${ev.evidenceScore} (${ev.evidenceBand}) is below ` +
-        `${ev.evidenceScore < EVIDENCE.NOACTION_THRESHOLD ? `${EVIDENCE.NOACTION_THRESHOLD} (NoAction threshold)` : `${EVIDENCE.REVIEW_THRESHOLD} (Review threshold)`}. ` +
+        `${ev.evidenceScore < policy.downgrade.noActionThreshold
+          ? `${policy.downgrade.noActionThreshold} (NoAction threshold)`
+          : `${policy.downgrade.reviewThreshold} (Review threshold)`}. ` +
         `Downgraded from ${d.decision} to ${target}.`;
       gateLog.push(`[evidence-score] "${d.title}" (${d.ticker || d.company}): ${note}`);
       return {
@@ -781,6 +788,7 @@ function computeReadiness(
     maximumAllocationPercent?: number;
     sizingConfidence?: string;
   },
+  policy:   TradePolicyConfig,
   evidence?: DirectionalEvidenceResult
 ): { readiness: ReadinessValue; readinessReason: string } {
   const type    = d.decision;
@@ -801,8 +809,8 @@ function computeReadiness(
 
   if (type === "Review") {
     if (blocked) {
-      const event  = d.blockingEvent;
-      const date   = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
+      const event = d.blockingEvent;
+      const date  = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
       return {
         readiness: "WaitingForReevaluation",
         readinessReason: event
@@ -815,8 +823,8 @@ function computeReadiness(
 
   if (type === "PrepareToBuy" || type === "PrepareToReduce") {
     if (blocked) {
-      const event  = d.blockingEvent;
-      const date   = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
+      const event = d.blockingEvent;
+      const date  = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
       return {
         readiness: "WaitingForReevaluation",
         readinessReason: event
@@ -825,17 +833,32 @@ function computeReadiness(
       };
     }
 
-    // Confidence gate
+    // Hard safety rule: Low confidence is NEVER ReadyForReview (applies to all profiles)
     if (d.confidence === "Low") {
       return { readiness: "Informational", readinessReason: "Confidence is Low — additional evidence needed." };
     }
 
-    // Evidence score gate
+    // Policy-level confidence gate (Conservative may require Medium minimum — handled via
+    // minimumConfidence setting, but "Medium" is already the hard minimum, so this is
+    // future-proofing for a "High" minimum profile)
+    if (policy.readyForReview.minimumConfidence === "High" && d.confidence !== "High") {
+      return {
+        readiness: "Informational",
+        readinessReason: `Active policy (${policy.profile}) requires High confidence — current confidence is ${d.confidence}.`,
+      };
+    }
+
+    // Evidence score gate (from active policy)
     if (evidence) {
-      if (evidence.evidenceScore < EVIDENCE.READY_MIN) {
+      if (evidence.evidenceScore < policy.readyForReview.minimumEvidenceScore) {
         return {
           readiness: "Informational",
-          readinessReason: `Evidence score ${evidence.evidenceScore} (${evidence.evidenceBand}) is below the ReadyForReview threshold of ${EVIDENCE.READY_MIN}. Supporting: ${evidence.supportingModules.join(", ") || "none"}. Opposing: ${evidence.opposingModules.join(", ") || "none"}.`,
+          readinessReason:
+            `Evidence score ${evidence.evidenceScore} (${evidence.evidenceBand}) is below the ` +
+            `ReadyForReview threshold of ${policy.readyForReview.minimumEvidenceScore} ` +
+            `(${policy.profile} profile). ` +
+            `Supporting: ${evidence.supportingModules.join(", ") || "none"}. ` +
+            `Opposing: ${evidence.opposingModules.join(", ") || "none"}.`,
         };
       }
       if (evidence.hasCriticalOpposing) {
@@ -846,7 +869,7 @@ function computeReadiness(
       }
     }
 
-    // Sizing gate
+    // Sizing gate (all profiles — hard safety rule)
     const hasValidSizing =
       typeof d.targetAllocationPercent  === "number" && d.targetAllocationPercent  > 0 &&
       typeof d.maximumAllocationPercent === "number" && d.maximumAllocationPercent >= d.targetAllocationPercent &&
@@ -854,6 +877,21 @@ function computeReadiness(
 
     if (!hasValidSizing) {
       return { readiness: "Informational", readinessReason: "Sizing fields are incomplete — manual sizing required before actioning." };
+    }
+
+    // Policy-level maximum allocation gate (Conservative)
+    if (
+      policy.readyForReview.maximumTargetAllocationPercent !== null &&
+      typeof d.targetAllocationPercent === "number" &&
+      d.targetAllocationPercent > policy.readyForReview.maximumTargetAllocationPercent
+    ) {
+      return {
+        readiness: "Informational",
+        readinessReason:
+          `Target allocation ${d.targetAllocationPercent}% exceeds the ` +
+          `${policy.profile} policy limit of ${policy.readyForReview.maximumTargetAllocationPercent}%. ` +
+          `Reduce the target allocation before this proposal can proceed to review.`,
+      };
     }
 
     const reason = d.sizingReason?.trim() || "Decision is current and ready for manual review.";
@@ -1011,6 +1049,8 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     systemLog.logUser(MODULE_NAME, "User manually started decision analysis");
   }
 
+  // Load the active policy profile for this run
+  const policy    = getActivePolicyConfig();
   const startTime = Date.now();
   const nowIso    = new Date().toISOString();
   const nowDate   = new Date(nowIso);
@@ -1077,9 +1117,9 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   }
 
   const staleWarnings: string[] = [];
-  if (riskEntry     && !isModuleFresh(riskEntry,     STALE_HOURS["risk-analyzer"]))      staleWarnings.push(`RiskAnalyzer (${formatAge(riskEntry)})`);
-  if (analyzerEntry && !isModuleFresh(analyzerEntry, STALE_HOURS["portfolio-analyzer"]))  staleWarnings.push(`PortfolioAnalyzer (${formatAge(analyzerEntry)})`);
-  if (alertsEntry   && !isModuleFresh(alertsEntry,   STALE_HOURS["market-alerts"]))       staleWarnings.push(`MarketAlerts (${formatAge(alertsEntry)})`);
+  if (riskEntry     && !isModuleFresh(riskEntry,     policy.stalenessHours["risk-analyzer"]))      staleWarnings.push(`RiskAnalyzer (${formatAge(riskEntry)})`);
+  if (analyzerEntry && !isModuleFresh(analyzerEntry, policy.stalenessHours["portfolio-analyzer"]))  staleWarnings.push(`PortfolioAnalyzer (${formatAge(analyzerEntry)})`);
+  if (alertsEntry   && !isModuleFresh(alertsEntry,   policy.stalenessHours["market-alerts"]))       staleWarnings.push(`MarketAlerts (${formatAge(alertsEntry)})`);
   if (staleWarnings.length > 0) {
     systemLog.logWarning(MODULE_NAME, `Stale analysis data: ${staleWarnings.join(", ")} — confidence may be downgraded`);
   }
@@ -1497,7 +1537,8 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       const { decisions: gatedDecisions, evidenceMap, gateLog } = applyEvidenceGate(
         parsed.data.decisions as unknown as ParsedDecision[],
         holdingCmKeys, opCmKeys, allCmEntries,
-        riskEntry, analyzerEntry, alertsEntry, opportunityEntry
+        riskEntry, analyzerEntry, alertsEntry, opportunityEntry,
+        policy
       );
 
       for (const msg of gateLog) {
@@ -1582,6 +1623,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         const ev  = evidenceMap.get(d._evidenceKey);
         const { readiness, readinessReason } = computeReadiness(
           d as unknown as Parameters<typeof computeReadiness>[0],
+          policy,
           ev
         );
         return {
@@ -1771,8 +1813,69 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         entries: [newHistoryEntry, ...existingHistory].slice(0, MAX_HISTORY),
       });
 
+      // ── Outcome tracking (non-blocking) ────────────────────────────────────
+      try {
+        const profileName = getActivePolicyProfile();
+        const portfolioResult = portfolioEntry?.result as Record<string, unknown> | undefined;
+        const portfolioVal =
+          typeof portfolioResult?.totalValue === "number"
+            ? (portfolioResult.totalValue as number)
+            : null;
+
+        for (const d of withStatus) {
+          if (d.decision !== "PrepareToBuy" && d.decision !== "PrepareToReduce") continue;
+          const ev = d._evidence;
+          if (!ev) continue;
+
+          // Company Monitor snapshot for outcome record
+          const cmKey    = holdingCmKeys.get(d.ticker) ?? opCmKeys.get(d.ticker);
+          const cmEntry  = cmKey ? allCmEntries.find(e => e.moduleName === cmKey) : undefined;
+          const cmResult = cmEntry?.result as Record<string, unknown> | undefined;
+          const cmStrength =
+            typeof cmResult?.investmentCaseStrength === "number"
+              ? (cmResult.investmentCaseStrength as number)
+              : null;
+          const cmChange  = cmResult?.investmentCaseChange as Record<string, unknown> | null | undefined;
+          const cmSeverity = cmChange ? String(cmChange?.severity ?? "") || null : null;
+
+          const outcomeInput: RecordOutcomeInput = {
+            decisionId:     `${d.ticker}:${d.decision}`,
+            ticker:         d.ticker,
+            company:        d.company,
+            subjectType:    (d.subjectType as "Holding" | "Opportunity" | "Portfolio") ?? "Opportunity",
+            decisionType:   d.decision as "PrepareToBuy" | "PrepareToReduce",
+            decisionStatus: d._status as "New" | "Strengthened" | "Weakened" | "Unchanged",
+            policyProfile:  profileName,
+            isReadyForReview: d._readiness === "ReadyForReview",
+            fingerprint:    d._fingerprint,
+
+            evidenceScore:  ev.evidenceScore,
+            evidenceBand:   ev.evidenceBand,
+            confidence:     d.confidence as "High" | "Medium" | "Low",
+            urgency:        (d.urgency as "Immediate" | "Days" | "Weeks" | "NoUrgency") ?? "NoUrgency",
+            targetAllocationPercent:
+              typeof d.targetAllocationPercent === "number" ? d.targetAllocationPercent : null,
+            supportingModules: ev.supportingModules,
+            opposingModules:   ev.opposingModules,
+
+            companyMonitorStrength:           cmStrength,
+            companyMonitorCaseChangeSeverity: cmSeverity,
+            portfolioValueAtDecision:         portfolioVal,
+          };
+
+          recordDecisionOutcome(outcomeInput, d._fingerprint);
+        }
+      } catch (outcomeErr) {
+        // Outcome tracking errors must never surface to the main TDE response
+        systemLog.logInternal(
+          MODULE_NAME,
+          `Outcome tracking error: ${outcomeErr instanceof Error ? outcomeErr.message : String(outcomeErr)}`
+        );
+      }
+
       // ── System log ─────────────────────────────────────────────────────────
       systemLog.logInfo(MODULE_NAME, "Decision analysis completed");
+      systemLog.logInternal(MODULE_NAME, `Active policy profile: ${policy.profile}`);
       systemLog.logInternal(
         MODULE_NAME,
         `Posture: ${finalData.overallDecisionPosture} | Readiness: ${finalData.decisionReadinessScore}/100`
