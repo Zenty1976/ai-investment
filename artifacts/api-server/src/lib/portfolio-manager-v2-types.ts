@@ -19,6 +19,31 @@ export type PortfolioRole =
   | "SectorPlay"
   | "EventDriven";
 
+// ── Allocation status & conviction ─────────────────────────────────────────────
+
+/**
+ * Lifecycle status for every target allocation.
+ *
+ * StrategicTarget — valid, immediately deployable long-term allocation.
+ * Provisional     — company may belong in portfolio; important evidence incomplete.
+ * Blocked         — a future event or critical condition prevents deployment.
+ * Excluded        — considered but must not receive capital at present.
+ */
+export type AllocationStatus = "StrategicTarget" | "Provisional" | "Blocked" | "Excluded";
+
+export type Conviction = "High" | "Medium" | "Low";
+
+/** Modules that may be cited as supporting or blocking evidence. */
+export type SupportingModule =
+  | "PortfolioAnalyzer"
+  | "RiskAnalyzer"
+  | "OpportunityFinder"
+  | "CompanyMonitor"
+  | "TradeDecisionEngine"
+  | "SectorMonitor"
+  | "MarketAlerts"
+  | "MarketMonitor";
+
 // ── Target Portfolio (AI-synthesised) ─────────────────────────────────────────
 
 export interface TargetAllocation {
@@ -30,6 +55,16 @@ export interface TargetAllocation {
   minPercent: number;
   maxPercent: number;
   rationale: string;
+  /** How strongly the CIO believes this allocation is correct */
+  conviction?: Conviction;
+  /** Lifecycle status: only StrategicTarget allocations are immediately deployable */
+  allocationStatus?: AllocationStatus;
+  /** Human-readable explanation for the chosen status */
+  reasonForStatus?: string;
+  /** Factors that block or limit this allocation */
+  blockingFactors?: string[];
+  /** Modules whose data directly supports this allocation recommendation */
+  supportingModules?: SupportingModule[];
 }
 
 export interface TargetPortfolio {
@@ -46,9 +81,11 @@ export interface TargetPortfolio {
 
 export interface HealthSubScore {
   name: string;
-  score: number;   // 0–100
-  weight: number;  // contribution weight; weights across all sub-scores sum to 1
+  score: number;    // 0–100
+  weight: number;   // contribution weight; weights across all sub-scores sum to 1
   reason: string;
+  /** True when the score is unreliable due to missing/sparse input data */
+  lowConfidence?: boolean;
 }
 
 export type HealthGrade = "A" | "B" | "C" | "D" | "F";
@@ -59,6 +96,12 @@ export interface PortfolioHealthScore {
   grade: HealthGrade;
   subScores: HealthSubScore[];
   computedAt: string;
+  /** % of positions that have a real sector classification (not Unknown) */
+  classifiedPositionPercent: number;
+  /** % of portfolio market value in positions with Unknown sector */
+  unknownSectorPercent: number;
+  /** Confidence in sector-based scores */
+  sectorCoverageConfidence: "High" | "Medium" | "Low";
 }
 
 // ── Drift Detection ───────────────────────────────────────────────────────────
@@ -101,6 +144,9 @@ export interface CapitalAllocationItem {
   suggestedAmountBase: number;
   priority: "High" | "Medium" | "Low";
   rationale: string;
+  allocationStatus?: AllocationStatus;
+  /** Present on blocked items — explains why cash cannot be deployed here now */
+  blockingReason?: string;
 }
 
 export interface CapitalAllocationPlan {
@@ -110,7 +156,18 @@ export interface CapitalAllocationPlan {
   cashTargetPercent: number;
   /** Cash that can be deployed without breaching the cash floor */
   deployableCashBase: number;
+  /**
+   * Backward-compatible alias — always equal to actionableItems.
+   * Existing consumers that read `plan.items` continue to work.
+   */
   items: CapitalAllocationItem[];
+  /** StrategicTarget allocations ready for immediate deployment */
+  actionableItems: CapitalAllocationItem[];
+  /** Allocations with Blocked status or a blocking TDE condition */
+  blockedItems: CapitalAllocationItem[];
+  /** Allocations with Provisional status — visible gap but no deployment suggested */
+  provisionalItems: CapitalAllocationItem[];
+  /** Sum of suggestedAmountBase for actionableItems only */
   totalSuggestedDeploymentBase: number;
   residualCashAfterDeploymentBase: number;
   computedAt: string;
@@ -122,14 +179,24 @@ export interface ReplacementOpportunity {
   holdingTicker: string;
   holdingCompany: string;
   holdingCurrentPercent: number;
-  /** Score proxy for the holding (0–100 from portfolio analyzer attention, inverted) */
+  /** Composite holding quality score (0–100) */
   holdingScore: number;
+  holdingCaseStrength?: number;
+  holdingInvestmentView?: string;
+  holdingThesisDirection?: string;
   candidateTicker: string;
   candidateCompany: string;
   candidateOverallScore: number;
+  candidateCaseStrength?: number;
+  candidateInvestmentView?: string;
   scoreDelta: number;
   rationale: string;
   priority: "High" | "Medium" | "Low";
+  /**
+   * True when Company Monitor data is missing for either side —
+   * the comparison is indicative, not analytically complete.
+   */
+  isProvisional: boolean;
 }
 
 // ── Change Explainer ──────────────────────────────────────────────────────────
@@ -140,7 +207,9 @@ export type PortfolioChangeType =
   | "TargetIncreased"
   | "TargetDecreased"
   | "RoleChanged"
-  | "CashTargetChanged";
+  | "CashTargetChanged"
+  | "StatusChanged"
+  | "ConvictionChanged";
 
 export interface PortfolioChange {
   type: PortfolioChangeType;
@@ -148,6 +217,36 @@ export interface PortfolioChange {
   description: string;
   previousValue?: number;
   newValue?: number;
+}
+
+// ── Source Provenance ─────────────────────────────────────────────────────────
+
+/**
+ * Records which modules were consulted and how fresh their data was
+ * at the time of a CIO target-portfolio synthesis.
+ */
+export interface PortfolioV2Provenance {
+  /** All module keys that were read (regardless of freshness) */
+  sourceModulesUsed: string[];
+  /** updatedAt / savedAt timestamps for each consulted module */
+  sourceUpdatedAt: Record<string, string>;
+  /** Module keys whose data was older than the staleness threshold */
+  staleSources: string[];
+  /** Module keys expected by the CIO pass but absent from the repository */
+  missingSources: string[];
+  /**
+   * Composite confidence in the resulting target portfolio.
+   * High   — all critical sources present and fresh.
+   * Medium — some secondary sources stale or absent.
+   * Low    — critical sources (Portfolio Analyzer / Risk) missing or stale.
+   */
+  targetConfidence: "High" | "Medium" | "Low";
+  /**
+   * Deterministic hash of the material CIO inputs.
+   * If unchanged on the next run, the AI target synthesis is skipped
+   * and only deterministic downstream components are recomputed.
+   */
+  inputFingerprint: string;
 }
 
 // ── History ───────────────────────────────────────────────────────────────────
@@ -162,6 +261,22 @@ export interface PortfolioV2HistoryEntry {
   cashTargetPercent: number;
   totalValue: number | null;
   positionCount: number;
+  // Richer fields added in v2.1
+  targetFingerprint?: string;
+  targetConfidence?: "High" | "Medium" | "Low";
+  /** Compact snapshot of target allocations at time of entry */
+  targetAllocations?: Array<{
+    ticker: string;
+    percent: number;
+    role: string;
+    status: string;
+  }>;
+  /** e.g. "7/8 sources fresh" */
+  sourceFreshnessSummary?: string;
+  /** Top changes vs previous target */
+  majorChanges?: string[];
+  /** First 120 chars of strategicRationale */
+  strategicRationaleSummary?: string;
 }
 
 // ── Top-level v2 result ───────────────────────────────────────────────────────
@@ -171,9 +286,7 @@ export interface PortfolioV2 {
   durationMs: number;
   /**
    * The `updatedAt` timestamp of the PortfolioSnapshot this analysis was
-   * computed from. Used to detect staleness: if the current snapshot has a
-   * different `updatedAt`, this v2 result belongs to an older snapshot and
-   * must not be presented as analysis of the current holdings.
+   * computed from. Used to detect staleness.
    */
   snapshotUpdatedAt: string;
   health: PortfolioHealthScore;
@@ -182,4 +295,6 @@ export interface PortfolioV2 {
   capitalAllocation: CapitalAllocationPlan;
   replacements: ReplacementOpportunity[];
   changes: PortfolioChange[];
+  /** Source provenance and fingerprint for this CIO pass */
+  provenance?: PortfolioV2Provenance;
 }

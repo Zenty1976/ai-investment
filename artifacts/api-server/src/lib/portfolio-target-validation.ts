@@ -10,24 +10,26 @@
  * ## Normalisation algorithm
  *
  * Role bounds are enforced on the FINAL output, not just as a pre-processing
- * hint. The algorithm is a two-pass approach:
+ * hint. The algorithm is a four-pass approach:
  *
  * Pass 1 — initial clamp: reduce every targetPercent to its role's [min, max].
  * Pass 2 — scale to equity budget: proportionally rescale the clamped values
  *           to fill (100 – cashTarget)%.
  * Pass 3 — post-scale re-clamp: rescaling may have pushed some values back
- *           above their role max (if the equity budget >> clamped sum) or below
- *           their role min (if budget << clamped sum). Clamp again to restore
- *           hard role compliance.
+ *           above their role max or below their role min. Clamp again.
  * Pass 4 — cash adjustment: after pass-3 clamping the equity sum may differ
  *           from the equity budget. Adjust cashTargetPercent to compensate so
  *           equity + cash == 100. If the required cash would exceed CASH_HARD_MAX
- *           (40%), the allocation set is infeasible — the positions cannot fill the
- *           equity budget within their role bounds, so we throw to allow
- *           the caller to retry/regenerate.
+ *           (40%), the allocation set is infeasible — throw to allow caller to retry.
  */
 
-import type { TargetAllocation, PortfolioRole } from "./portfolio-manager-v2-types.js";
+import type {
+  TargetAllocation,
+  PortfolioRole,
+  AllocationStatus,
+  Conviction,
+  SupportingModule,
+} from "./portfolio-manager-v2-types.js";
 import { ROLE_DEFINITIONS } from "./portfolio-role-config.js";
 
 // Cash cannot fall below 2% or exceed 40%
@@ -44,6 +46,12 @@ export interface AiTargetAllocationRaw {
   minPercent: number;
   maxPercent: number;
   rationale: string;
+  // New structured fields (optional — AI may not return all on every run)
+  conviction?: string;
+  allocationStatus?: string;
+  reasonForStatus?: string;
+  blockingFactors?: string[];
+  supportingModules?: string[];
 }
 
 export interface AiTargetPortfolioResponse {
@@ -60,9 +68,54 @@ const VALID_ROLES = new Set<PortfolioRole>([
   "Defensive", "CyclicalExposure", "InternationalDiversifier", "SectorPlay", "EventDriven",
 ]);
 
+/**
+ * Validates a role string.
+ * Throws on unknown roles — silently converting to CoreHolding would materially
+ * alter the allowed allocation range without the CIO's knowledge.
+ */
 export function sanitiseRole(raw: string): PortfolioRole {
   if (VALID_ROLES.has(raw as PortfolioRole)) return raw as PortfolioRole;
-  return "CoreHolding";
+  throw new Error(
+    `Target synthesiser: unknown role "${raw}". Must be one of: ${[...VALID_ROLES].join(", ")}. ` +
+    `The AI must return a valid role — silently converting to CoreHolding would alter the allowed allocation range.`
+  );
+}
+
+// ── Conviction sanitiser ──────────────────────────────────────────────────────
+
+const VALID_CONVICTIONS = new Set<Conviction>(["High", "Medium", "Low"]);
+
+function sanitiseConviction(raw: string | undefined): Conviction {
+  if (raw && VALID_CONVICTIONS.has(raw as Conviction)) return raw as Conviction;
+  return "Medium"; // default when not supplied
+}
+
+// ── AllocationStatus sanitiser ────────────────────────────────────────────────
+
+const VALID_STATUSES = new Set<AllocationStatus>([
+  "StrategicTarget", "Provisional", "Blocked", "Excluded",
+]);
+
+function sanitiseStatus(raw: string | undefined): AllocationStatus {
+  if (raw && VALID_STATUSES.has(raw as AllocationStatus)) return raw as AllocationStatus;
+  return "StrategicTarget"; // default when not supplied
+}
+
+// ── SupportingModule sanitiser ────────────────────────────────────────────────
+
+const VALID_MODULES = new Set<SupportingModule>([
+  "PortfolioAnalyzer", "RiskAnalyzer", "OpportunityFinder", "CompanyMonitor",
+  "TradeDecisionEngine", "SectorMonitor", "MarketAlerts", "MarketMonitor",
+]);
+
+function sanitiseSupportingModules(
+  raw: string[] | undefined,
+  suppliedModules: Set<string>
+): SupportingModule[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((m) => VALID_MODULES.has(m as SupportingModule))
+    .filter((m) => suppliedModules.size === 0 || suppliedModules.has(m)) as SupportingModule[];
 }
 
 // ── Main validation function ──────────────────────────────────────────────────
@@ -79,16 +132,22 @@ export function sanitiseRole(raw: string): PortfolioRole {
  * - allocations array is empty
  * - all allocations have non-numeric targetPercent (filtered out)
  * - any ticker is not in the allowedTickers set
+ * - any allocation uses role "Cash"
+ * - any ticker is duplicated
+ * - any role is not a known PortfolioRole
+ * - a Blocked allocation has no blockingFactors
+ * - a StrategicTarget allocation has a critical blocking factor with no explanation
  * - equity sum after normalisation is zero
- * - the allocation set is infeasible: the positions cannot fill the equity budget
- *   within role bounds (e.g. too few positions with small role maxes)
+ * - the allocation set is infeasible
  *
- * @param raw             Parsed AI JSON response
- * @param allowedTickers  Set of uppercase tickers the AI is permitted to include
+ * @param raw              Parsed AI JSON response
+ * @param allowedTickers   Set of uppercase tickers the AI is permitted to include
+ * @param suppliedModules  Set of module names actually provided as context (for supportingModules validation)
  */
 export function validateAndNormaliseTarget(
   raw: AiTargetPortfolioResponse,
-  allowedTickers: Set<string>
+  allowedTickers: Set<string>,
+  suppliedModules: Set<string> = new Set()
 ): { allocations: TargetAllocation[]; cashTargetPercent: number } {
   // ── 1. Cash must be in range ──────────────────────────────────────────────
   if (typeof raw.cashTargetPercent !== "number" || !isFinite(raw.cashTargetPercent)) {
@@ -123,9 +182,6 @@ export function validateAndNormaliseTarget(
   }
 
   // ── 4b. Reject 'Cash' as a ticker-level role ─────────────────────────────
-  // Cash is exclusively represented by cashTargetPercent. A ticker allocation
-  // with role="Cash" would create a fictitious holding that corrupts drift and
-  // capital deployment calculations.
   const cashRoleAllocations = filtered.filter(
     (a) => String(a.role ?? "").trim() === "Cash"
   );
@@ -138,9 +194,6 @@ export function validateAndNormaliseTarget(
   }
 
   // ── 4c. Reject duplicate tickers ─────────────────────────────────────────
-  // Duplicates produce internally inconsistent targets: different engines iterate
-  // the allocations list independently and would disagree on the intended weight.
-  // Reject so the caller can retry/regenerate rather than silently misusing them.
   const seen = new Set<string>();
   const duplicates: string[] = [];
   for (const a of filtered) {
@@ -155,40 +208,66 @@ export function validateAndNormaliseTarget(
     );
   }
 
-  // ── 5. Pass 1 — initial role clamp ────────────────────────────────────────
-  // Bring each allocation into its role's [typicalMin, typicalMax] range.
+  // ── 5. Pass 1 — validate roles and initial clamp ──────────────────────────
+  // sanitiseRole throws on unknown roles — caller should retry rather than
+  // silently accepting a wrong allocation range.
   const allocations: TargetAllocation[] = filtered.map((a) => {
     const role    = sanitiseRole(String(a.role ?? ""));
     const roleDef = ROLE_DEFINITIONS[role];
 
-    // Clamp targetPercent to role bounds
     const target = Math.max(
       roleDef.typicalMinPercent,
       Math.min(roleDef.typicalMaxPercent, a.targetPercent)
     );
 
-    // Build min/max within role bounds regardless of what AI returned
     const rawMin = typeof a.minPercent === "number" && isFinite(a.minPercent)
       ? a.minPercent : Math.max(0, target - 5);
     const rawMax = typeof a.maxPercent === "number" && isFinite(a.maxPercent)
       ? a.maxPercent : target + 5;
-    // Ensure roleMin ≤ min ≤ target ≤ max ≤ roleMax
     const min = Math.max(roleDef.typicalMinPercent, Math.min(rawMin, target));
     const max = Math.min(roleDef.typicalMaxPercent, Math.max(rawMax, target));
 
+    const allocationStatus = sanitiseStatus(a.allocationStatus);
+    const conviction       = sanitiseConviction(a.conviction);
+    const blockingFactors  = Array.isArray(a.blockingFactors)
+      ? a.blockingFactors.map(String).filter((s) => s.trim().length > 0)
+      : [];
+    const supportingModules = sanitiseSupportingModules(a.supportingModules, suppliedModules);
+
     return {
-      ticker:        a.ticker.toUpperCase().trim(),
-      company:       String(a.company ?? a.ticker),
+      ticker:         a.ticker.toUpperCase().trim(),
+      company:        String(a.company ?? a.ticker),
       role,
-      targetPercent: target,
-      minPercent:    min,
-      maxPercent:    max,
-      rationale:     String(a.rationale ?? ""),
+      targetPercent:  target,
+      minPercent:     min,
+      maxPercent:     max,
+      rationale:      String(a.rationale ?? ""),
+      conviction,
+      allocationStatus,
+      reasonForStatus: a.reasonForStatus ? String(a.reasonForStatus) : undefined,
+      blockingFactors,
+      supportingModules,
     };
   });
 
+  // ── 5b. AllocationStatus consistency checks ───────────────────────────────
+  for (const a of allocations) {
+    if (a.allocationStatus === "Blocked" && (!a.blockingFactors || a.blockingFactors.length === 0)) {
+      throw new Error(
+        `Target synthesiser: allocation ${a.ticker} has status "Blocked" but no blockingFactors. ` +
+        `Blocked allocations must explain what prevents deployment.`
+      );
+    }
+    if (a.allocationStatus === "StrategicTarget" && a.blockingFactors && a.blockingFactors.length > 0) {
+      throw new Error(
+        `Target synthesiser: allocation ${a.ticker} has status "StrategicTarget" but lists blocking factors: ` +
+        `[${a.blockingFactors.join(", ")}]. ` +
+        `A StrategicTarget must not have critical blocking factors — use Blocked or Provisional.`
+      );
+    }
+  }
+
   // ── 6. Pass 2 — scale to equity budget ───────────────────────────────────
-  // Scale all clamped values proportionally to fill (100 – cash)%.
   const equityBudget = 100 - cashTargetPercent;
   const preScaleSum  = allocations.reduce((s, a) => s + a.targetPercent, 0);
 
@@ -206,20 +285,14 @@ export function validateAndNormaliseTarget(
   }
 
   // ── 7. Pass 3 — post-scale re-clamp to role bounds ────────────────────────
-  // Scaling up may push values above roleMax; scaling down may go below roleMin.
-  // Clamp back to role bounds to guarantee final compliance.
   for (const a of allocations) {
     const roleDef   = ROLE_DEFINITIONS[a.role];
     a.targetPercent = Math.max(roleDef.typicalMinPercent, Math.min(roleDef.typicalMaxPercent, a.targetPercent));
-    // Keep min/max within role bounds too
     a.minPercent    = Math.max(roleDef.typicalMinPercent, Math.min(a.minPercent, a.targetPercent));
     a.maxPercent    = Math.min(roleDef.typicalMaxPercent, Math.max(a.maxPercent, a.targetPercent));
   }
 
   // ── 8. Pass 4 — adjust cash to absorb equity deviation ───────────────────
-  // Post-scale clamping changes the equity sum. Adjust cash so equity+cash==100.
-  // If the required cash > CASH_HARD_MAX, the allocation set is infeasible:
-  // the positions cannot fill the equity budget within their role bounds.
   const equityTotal = allocations.reduce((s, a) => s + a.targetPercent, 0);
   const requiredCash = 100 - equityTotal;
 

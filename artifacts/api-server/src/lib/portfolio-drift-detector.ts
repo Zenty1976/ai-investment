@@ -2,9 +2,15 @@
  * Portfolio Drift Detector
  *
  * Compares the current portfolio snapshot against the AI-synthesised
- * TargetPortfolio and produces a ranked list of drift items covering
- * 6 drift types: Overweight, Underweight, Missing, Excess, CashTooHigh,
- * CashTooLow, SectorOverweight, SectorUnderweight.
+ * TargetPortfolio and produces a ranked list of drift items.
+ *
+ * Drift types: Overweight, Underweight, Missing, Excess,
+ *              CashTooHigh, CashTooLow, SectorOverweight, SectorUnderweight.
+ *
+ * Sector classification priority:
+ *  1. sectorByTicker map (populated from Company Monitor company.sector)
+ *  2. Opportunity Finder sector where available
+ *  3. "Unknown" — assetType / exchange strings are NOT treated as sectors
  *
  * No AI calls — purely deterministic.
  */
@@ -24,18 +30,20 @@ function driftSeverity(deviationAbs: number): "High" | "Medium" | "Low" {
   return "Low";
 }
 
-// ── Asset-type to sector proxy ────────────────────────────────────────────────
-
-function sectorProxy(assetType: string, exchange: string): string {
-  // Use assetType as primary label; fall back to exchange
-  return assetType || exchange || "Unknown";
-}
-
 // ── Main entry point ──────────────────────────────────────────────────────────
 
+/**
+ * @param snapshot       Current portfolio snapshot
+ * @param target         AI-synthesised target portfolio
+ * @param sectorByTicker Optional map of uppercase ticker → sector string
+ *                       (populated from Company Monitor company.sector).
+ *                       When absent, sector drift is still computed but sectors
+ *                       are classified as "Unknown" for positions without CM data.
+ */
 export function detectDrift(
   snapshot: PortfolioSnapshot,
-  target: TargetPortfolio
+  target: TargetPortfolio,
+  sectorByTicker?: Map<string, string>
 ): PortfolioDriftItem[] {
   const items: PortfolioDriftItem[] = [];
 
@@ -44,6 +52,7 @@ export function detectDrift(
   const cashPct    = totalValue > 0 ? (cash / totalValue) * 100 : 0;
 
   const allPositions = snapshot.accounts.flatMap((a) => a.positions);
+  const sectorMap    = sectorByTicker ?? new Map<string, string>();
 
   // Build a map of ticker → current market value as % of total
   const currentPct = new Map<string, number>();
@@ -53,21 +62,20 @@ export function detectDrift(
     currentPct.set(ticker, (currentPct.get(ticker) ?? 0) + pct);
   }
 
-  // Build a map of ticker → target allocation from the TargetPortfolio
+  // Build a map of ticker → target allocation
   const targetPct = new Map<string, number>();
   for (const alloc of target.allocations) {
     targetPct.set(alloc.ticker.toUpperCase(), alloc.targetPercent);
   }
 
   // ── Cash drift ───────────────────────────────────────────────────────────────
-
   const cashDev = cashPct - target.cashTargetPercent;
   if (Math.abs(cashDev) >= 3) {
     const type: DriftType = cashDev > 0 ? "CashTooHigh" : "CashTooLow";
     items.push({
       type,
-      currentPercent: Math.round(cashPct * 10) / 10,
-      targetPercent:  Math.round(target.cashTargetPercent * 10) / 10,
+      currentPercent:   Math.round(cashPct * 10) / 10,
+      targetPercent:    Math.round(target.cashTargetPercent * 10) / 10,
       deviationPercent: Math.round(cashDev * 10) / 10,
       severity: driftSeverity(Math.abs(cashDev)),
       action:
@@ -79,17 +87,16 @@ export function detectDrift(
 
   // ── Position-level drift ─────────────────────────────────────────────────────
 
-  // Overweight and Excess (held but not in target)
+  // Overweight and Excess (held but not in target or above target)
   for (const [ticker, pct] of currentPct) {
     const tgt = targetPct.get(ticker);
     if (tgt === undefined) {
-      // Excess — not in target at all
       if (pct >= 1) {
         items.push({
           type: "Excess",
           ticker,
-          currentPercent:  Math.round(pct  * 10) / 10,
-          targetPercent:   0,
+          currentPercent:   Math.round(pct * 10) / 10,
+          targetPercent:    0,
           deviationPercent: Math.round(pct * 10) / 10,
           severity: driftSeverity(pct),
           action: `Consider exiting ${ticker} — not part of target portfolio`,
@@ -111,13 +118,12 @@ export function detectDrift(
     }
   }
 
-  // Underweight and Missing (in target but not held / below target)
+  // Underweight and Missing (in target but below target or not held)
   for (const alloc of target.allocations) {
     const ticker = alloc.ticker.toUpperCase();
     const cur    = currentPct.get(ticker) ?? 0;
     const dev    = cur - alloc.targetPercent;
     if (cur === 0) {
-      // Missing
       if (alloc.targetPercent >= 1) {
         items.push({
           type: "Missing",
@@ -143,25 +149,23 @@ export function detectDrift(
   }
 
   // ── Sector-level drift ────────────────────────────────────────────────────────
+  // Uses CM-sourced sector labels; falls back to "Unknown" for unclassified positions.
+  // We only emit sector drift when the sector is known (not "Unknown").
 
-  // Compute current sector weights
   const sectorValues = new Map<string, number>();
   for (const pos of allPositions) {
-    const sector = sectorProxy(pos.assetType, pos.exchange);
+    const ticker = pos.symbol.toUpperCase().trim();
+    const sector = sectorMap.get(ticker) ?? "Unknown";
+    if (sector === "Unknown") continue; // skip unclassified positions for sector drift
     sectorValues.set(sector, (sectorValues.get(sector) ?? 0) + pos.marketValueBaseCurrency);
   }
 
   // Build target sector weights from target allocations
-  // (map each target ticker to a sector using current positions where available)
-  const tickerToSector = new Map<string, string>();
-  for (const pos of allPositions) {
-    tickerToSector.set(pos.symbol.toUpperCase(), sectorProxy(pos.assetType, pos.exchange));
-  }
-
   const targetSectorPct = new Map<string, number>();
   for (const alloc of target.allocations) {
-    const sector = tickerToSector.get(alloc.ticker.toUpperCase());
-    if (sector) {
+    const ticker = alloc.ticker.toUpperCase();
+    const sector = sectorMap.get(ticker);
+    if (sector && sector !== "Unknown") {
       targetSectorPct.set(sector, (targetSectorPct.get(sector) ?? 0) + alloc.targetPercent);
     }
   }
@@ -169,7 +173,6 @@ export function detectDrift(
   for (const [sector, value] of sectorValues) {
     const curSectorPct = totalValue > 0 ? (value / totalValue) * 100 : 0;
     const tgtSectorPct = targetSectorPct.get(sector) ?? 0;
-    // Only add sector drift when we have a target reference for this sector
     if (tgtSectorPct === 0) continue;
     const sectorDev = curSectorPct - tgtSectorPct;
     if (sectorDev >= 5) {

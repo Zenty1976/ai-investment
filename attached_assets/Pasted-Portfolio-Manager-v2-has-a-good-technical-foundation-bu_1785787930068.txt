@@ -1,0 +1,351 @@
+Portfolio Manager v2 has a good technical foundation, but it does not yet fully implement the intended CIO role.
+
+Keep the current modular structure, snapshot version guards, repository keys and existing UI.
+
+Make the following correctness and architecture improvements.
+
+--------------------------------------------------
+1. Consume all required strategic modules
+--------------------------------------------------
+
+The CIO target synthesis currently consumes only:
+
+- Portfolio Analyzer
+- Risk Analyzer
+- Opportunity Finder
+
+It must also consume relevant structured data from:
+
+- Company Monitor v2
+- Trade Decision Engine
+- Sector Monitor
+- Market Alerts
+- Market Monitor
+
+Use Company Monitor data for:
+
+- investmentView
+- investmentCaseStrength
+- investmentCaseChange
+- thesis statuses
+- confidence
+- key risks and catalysts
+
+Use Trade Decision data for:
+
+- decision type
+- readiness
+- blockedByEvent
+- blocking reason
+- evidence band
+- confidence
+- target allocation guidance when available
+
+Use Sector Monitor for actual sector attractiveness and direction.
+
+Use Market Alerts only when alerts materially affect a current holding or target candidate.
+
+Use Market Monitor for broad risk posture and cash-target context.
+
+Only include Company Monitor analyses for:
+
+- current holdings
+- active Opportunity Finder candidates
+- active Trade Decision subjects
+
+Use the shared Company Identity service.
+
+--------------------------------------------------
+2. Extend TargetAllocation
+--------------------------------------------------
+
+Add these structured fields to each target allocation:
+
+- conviction: High | Medium | Low
+- supportingModules: module enum array
+- blockingFactors: string[]
+- allocationStatus:
+  StrategicTarget | Provisional | Blocked | Excluded
+- reasonForStatus
+
+Definitions:
+
+StrategicTarget:
+A valid desired long-term allocation.
+
+Provisional:
+The company may belong in the portfolio, but important evidence is incomplete.
+
+Blocked:
+A future event or critical condition prevents current deployment.
+
+Excluded:
+The company was considered but should not currently receive capital.
+
+Only StrategicTarget allocations should be treated as immediately deployable.
+
+Provisional and Blocked allocations may remain visible in the target portfolio but must not become current capital-allocation suggestions.
+
+--------------------------------------------------
+3. Integrate Trade Decision readiness into capital allocation
+--------------------------------------------------
+
+computeCapitalAllocation must not allocate deployable cash merely because a ticker is below its target.
+
+A capital-allocation item may be actionable only when:
+
+- allocationStatus === StrategicTarget
+- the corresponding Trade Decision is ReadyForReview when a trade decision exists
+- blockedByEvent === false
+- required Company Monitor data is present and fresh
+- no critical blocking factor exists
+
+For Provisional or Blocked allocations:
+
+- suggestedAmountBase must be zero
+- do not include them in totalSuggestedDeploymentBase
+- expose them separately as future or blocked allocation gaps
+
+Add to CapitalAllocationPlan:
+
+- actionableItems
+- blockedItems
+- provisionalItems
+
+Do not suggest deploying cash into an event-blocked candidate.
+
+--------------------------------------------------
+4. Fix sector classification
+--------------------------------------------------
+
+Do not use assetType or exchange as a sector proxy.
+
+Stock, ETF, NASDAQ, NYSE and OMX are not sectors.
+
+Resolve sectors using this priority:
+
+1. Company Monitor company.sector for matched companies
+2. Opportunity Finder sector for candidates
+3. A shared instrument/company metadata repository
+4. Unknown
+
+Calculate sector weights only from actual sector labels.
+
+Do not award a strong Sector Balance score when sector information is mostly Unknown.
+
+Expose:
+
+- classifiedPositionPercent
+- unknownSectorPercent
+
+If sector coverage is insufficient, mark the Sector Balance score as low-confidence or unavailable rather than calculating a misleading precise score.
+
+--------------------------------------------------
+5. Redesign deterministic health sub-scores
+--------------------------------------------------
+
+Health should measure portfolio construction quality, not recent investment luck or account housekeeping.
+
+Remove P&L Quality from the overall Portfolio Health score.
+
+Unrealised profit or loss may be shown separately, but it should not make portfolio construction healthier or less healthy.
+
+Remove Account Health from the overall score.
+
+An empty account is not inherently a portfolio-quality problem.
+
+Avoid double-counting position count through both:
+
+- Diversification
+- Position Count
+
+Use one position-spread measure or clearly give them different purposes with lower combined weight.
+
+The health score should focus on:
+
+- single-position concentration
+- top-position concentration
+- sector concentration
+- currency concentration
+- cash alignment versus strategic target
+- event concentration
+- risk concentration
+- conviction alignment
+- stale or missing analytical coverage
+- diversification quality
+
+Use actual Risk Analyzer and Company Monitor data where relevant.
+
+--------------------------------------------------
+6. Replace the current replacement detector
+--------------------------------------------------
+
+Do not compare:
+
+Portfolio Analyzer attention converted to 30/55/75
+
+against:
+
+Opportunity Finder overallScore
+
+These are not equivalent metrics.
+
+High attention does not mean a holding is weak.
+
+Build replacement comparisons from comparable structured evidence.
+
+For the held company use:
+
+- Company Monitor investmentCaseStrength
+- investmentView
+- investmentCaseChange
+- thesis invalidation/weakening
+- ticker-specific Risk Analyzer severity
+- Trade Decision direction and evidence band
+
+For the candidate use:
+
+- Opportunity Finder overallScore
+- Company Monitor investmentCaseStrength when available
+- Trade Decision evidence when available
+- portfolio fit and diversification benefit
+
+A replacement opportunity should require:
+
+- the candidate has stronger comparable evidence
+- the existing holding has a genuine weakness or lower strategic fit
+- the replacement improves portfolio construction
+- no blocking event prevents the candidate
+- evidence quality is sufficient on both sides
+
+If Company Monitor is missing for either side, mark the comparison as Provisional rather than presenting it as a valid replacement.
+
+--------------------------------------------------
+7. Add input freshness and provenance
+--------------------------------------------------
+
+Before synthesising a target portfolio, check freshness of every material source.
+
+Store in the v2 result:
+
+- sourceModulesUsed
+- sourceUpdatedAt
+- staleSources
+- missingSources
+- targetConfidence
+
+Do not present a high-confidence target portfolio when critical inputs are stale or missing.
+
+If critical sources are stale:
+
+- allow a Provisional target
+- do not create actionable capital-allocation suggestions
+- let Orchestrator refresh dependencies first when possible
+
+--------------------------------------------------
+8. Avoid unnecessary AI target synthesis
+--------------------------------------------------
+
+Do not run a new AI CIO pass after every snapshot timestamp update.
+
+Create a deterministic input fingerprint based on material CIO inputs:
+
+- positions and quantities
+- cash and portfolio value within a meaningful tolerance
+- latest relevant Company Monitor versions
+- Risk Analyzer material result
+- Portfolio Analyzer material result
+- Opportunity Finder candidate versions
+- Trade Decision versions/readiness
+- Sector Monitor material result
+- Market Alerts meaningful version
+- selected policy profile
+
+If the fingerprint is unchanged:
+
+- reuse the current Target Portfolio
+- recompute only deterministic current-value-dependent components when needed
+- do not call OpenAI
+
+Examples of deterministic recomputation:
+
+- current allocation percentages
+- drift
+- cash percentage
+- capital amounts
+- health metrics based on current prices
+
+Only regenerate the AI target when strategic inputs changed materially or a scheduled safety refresh is due.
+
+The Automation Orchestrator should remain the central scheduling authority.
+
+--------------------------------------------------
+9. Improve target persistence and history
+--------------------------------------------------
+
+Current history stores health and drift counts but not enough information to understand strategic changes.
+
+Keep the compact history, but add:
+
+- target version or fingerprint
+- target confidence
+- cash target
+- target allocations as compact ticker/percent/role/status records
+- source freshness summary
+- major portfolio changes
+- strategic rationale summary
+
+Keep the latest bounded history.
+
+Do not store full prompts or raw OpenAI responses.
+
+--------------------------------------------------
+10. Strengthen target validation
+--------------------------------------------------
+
+Keep the current allowed-ticker, duplicate, role and total-allocation validation.
+
+Also validate:
+
+- conviction enum
+- allocationStatus consistency
+- Blocked requires at least one blockingFactor
+- StrategicTarget must not have a critical blocking factor
+- supportingModules contains only modules actually supplied
+- target ranges remain internally valid after normalization
+- final equity plus cash equals 100 within a small rounding tolerance
+
+Do not silently convert an unknown AI role to CoreHolding.
+
+Unknown roles should cause validation failure and retry, because silently changing a role can materially alter its allowed allocation range.
+
+--------------------------------------------------
+11. Preserve responsibilities
+--------------------------------------------------
+
+Portfolio Manager v2 decides:
+
+“What should the portfolio ideally look like?”
+
+It must not:
+
+- generate executable orders
+- bypass Trade Decision readiness
+- approve trades
+- allocate money to blocked decisions
+- call Saxo order endpoints
+
+Trade Decision remains responsible for determining whether an individual trade is sufficiently supported and ready.
+
+Trade Review remains responsible for manual approval.
+
+Preserve:
+
+- current snapshot fetching
+- multi-account and currency handling
+- mock mode
+- async snapshot version guards
+- existing modular engine files
+- current UI
+- System Log
+- Orchestrator integration

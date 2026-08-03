@@ -84,6 +84,12 @@ export type PortfolioRole =
   | "SectorPlay"
   | "EventDriven";
 
+export type AllocationStatus = "StrategicTarget" | "Provisional" | "Blocked" | "Excluded";
+export type Conviction = "High" | "Medium" | "Low";
+export type SupportingModule =
+  | "PortfolioAnalyzer" | "RiskAnalyzer" | "OpportunityFinder" | "CompanyMonitor"
+  | "TradeDecisionEngine" | "SectorMonitor" | "MarketAlerts" | "MarketMonitor";
+
 export type HealthGrade = "A" | "B" | "C" | "D" | "F";
 
 export interface HealthSubScore {
@@ -91,6 +97,7 @@ export interface HealthSubScore {
   score: number;
   weight: number;
   reason: string;
+  lowConfidence?: boolean;
 }
 
 export interface PortfolioHealthScore {
@@ -98,6 +105,9 @@ export interface PortfolioHealthScore {
   grade: HealthGrade;
   subScores: HealthSubScore[];
   computedAt: string;
+  classifiedPositionPercent: number;
+  unknownSectorPercent: number;
+  sectorCoverageConfidence: "High" | "Medium" | "Low";
 }
 
 export interface TargetAllocation {
@@ -108,6 +118,11 @@ export interface TargetAllocation {
   minPercent: number;
   maxPercent: number;
   rationale: string;
+  conviction?: Conviction;
+  allocationStatus?: AllocationStatus;
+  reasonForStatus?: string;
+  blockingFactors?: string[];
+  supportingModules?: SupportingModule[];
 }
 
 export interface TargetPortfolio {
@@ -150,6 +165,8 @@ export interface CapitalAllocationItem {
   suggestedAmountBase: number;
   priority: "High" | "Medium" | "Low";
   rationale: string;
+  allocationStatus?: AllocationStatus;
+  blockingReason?: string;
 }
 
 export interface CapitalAllocationPlan {
@@ -158,7 +175,11 @@ export interface CapitalAllocationPlan {
   cashPercent: number;
   cashTargetPercent: number;
   deployableCashBase: number;
+  /** Backward-compat alias — always equal to actionableItems */
   items: CapitalAllocationItem[];
+  actionableItems: CapitalAllocationItem[];
+  blockedItems: CapitalAllocationItem[];
+  provisionalItems: CapitalAllocationItem[];
   totalSuggestedDeploymentBase: number;
   residualCashAfterDeploymentBase: number;
   computedAt: string;
@@ -169,12 +190,18 @@ export interface ReplacementOpportunity {
   holdingCompany: string;
   holdingCurrentPercent: number;
   holdingScore: number;
+  holdingCaseStrength?: number;
+  holdingInvestmentView?: string;
+  holdingThesisDirection?: string;
   candidateTicker: string;
   candidateCompany: string;
   candidateOverallScore: number;
+  candidateCaseStrength?: number;
+  candidateInvestmentView?: string;
   scoreDelta: number;
   rationale: string;
   priority: "High" | "Medium" | "Low";
+  isProvisional: boolean;
 }
 
 export type PortfolioChangeType =
@@ -183,7 +210,9 @@ export type PortfolioChangeType =
   | "TargetIncreased"
   | "TargetDecreased"
   | "RoleChanged"
-  | "CashTargetChanged";
+  | "CashTargetChanged"
+  | "StatusChanged"
+  | "ConvictionChanged";
 
 export interface PortfolioChange {
   type: PortfolioChangeType;
@@ -193,14 +222,18 @@ export interface PortfolioChange {
   newValue?: number;
 }
 
+export interface PortfolioV2Provenance {
+  sourceModulesUsed: string[];
+  sourceUpdatedAt: Record<string, string>;
+  staleSources: string[];
+  missingSources: string[];
+  targetConfidence: "High" | "Medium" | "Low";
+  inputFingerprint: string;
+}
+
 export interface PortfolioV2 {
   generatedAt: string;
   durationMs: number;
-  /**
-   * The `updatedAt` timestamp of the PortfolioSnapshot this analysis was
-   * computed from. Matches the snapshot's `updatedAt` when v2 is current;
-   * a mismatch means v2 is stale or the analysis is still pending.
-   */
   snapshotUpdatedAt: string;
   health: PortfolioHealthScore;
   target: TargetPortfolio;
@@ -208,6 +241,7 @@ export interface PortfolioV2 {
   capitalAllocation: CapitalAllocationPlan;
   replacements: ReplacementOpportunity[];
   changes: PortfolioChange[];
+  provenance?: PortfolioV2Provenance;
 }
 
 export interface PortfolioV2HistoryEntry {
@@ -220,6 +254,12 @@ export interface PortfolioV2HistoryEntry {
   cashTargetPercent: number;
   totalValue: number | null;
   positionCount: number;
+  targetFingerprint?: string;
+  targetConfidence?: "High" | "Medium" | "Low";
+  targetAllocations?: Array<{ ticker: string; percent: number; role: string; status: string }>;
+  sourceFreshnessSummary?: string;
+  majorChanges?: string[];
+  strategicRationaleSummary?: string;
 }
 
 export interface PortfolioSnapshot {

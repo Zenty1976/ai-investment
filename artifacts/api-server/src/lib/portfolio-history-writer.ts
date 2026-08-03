@@ -1,13 +1,21 @@
 /**
  * Portfolio History Writer
  *
- * Appends a lightweight history entry to the repository after every successful
+ * Appends a rich history entry to the repository after every successful
  * Portfolio Manager v2 run. Caps the log at MAX_HISTORY entries.
  *
  * Repository key: "portfolio-manager-v2-history"
  *
- * Entries are intentionally small (no positions, no full target allocations)
- * to keep the repository file size manageable.
+ * Entries store enough to understand strategic changes over time:
+ *  - health scores and grades
+ *  - drift counts
+ *  - target fingerprint and confidence
+ *  - compact allocation snapshot (ticker/percent/role/status)
+ *  - source freshness summary
+ *  - major portfolio changes
+ *  - strategic rationale summary
+ *
+ * Full prompts and raw AI responses are never stored.
  */
 
 import { analysisRepository } from "./analysis-repository.js";
@@ -35,6 +43,40 @@ export function appendV2HistoryEntry(
       ? (snapshot.totalAvailableCash / snapshot.totalValue) * 100
       : 0;
 
+  // ── Compact target allocations ─────────────────────────────────────────────
+  const targetAllocations = v2.target.allocations.map((a) => ({
+    ticker:  a.ticker,
+    percent: a.targetPercent,
+    role:    a.role,
+    status:  a.allocationStatus ?? "StrategicTarget",
+  }));
+
+  // ── Source freshness summary ───────────────────────────────────────────────
+  const prov = v2.provenance;
+  let sourceFreshnessSummary: string;
+  if (prov) {
+    const total   = prov.sourceModulesUsed.length;
+    const stale   = prov.staleSources.length;
+    const missing = prov.missingSources.length;
+    const fresh   = total - stale - missing;
+    sourceFreshnessSummary = `${fresh}/${total} fresh, ${stale} stale, ${missing} missing`;
+  } else {
+    sourceFreshnessSummary = "provenance not available";
+  }
+
+  // ── Major changes ──────────────────────────────────────────────────────────
+  const majorChanges = v2.changes
+    .filter((c) => c.type === "AddedPosition" || c.type === "RemovedPosition" ||
+                   (c.type === "TargetIncreased" && Math.abs((c.newValue ?? 0) - (c.previousValue ?? 0)) >= 3) ||
+                   (c.type === "TargetDecreased" && Math.abs((c.newValue ?? 0) - (c.previousValue ?? 0)) >= 3))
+    .slice(0, 5)
+    .map((c) => c.description);
+
+  // ── Strategic rationale summary (first 120 chars) ─────────────────────────
+  const strategicRationaleSummary =
+    v2.target.strategicRationale.slice(0, 120) +
+    (v2.target.strategicRationale.length > 120 ? "…" : "");
+
   const entry: PortfolioV2HistoryEntry = {
     snapshotAt:             v2.generatedAt,
     healthOverall:          v2.health.overall,
@@ -45,9 +87,15 @@ export function appendV2HistoryEntry(
     cashTargetPercent:      v2.target.cashTargetPercent,
     totalValue:             snapshot.totalValue,
     positionCount:          allPositions.length,
+    // Richer v2.1 fields
+    targetFingerprint:         prov?.inputFingerprint,
+    targetConfidence:          prov?.targetConfidence,
+    targetAllocations,
+    sourceFreshnessSummary,
+    majorChanges:              majorChanges.length > 0 ? majorChanges : undefined,
+    strategicRationaleSummary,
   };
 
-  // Prepend newest entry and cap length
   const updated = [entry, ...history].slice(0, MAX_HISTORY);
   analysisRepository.save(HISTORY_KEY, updated);
 }
