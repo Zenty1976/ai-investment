@@ -1,61 +1,5 @@
 [
   {
-    "id": "d8388f7d-e79f-43bc-af38-9b8867e145d2",
-    "timestamp": "2026-08-02T05:58:03.914Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "Highest-ranked opportunity: Caterpillar Inc. (CAT) — score 88 — Strong industrials momentum, upcoming earnings, and macro capex tailwinds align well with portfolio gaps."
-  },
-  {
-    "id": "aecf2a44-3612-45e1-b0d4-bd111ad6cb52",
-    "timestamp": "2026-08-02T05:58:03.915Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "CVX entered the list at rank 5 (score: 72)"
-  },
-  {
-    "id": "20c9ccc4-62e4-4ad2-9813-0addd097bd75",
-    "timestamp": "2026-08-02T05:58:03.916Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "FCX left the list (was rank 4)"
-  },
-  {
-    "id": "46abcfef-f4f5-4ebf-a732-403b2e1cac2c",
-    "timestamp": "2026-08-02T05:58:07.662Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "eb8022e0-d40d-4ae0-9a7e-22c37856d2cf",
-    "timestamp": "2026-08-02T05:58:08.725Z",
-    "module": "Market Alerts",
-    "level": "error",
-    "message": "Market alerts analysis failed"
-  },
-  {
-    "id": "cdcf307d-0612-4801-b498-b109b123d3f4",
-    "timestamp": "2026-08-02T05:59:04.084Z",
-    "module": "Settings",
-    "level": "error",
-    "message": "Saxo login failed: token refresh"
-  },
-  {
-    "id": "19851f89-d946-419e-bf95-68072183ed0f",
-    "timestamp": "2026-08-02T06:07:51.511Z",
-    "module": "Market Alerts",
-    "level": "user",
-    "message": "User manually started market alerts analysis"
-  },
-  {
-    "id": "41e7feeb-7851-4ba3-97dc-be50f45c84e5",
-    "timestamp": "2026-08-02T06:07:53.022Z",
-    "module": "Market Alerts",
-    "level": "error",
-    "message": "Market alerts analysis failed"
-  },
-  {
     "id": "4b24d83e-2572-4332-b5f9-3bea2b32c614",
     "timestamp": "2026-08-02T06:08:00.999Z",
     "module": "Opportunity Finder",
@@ -3498,5 +3442,61 @@
     "module": "Company Monitor",
     "level": "info",
     "message": "Company analysis completed for SERV: NoMaterialChange, rating Watch, strength 48, meaningfulChange=None"
+  },
+  {
+    "id": "e87e2218-f4d2-4c59-9970-0ce797132484",
+    "timestamp": "2026-08-03T11:11:52.524Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "4b86ae25-4b5b-4f80-94ba-70e7256b944c",
+    "timestamp": "2026-08-03T11:11:52.626Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "34203cac-2bc3-4261-bf00-efa55d6bb0a9",
+    "timestamp": "2026-08-03T11:12:18.736Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] CAT (PrepareToBuy): score=15 supporting=[OpportunityFinder(rank)] opposing=[RiskAnalyzer(score)]"
+  },
+  {
+    "id": "d3e1af95-8eab-4850-91d6-7a3801b3ab5f",
+    "timestamp": "2026-08-03T11:12:18.739Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] LLY (PrepareToBuy): score=15 supporting=[OpportunityFinder(rank)] opposing=[RiskAnalyzer(score)]"
+  },
+  {
+    "id": "253233c1-ef63-4070-a31d-612da6b95652",
+    "timestamp": "2026-08-03T11:12:18.847Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "56f2c04f-2d8f-4453-ac22-5ba7e1c0c20d",
+    "timestamp": "2026-08-03T11:12:18.848Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 75/100"
+  },
+  {
+    "id": "d3a5ff4a-2805-4476-a4e2-6a7c95b94a96",
+    "timestamp": "2026-08-03T11:12:18.851Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "4 WaitingForReevaluation"
+  },
+  {
+    "id": "b2901e3b-02e9-451d-979f-a51facf61934",
+    "timestamp": "2026-08-03T11:12:18.853Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Preserved Unchanged trade proposals: CAT, LLY"
   }
 ]

@@ -1,17 +1,16 @@
 /**
- * Trade Decision Engine Route – Phase 2
+ * Trade Decision Engine Route – Phase 2 (rev 2)
  *
- * Phase 2 improvements over Phase 1:
- *  - Evidence scoring (internal, never exposed in response)
- *  - Multi-source confirmation gate: PrepareToBuy/PrepareToReduce require ≥2
- *    independent analytical sources — single-source optimism → Review
- *  - Company Monitor v2 field integration (investmentCaseStrength, thesis
- *    statuses, investmentCaseChange, meaningfulChange, keyThingsToWatch)
- *  - Stateful decisions: Strengthened / Weakened / Unchanged in addition to New
- *  - Preservation: Unchanged trade proposals carry forward their original text
- *    and gain a lastValidated timestamp; no repeated identical recommendations
- *  - Staleness detection: stale key analyses downgrade confidence
- *  - Previous decisions injected into the user prompt as context
+ * Phase 2 rev 2 improvements:
+ *  - Directional evidence classification (Supporting/Opposing/Neutral/Missing/Stale per module)
+ *    replaces source-count-only gate; the gate now requires ≥2 data-driven Supporting modules
+ *    and no unresolved critical Opposing module
+ *  - Evidence score drives readiness (score < 25 → not ReadyForReview)
+ *  - Decision fingerprint replaces confidence+urgency-only comparison for Unchanged detection
+ *  - Status computed after staleness downgrade and readiness (correct ordering)
+ *  - Subject-first status matching: same ticker/company changing decision type is
+ *    Strengthened/Weakened, not Withdrawn+New
+ *  - Evidence debug metadata added to _debug response (not in normal UI)
  *
  * Results:  "trade-decision-engine"
  * History:  "trade-decision-engine-history" (latest 20 entries)
@@ -28,7 +27,7 @@ const router: IRouter = Router();
 
 const MODULE_NAME = "Trade Decision Engine";
 const MAX_ATTEMPTS = 2;
-const MAX_HISTORY = 20;
+const MAX_HISTORY  = 20;
 const ROUTE_TIMEOUT_MS = 190_000;
 
 // ---------------------------------------------------------------------------
@@ -36,65 +35,103 @@ const ROUTE_TIMEOUT_MS = 190_000;
 // ---------------------------------------------------------------------------
 
 const STALE_HOURS: Record<string, number> = {
-  "portfolio-manager":  4,
-  "risk-analyzer":     48,
+  "portfolio-manager":   4,
+  "risk-analyzer":      48,
   "portfolio-analyzer": 48,
-  "market-alerts":     24,
+  "market-alerts":      24,
   "opportunity-finder": 72,
-  "company-monitor":   72,
-  "event-monitor":     72,
-  "sector-monitor":   168, // 1 week
+  "company-monitor":    72,
+  "event-monitor":      72,
+  "sector-monitor":    168,
 };
 
-/** Minimum fresh analytical sources required before a trade proposal is allowed. */
-const MIN_TRADE_SOURCES = 2;
+// ---------------------------------------------------------------------------
+// Evidence / readiness thresholds  ← single source of truth for all gates
+// ---------------------------------------------------------------------------
 
-/**
- * Module names as returned by OpenAI in sourceModules mapped to their
- * repository keys for freshness lookup.
- */
-const SOURCE_TO_REPO_KEY: Record<string, string> = {
-  CompanyMonitor:    "company-monitor",   // ticker-specific — resolved per-decision
-  RiskAnalyzer:      "risk-analyzer",
-  PortfolioAnalyzer: "portfolio-analyzer",
-  MarketAlerts:      "market-alerts",
-  OpportunityFinder: "opportunity-finder",
-  EventMonitor:      "event-monitor",
-  SectorMonitor:     "sector-monitor",
-  PortfolioManager:  "portfolio-manager",
+const EVIDENCE = {
+  /** Score band boundaries */
+  STRONG:      50,   // score ≥ 50 → "Strong"
+  ADEQUATE:    25,   // score ≥ 25 → "Adequate"
+  WEAK:        10,   // score ≥ 10 → "Weak"
+  // score  < 10 → "Insufficient"
+
+  /** Minimum evidenceScore for a Prepare* to remain ReadyForReview */
+  READY_MIN:   25,
+  /** Below this → downgrade decision type to Review */
+  REVIEW_THRESHOLD: 10,
+  /** Below this → downgrade decision type to NoAction */
+  NOACTION_THRESHOLD: 0,
+
+  /** Minimum Supporting modules for gate to pass */
+  MIN_SUPPORTING: 2,
+} as const;
+
+// Confidence rank (ascending)
+const CONFIDENCE_RANK: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+const RANK_TO_CONFIDENCE: Record<number, string> = { 3: "High", 2: "Medium", 1: "Low" };
+
+// Urgency rank (ascending, higher = more urgent)
+const URGENCY_RANK: Record<string, number> = { Immediate: 4, Days: 3, Weeks: 2, NoUrgency: 1 };
+
+// Decision strength ranking (for cross-type status comparison)
+const DECISION_STRENGTH: Record<string, number> = {
+  NoAction:        1,
+  Hold:            2,
+  WaitForEvent:    3,
+  Review:          4,
+  PrepareToReduce: 5,
+  PrepareToBuy:    5,
 };
 
-/** Modules that represent independent analytical opinions (used for the gate). */
-const GATE_MODULES = new Set([
-  "CompanyMonitor",
-  "RiskAnalyzer",
-  "PortfolioAnalyzer",
-  "MarketAlerts",
-  "OpportunityFinder",
-  "EventMonitor",
-  "SectorMonitor",
-]);
+// Readiness rank (for fingerprint comparison)
+const READINESS_RANK: Record<string, number> = {
+  ReadyForReview:         3,
+  Informational:          2,
+  WaitingForReevaluation: 1,
+};
+
+// Evidence band rank (for fingerprint comparison)
+const EVIDENCE_BAND_RANK: Record<string, number> = {
+  Strong:      4,
+  Adequate:    3,
+  Weak:        2,
+  Insufficient: 1,
+};
 
 // ---------------------------------------------------------------------------
 // History types
 // ---------------------------------------------------------------------------
 
 interface DecisionHistoryDecision {
-  normalizedKey:  string;
-  subjectType:    string;
-  company:        string;
-  ticker:         string;
-  decision:       string;
-  confidence:     string;
-  urgency:        string;
+  /** Subject key — subjectType|ticker_or_company (no decision type). Used for cross-type matching. */
+  subjectKey:    string;
+  /** Full key including decision type. */
+  normalizedKey: string;
+  subjectType:   string;
+  company:       string;
+  ticker:        string;
+  decision:      string;
+  confidence:    string;
+  urgency:       string;
+  readiness?:    string;
   evidenceScore?: number;
+  evidenceBand?:  string;
+  blockedByEvent?:    boolean;
+  blockingEvent?:     string;
+  blockingEventDate?: string;
+  targetAllocationPercent?:  number;
+  maximumAllocationPercent?: number;
+  sizingConfidence?:         string;
+  /** Deterministic fingerprint of all material fields. */
+  fingerprint?:  string;
 }
 
 interface DecisionHistoryEntry {
-  timestamp:               string;
-  overallDecisionPosture:  string;
-  decisionReadinessScore:  number;
-  decisions:               DecisionHistoryDecision[];
+  timestamp:              string;
+  overallDecisionPosture: string;
+  decisionReadinessScore: number;
+  decisions:              DecisionHistoryDecision[];
 }
 
 // ---------------------------------------------------------------------------
@@ -119,15 +156,35 @@ function formatAge(entry: RepositoryEntry | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// Evidence scoring (internal — never exposed in API response)
+// Directional evidence classification
 // ---------------------------------------------------------------------------
 
-interface EvidenceScore {
-  /** -100…+100 internal score; positive = case for this trade is strong */
-  score:            number;
-  supportingModules: string[];
-  opposingModules:   string[];
-  staleModules:      string[];
+type EvidenceClassification = "Supporting" | "Opposing" | "Neutral" | "Missing" | "Stale";
+type EvidenceBand           = "Strong" | "Adequate" | "Weak" | "Insufficient";
+
+interface ModuleContribution {
+  module:            string;
+  classification:    EvidenceClassification;
+  reason:            string;
+  /** Contribution to the evidence score (-100…+100 range, capped at end). */
+  scoreContribution: number;
+}
+
+interface DirectionalEvidenceResult {
+  evidenceScore:          number;       // -100…+100
+  evidenceBand:           EvidenceBand;
+  classifications:        ModuleContribution[];
+  supportingModules:      string[];
+  opposingModules:        string[];
+  neutralModules:         string[];
+  missingModules:         string[];
+  staleModules:           string[];
+  supportingCount:        number;
+  /** True when CompanyMonitor or RiskAnalyzer classifies as Opposing. */
+  hasCriticalOpposing:    boolean;
+  criticalOpposingModules: string[];
+  gatePassed:             boolean;
+  gateFailureReason:      string;
 }
 
 interface ModuleData {
@@ -138,240 +195,291 @@ interface ModuleData {
   opportunityEntry: RepositoryEntry | undefined;
 }
 
-function scoreDecisionEvidence(
+function classifyDecisionEvidence(
   decisionType: "PrepareToBuy" | "PrepareToReduce",
-  ticker: string,
-  data: ModuleData
-): EvidenceScore {
-  const buy = decisionType === "PrepareToBuy";
-  let score = 0;
-  const supportingModules: string[] = [];
-  const opposingModules:   string[] = [];
-  const staleModules:      string[] = [];
+  ticker:       string,
+  data:         ModuleData
+): DirectionalEvidenceResult {
+  const buy  = decisionType === "PrepareToBuy";
+  const contributions: ModuleContribution[] = [];
 
-  // ── Company Monitor ──────────────────────────────────────────────────────
+  const add = (mod: string, cls: EvidenceClassification, score: number, reason: string) =>
+    contributions.push({ module: mod, classification: cls, scoreContribution: score, reason });
+
+  // ── Company Monitor (ticker-specific) ────────────────────────────────────
   const cm = data.cmEntry;
-  if (cm) {
-    if (!isModuleFresh(cm, STALE_HOURS["company-monitor"])) {
-      staleModules.push(`CompanyMonitor (${formatAge(cm)})`);
+  if (!cm) {
+    add("CompanyMonitor", "Missing", buy ? -5 : -5, "No Company Monitor data available for this ticker");
+  } else if (!isModuleFresh(cm, STALE_HOURS["company-monitor"])) {
+    add("CompanyMonitor", "Stale", buy ? -10 : -10, `Data is ${formatAge(cm)} old (limit 72h)`);
+  } else {
+    const rv  = cm.result as Record<string, unknown>;
+    const iv  = rv?.investmentView as Record<string, unknown> | null | undefined;
+    const rating = String(iv?.rating ?? "");
+    const ics    = typeof rv?.investmentCaseStrength === "number" ? rv.investmentCaseStrength as number : null;
+
+    const thesis        = Array.isArray(rv?.investmentThesis)
+      ? rv.investmentThesis as Array<Record<string, unknown>>
+      : [];
+    const invalidated   = thesis.filter(p => p.status === "Invalidated").length;
+    const weakened      = thesis.filter(p => p.status === "Weakened").length;
+
+    // Invalidated thesis always overrides rating direction
+    if (invalidated > 0) {
+      const score = buy ? -35 : +35;
+      add("CompanyMonitor", buy ? "Opposing" : "Supporting", score,
+        `${invalidated} invalidated thesis point(s)`);
+    } else if (rating === "Strong Avoid" || rating === "Avoid") {
+      const score = buy ? -30 : +30;
+      add("CompanyMonitor", buy ? "Opposing" : "Supporting", score,
+        `Company Monitor rating: ${rating}`);
+    } else if (rating === "Strong Buy" || rating === "Buy") {
+      // Low investmentCaseStrength overrides a Buy rating to Neutral
+      const weakIcs = ics !== null && ics < 45;
+      if (weakIcs) {
+        const score = buy ? +5 : -5;
+        add("CompanyMonitor", "Neutral", score,
+          `${rating} rating but investmentCaseStrength is low (${ics}/100)`);
+      } else {
+        const baseScore = buy
+          ? (rating === "Strong Buy" ? +40 : +30)
+          : (rating === "Strong Buy" ? -35 : -25);
+        const weakPenalty = weakened * (buy ? -5 : +5);
+        add("CompanyMonitor", buy ? "Supporting" : "Opposing", baseScore + weakPenalty,
+          `Company Monitor rating: ${rating}${ics !== null ? `, strength: ${ics}/100` : ""}` +
+          (weakened > 0 ? `, ${weakened} weakened thesis point(s)` : ""));
+      }
+    } else if (weakened >= 2 && !buy) {
+      // Eroding case — meaningful for PrepareToReduce
+      add("CompanyMonitor", "Supporting", +20,
+        `${weakened} weakened thesis points indicate eroding investment case`);
     } else {
-      const r  = data.cmEntry!;
-      const rv = r.result as Record<string, unknown>;
-
-      // Rating contribution
-      const iv = rv?.investmentView as Record<string, unknown> | null | undefined;
-      const rating = String(iv?.rating ?? "");
-      const ratingScore = buy
-        ? ({ "Strong Buy": 35, "Buy": 25, "Watch": 5, "Avoid": -25, "Strong Avoid": -40 }[rating] ?? 0)
-        : ({ "Strong Avoid": 35, "Avoid": 25, "Watch": 5, "Buy": -25, "Strong Buy": -40 }[rating] ?? 0);
-      score += ratingScore;
-      if (ratingScore > 0) supportingModules.push("CompanyMonitor(rating)");
-      if (ratingScore < 0) opposingModules.push("CompanyMonitor(rating)");
-
-      // investmentCaseStrength
-      const ics = typeof rv?.investmentCaseStrength === "number" ? rv.investmentCaseStrength : null;
-      if (ics !== null) {
-        const icsScore = buy
-          ? (ics >= 70 ? +10 : ics < 40 ? -15 : 0)
-          : (ics < 40  ? +10 : ics >= 70 ? -10 : 0);
-        score += icsScore;
-        if (icsScore > 0) supportingModules.push("CompanyMonitor(strength)");
-        if (icsScore < 0) opposingModules.push("CompanyMonitor(strength)");
-      }
-
-      // meaningfulChange on UpdateWithChanges
-      const mc         = String(rv?.meaningfulChange ?? "");
-      const updateType = String(rv?.updateType ?? "");
-      if (mc === "High" && updateType === "UpdateWithChanges") {
-        // Direction of change depends on rating
-        const caseStrengthened = ratingScore >= 25;
-        const mcScore = buy
-          ? (caseStrengthened ? +15 : -15)
-          : (caseStrengthened ? -15 : +15);
-        score += mcScore;
-        if (mcScore > 0) supportingModules.push("CompanyMonitor(meaningfulChange)");
-        if (mcScore < 0) opposingModules.push("CompanyMonitor(meaningfulChange)");
-      }
-
-      // Thesis statuses
-      const thesis = Array.isArray(rv?.investmentThesis)
-        ? rv.investmentThesis as Array<Record<string, unknown>>
-        : [];
-      const invalidated = thesis.filter(p => p.status === "Invalidated").length;
-      const weakened    = thesis.filter(p => p.status === "Weakened").length;
-      if (invalidated > 0) {
-        const s = buy ? -25 : +20;
-        score += s;
-        if (s > 0) supportingModules.push("CompanyMonitor(invalidatedThesis)");
-        if (s < 0) opposingModules.push("CompanyMonitor(invalidatedThesis)");
-      }
-      if (weakened > 0) {
-        const s = buy ? Math.max(-15, weakened * -5) : Math.min(+20, weakened * +10);
-        score += s;
-        if (s > 0) supportingModules.push("CompanyMonitor(weakenedThesis)");
-        if (s < 0) opposingModules.push("CompanyMonitor(weakenedThesis)");
-      }
+      add("CompanyMonitor", "Neutral", 0,
+        `Company Monitor rating: ${rating || "Unknown"}`);
     }
   }
 
   // ── Risk Analyzer ────────────────────────────────────────────────────────
   const risk = data.riskEntry;
-  if (risk) {
-    if (!isModuleFresh(risk, STALE_HOURS["risk-analyzer"])) {
-      staleModules.push(`RiskAnalyzer (${formatAge(risk)})`);
-    } else {
-      const rr = risk.result as Record<string, unknown>;
-      const riskScore = typeof rr?.riskScore === "number" ? rr.riskScore : null;
-      if (riskScore !== null) {
-        const rs = buy
-          ? (riskScore < 40 ? +15 : riskScore <= 60 ? 0 : riskScore <= 75 ? -10 : -20)
-          : (riskScore > 75 ? +20 : riskScore > 60 ? +10 : riskScore > 40 ? 0 : -10);
-        score += rs;
-        if (rs > 0) supportingModules.push("RiskAnalyzer(score)");
-        if (rs < 0) opposingModules.push("RiskAnalyzer(score)");
-      }
+  if (!risk) {
+    add("RiskAnalyzer", "Missing", buy ? -5 : -5, "No Risk Analyzer data available");
+  } else if (!isModuleFresh(risk, STALE_HOURS["risk-analyzer"])) {
+    add("RiskAnalyzer", "Stale", buy ? -10 : -10, `Data is ${formatAge(risk)} old (limit 48h)`);
+  } else {
+    const rr       = risk.result as Record<string, unknown>;
+    const riskScore = typeof rr?.riskScore === "number" ? rr.riskScore as number : null;
+    const riskLevel = String(rr?.overallRiskLevel ?? "");
+    const topRisks  = Array.isArray(rr?.topRisks)
+      ? rr.topRisks as Array<Record<string, unknown>>
+      : [];
 
-      // Ticker-specific high-severity risks
-      const topRisks = Array.isArray(rr?.topRisks)
-        ? rr.topRisks as Array<Record<string, unknown>>
-        : [];
-      const tickerLow = ticker.toLowerCase();
-      const highRisksForTicker = topRisks.filter(tr =>
-        tr.severity === "High" &&
-        Array.isArray(tr.affectedHoldings) &&
-        (tr.affectedHoldings as string[]).some(h => h.toLowerCase().includes(tickerLow))
-      ).length;
-      if (highRisksForTicker > 0) {
-        const rs = buy
-          ? Math.max(-30, highRisksForTicker * -15)
-          : Math.min(+30, highRisksForTicker * +15);
-        score += rs;
-        if (rs > 0) supportingModules.push("RiskAnalyzer(tickerRisk)");
-        if (rs < 0) opposingModules.push("RiskAnalyzer(tickerRisk)");
+    const tickerLow = ticker.toLowerCase();
+    const highTickerRisks = topRisks.filter(tr =>
+      tr.severity === "High" &&
+      Array.isArray(tr.affectedHoldings) &&
+      (tr.affectedHoldings as string[]).some(h => h.toLowerCase().includes(tickerLow))
+    ).length;
+
+    if (highTickerRisks > 0) {
+      // High-severity ticker-specific risk: Opposing for Buy, Supporting for Reduce
+      const score = buy
+        ? Math.max(-30, highTickerRisks * -20)
+        : Math.min(+30, highTickerRisks * +20);
+      add("RiskAnalyzer", buy ? "Opposing" : "Supporting", score,
+        `${highTickerRisks} high-severity risk(s) affecting ${ticker}`);
+    } else if (riskScore !== null) {
+      if (buy) {
+        if (riskScore > 75 || riskLevel === "High") {
+          add("RiskAnalyzer", "Opposing", -20, `Portfolio risk score ${riskScore}/100, level: ${riskLevel}`);
+        } else if (riskScore < 40 && riskLevel === "Low") {
+          add("RiskAnalyzer", "Supporting", +20, `Low portfolio risk score ${riskScore}/100`);
+        } else {
+          add("RiskAnalyzer", "Neutral", 0, `Risk score ${riskScore}/100 — no critical ticker risk`);
+        }
+      } else {
+        if (riskScore > 75 || riskLevel === "High") {
+          add("RiskAnalyzer", "Supporting", +20, `High portfolio risk score ${riskScore}/100 — supports reducing`);
+        } else if (riskScore < 40) {
+          add("RiskAnalyzer", "Opposing", -15, `Low portfolio risk score ${riskScore}/100 — case for reducing is weak`);
+        } else {
+          add("RiskAnalyzer", "Neutral", 0, `Risk score ${riskScore}/100`);
+        }
       }
+    } else {
+      add("RiskAnalyzer", "Neutral", 0, "Risk Analyzer present but no score available");
     }
   }
 
-  // ── Portfolio Analyzer ───────────────────────────────────────────────────
-  const analyzer = data.analyzerEntry;
-  if (analyzer) {
-    if (!isModuleFresh(analyzer, STALE_HOURS["portfolio-analyzer"])) {
-      staleModules.push(`PortfolioAnalyzer (${formatAge(analyzer)})`);
-    } else {
-      const ar = analyzer.result as Record<string, unknown>;
-      const comments = Array.isArray(ar?.positionComments)
-        ? ar.positionComments as Array<Record<string, unknown>>
-        : [];
-      const tickerLow = ticker.toLowerCase();
-      const comment = comments.find(c =>
-        String(c.ticker ?? "").toLowerCase() === tickerLow
-      );
-      if (comment) {
-        const att = comment.attention;
-        const as_ = buy
-          ? (att === "High" ? -15 : att === "Medium" ? -5 : +5)
-          : (att === "High" ? +15 : att === "Medium" ? +5 : -5);
-        score += as_;
-        if (as_ > 0) supportingModules.push("PortfolioAnalyzer(comment)");
-        if (as_ < 0) opposingModules.push("PortfolioAnalyzer(comment)");
-      }
-    }
-  }
-
-  // ── Market Alerts ────────────────────────────────────────────────────────
-  const alerts = data.alertsEntry;
-  if (alerts) {
-    if (!isModuleFresh(alerts, STALE_HOURS["market-alerts"])) {
-      staleModules.push(`MarketAlerts (${formatAge(alerts)})`);
-    } else {
-      const alr = alerts.result as Record<string, unknown>;
-      const allAlerts = Array.isArray(alr?.alerts)
-        ? alr.alerts as Array<Record<string, unknown>>
-        : [];
-      const tickerLow = ticker.toLowerCase();
-      const highAlertsForTicker = allAlerts.filter(a =>
-        a.importance === "High" &&
-        Array.isArray(a.affectedHoldings) &&
-        (a.affectedHoldings as string[]).some(h => h.toLowerCase().includes(tickerLow))
-      ).length;
-      if (highAlertsForTicker > 0) {
-        const as_ = buy
-          ? Math.max(-30, highAlertsForTicker * -15)
-          : Math.min(+30, highAlertsForTicker * +10);
-        score += as_;
-        if (as_ > 0) supportingModules.push("MarketAlerts(tickerAlert)");
-        if (as_ < 0) opposingModules.push("MarketAlerts(tickerAlert)");
-      }
-    }
-  }
-
-  // ── Opportunity Finder (buy signals only) ────────────────────────────────
+  // ── Opportunity Finder ────────────────────────────────────────────────────
   const opp = data.opportunityEntry;
-  if (opp && buy) {
-    if (!isModuleFresh(opp, STALE_HOURS["opportunity-finder"])) {
-      staleModules.push(`OpportunityFinder (${formatAge(opp)})`);
+  if (!opp) {
+    add("OpportunityFinder", "Missing", buy ? -5 : 0, "No Opportunity Finder data available");
+  } else if (!isModuleFresh(opp, STALE_HOURS["opportunity-finder"])) {
+    add("OpportunityFinder", "Stale", buy ? -5 : 0, `Data is ${formatAge(opp)} old (limit 72h)`);
+  } else {
+    const or      = opp.result as Record<string, unknown>;
+    const opps    = Array.isArray(or?.topOpportunities)
+      ? or.topOpportunities as Array<Record<string, unknown>>
+      : [];
+    const tickerUp = ticker.toUpperCase();
+    const oppIdx   = opps.findIndex(o => String(o.ticker ?? "").toUpperCase() === tickerUp);
+    const conf     = oppIdx >= 0 ? String(opps[oppIdx].confidence ?? "") : "";
+
+    if (buy) {
+      if (oppIdx >= 0 && (conf === "High" || conf === "Medium")) {
+        const score = oppIdx < 2 ? +25 : +15;
+        add("OpportunityFinder", "Supporting", score,
+          `${ticker} is rank ${oppIdx + 1} opportunity with ${conf} confidence`);
+      } else if (oppIdx >= 0) {
+        add("OpportunityFinder", "Neutral", +5,
+          `${ticker} is in opportunities but confidence is ${conf}`);
+      } else {
+        add("OpportunityFinder", "Neutral", 0, `${ticker} not listed as a top opportunity`);
+      }
     } else {
-      const or = opp.result as Record<string, unknown>;
-      const opps = Array.isArray(or?.topOpportunities)
-        ? or.topOpportunities as Array<Record<string, unknown>>
-        : [];
-      const tickerUp = ticker.toUpperCase();
-      const oppRank = opps.findIndex(o =>
-        String(o.ticker ?? "").toUpperCase() === tickerUp
-      );
-      if (oppRank >= 0) {
-        const os = oppRank < 2 ? +25 : +15;
-        score += os;
-        supportingModules.push("OpportunityFinder(rank)");
+      // Reduce: ticker as active opportunity is Opposing
+      if (oppIdx >= 0 && (conf === "High" || conf === "Medium")) {
+        add("OpportunityFinder", "Opposing", -15,
+          `${ticker} is an active ${conf}-confidence opportunity — reducing is premature`);
+      } else {
+        add("OpportunityFinder", "Neutral", 0, `${ticker} not an active top opportunity`);
       }
     }
+  }
+
+  // ── Portfolio Analyzer ────────────────────────────────────────────────────
+  const analyzer = data.analyzerEntry;
+  if (!analyzer) {
+    add("PortfolioAnalyzer", "Missing", buy ? -5 : -5, "No Portfolio Analyzer data available");
+  } else if (!isModuleFresh(analyzer, STALE_HOURS["portfolio-analyzer"])) {
+    add("PortfolioAnalyzer", "Stale", buy ? -8 : -8, `Data is ${formatAge(analyzer)} old (limit 48h)`);
+  } else {
+    const ar       = analyzer.result as Record<string, unknown>;
+    const comments = Array.isArray(ar?.positionComments)
+      ? ar.positionComments as Array<Record<string, unknown>>
+      : [];
+    const topOpps  = Array.isArray(ar?.topOpportunities)
+      ? ar.topOpportunities as Array<Record<string, unknown>>
+      : [];
+    const tickerLow = ticker.toLowerCase();
+
+    const comment   = comments.find(c => String(c.ticker ?? "").toLowerCase() === tickerLow);
+    const inTopOpps = topOpps.some(o => String(o.title ?? "").toLowerCase().includes(tickerLow));
+
+    if (comment) {
+      if (comment.attention === "High") {
+        // High attention = concern
+        const score = buy ? -15 : +15;
+        add("PortfolioAnalyzer", buy ? "Opposing" : "Supporting", score,
+          `High-attention position comment for ${ticker}`);
+      } else if (comment.attention === "Low" && buy) {
+        add("PortfolioAnalyzer", "Supporting", +10,
+          `Low-concern position comment — stable holding`);
+      } else {
+        add("PortfolioAnalyzer", "Neutral", 0,
+          `${comment.attention ?? "Unknown"}-attention position comment`);
+      }
+    } else if (inTopOpps && buy) {
+      add("PortfolioAnalyzer", "Supporting", +15,
+        `${ticker} identified in Portfolio Analyzer top opportunities`);
+    } else {
+      add("PortfolioAnalyzer", "Neutral", 0,
+        "No specific position comment for this ticker");
+    }
+  }
+
+  // ── Market Alerts ─────────────────────────────────────────────────────────
+  const alerts = data.alertsEntry;
+  if (!alerts) {
+    add("MarketAlerts", "Missing", buy ? -5 : -5, "No Market Alerts data available");
+  } else if (!isModuleFresh(alerts, STALE_HOURS["market-alerts"])) {
+    add("MarketAlerts", "Stale", buy ? -8 : -8, `Data is ${formatAge(alerts)} old (limit 24h)`);
+  } else {
+    const alr     = alerts.result as Record<string, unknown>;
+    const allAlerts = Array.isArray(alr?.alerts)
+      ? alr.alerts as Array<Record<string, unknown>>
+      : [];
+    const tickerLow = ticker.toLowerCase();
+
+    const highForTicker = allAlerts.filter(a =>
+      a.importance === "High" &&
+      Array.isArray(a.affectedHoldings) &&
+      (a.affectedHoldings as string[]).some(h => h.toLowerCase().includes(tickerLow))
+    );
+
+    if (highForTicker.length > 0) {
+      const requiresAttention = highForTicker.some(a => a.requiresAttention === true);
+      if (requiresAttention) {
+        const score = buy
+          ? Math.max(-25, highForTicker.length * -15)
+          : Math.min(+25, highForTicker.length * +15);
+        add("MarketAlerts", buy ? "Opposing" : "Supporting", score,
+          `${highForTicker.length} high-importance alert(s) requiring attention affect ${ticker}`);
+      } else {
+        add("MarketAlerts", "Neutral", buy ? -5 : +5,
+          `${highForTicker.length} high-importance alert(s) for ${ticker} (monitoring, no action required)`);
+      }
+    } else {
+      add("MarketAlerts", "Neutral", 0, `No high-importance alerts affecting ${ticker}`);
+    }
+  }
+
+  // ── Compute summary ───────────────────────────────────────────────────────
+  const rawScore     = contributions.reduce((s, c) => s + c.scoreContribution, 0);
+  const evidenceScore = Math.max(-100, Math.min(100, rawScore));
+
+  const evidenceBand: EvidenceBand =
+    evidenceScore >= EVIDENCE.STRONG    ? "Strong" :
+    evidenceScore >= EVIDENCE.ADEQUATE  ? "Adequate" :
+    evidenceScore >= EVIDENCE.WEAK      ? "Weak" :
+    "Insufficient";
+
+  const supportingModules = contributions.filter(c => c.classification === "Supporting").map(c => c.module);
+  const opposingModules   = contributions.filter(c => c.classification === "Opposing").map(c => c.module);
+  const neutralModules    = contributions.filter(c => c.classification === "Neutral").map(c => c.module);
+  const missingModules    = contributions.filter(c => c.classification === "Missing").map(c => c.module);
+  const staleModules      = contributions.filter(c => c.classification === "Stale").map(c => c.module);
+
+  // Critical Opposing = CompanyMonitor or RiskAnalyzer classified as Opposing
+  const CRITICAL_MODULES  = new Set(["CompanyMonitor", "RiskAnalyzer"]);
+  const criticalOpposing  = opposingModules.filter(m => CRITICAL_MODULES.has(m));
+
+  const supportingCount   = supportingModules.length;
+  const gatePassed =
+    supportingCount >= EVIDENCE.MIN_SUPPORTING &&
+    criticalOpposing.length === 0;
+
+  const gateReasons: string[] = [];
+  if (supportingCount < EVIDENCE.MIN_SUPPORTING) {
+    gateReasons.push(
+      `Only ${supportingCount}/${EVIDENCE.MIN_SUPPORTING} required Supporting modules ` +
+      `(${supportingModules.join(", ") || "none"})`
+    );
+  }
+  if (criticalOpposing.length > 0) {
+    gateReasons.push(`Critical Opposing modules: ${criticalOpposing.join(", ")}`);
   }
 
   return {
-    score:    Math.max(-100, Math.min(100, score)),
-    supportingModules: [...new Set(supportingModules)],
-    opposingModules:   [...new Set(opposingModules)],
+    evidenceScore,
+    evidenceBand,
+    classifications:         contributions,
+    supportingModules,
+    opposingModules,
+    neutralModules,
+    missingModules,
     staleModules,
+    supportingCount,
+    hasCriticalOpposing:     criticalOpposing.length > 0,
+    criticalOpposingModules: criticalOpposing,
+    gatePassed,
+    gateFailureReason:       gateReasons.join("; "),
   };
 }
 
 // ---------------------------------------------------------------------------
-// Multi-source confirmation gate
+// ParsedDecision type (Zod output shape, extended)
 // ---------------------------------------------------------------------------
-
-/**
- * For each decision, count analytical modules that:
- *  (1) appear in sourceModules (model claims it used them)
- *  (2) have a fresh repository entry
- *  (3) belong to the GATE_MODULES set
- *
- * For CompanyMonitor, we resolve against the specific ticker's CM entry.
- */
-function countFreshAnalyticalSources(
-  sourceModules: string[],
-  tickerCmEntry: RepositoryEntry | undefined,
-  globalFreshMap: Map<string, boolean>
-): { count: number; freshSources: string[] } {
-  const freshSources: string[] = [];
-  const seen = new Set<string>();
-
-  for (const src of sourceModules) {
-    if (seen.has(src) || !GATE_MODULES.has(src)) continue;
-    seen.add(src);
-
-    if (src === "CompanyMonitor") {
-      if (tickerCmEntry && isModuleFresh(tickerCmEntry, STALE_HOURS["company-monitor"])) {
-        freshSources.push(src);
-      }
-    } else {
-      if (globalFreshMap.get(src) === true) {
-        freshSources.push(src);
-      }
-    }
-  }
-
-  return { count: freshSources.length, freshSources };
-}
 
 type ParsedDecision = {
   rank:                    number;
@@ -400,97 +508,112 @@ type ParsedDecision = {
   [key: string]: unknown;
 };
 
+// ---------------------------------------------------------------------------
+// Apply directional gate + score-based downgrade
+// ---------------------------------------------------------------------------
+
 /**
- * Applies the multi-source confirmation gate.
+ * For every PrepareToBuy / PrepareToReduce decision:
+ *  1. Classify each module directionally from actual data (not from sourceModules).
+ *  2. Gate: ≥2 Supporting + no critical Opposing → pass.
+ *  3. Score: evidenceScore < REVIEW_THRESHOLD (10) → downgrade to Review.
+ *  4. Score: evidenceScore < NOACTION_THRESHOLD (0) → downgrade to NoAction.
  *
- * Any PrepareToBuy or PrepareToReduce with < MIN_TRADE_SOURCES fresh analytical
- * sources is downgraded to Review. The sizing fields are cleared on downgrade.
+ * Returns the (possibly downgraded) decisions and per-decision evidence results.
  */
-function applyMultiSourceGate(
-  decisions:     ParsedDecision[],
-  holdingCmKeys: Map<string, string>,
-  opCmKeys:      Map<string, string>,
-  allCmEntries:  RepositoryEntry[],
-  globalFreshMap: Map<string, boolean>
-): { decisions: ParsedDecision[]; gateLog: string[] } {
+function applyEvidenceGate(
+  decisions:      ParsedDecision[],
+  holdingCmKeys:  Map<string, string>,
+  opCmKeys:       Map<string, string>,
+  allCmEntries:   RepositoryEntry[],
+  riskEntry:      RepositoryEntry | undefined,
+  analyzerEntry:  RepositoryEntry | undefined,
+  alertsEntry:    RepositoryEntry | undefined,
+  opportunityEntry: RepositoryEntry | undefined,
+): { decisions: ParsedDecision[]; evidenceMap: Map<number, DirectionalEvidenceResult>; gateLog: string[] } {
+  const evidenceMap = new Map<number, DirectionalEvidenceResult>();
   const gateLog: string[] = [];
 
-  const result = decisions.map(d => {
+  const result = decisions.map((d, idx) => {
     if (d.decision !== "PrepareToBuy" && d.decision !== "PrepareToReduce") return d;
 
-    // Resolve the ticker-specific CM entry
-    const cmKey = holdingCmKeys.get(d.ticker) ?? opCmKeys.get(d.ticker);
-    const tickerCmEntry = cmKey
-      ? allCmEntries.find(e => e.moduleName === cmKey)
-      : undefined;
+    const cmKey   = holdingCmKeys.get(d.ticker) ?? opCmKeys.get(d.ticker);
+    const cmEntry = cmKey ? allCmEntries.find(e => e.moduleName === cmKey) : undefined;
 
-    const { count, freshSources } = countFreshAnalyticalSources(
-      d.sourceModules,
-      tickerCmEntry,
-      globalFreshMap
+    const ev = classifyDecisionEvidence(
+      d.decision as "PrepareToBuy" | "PrepareToReduce",
+      d.ticker,
+      { cmEntry, riskEntry, analyzerEntry, alertsEntry, opportunityEntry }
     );
+    evidenceMap.set(idx, ev);
 
-    if (count >= MIN_TRADE_SOURCES) return d; // gate passed
+    // ── 1. Directional gate ───────────────────────────────────────────────
+    if (!ev.gatePassed) {
+      const note =
+        `Multi-source gate failed (${ev.gateFailureReason}). ` +
+        `Downgraded from ${d.decision} to Review.`;
+      gateLog.push(`[gate] "${d.title}" (${d.ticker || d.company}): ${note}`);
+      return {
+        ...d,
+        decision: "Review" as const,
+        reason:   `${d.reason}\n\n[Backend gate] ${note}`,
+        missingEvidence: [
+          ...d.missingEvidence,
+          `${ev.missingModules.length + ev.staleModules.length > 0
+            ? `Missing/stale: ${[...ev.missingModules, ...ev.staleModules].join(", ")}. `
+            : ""}` +
+          `Additional independent analyses required before a trade proposal can be issued.`,
+        ],
+        targetAllocationPercent:  undefined,
+        maximumAllocationPercent: undefined,
+        sizingConfidence:         undefined,
+        sizingReason:             undefined,
+      };
+    }
 
-    // Downgrade to Review
-    const note =
-      `Insufficient multi-source confirmation (${count}/${MIN_TRADE_SOURCES} required ` +
-      `analytical sources present — ${freshSources.length > 0 ? freshSources.join(", ") : "none fresh"}). ` +
-      `Downgraded from ${d.decision} to Review.`;
+    // ── 2. Score-based downgrade ──────────────────────────────────────────
+    if (ev.evidenceScore < EVIDENCE.REVIEW_THRESHOLD) {
+      const target = ev.evidenceScore < EVIDENCE.NOACTION_THRESHOLD ? "NoAction" : "Review";
+      const note = `Evidence score ${ev.evidenceScore} (${ev.evidenceBand}) is below ` +
+        `${ev.evidenceScore < EVIDENCE.NOACTION_THRESHOLD ? `${EVIDENCE.NOACTION_THRESHOLD} (NoAction threshold)` : `${EVIDENCE.REVIEW_THRESHOLD} (Review threshold)`}. ` +
+        `Downgraded from ${d.decision} to ${target}.`;
+      gateLog.push(`[evidence-score] "${d.title}" (${d.ticker || d.company}): ${note}`);
+      return {
+        ...d,
+        decision: target as "Review" | "NoAction",
+        reason:   `${d.reason}\n\n[Backend evidence] ${note}`,
+        missingEvidence: [...d.missingEvidence, note],
+        targetAllocationPercent:  undefined,
+        maximumAllocationPercent: undefined,
+        sizingConfidence:         undefined,
+        sizingReason:             undefined,
+      };
+    }
 
-    gateLog.push(`[gate] "${d.title}" (${d.ticker || d.company || "portfolio"}): ${note}`);
-
-    return {
-      ...d,
-      decision: "Review" as const,
-      reason: `${d.reason}\n\n[Backend gate] ${note}`,
-      missingEvidence: [
-        ...d.missingEvidence,
-        `Additional independent analyses required before a trade proposal can be issued.`,
-      ],
-      // Clear sizing fields — not valid on Review decisions
-      targetAllocationPercent:  undefined,
-      maximumAllocationPercent: undefined,
-      sizingConfidence:         undefined,
-      sizingReason:             undefined,
-    };
+    return d;
   });
 
-  return { decisions: result, gateLog };
+  return { decisions: result, evidenceMap, gateLog };
 }
 
 // ---------------------------------------------------------------------------
 // Staleness-based confidence downgrade
 // ---------------------------------------------------------------------------
 
-const CONFIDENCE_RANK: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
-const RANK_TO_CONFIDENCE: Record<number, string> = { 3: "High", 2: "Medium", 1: "Low" };
-
-function applyStalenessDwongrade(
-  decision:      ParsedDecision,
-  cmEntry:       RepositoryEntry | undefined,
-  riskEntry:     RepositoryEntry | undefined,
-  analyzerEntry: RepositoryEntry | undefined,
-  alertsEntry:   RepositoryEntry | undefined,
+function applyStalenessDwngrade(
+  decision:    ParsedDecision,
+  staleModules: string[]  // from DirectionalEvidenceResult.staleModules
 ): ParsedDecision {
-  if (decision.decision !== "PrepareToBuy" && decision.decision !== "PrepareToReduce") {
-    return decision;
-  }
+  if (decision.decision !== "PrepareToBuy" && decision.decision !== "PrepareToReduce") return decision;
+  if (staleModules.length === 0) return decision;
 
-  const criticalStale: string[] = [];
-  if (!isModuleFresh(cmEntry,       STALE_HOURS["company-monitor"]))   criticalStale.push("CompanyMonitor");
-  if (!isModuleFresh(riskEntry,     STALE_HOURS["risk-analyzer"]))     criticalStale.push("RiskAnalyzer");
-  if (!isModuleFresh(analyzerEntry, STALE_HOURS["portfolio-analyzer"])) criticalStale.push("PortfolioAnalyzer");
-  if (!isModuleFresh(alertsEntry,   STALE_HOURS["market-alerts"]))     criticalStale.push("MarketAlerts");
+  const curRank = CONFIDENCE_RANK[decision.confidence] ?? 2;
+  const newRank = Math.max(1, curRank - 1);
+  const newConf = RANK_TO_CONFIDENCE[newRank] ?? "Low";
 
-  if (criticalStale.length === 0) return decision;
+  if (newConf === decision.confidence) return decision;
 
-  // Downgrade confidence by one step if any critical source is stale
-  const curRank    = CONFIDENCE_RANK[decision.confidence] ?? 2;
-  const newRank    = Math.max(1, curRank - 1);
-  const newConf    = RANK_TO_CONFIDENCE[newRank] ?? "Low";
-
-  const note = `Confidence reduced (${decision.confidence} → ${newConf}) — stale analysis data: ${criticalStale.join(", ")}.`;
+  const note = `Confidence reduced (${decision.confidence} → ${newConf}) — stale analysis data: ${staleModules.join(", ")}.`;
   return {
     ...decision,
     confidence:      newConf,
@@ -516,67 +639,150 @@ function sortDecisionsByPriority<T extends { urgency: string; confidence: string
   });
 }
 
-function normalizeDecisionKey(
-  subjectType: string,
-  ticker:      string,
-  company:     string,
-  decision:    string
-): string {
+// ---------------------------------------------------------------------------
+// Key helpers
+// ---------------------------------------------------------------------------
+
+/** Subject key — no decision type. Used for cross-type status matching. */
+function normalizeSubjectKey(subjectType: string, ticker: string, company: string): string {
   const subject = (ticker?.trim() || company?.trim() || "portfolio").toLowerCase().trim();
-  return `${subjectType.toLowerCase().trim()}|${subject}|${decision.toLowerCase().trim()}`;
+  return `${subjectType.toLowerCase().trim()}|${subject}`;
+}
+
+/** Full key including decision type. */
+function normalizeDecisionKey(subjectType: string, ticker: string, company: string, decision: string): string {
+  return `${normalizeSubjectKey(subjectType, ticker, company)}|${decision.toLowerCase().trim()}`;
 }
 
 // ---------------------------------------------------------------------------
-// Extended status computation
+// Decision fingerprint
+// ---------------------------------------------------------------------------
+
+/**
+ * Deterministic fingerprint of all material fields.
+ * Two decisions with identical fingerprints are considered Unchanged.
+ * Wording changes (title/reason text) do NOT affect the fingerprint.
+ */
+function computeDecisionFingerprint(d: {
+  decision:              string;
+  confidence:            string;
+  urgency:               string;
+  blockedByEvent:        boolean;
+  blockingEvent:         string;
+  blockingEventDate:     string;
+  readiness:             string;
+  targetAllocationPercent?:  number;
+  maximumAllocationPercent?: number;
+  sizingConfidence?:         string;
+  evidenceBand:          string;
+  supportingModules:     string[];
+  opposingModules:       string[];
+}): string {
+  return JSON.stringify({
+    d:   d.decision,
+    c:   d.confidence,
+    u:   d.urgency,
+    b:   d.blockedByEvent,
+    be:  d.blockingEvent  || "",
+    bed: d.blockingEventDate || "",
+    r:   d.readiness,
+    ta:  d.targetAllocationPercent  != null ? Math.round(d.targetAllocationPercent)  : null,
+    ma:  d.maximumAllocationPercent != null ? Math.round(d.maximumAllocationPercent) : null,
+    sc:  d.sizingConfidence || "",
+    eb:  d.evidenceBand,
+    sm:  [...d.supportingModules].sort().join(","),
+    om:  [...d.opposingModules].sort().join(","),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Extended status computation (subject-first + fingerprint-aware)
 // ---------------------------------------------------------------------------
 
 type DecisionStatus = "New" | "Strengthened" | "Weakened" | "Unchanged";
-// "Withdrawn" is implicit — it is not in the response but logged separately.
-
-const URGENCY_RANK: Record<string, number> = { Immediate: 4, Days: 3, Weeks: 2, NoUrgency: 1 };
 
 function computeExtendedStatus(
-  normalizedKey: string,
-  confidence:    string,
-  urgency:       string,
+  subjectKey: string,
+  current: {
+    decision:     string;
+    confidence:   string;
+    urgency:      string;
+    readiness:    string;
+    evidenceBand: string;
+    blockedByEvent: boolean;
+    fingerprint:  string;
+  },
   previousDecisions: DecisionHistoryDecision[]
 ): DecisionStatus {
-  const prev = previousDecisions.find(p => p.normalizedKey === normalizedKey);
-  if (!prev) return "New";
+  // Match on subject first (ignoring decision type) to detect cross-type changes
+  const prevSameSubject = previousDecisions.find(p => p.subjectKey === subjectKey);
+  if (!prevSameSubject) return "New";
 
-  const sameConf   = prev.confidence === confidence;
-  const sameUrgency = prev.urgency   === urgency;
-  if (sameConf && sameUrgency) return "Unchanged";
+  const prevStrength = DECISION_STRENGTH[prevSameSubject.decision] ?? 0;
+  const curStrength  = DECISION_STRENGTH[current.decision]        ?? 0;
 
-  const prevConfRank   = CONFIDENCE_RANK[prev.confidence] ?? 2;
-  const curConfRank    = CONFIDENCE_RANK[confidence]      ?? 2;
-  const prevUrgRank    = URGENCY_RANK[prev.urgency]       ?? 1;
-  const curUrgRank     = URGENCY_RANK[urgency]            ?? 1;
+  // Different decision type → strength-ranked comparison
+  if (prevSameSubject.decision !== current.decision) {
+    if (curStrength > prevStrength) return "Strengthened";
+    if (curStrength < prevStrength) return "Weakened";
+    // Same strength but different type (e.g. PrepareToReduce ↔ PrepareToBuy) → Weakened (direction changed)
+    return "Weakened";
+  }
 
-  const confImproved  = curConfRank > prevConfRank;
-  const confDegraded  = curConfRank < prevConfRank;
-  const urgIncreased  = curUrgRank  > prevUrgRank;
-  const urgDecreased  = curUrgRank  < prevUrgRank;
+  // Same decision type → fingerprint comparison
+  const prevFp = prevSameSubject.fingerprint;
+  if (prevFp && prevFp === current.fingerprint) return "Unchanged";
 
-  if (confImproved || urgIncreased) return "Strengthened";
-  if (confDegraded || urgDecreased) return "Weakened";
-  return "Unchanged"; // safety fallback
+  // Fingerprints differ — determine direction from key material fields
+  let improving  = 0;
+  let degrading  = 0;
+
+  const cConf = CONFIDENCE_RANK[current.confidence]           ?? 2;
+  const pConf = CONFIDENCE_RANK[prevSameSubject.confidence]   ?? 2;
+  if (cConf > pConf) improving++; else if (cConf < pConf) degrading++;
+
+  const cUrg = URGENCY_RANK[current.urgency]           ?? 1;
+  const pUrg = URGENCY_RANK[prevSameSubject.urgency]   ?? 1;
+  if (cUrg > pUrg) improving++; else if (cUrg < pUrg) degrading++;
+
+  const cRdy = READINESS_RANK[current.readiness]         ?? 0;
+  const pRdy = READINESS_RANK[prevSameSubject.readiness ?? ""] ?? 0;
+  if (pRdy > 0 && cRdy > pRdy) improving++; else if (pRdy > 0 && cRdy < pRdy) degrading++;
+
+  const cEv = EVIDENCE_BAND_RANK[current.evidenceBand]          ?? 0;
+  const pEv = EVIDENCE_BAND_RANK[prevSameSubject.evidenceBand ?? ""] ?? 0;
+  if (pEv > 0 && cEv > pEv) improving++; else if (pEv > 0 && cEv < pEv) degrading++;
+
+  if (prevSameSubject.blockedByEvent === true  && !current.blockedByEvent) improving++;
+  if (prevSameSubject.blockedByEvent === false && current.blockedByEvent)  degrading++;
+
+  if (improving > degrading) return "Strengthened";
+  if (degrading > improving) return "Weakened";
+  if (improving > 0)         return "Strengthened"; // tie with any signal → Strengthened
+  // No historical fingerprint to compare against → treat as Unchanged if signals are silent
+  return prevFp ? "Unchanged" : "Unchanged";
 }
 
 // ---------------------------------------------------------------------------
-// Readiness computation (server-side, deterministic)
+// Readiness computation (evidence-aware)
 // ---------------------------------------------------------------------------
 
 type ReadinessValue = "WaitingForReevaluation" | "ReadyForReview" | "Informational";
 
-function computeReadiness(d: {
-  decision:         string;
-  blockedByEvent:   boolean;
-  blockingEvent:    string;
-  blockingEventDate: string;
-  sizingReason?:    string;
-  confidence?:      string;
-}): { readiness: ReadinessValue; readinessReason: string } {
+function computeReadiness(
+  d: {
+    decision:          string;
+    confidence:        string;
+    blockedByEvent:    boolean;
+    blockingEvent:     string;
+    blockingEventDate: string;
+    sizingReason?:     string;
+    targetAllocationPercent?:  number;
+    maximumAllocationPercent?: number;
+    sizingConfidence?: string;
+  },
+  evidence?: DirectionalEvidenceResult
+): { readiness: ReadinessValue; readinessReason: string } {
   const type    = d.decision;
   const blocked = d.blockedByEvent;
 
@@ -597,10 +803,12 @@ function computeReadiness(d: {
     if (blocked) {
       const event  = d.blockingEvent;
       const date   = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
-      const reason = event
-        ? `Waiting for ${event}${date} — re-evaluate afterwards.`
-        : "Blocked by an upcoming event — re-evaluate afterwards.";
-      return { readiness: "WaitingForReevaluation", readinessReason: reason };
+      return {
+        readiness: "WaitingForReevaluation",
+        readinessReason: event
+          ? `Waiting for ${event}${date} — re-evaluate afterwards.`
+          : "Blocked by an upcoming event — re-evaluate afterwards.",
+      };
     }
     return { readiness: "Informational", readinessReason: "Requires closer manual assessment before a trade decision can be made." };
   }
@@ -609,18 +817,45 @@ function computeReadiness(d: {
     if (blocked) {
       const event  = d.blockingEvent;
       const date   = d.blockingEventDate ? ` (${d.blockingEventDate})` : "";
-      const reason = event
-        ? `Waiting for ${event}${date} — trade must be re-evaluated after the event with new price, risk and sizing data.`
-        : "Blocked by an upcoming event — trade must be re-evaluated after the event.";
-      return { readiness: "WaitingForReevaluation", readinessReason: reason };
-    }
-    // Low confidence on a trade proposal → informational pending better evidence
-    if (d.confidence === "Low") {
       return {
-        readiness: "Informational",
-        readinessReason: "Confidence is Low — additional evidence needed before this decision can be actioned.",
+        readiness: "WaitingForReevaluation",
+        readinessReason: event
+          ? `Waiting for ${event}${date} — trade must be re-evaluated after the event with new price, risk and sizing data.`
+          : "Blocked by an upcoming event — trade must be re-evaluated after the event.",
       };
     }
+
+    // Confidence gate
+    if (d.confidence === "Low") {
+      return { readiness: "Informational", readinessReason: "Confidence is Low — additional evidence needed." };
+    }
+
+    // Evidence score gate
+    if (evidence) {
+      if (evidence.evidenceScore < EVIDENCE.READY_MIN) {
+        return {
+          readiness: "Informational",
+          readinessReason: `Evidence score ${evidence.evidenceScore} (${evidence.evidenceBand}) is below the ReadyForReview threshold of ${EVIDENCE.READY_MIN}. Supporting: ${evidence.supportingModules.join(", ") || "none"}. Opposing: ${evidence.opposingModules.join(", ") || "none"}.`,
+        };
+      }
+      if (evidence.hasCriticalOpposing) {
+        return {
+          readiness: "Informational",
+          readinessReason: `Unresolved critical opposing evidence from: ${evidence.criticalOpposingModules.join(", ")}. Investigate before actioning.`,
+        };
+      }
+    }
+
+    // Sizing gate
+    const hasValidSizing =
+      typeof d.targetAllocationPercent  === "number" && d.targetAllocationPercent  > 0 &&
+      typeof d.maximumAllocationPercent === "number" && d.maximumAllocationPercent >= d.targetAllocationPercent &&
+      ["High", "Medium", "Low"].includes(d.sizingConfidence ?? "");
+
+    if (!hasValidSizing) {
+      return { readiness: "Informational", readinessReason: "Sizing fields are incomplete — manual sizing required before actioning." };
+    }
+
     const reason = d.sizingReason?.trim() || "Decision is current and ready for manual review.";
     return { readiness: "ReadyForReview", readinessReason: reason };
   }
@@ -795,21 +1030,19 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   }, ROUTE_TIMEOUT_MS);
 
   // ── Load all module entries ──────────────────────────────────────────────
-  const portfolioEntry  = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
-  const analyzerEntry   = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
-  const riskEntry       = analysisRepository.get<Record<string, unknown>>("risk-analyzer");
-  const alertsEntry     = analysisRepository.get<Record<string, unknown>>("market-alerts");
-  const eventEntry      = analysisRepository.get<Record<string, unknown>>("event-monitor");
-  const newsEntry       = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const sectorEntry     = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-  const marketEntry     = analysisRepository.get<Record<string, unknown>>("market-monitor");
+  const portfolioEntry   = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
+  const analyzerEntry    = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
+  const riskEntry        = analysisRepository.get<Record<string, unknown>>("risk-analyzer");
+  const alertsEntry      = analysisRepository.get<Record<string, unknown>>("market-alerts");
+  const eventEntry       = analysisRepository.get<Record<string, unknown>>("event-monitor");
+  const newsEntry        = analysisRepository.get<Record<string, unknown>>("news-monitor");
+  const sectorEntry      = analysisRepository.get<Record<string, unknown>>("sector-monitor");
+  const marketEntry      = analysisRepository.get<Record<string, unknown>>("market-monitor");
   const opportunityEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
 
   const allRepoEntries = analysisRepository.getAll();
-
-  // Company-monitor entries
-  const allCmEntries = allRepoEntries.filter(e => e.moduleName.startsWith("company-monitor:"));
-  const cmCandidates = allCmEntries.map(e => ({
+  const allCmEntries   = allRepoEntries.filter(e => e.moduleName.startsWith("company-monitor:"));
+  const cmCandidates   = allCmEntries.map(e => ({
     key:    e.moduleName,
     result: e.result as Record<string, unknown>,
   }));
@@ -820,7 +1053,6 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     ? (prevTdeEntry!.result.decisions as Array<Record<string, unknown>>)
     : [];
 
-  // Build lookup: normalizedKey → previous full decision object
   const prevDecisionByKey = new Map<string, Record<string, unknown>>();
   for (const d of prevFullDecisions) {
     const nk = normalizeDecisionKey(
@@ -829,17 +1061,6 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     );
     prevDecisionByKey.set(nk, d);
   }
-
-  // ── Fresh module map (for multi-source gate) ─────────────────────────────
-  const globalFreshMap = new Map<string, boolean>([
-    ["RiskAnalyzer",      isModuleFresh(riskEntry,        STALE_HOURS["risk-analyzer"])],
-    ["PortfolioAnalyzer", isModuleFresh(analyzerEntry,    STALE_HOURS["portfolio-analyzer"])],
-    ["MarketAlerts",      isModuleFresh(alertsEntry,      STALE_HOURS["market-alerts"])],
-    ["OpportunityFinder", isModuleFresh(opportunityEntry, STALE_HOURS["opportunity-finder"])],
-    ["EventMonitor",      isModuleFresh(eventEntry,       STALE_HOURS["event-monitor"])],
-    ["SectorMonitor",     isModuleFresh(sectorEntry,      STALE_HOURS["sector-monitor"])],
-    ["PortfolioManager",  isModuleFresh(portfolioEntry,   STALE_HOURS["portfolio-manager"])],
-  ]);
 
   // ── Warnings ─────────────────────────────────────────────────────────────
   if (portfolioEntry?.result?.isMockData) {
@@ -855,11 +1076,10 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     systemLog.logWarning(MODULE_NAME, `Required analysis context unavailable: ${missingModules.join(", ")}`);
   }
 
-  // Stale module warnings
   const staleWarnings: string[] = [];
-  if (riskEntry      && !isModuleFresh(riskEntry,      STALE_HOURS["risk-analyzer"]))      staleWarnings.push(`RiskAnalyzer (${formatAge(riskEntry)})`);
-  if (analyzerEntry  && !isModuleFresh(analyzerEntry,  STALE_HOURS["portfolio-analyzer"]))  staleWarnings.push(`PortfolioAnalyzer (${formatAge(analyzerEntry)})`);
-  if (alertsEntry    && !isModuleFresh(alertsEntry,    STALE_HOURS["market-alerts"]))        staleWarnings.push(`MarketAlerts (${formatAge(alertsEntry)})`);
+  if (riskEntry     && !isModuleFresh(riskEntry,     STALE_HOURS["risk-analyzer"]))      staleWarnings.push(`RiskAnalyzer (${formatAge(riskEntry)})`);
+  if (analyzerEntry && !isModuleFresh(analyzerEntry, STALE_HOURS["portfolio-analyzer"]))  staleWarnings.push(`PortfolioAnalyzer (${formatAge(analyzerEntry)})`);
+  if (alertsEntry   && !isModuleFresh(alertsEntry,   STALE_HOURS["market-alerts"]))       staleWarnings.push(`MarketAlerts (${formatAge(alertsEntry)})`);
   if (staleWarnings.length > 0) {
     systemLog.logWarning(MODULE_NAME, `Stale analysis data: ${staleWarnings.join(", ")} — confidence may be downgraded`);
   }
@@ -870,9 +1090,9 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     ? (portfolioResult!.accounts as Array<Record<string, unknown>>)
     : [];
 
-  const baseCurrency       = typeof portfolioResult?.baseCurrency    === "string" ? portfolioResult.baseCurrency    : "Unknown";
-  const totalValue         = typeof portfolioResult?.totalValue       === "number" ? portfolioResult.totalValue       : null;
-  const totalAvailableCash = typeof portfolioResult?.totalAvailableCash === "number" ? portfolioResult.totalAvailableCash : null;
+  const baseCurrency       = typeof portfolioResult?.baseCurrency       === "string" ? portfolioResult.baseCurrency       : "Unknown";
+  const totalValue         = typeof portfolioResult?.totalValue          === "number" ? portfolioResult.totalValue          : null;
+  const totalAvailableCash = typeof portfolioResult?.totalAvailableCash  === "number" ? portfolioResult.totalAvailableCash  : null;
 
   const allPositions: Array<{
     ticker: string; name: string;
@@ -882,9 +1102,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   }> = [];
 
   for (const acc of accounts) {
-    const posArr = Array.isArray(acc.positions)
-      ? (acc.positions as Array<Record<string, unknown>>)
-      : [];
+    const posArr = Array.isArray(acc.positions) ? acc.positions as Array<Record<string, unknown>> : [];
     for (const pos of posArr) {
       allPositions.push({
         ticker:                  String(pos.symbol ?? "").toUpperCase(),
@@ -920,17 +1138,17 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   const relevantCmKeys = new Set([...holdingCmKeys.values(), ...opCmKeys.values()]);
 
   // ── Decision profile ─────────────────────────────────────────────────────
-  const totalInvested   = allPositions.reduce((s, p) => s + p.marketValueBaseCurrency, 0);
-  const baseForWeights  = totalValue ?? totalInvested;
-  const cashPct         = baseForWeights > 0 && totalAvailableCash != null
+  const totalInvested  = allPositions.reduce((s, p) => s + p.marketValueBaseCurrency, 0);
+  const baseForWeights = totalValue ?? totalInvested;
+  const cashPct        = baseForWeights > 0 && totalAvailableCash != null
     ? Math.round((totalAvailableCash / baseForWeights) * 1000) / 10
     : null;
 
   const positionsWithWeights = allPositions
     .map(p => ({
       ...p,
-      weightOfTotal:     baseForWeights > 0 ? Math.round((p.marketValueBaseCurrency / baseForWeights) * 1000) / 10 : 0,
-      weightOfInvested:  totalInvested > 0  ? Math.round((p.marketValueBaseCurrency / totalInvested)  * 1000) / 10 : 0,
+      weightOfTotal:    baseForWeights > 0 ? Math.round((p.marketValueBaseCurrency / baseForWeights) * 1000) / 10 : 0,
+      weightOfInvested: totalInvested  > 0 ? Math.round((p.marketValueBaseCurrency / totalInvested)  * 1000) / 10 : 0,
       hasCompanyMonitor: holdingCmKeys.has(p.ticker),
     }))
     .sort((a, b) => b.weightOfTotal - a.weightOfTotal);
@@ -956,8 +1174,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
   const topOpportunityCandidates = Array.isArray(opportunityEntry?.result?.topOpportunities)
     ? (opportunityEntry!.result.topOpportunities as Array<Record<string, unknown>>)
-        .slice(0, 5)
-        .map(o => ({
+        .slice(0, 5).map(o => ({
           rank: o.rank, ticker: o.ticker, company: o.company, sector: o.sector,
           confidence: o.confidence, priority: o.priority, mainCatalyst: o.mainCatalyst,
           hasCompanyMonitor:
@@ -966,19 +1183,19 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         }))
     : [];
 
-  const riskScore     = typeof riskEntry?.result?.riskScore     === "number" ? riskEntry.result.riskScore     : null;
+  const riskScore     = typeof riskEntry?.result?.riskScore === "number" ? riskEntry.result.riskScore : null;
   const prevRiskScore = typeof riskEntry?.result?.previousRiskScore === "number" ? riskEntry.result.previousRiskScore : null;
 
   const decisionProfile = {
     generatedAt: nowIso,
     baseCurrency,
-    isMockData:              portfolioEntry?.result?.isMockData ?? false,
+    isMockData: portfolioEntry?.result?.isMockData ?? false,
     totalPortfolioValue:     totalValue,
     totalAvailableCash,
     cashPercentage:          cashPct,
     totalInvestedValue:      Math.round(totalInvested),
     cashByCurrency,
-    largestHolding:          positionsWithWeights[0]
+    largestHolding: positionsWithWeights[0]
       ? { ticker: positionsWithWeights[0].ticker, weightOfTotal: positionsWithWeights[0].weightOfTotal,
           marketValueBaseCurrency: Math.round(positionsWithWeights[0].marketValueBaseCurrency) }
       : null,
@@ -990,37 +1207,35 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       weightOfTotal: p.weightOfTotal, weightOfInvested: p.weightOfInvested,
       hasCompanyMonitor: p.hasCompanyMonitor,
     })),
-    riskScore,
-    previousRiskScore:       prevRiskScore,
-    riskScoreChange:         riskScore != null && prevRiskScore != null ? riskScore - prevRiskScore : null,
-    riskLevel:               riskEntry?.result?.overallRiskLevel ?? null,
-    portfolioScore:          analyzerEntry?.result?.portfolioScore ?? null,
-    portfolioOutlook:        analyzerEntry?.result?.overallOutlook ?? null,
-    alertLevel:              alertsEntry?.result?.overallAlertLevel ?? null,
-    alertHeadline:           alertsEntry?.result?.headline ?? null,
+    riskScore, previousRiskScore: prevRiskScore,
+    riskScoreChange: riskScore != null && prevRiskScore != null ? riskScore - prevRiskScore : null,
+    riskLevel:       riskEntry?.result?.overallRiskLevel ?? null,
+    portfolioScore:  analyzerEntry?.result?.portfolioScore ?? null,
+    portfolioOutlook: analyzerEntry?.result?.overallOutlook ?? null,
+    alertLevel:      alertsEntry?.result?.overallAlertLevel ?? null,
+    alertHeadline:   alertsEntry?.result?.headline ?? null,
     upcomingHighImportanceEvents: upcomingEvents,
     topOpportunityCandidates,
     positionsWithCompanyMonitorData:    positionsWithWeights.filter(p =>  p.hasCompanyMonitor).map(p => p.ticker),
     positionsMissingCompanyMonitorData: positionsWithWeights.filter(p => !p.hasCompanyMonitor).map(p => p.ticker),
-    // Staleness summary for OpenAI context awareness
     moduleDataFreshness: {
-      riskAnalyzer:      riskEntry      ? `${Math.round(entryAgeHours(riskEntry))}h old`      : "missing",
-      portfolioAnalyzer: analyzerEntry  ? `${Math.round(entryAgeHours(analyzerEntry))}h old`  : "missing",
-      marketAlerts:      alertsEntry    ? `${Math.round(entryAgeHours(alertsEntry))}h old`    : "missing",
+      riskAnalyzer:      riskEntry       ? `${Math.round(entryAgeHours(riskEntry))}h old`       : "missing",
+      portfolioAnalyzer: analyzerEntry   ? `${Math.round(entryAgeHours(analyzerEntry))}h old`   : "missing",
+      marketAlerts:      alertsEntry     ? `${Math.round(entryAgeHours(alertsEntry))}h old`     : "missing",
       opportunityFinder: opportunityEntry ? `${Math.round(entryAgeHours(opportunityEntry))}h old` : "missing",
     },
   };
 
   // ── Module contexts ──────────────────────────────────────────────────────
   const riskContext = riskEntry ? JSON.stringify({
-    overallRiskLevel:   riskEntry.result.overallRiskLevel,
-    riskScore:          riskEntry.result.riskScore,
-    previousRiskScore:  riskEntry.result.previousRiskScore,
-    mainConclusion:     riskEntry.result.mainConclusion,
-    topRisks:           riskEntry.result.topRisks,
-    riskInteractions:   riskEntry.result.riskInteractions,
-    watchClosely:       riskEntry.result.watchClosely,
-    updatedAt:          riskEntry.updatedAt,
+    overallRiskLevel: riskEntry.result.overallRiskLevel,
+    riskScore:        riskEntry.result.riskScore,
+    previousRiskScore: riskEntry.result.previousRiskScore,
+    mainConclusion:   riskEntry.result.mainConclusion,
+    topRisks:         riskEntry.result.topRisks,
+    riskInteractions: riskEntry.result.riskInteractions,
+    watchClosely:     riskEntry.result.watchClosely,
+    updatedAt:        riskEntry.updatedAt,
   }) : null;
 
   const analyzerContext = analyzerEntry ? JSON.stringify({
@@ -1040,12 +1255,12 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   }) : null;
 
   const alertsContext = alertsEntry ? JSON.stringify({
-    overallAlertLevel:   alertsEntry.result.overallAlertLevel,
-    headline:            alertsEntry.result.headline,
-    executiveSummary:    alertsEntry.result.executiveSummary,
-    alerts:              alertsEntry.result.alerts,
-    thingsToWatch:       alertsEntry.result.thingsToWatch,
-    updatedAt:           alertsEntry.updatedAt,
+    overallAlertLevel: alertsEntry.result.overallAlertLevel,
+    headline:          alertsEntry.result.headline,
+    executiveSummary:  alertsEntry.result.executiveSummary,
+    alerts:            alertsEntry.result.alerts,
+    thingsToWatch:     alertsEntry.result.thingsToWatch,
+    updatedAt:         alertsEntry.updatedAt,
   }) : null;
 
   const opportunityContext = opportunityEntry ? JSON.stringify({
@@ -1053,8 +1268,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     overallOpportunityLevel: opportunityEntry.result.overallOpportunityLevel,
     topOpportunities:        Array.isArray(opportunityEntry.result.topOpportunities)
       ? (opportunityEntry.result.topOpportunities as Array<Record<string, unknown>>)
-          .slice(0, 5)
-          .map(o => ({
+          .slice(0, 5).map(o => ({
             rank: o.rank, company: o.company, ticker: o.ticker, sector: o.sector,
             overallScore: o.overallScore, confidence: o.confidence, priority: o.priority,
             investmentThesis: o.investmentThesis, whyNow: o.whyNow, whyThisPortfolio: o.whyThisPortfolio,
@@ -1091,20 +1305,20 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   }) : null;
 
   const marketContext = marketEntry ? JSON.stringify({
-    marketSentiment:  marketEntry.result.marketSentiment,
-    riskLevel:        marketEntry.result.riskLevel,
-    summary:          marketEntry.result.summary,
-    positiveFactors:  marketEntry.result.positiveFactors,
-    negativeFactors:  marketEntry.result.negativeFactors,
-    keyRisks:         marketEntry.result.keyRisks,
-    updatedAt:        marketEntry.updatedAt,
+    marketSentiment: marketEntry.result.marketSentiment,
+    riskLevel:       marketEntry.result.riskLevel,
+    summary:         marketEntry.result.summary,
+    positiveFactors: marketEntry.result.positiveFactors,
+    negativeFactors: marketEntry.result.negativeFactors,
+    keyRisks:        marketEntry.result.keyRisks,
+    updatedAt:       marketEntry.updatedAt,
   }) : null;
 
   const newsContext = newsEntry ? JSON.stringify({
-    executiveSummary:     newsEntry.result.executiveSummary,
-    overallMarketImpact:  newsEntry.result.overallMarketImpact,
-    topStory:             newsEntry.result.topStory,
-    news:                 Array.isArray(newsEntry.result.news)
+    executiveSummary:    newsEntry.result.executiveSummary,
+    overallMarketImpact: newsEntry.result.overallMarketImpact,
+    topStory:            newsEntry.result.topStory,
+    news:                Array.isArray(newsEntry.result.news)
       ? (newsEntry.result.news as Array<Record<string, unknown>>).slice(0, 5).map(n => ({
           title: n.title, category: n.category, importance: n.importance,
           whyItMatters: n.whyItMatters, marketImpact: n.marketImpact,
@@ -1113,7 +1327,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     updatedAt: newsEntry.updatedAt,
   }) : null;
 
-  // Company Monitor context — include full v2 fields
+  // Company Monitor context — full v2 fields
   const relevantCmEntries = allCmEntries.filter(e => relevantCmKeys.has(e.moduleName));
 
   const companyContextLines = relevantCmEntries.map(e => {
@@ -1123,15 +1337,9 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       ...[...opCmKeys.entries()].filter(([, key]) => key === e.moduleName).map(([t]) => t),
     ];
     const matchLabel = matchedTickers.join("/") || e.moduleName.replace("company-monitor:", "");
-
-    // Compact thesis representation: only IDs + statuses (full text wastes tokens)
     const thesisSummary = Array.isArray(result.investmentThesis)
-      ? (result.investmentThesis as Array<Record<string, unknown>>).map(p => ({
-          id:     p.id,
-          status: p.status,
-        }))
+      ? (result.investmentThesis as Array<Record<string, unknown>>).map(p => ({ id: p.id, status: p.status }))
       : [];
-
     return `COMPANY MONITOR — ${matchLabel} (updated: ${e.updatedAt}, freshness: ${formatAge(e)}):\n${JSON.stringify({
       company:                result.company,
       updateType:             result.updateType,
@@ -1155,28 +1363,27 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     })}`;
   }).join("\n\n");
 
-  // ── History (for status computation) ────────────────────────────────────
+  // ── History (for status computation) ─────────────────────────────────────
   const historyEntry = analysisRepository.get<{ entries: DecisionHistoryEntry[] }>(
     "trade-decision-engine-history"
   );
   const previousDecisions: DecisionHistoryDecision[] =
     historyEntry?.result?.entries?.[0]?.decisions ?? [];
 
-  // ── Previous decisions context for user prompt ───────────────────────────
-  const prevDecisionsSummary =
-    prevFullDecisions.length > 0
-      ? prevFullDecisions.map(d => ({
-          ticker:    d.ticker,
-          company:   d.company,
-          decision:  d.decision,
-          title:     d.title,
-          confidence: d.confidence,
-          urgency:   d.urgency,
-          status:    d.status,
-        }))
-      : null;
+  // ── Previous decisions context for user prompt ────────────────────────────
+  const prevDecisionsSummary = prevFullDecisions.length > 0
+    ? prevFullDecisions.map(d => ({
+        ticker:    d.ticker,
+        company:   d.company,
+        decision:  d.decision,
+        title:     d.title,
+        confidence: d.confidence,
+        urgency:   d.urgency,
+        status:    d.status,
+      }))
+    : null;
 
-  // ── User prompt ──────────────────────────────────────────────────────────
+  // ── User prompt ───────────────────────────────────────────────────────────
   const addCtx = (label: string, ctx: string | null, sections: string[]) => {
     sections.push(ctx ? `\n${label}:\n${ctx}` : `\n${label}: Not available.`);
   };
@@ -1186,9 +1393,9 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     `\nBACKEND DECISION PROFILE (server-calculated — treat as highest-priority input):\n${JSON.stringify(decisionProfile, null, 2)}`,
   ];
 
-  addCtx("RISK ANALYZER (priority 2)",      riskContext,      userPromptSections);
-  addCtx("PORTFOLIO ANALYZER (priority 3)", analyzerContext,  userPromptSections);
-  addCtx("MARKET ALERTS (priority 4)",      alertsContext,    userPromptSections);
+  addCtx("RISK ANALYZER (priority 2)",      riskContext,       userPromptSections);
+  addCtx("PORTFOLIO ANALYZER (priority 3)", analyzerContext,   userPromptSections);
+  addCtx("MARKET ALERTS (priority 4)",      alertsContext,     userPromptSections);
 
   if (companyContextLines) {
     userPromptSections.push(`\nCOMPANY MONITOR DATA (priority 5 — includes v2 fields):\n${companyContextLines}`);
@@ -1197,10 +1404,10 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   }
 
   addCtx("OPPORTUNITY FINDER (priority 6)", opportunityContext, userPromptSections);
-  addCtx("EVENT MONITOR (priority 7)",      eventContext,      userPromptSections);
-  addCtx("SECTOR MONITOR (priority 8)",     sectorContext,     userPromptSections);
-  addCtx("MARKET MONITOR (priority 9)",     marketContext,     userPromptSections);
-  addCtx("NEWS MONITOR (priority 10)",      newsContext,       userPromptSections);
+  addCtx("EVENT MONITOR (priority 7)",      eventContext,       userPromptSections);
+  addCtx("SECTOR MONITOR (priority 8)",     sectorContext,      userPromptSections);
+  addCtx("MARKET MONITOR (priority 9)",     marketContext,      userPromptSections);
+  addCtx("NEWS MONITOR (priority 10)",      newsContext,        userPromptSections);
 
   if (prevDecisionsSummary) {
     userPromptSections.push(
@@ -1215,12 +1422,12 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   userPromptSections.push(
     `\nTask: Based on all the above, produce 3–8 cautious decision proposals for the next 1–3 months. ` +
     `Resolve conflicts between modules. Use web search to verify current information for time-sensitive decisions. ` +
-    `Remember the multi-source requirement: PrepareToBuy and PrepareToReduce require ≥2 independent analytical sources.`
+    `Remember: PrepareToBuy and PrepareToReduce require ≥2 independent analytical sources — the backend verifies this from data, not just sourceModules claims.`
   );
 
   const userPrompt = userPromptSections.join("\n");
 
-  // ── Retry loop ────────────────────────────────────────────────────────────
+  // ── Retry loop ─────────────────────────────────────────────────────────────
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     if (routeTimedOut || res.headersSent) break;
 
@@ -1286,28 +1493,25 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         );
       }
 
-      // ── MULTI-SOURCE GATE ──────────────────────────────────────────────
-      const { decisions: gatedDecisions, gateLog } =
-        applyMultiSourceGate(
-          parsed.data.decisions as unknown as ParsedDecision[],
-          holdingCmKeys,
-          opCmKeys,
-          allCmEntries,
-          globalFreshMap
-        );
+      // ── STEP 1: Directional gate + evidence score downgrade ─────────────
+      const { decisions: gatedDecisions, evidenceMap, gateLog } = applyEvidenceGate(
+        parsed.data.decisions as unknown as ParsedDecision[],
+        holdingCmKeys, opCmKeys, allCmEntries,
+        riskEntry, analyzerEntry, alertsEntry, opportunityEntry
+      );
 
       for (const msg of gateLog) {
         systemLog.logInternal(MODULE_NAME, msg);
       }
 
-      // Sizing validation (only on decisions that survived the gate as Prepare*)
+      // ── Sizing validation (Prepare* decisions that survived the gate) ────
       const missingSizing = gatedDecisions.filter(d => {
         if (d.decision !== "PrepareToBuy" && d.decision !== "PrepareToReduce") return false;
         if (d.blockedByEvent === true) return false;
-        const target = d.targetAllocationPercent as number | undefined;
-        const max    = d.maximumAllocationPercent as number | undefined;
-        const conf   = d.sizingConfidence as string | undefined;
-        const reason = (d.sizingReason as string ?? "").trim();
+        const target = d.targetAllocationPercent;
+        const max    = d.maximumAllocationPercent;
+        const conf   = d.sizingConfidence;
+        const reason = (d.sizingReason ?? "").trim();
         return (
           typeof target !== "number" || target <= 0 ||
           typeof max    !== "number" || max < target ||
@@ -1322,7 +1526,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         );
       }
 
-      // Clear stale blocking flags on non-WaitForEvent decisions
+      // Clear stale blocking flags
       const clearedDecisions = gatedDecisions.map(d => {
         if (d.blockedByEvent && d.blockingEventDate) {
           const evDate = new Date(d.blockingEventDate);
@@ -1341,65 +1545,111 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       });
 
       // Sort → dedup → rerank
-      const sorted  = sortDecisionsByPriority(clearedDecisions);
-      const seenKeys = new Set<string>();
-      const deduped  = sorted.filter(d => {
+      const sorted    = sortDecisionsByPriority(clearedDecisions);
+      const seenKeys  = new Set<string>();
+      const deduped   = sorted.filter(d => {
         const k = normalizeDecisionKey(d.subjectType, d.ticker, d.company, d.decision);
         if (seenKeys.has(k)) return false;
         seenKeys.add(k);
         return true;
       });
-      const reranked = deduped.map((d, i) => ({ ...d, rank: i + 1 }));
+      const reranked  = deduped.map((d, i) => ({ ...d, rank: i + 1 }));
 
-      // ── Extended status ───────────────────────────────────────────────
-      type D = (typeof reranked)[0];
-      type DWithMeta = D & {
-        _normalizedKey:    string;
-        _status:           DecisionStatus;
-        _evidenceScore?:   EvidenceScore;
+      // ── STEP 2: Staleness downgrade (uses evidence staleModules) ──────────
+      const withStaleness = reranked.map((d, rerankedIdx) => {
+        // Find original index in gatedDecisions to look up evidence
+        const origIdx = gatedDecisions.findIndex(
+          od => od.ticker === d.ticker && od.company === d.company && od.decision === d.decision
+        );
+        const ev = origIdx >= 0 ? evidenceMap.get(origIdx) : undefined;
+        const stale = ev?.staleModules ?? [];
+        return {
+          ...applyStalenessDwngrade(d as ParsedDecision, stale),
+          _origIdx:     rerankedIdx,
+          _evidenceKey: origIdx,
+        };
+      });
+
+      // ── STEP 3: Compute readiness (uses final confidence + evidence) ──────
+      type DWithReadiness = (typeof withStaleness)[0] & {
+        _readiness:       ReadinessValue;
+        _readinessReason: string;
+        _normalizedKey:   string;
+        _subjectKey:      string;
       };
 
-      const decisionsWithMeta: DWithMeta[] = reranked.map(d => {
-        const nk     = normalizeDecisionKey(d.subjectType, d.ticker, d.company, d.decision);
-        const status = computeExtendedStatus(nk, d.confidence, d.urgency, previousDecisions);
-
-        // Evidence scoring for trade proposals (internal only)
-        let evScore: EvidenceScore | undefined;
-        if (d.decision === "PrepareToBuy" || d.decision === "PrepareToReduce") {
-          const cmKey   = holdingCmKeys.get(d.ticker) ?? opCmKeys.get(d.ticker);
-          const cmEntry = cmKey ? allCmEntries.find(e => e.moduleName === cmKey) : undefined;
-          evScore = scoreDecisionEvidence(
-            d.decision as "PrepareToBuy" | "PrepareToReduce",
-            d.ticker,
-            { cmEntry, riskEntry, analyzerEntry, alertsEntry, opportunityEntry }
-          );
-        }
-
-        return { ...d, _normalizedKey: nk, _status: status, _evidenceScore: evScore };
-      });
-
-      // ── Staleness downgrade ─────────────────────────────────────────────
-      const withStaleness = decisionsWithMeta.map(d => {
-        const cmKey   = holdingCmKeys.get(d.ticker) ?? opCmKeys.get(d.ticker);
-        const cmEntry = cmKey ? allCmEntries.find(e => e.moduleName === cmKey) : undefined;
-        const downgraded = applyStalenessDwongrade(
-          d as unknown as ParsedDecision,
-          cmEntry, riskEntry, analyzerEntry, alertsEntry
+      const withReadiness: DWithReadiness[] = withStaleness.map(d => {
+        const ev  = evidenceMap.get(d._evidenceKey);
+        const { readiness, readinessReason } = computeReadiness(
+          d as unknown as Parameters<typeof computeReadiness>[0],
+          ev
         );
-        return { ...d, ...downgraded };
+        return {
+          ...d,
+          _readiness:       readiness,
+          _readinessReason: readinessReason,
+          _normalizedKey:   normalizeDecisionKey(d.subjectType, d.ticker, d.company, d.decision),
+          _subjectKey:      normalizeSubjectKey(d.subjectType, d.ticker, d.company),
+        };
       });
 
-      // ── Track withdrawn decisions ────────────────────────────────────────
-      const currentKeys = new Set(withStaleness.map(d => d._normalizedKey));
-      const resolvedDecisions = previousDecisions.filter(p => !currentKeys.has(p.normalizedKey));
+      // ── STEP 4: Compute fingerprints ──────────────────────────────────────
+      type DWithFingerprint = DWithReadiness & { _fingerprint: string; _evidence?: DirectionalEvidenceResult };
+
+      const withFingerprints: DWithFingerprint[] = withReadiness.map(d => {
+        const ev = evidenceMap.get(d._evidenceKey);
+        const fingerprint = computeDecisionFingerprint({
+          decision:            d.decision,
+          confidence:          d.confidence,
+          urgency:             d.urgency,
+          blockedByEvent:      d.blockedByEvent,
+          blockingEvent:       d.blockingEvent,
+          blockingEventDate:   d.blockingEventDate,
+          readiness:           d._readiness,
+          targetAllocationPercent:  d.targetAllocationPercent,
+          maximumAllocationPercent: d.maximumAllocationPercent,
+          sizingConfidence:         d.sizingConfidence,
+          evidenceBand:        ev?.evidenceBand ?? "Insufficient",
+          supportingModules:   ev?.supportingModules ?? [],
+          opposingModules:     ev?.opposingModules   ?? [],
+        });
+        return { ...d, _fingerprint: fingerprint, _evidence: ev };
+      });
+
+      // ── STEP 5: Compute status (subject-first + fingerprint) ──────────────
+      type DWithStatus = DWithFingerprint & { _status: DecisionStatus };
+
+      const withStatus: DWithStatus[] = withFingerprints.map(d => {
+        const status = computeExtendedStatus(
+          d._subjectKey,
+          {
+            decision:     d.decision,
+            confidence:   d.confidence,
+            urgency:      d.urgency,
+            readiness:    d._readiness,
+            evidenceBand: d._evidence?.evidenceBand ?? "Insufficient",
+            blockedByEvent: d.blockedByEvent,
+            fingerprint:  d._fingerprint,
+          },
+          previousDecisions
+        );
+        return { ...d, _status: status };
+      });
+
+      // ── Track withdrawn decisions (subject-based, not key-based) ──────────
+      const currentSubjectKeys = new Set(withStatus.map(d => d._subjectKey));
+      const withdrawnDecisions  = previousDecisions.filter(p => !currentSubjectKeys.has(p.subjectKey));
 
       // ── Build response decisions (with preservation) ─────────────────────
-      const responseDecisions = withStaleness.map(d => {
-        const { _normalizedKey: nk, _status: status, _evidenceScore: evScore, ...rest } = d;
+      const responseDecisions = withStatus.map(d => {
+        const {
+          _origIdx: _o, _evidenceKey: _ek, _readiness, _readinessReason,
+          _normalizedKey: nk, _subjectKey: _sk, _fingerprint: _fp,
+          _evidence: _ev, _status: status,
+          ...rest
+        } = d;
 
-        const { readiness, readinessReason } = computeReadiness(rest as Parameters<typeof computeReadiness>[0]);
-
-        // Preserve Unchanged Prepare* decisions — use previous text, update metadata
+        // Preserve Unchanged Prepare* — carry forward original text, update metadata
         if (
           status === "Unchanged" &&
           (rest.decision === "PrepareToBuy" || rest.decision === "PrepareToReduce")
@@ -1407,72 +1657,88 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
           const prev = prevDecisionByKey.get(nk);
           if (prev) {
             return {
-              // Preserved content from previous run
-              rank:                  rest.rank,          // updated rank
-              subjectType:           rest.subjectType,
-              company:               String(prev.company ?? rest.company),
-              ticker:                String(prev.ticker  ?? rest.ticker),
-              decision:              rest.decision,
-              title:                 String(prev.title  ?? rest.title),
-              reason:                String(prev.reason ?? rest.reason),
-              supportingEvidence:    Array.isArray(prev.supportingEvidence)    ? prev.supportingEvidence    : rest.supportingEvidence,
-              opposingEvidence:      Array.isArray(prev.opposingEvidence)      ? prev.opposingEvidence      : rest.opposingEvidence,
-              confidence:            rest.confidence,    // updated (may reflect staleness downgrade)
-              urgency:               rest.urgency,
-              blockedByEvent:        rest.blockedByEvent,
-              blockingEvent:         rest.blockingEvent,
-              blockingEventDate:     rest.blockingEventDate,
+              rank:                   rest.rank,
+              subjectType:            rest.subjectType,
+              company:                String(prev.company ?? rest.company),
+              ticker:                 String(prev.ticker  ?? rest.ticker),
+              decision:               rest.decision,
+              title:                  String(prev.title   ?? rest.title),
+              reason:                 String(prev.reason  ?? rest.reason),
+              supportingEvidence:     Array.isArray(prev.supportingEvidence)     ? prev.supportingEvidence     : rest.supportingEvidence,
+              opposingEvidence:       Array.isArray(prev.opposingEvidence)       ? prev.opposingEvidence       : rest.opposingEvidence,
+              confidence:             rest.confidence,       // may have been downgraded (staleness)
+              urgency:                rest.urgency,
+              blockedByEvent:         rest.blockedByEvent,
+              blockingEvent:          rest.blockingEvent,
+              blockingEventDate:      rest.blockingEventDate,
               whatWouldChangeDecision: Array.isArray(prev.whatWouldChangeDecision) ? prev.whatWouldChangeDecision : rest.whatWouldChangeDecision,
-              missingEvidence:       rest.missingEvidence,  // may include staleness note
-              portfolioImpact:       String(prev.portfolioImpact       ?? rest.portfolioImpact),
-              accountConsiderations: String(prev.accountConsiderations ?? rest.accountConsiderations),
-              sourceModules:         rest.sourceModules,  // updated
+              missingEvidence:        rest.missingEvidence,  // may include staleness notes
+              portfolioImpact:        String(prev.portfolioImpact       ?? rest.portfolioImpact),
+              accountConsiderations:  String(prev.accountConsiderations ?? rest.accountConsiderations),
+              sourceModules:          rest.sourceModules,    // updated
               targetAllocationPercent:  prev.targetAllocationPercent  ?? rest.targetAllocationPercent,
               maximumAllocationPercent: prev.maximumAllocationPercent ?? rest.maximumAllocationPercent,
               sizingConfidence:         prev.sizingConfidence         ?? rest.sizingConfidence,
               sizingReason:             String(prev.sizingReason ?? rest.sizingReason ?? ""),
-              // Server-computed
               status,
-              readiness,
-              readinessReason,
+              readiness:    _readiness,
+              readinessReason: _readinessReason,
               lastValidated: nowIso,
             };
           }
         }
 
-        // New / Strengthened / Weakened / non-preserved Unchanged
         return {
           ...rest,
           status,
-          readiness,
-          readinessReason,
+          readiness:     _readiness,
+          readinessReason: _readinessReason,
           lastValidated: nowIso,
         };
       });
 
-      // Log evidence scores internally
-      for (const d of withStaleness) {
-        const ev = d._evidenceScore;
-        if (ev) {
-          systemLog.logInternal(
-            MODULE_NAME,
-            `[evidence] ${d.ticker || d.company || "portfolio"} (${d.decision}): ` +
-            `score=${ev.score} supporting=[${ev.supportingModules.join(",")}] ` +
-            `opposing=[${ev.opposingModules.join(",")}]` +
-            (ev.staleModules.length > 0 ? ` stale=[${ev.staleModules.join(",")}]` : "")
-          );
-        }
+      // ── Evidence debug metadata (in _debug, not in normal UI) ─────────────
+      const decisionEvidenceDebug = withStatus
+        .filter(d => d._evidence !== undefined)
+        .map(d => ({
+          rank:       d.rank,
+          ticker:     d.ticker || d.company || "portfolio",
+          decision:   d.decision,
+          evidenceScore:     d._evidence!.evidenceScore,
+          evidenceBand:      d._evidence!.evidenceBand,
+          supportingModules: d._evidence!.supportingModules,
+          opposingModules:   d._evidence!.opposingModules,
+          neutralModules:    d._evidence!.neutralModules,
+          missingModules:    d._evidence!.missingModules,
+          staleModules:      d._evidence!.staleModules,
+          gatePassed:        d._evidence!.gatePassed,
+          gateFailureReason: d._evidence!.gateFailureReason,
+          classifications:   d._evidence!.classifications.map(c => ({
+            module: c.module, classification: c.classification, reason: c.reason,
+          })),
+        }));
+
+      // Internal logging
+      for (const ev of decisionEvidenceDebug) {
+        systemLog.logInternal(
+          MODULE_NAME,
+          `[evidence] ${ev.ticker} (${ev.decision}): score=${ev.evidenceScore} ` +
+          `band=${ev.evidenceBand} ` +
+          `supporting=[${ev.supportingModules.join(",")}] ` +
+          `opposing=[${ev.opposingModules.join(",")}]` +
+          (ev.staleModules.length > 0 ? ` stale=[${ev.staleModules.join(",")}]` : "")
+        );
       }
 
       const finalData = {
         ...parsed.data,
-        decisions:         responseDecisions,
+        decisions:          responseDecisions,
         nextReviewTriggers: filteredTriggers,
-        timestamp:         nowIso,
+        timestamp:          nowIso,
         analysisDuration,
       };
 
-      // ── Save ─────────────────────────────────────────────────────────────
+      // ── Save ───────────────────────────────────────────────────────────────
       analysisRepository.save("trade-decision-engine", finalData);
 
       const existingHistory = historyEntry?.result?.entries ?? [];
@@ -1480,22 +1746,32 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         timestamp:              nowIso,
         overallDecisionPosture: finalData.overallDecisionPosture,
         decisionReadinessScore: finalData.decisionReadinessScore,
-        decisions: withStaleness.map(d => ({
-          normalizedKey:  d._normalizedKey,
-          subjectType:    d.subjectType,
-          company:        d.company,
-          ticker:         d.ticker,
-          decision:       d.decision,
-          confidence:     d.confidence,
-          urgency:        d.urgency,
-          evidenceScore:  d._evidenceScore?.score,
+        decisions: withStatus.map(d => ({
+          subjectKey:    d._subjectKey,
+          normalizedKey: d._normalizedKey,
+          subjectType:   d.subjectType,
+          company:       d.company,
+          ticker:        d.ticker,
+          decision:      d.decision,
+          confidence:    d.confidence,
+          urgency:       d.urgency,
+          readiness:     d._readiness,
+          evidenceScore: d._evidence?.evidenceScore,
+          evidenceBand:  d._evidence?.evidenceBand,
+          blockedByEvent:    d.blockedByEvent,
+          blockingEvent:     d.blockingEvent,
+          blockingEventDate: d.blockingEventDate,
+          targetAllocationPercent:  d.targetAllocationPercent,
+          maximumAllocationPercent: d.maximumAllocationPercent,
+          sizingConfidence:         d.sizingConfidence,
+          fingerprint:   d._fingerprint,
         })),
       };
       analysisRepository.save("trade-decision-engine-history", {
         entries: [newHistoryEntry, ...existingHistory].slice(0, MAX_HISTORY),
       });
 
-      // ── System log ───────────────────────────────────────────────────────
+      // ── System log ─────────────────────────────────────────────────────────
       systemLog.logInfo(MODULE_NAME, "Decision analysis completed");
       systemLog.logInternal(
         MODULE_NAME,
@@ -1504,8 +1780,8 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
       const readyOnes    = responseDecisions.filter(d => d.readiness === "ReadyForReview");
       const waitingOnes  = responseDecisions.filter(d => d.readiness === "WaitingForReevaluation");
-      const newOnes      = responseDecisions.filter(d => d.status === "New");
-      const changedOnes  = responseDecisions.filter(d => d.status === "Strengthened" || d.status === "Weakened");
+      const newOnes      = responseDecisions.filter(d => d.status    === "New");
+      const changedOnes  = responseDecisions.filter(d => d.status    === "Strengthened" || d.status === "Weakened");
       const unchangedTrades = responseDecisions.filter(
         d => d.status === "Unchanged" && (d.decision === "PrepareToBuy" || d.decision === "PrepareToReduce")
       );
@@ -1516,27 +1792,15 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
           `${readyOnes.length} decision(s) ReadyForReview: ${readyOnes.map(d => d.ticker || d.company || "portfolio").join(", ")}`
         );
       }
-      if (waitingOnes.length > 0) {
-        systemLog.logInternal(MODULE_NAME, `${waitingOnes.length} WaitingForReevaluation`);
-      }
-      if (newOnes.length > 0) {
-        systemLog.logInternal(MODULE_NAME, `New: ${newOnes.map(d => d.title).join("; ")}`);
-      }
-      if (changedOnes.length > 0) {
-        systemLog.logInternal(MODULE_NAME, `Changed (Strengthened/Weakened): ${changedOnes.map(d => `${d.status} ${d.title}`).join("; ")}`);
-      }
-      if (unchangedTrades.length > 0) {
-        systemLog.logInternal(MODULE_NAME, `Preserved Unchanged trade proposals: ${unchangedTrades.map(d => d.ticker || d.company || "portfolio").join(", ")}`);
-      }
-      if (resolvedDecisions.length > 0) {
-        systemLog.logInternal(MODULE_NAME, `Withdrawn: ${resolvedDecisions.map(d => d.ticker || d.company || "portfolio").join(", ")}`);
-      }
-      if (gateLog.length > 0) {
-        systemLog.logInfo(MODULE_NAME, `Multi-source gate: ${gateLog.length} decision(s) downgraded to Review`);
-      }
+      if (waitingOnes.length > 0)  systemLog.logInternal(MODULE_NAME, `${waitingOnes.length} WaitingForReevaluation`);
+      if (newOnes.length > 0)      systemLog.logInternal(MODULE_NAME, `New: ${newOnes.map(d => d.title).join("; ")}`);
+      if (changedOnes.length > 0)  systemLog.logInternal(MODULE_NAME, `Changed: ${changedOnes.map(d => `${d.status} ${d.title}`).join("; ")}`);
+      if (unchangedTrades.length > 0) systemLog.logInternal(MODULE_NAME, `Preserved Unchanged: ${unchangedTrades.map(d => d.ticker || d.company || "portfolio").join(", ")}`);
+      if (withdrawnDecisions.length > 0) systemLog.logInternal(MODULE_NAME, `Withdrawn (subject absent): ${withdrawnDecisions.map(d => d.ticker || d.company || "portfolio").join(", ")}`);
+      if (gateLog.length > 0) systemLog.logInfo(MODULE_NAME, `Gate: ${gateLog.length} decision(s) downgraded`);
 
       clearTimeout(routeTimeoutHandle);
-      res.json({ ...finalData, _debug: debug });
+      res.json({ ...finalData, _debug: debug, _decisionEvidence: decisionEvidenceDebug });
       return;
 
     } catch (err) {
@@ -1566,7 +1830,6 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     }
   }
 
-  // Safety: loop exited without sending (route timeout fired)
   clearTimeout(routeTimeoutHandle);
   if (!res.headersSent) {
     res.status(504).json({

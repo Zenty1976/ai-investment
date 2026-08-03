@@ -1,0 +1,203 @@
+The Trade Decision Engine v2 implementation is moving in the right direction, but four important backend logic issues remain.
+
+Do not redesign the UI.
+
+1. Make multi-source confirmation directional
+
+The current gate counts fresh modules listed in sourceModules, but it does not verify whether those modules support the proposed trade direction.
+
+A fresh module must not count as confirmation merely because OpenAI listed it as a source.
+
+For every PrepareToBuy and PrepareToReduce decision, classify each relevant module deterministically as:
+
+- Supporting
+- Opposing
+- Neutral
+- Missing
+- Stale
+
+Examples for PrepareToBuy:
+
+Company Monitor:
+- Buy / Strong Buy: Supporting
+- Watch: Neutral
+- Avoid / Strong Avoid: Opposing
+- invalidated or weakened thesis: Opposing
+
+Risk Analyzer:
+- high ticker-specific risk: Opposing
+- low/moderate risk with no critical ticker risk: Neutral or Supporting
+- do not treat the mere presence of Risk Analyzer as support
+
+Opportunity Finder:
+- ticker appears as an active high-confidence opportunity: Supporting
+- absent: Neutral, not Opposing
+
+Portfolio Analyzer:
+- explicit opportunity/diversification benefit for the ticker: Supporting
+- high attention or material concern: Opposing
+- generic portfolio context: Neutral
+
+Market Alerts:
+- positive material company development: Supporting
+- negative material company development: Opposing
+- no relevant alert: Neutral
+
+Only Supporting modules count toward the multi-source requirement.
+
+Require at least:
+- 2 independent Supporting modules
+- no unresolved critical Opposing module
+
+If the gate fails, downgrade to Review or WaitForEvent.
+
+Store the directional evidence classification internally for debugging and history.
+
+2. Use evidence score in readiness validation
+
+The evidence score is currently calculated but only logged and stored in history.
+
+Use it deterministically.
+
+Suggested initial rules:
+
+PrepareToBuy:
+- evidenceScore >= 25: may remain a trade proposal
+- evidenceScore from 10 to 24: downgrade to Review
+- evidenceScore below 10: downgrade to NoAction or Review
+- evidenceScore below 0: never ReadyForReview
+
+PrepareToReduce:
+- use the same positive-score interpretation, where positive means evidence supports reducing
+
+ReadyForReview should require:
+- decision is PrepareToBuy or PrepareToReduce
+- directional multi-source gate passed
+- evidenceScore >= 25
+- confidence at least Medium
+- not blocked by event
+- critical analyses are fresh
+- valid sizing exists
+- no unresolved critical opposing evidence
+
+The exact thresholds should be constants in one place so they can be adjusted later.
+
+Do not expose the raw evidence score in the main UI yet.
+
+3. Apply staleness before computing decision status
+
+The current code computes New / Strengthened / Weakened / Unchanged before stale data can reduce confidence.
+
+Change the processing order to:
+
+- normalize and validate
+- apply directional multi-source gate
+- calculate evidence
+- apply staleness/confidence downgrade
+- compute readiness
+- then compare with the previous decision and calculate status
+
+This ensures a confidence downgrade or readiness downgrade is classified as Weakened instead of Unchanged.
+
+4. Make stateful comparison materially aware
+
+Do not determine Unchanged using only confidence and urgency.
+
+Create a deterministic decision fingerprint or material comparison that includes:
+
+- subjectType
+- ticker/company
+- decision type
+- confidence
+- urgency
+- blockedByEvent
+- blockingEvent
+- blockingEventDate
+- readiness
+- targetAllocationPercent
+- maximumAllocationPercent
+- sizingConfidence
+- evidence score band
+- normalized supporting evidence
+- normalized opposing evidence
+- missing critical evidence
+
+A decision is Unchanged only when the material fingerprint is unchanged.
+
+Examples:
+
+- blocked event removed: Changed
+- target allocation changed materially: Changed
+- confidence High to Medium: Weakened
+- readiness ReadyForReview to WaitingForReevaluation: Weakened
+- evidence score moves into a stronger band: Strengthened
+- wording changes but material fingerprint stays the same: Unchanged
+
+Suggested evidence bands:
+
+- Strong: 50 or above
+- Adequate: 25–49
+- Weak: 10–24
+- Insufficient: below 10
+
+Preserve previous decision text only when the full material fingerprint is unchanged.
+
+Do not preserve previous text merely because confidence and urgency match.
+
+5. Improve withdrawn matching
+
+The current normalized key includes decision type.
+
+This means a change from PrepareToBuy to Review may appear as:
+- old decision Withdrawn
+- new decision New
+
+instead of one decision becoming Weakened.
+
+Match the same subject first using:
+- subjectType
+- ticker/company
+
+Then compare the old and new decision types.
+
+Classify examples:
+
+PrepareToBuy → Review:
+- Weakened
+
+PrepareToBuy → NoAction:
+- Withdrawn or Weakened, depending on whether the subject remains listed
+
+Review → PrepareToBuy:
+- Strengthened
+
+WaitForEvent → PrepareToBuy:
+- Strengthened
+
+Only classify as truly Withdrawn when the subject no longer has a corresponding current decision.
+
+6. Keep evidence score internal but make it observable in debug
+
+Include internal decision-quality metadata in the OpenAI/debug or backend debug section, not the normal user-facing result:
+
+- evidenceScore
+- evidenceBand
+- supportingModules
+- opposingModules
+- neutralModules
+- staleModules
+- gatePassed
+- gateFailureReason
+
+Do not place it in the collapsed Trade Decision or Trade Review UI.
+
+Preserve:
+
+- current Trade Decision UI
+- Trade Review integration
+- Company Monitor v2 integration
+- sizing
+- OpenAI prompt
+- history limit
+- timeout and retries
+- no Saxo execution
