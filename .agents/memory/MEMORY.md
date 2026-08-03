@@ -2,3 +2,5 @@
 - [callAiWithWebSearch calling convention](ai-service-calling-convention.md) — positional args, not options object; wrong call shape causes 400 from OpenAI.
 - [CompanyMonitorCandidate shape](company-monitor-candidate.md) — resolve() needs {key, result} objects, not bare result objects; key must be the full moduleName string.
 - [Debug dialog empty-object crash](debug-dialog-partial-debug.md) — lastDebug must be AiDebugInfo|undefined (not = {}); empty object is truthy and causes TypeError in dialog.
+- [Codegen wipes manual additions](codegen-manual-split.md) — orval --clean deletes everything in generated/; all non-spec types and hooks must live in manual.ts files, never in generated/.
+- [Web search + JSON mode incompatible](openai-websearch-jsonmode.md) — OpenAI Responses API rejects text.format.json_object when web_search tool is active; never pass jsonMode:true with web search.
