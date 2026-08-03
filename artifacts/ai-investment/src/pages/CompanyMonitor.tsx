@@ -602,12 +602,9 @@ export default function CompanyMonitor() {
                     )}
                   </span>
                 )}
-                {analysis.updateType && analysis.updateType !== "FullAnalysis" && (
-                  <Badge
-                    variant={analysis.updateType === "NoMaterialChange" ? "secondary" : "warning"}
-                    className="text-[9px] px-1.5 py-0 shrink-0"
-                  >
-                    {analysis.updateType === "NoMaterialChange" ? "No change" : "Updated"}
+                {analysis.updateType === "UpdateWithChanges" && (
+                  <Badge variant="warning" className="text-[9px] px-1.5 py-0 shrink-0">
+                    Updated
                   </Badge>
                 )}
               </div>
@@ -634,7 +631,10 @@ export default function CompanyMonitor() {
                   <>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(analysis.timestamp), "HH:mm 'UTC'")}
+                      {format(new Date(analysis.timestamp), "d. MMM HH:mm 'UTC'")}
+                      {analysis.updateType === "NoMaterialChange" && (
+                        <span className="text-muted-foreground/35 ml-0.5">(no change)</span>
+                      )}
                     </span>
                     <span className="flex items-center gap-1">
                       <Timer className="h-3 w-3" />
