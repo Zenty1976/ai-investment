@@ -590,11 +590,11 @@ components:
       description: Present only when investmentCaseStrength changed — explains why
       properties:
         previousScore:
-          type: number
+          type: integer
           minimum: 0
           maximum: 100
         currentScore:
-          type: number
+          type: integer
           minimum: 0
           maximum: 100
         reasons:
@@ -745,10 +745,10 @@ components:
           items:
             $ref: "#/components/schemas/CompanyThesisPoint"
         investmentCaseStrength:
-          type: number
+          type: integer
           minimum: 0
           maximum: 100
-          description: 0–100 score representing how strong the overall investment case currently is
+          description: 0–100 integer score representing how strong the overall investment case currently is
         investmentCaseChange:
           $ref: "#/components/schemas/CompanyInvestmentCaseChange"
           description: Whether and how the investment case changed since the previous analysis
@@ -842,7 +842,7 @@ components:
         investmentViewOutlook:
           $ref: "#/components/schemas/CompanyOutlook"
         investmentCaseStrength:
-          type: number
+          type: integer
           minimum: 0
           maximum: 100
         investmentCaseChangeSeverity:

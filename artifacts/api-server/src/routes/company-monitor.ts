@@ -244,6 +244,30 @@ function buildPreviousAnalysisSummary(prev: Record<string, unknown>): string {
 // Consistency validation (point 2)
 // ---------------------------------------------------------------------------
 
+/** Validates kebab-case format: lowercase letters, digits, hyphens; must start with a letter */
+const KEBAB_CASE_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+
+function validateThesisIds(
+  thesis: Array<{ id: string }>,
+  context: string
+): string | null {
+  const seen = new Set<string>();
+  for (const pt of thesis) {
+    if (!pt.id || !pt.id.trim()) {
+      return `${context}: thesis point has an empty id`;
+    }
+    const id = pt.id.trim();
+    if (!KEBAB_CASE_RE.test(id)) {
+      return `${context}: thesis point id "${id}" must be kebab-case (e.g. "revenue-growth", "margin-risk")`;
+    }
+    if (seen.has(id)) {
+      return `${context}: duplicate thesis point id "${id}"`;
+    }
+    seen.add(id);
+  }
+  return null;
+}
+
 function validateConsistency(
   data: ParsedAnalysis,
   prevAnalysis: Record<string, unknown> | undefined,
@@ -259,6 +283,15 @@ function validateConsistency(
     if (data.updateType !== 'FullAnalysis') {
       return `First run must use updateType="FullAnalysis", got "${data.updateType}"`;
     }
+    // Thesis count: 3–6 points required for a FullAnalysis
+    const thesisCount = data.investmentThesis.length;
+    if (thesisCount < 3 || thesisCount > 6) {
+      return `FullAnalysis: investmentThesis must contain 3–6 points, got ${thesisCount}`;
+    }
+    // All IDs must be non-empty, unique, and kebab-case
+    const thesisIdError = validateThesisIds(data.investmentThesis, 'FullAnalysis');
+    if (thesisIdError) return thesisIdError;
+
     if (data.investmentCaseChange.changed !== false) {
       return 'First run: investmentCaseChange.changed must be false';
     }
@@ -371,6 +404,13 @@ function validateConsistency(
         return `UpdateWithChanges: thesis point id "${prevPt.id}" was omitted (use Invalidated if no longer valid)`;
       }
     }
+    // New thesis IDs (not from the previous run) must be unique and kebab-case
+    const prevIdSet = new Set(prevThesis.map(p => p.id));
+    const newPoints = data.investmentThesis.filter(p => !prevIdSet.has(p.id));
+    if (newPoints.length > 0) {
+      const newIdError = validateThesisIds(data.investmentThesis, 'UpdateWithChanges new thesis IDs');
+      if (newIdError) return newIdError;
+    }
     return null;
   }
 
@@ -478,8 +518,11 @@ function validateAndFixDates(
         earningsAndGuidance: { ...data.earningsAndGuidance, nextKnownEventDate: '' },
       };
     } else {
-      const d = new Date(eventDate + 'T00:00:00Z');
-      if (d < now) {
+      // Compare calendar dates only (YYYY-MM-DD strings).
+      // An event scheduled for today may still occur later in the day, so only
+      // clear the date when eventDate is strictly before the current UTC date.
+      const currentUtcDate = nowIso.slice(0, 10); // YYYY-MM-DD
+      if (eventDate.trim() < currentUtcDate) {
         warnings.push(`nextKnownEventDate "${eventDate}" is in the past — clearing`);
         data = {
           ...data,

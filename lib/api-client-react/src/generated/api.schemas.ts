@@ -462,7 +462,7 @@ export interface CompanyAnalysis {
   /** The persistent investment thesis — WHY this company is attractive or unattractive */
   investmentThesis: CompanyThesisPoint[];
   /**
-     * 0–100 score representing how strong the overall investment case currently is
+     * 0–100 integer score representing how strong the overall investment case currently is
      * @minimum 0
      * @maximum 100
      */

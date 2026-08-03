@@ -174,7 +174,7 @@ export const RunCompanyAnalysisResponse = zod.object({
   "point": zod.string(),
   "status": zod.enum(['Strengthened', 'Unchanged', 'Weakened', 'Invalidated'])
 }).describe('A single investment thesis point with a stable ID')).describe('The persistent investment thesis — WHY this company is attractive or unattractive'),
-  "investmentCaseStrength": zod.number().min(runCompanyAnalysisResponseInvestmentCaseStrengthMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthMax).describe('0–100 score representing how strong the overall investment case currently is'),
+  "investmentCaseStrength": zod.number().int().min(runCompanyAnalysisResponseInvestmentCaseStrengthMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthMax).describe('0–100 integer score representing how strong the overall investment case currently is'),
   "investmentCaseChange": zod.object({
   "changed": zod.boolean(),
   "severity": zod.enum(['High', 'Medium', 'Low', 'None']),
@@ -184,8 +184,8 @@ export const RunCompanyAnalysisResponse = zod.object({
   "reason": zod.string()
 }).describe('Whether and how the investment case changed since the previous analysis'),
   "investmentCaseStrengthChange": zod.object({
-  "previousScore": zod.number().min(runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMax),
-  "currentScore": zod.number().min(runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMax),
+  "previousScore": zod.number().int().min(runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthChangePreviousScoreMax),
+  "currentScore": zod.number().int().min(runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMin).max(runCompanyAnalysisResponseInvestmentCaseStrengthChangeCurrentScoreMax),
   "reasons": zod.array(zod.string())
 }).optional().describe('Present only when investmentCaseStrength changed — explains why'),
   "stableProfile": zod.object({
