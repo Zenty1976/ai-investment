@@ -7,13 +7,15 @@
  * 2. Each item's suggestedAmountBase never exceeds its own position gap value.
  * 3. Empty or zero-value portfolios return safe zero-deployment plans.
  * 4. Gap-free portfolios (all positions at or above target) return no items.
+ * 5. TargetPortfolio must never be mutated by computeCapitalAllocation.
+ * 6. Excluded allocations are returned in excludedItems, NOT in provisionalItems.
  */
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { computeCapitalAllocation } from "../portfolio-capital-allocation-engine.js";
 import type { PortfolioSnapshot } from "../../routes/portfolio-manager.js";
-import type { TargetPortfolio } from "../portfolio-manager-v2-types.js";
+import type { TargetPortfolio, TargetAllocation } from "../portfolio-manager-v2-types.js";
 
 // ── Minimal fixture helpers ──────────────────────────────────────────────────
 
@@ -66,7 +68,7 @@ function makeSnapshot(
 
 function makeTarget(
   cashTargetPercent: number,
-  allocations: Array<{ ticker: string; targetPercent: number }>
+  allocations: Array<{ ticker: string; targetPercent: number; allocationStatus?: TargetAllocation["allocationStatus"] }>
 ): TargetPortfolio {
   return {
     generatedAt: "2026-01-01T00:00:00.000Z",
@@ -82,20 +84,15 @@ function makeTarget(
       minPercent: 0,
       maxPercent: 50,
       rationale: "Test",
+      allocationStatus: a.allocationStatus,
     })),
   };
 }
 
-// ── Tests ────────────────────────────────────────────────────────────────────
+// ── Existing tests ────────────────────────────────────────────────────────────
 
 describe("portfolio capital allocation engine", () => {
   it("caps total deployment at aggregate gap value when cash exceeds all gaps", () => {
-    // Portfolio: totalValue 1,000,000 DKK
-    //   AAPL: 100,000 (10%)
-    //   Cash: 500,000 (50%) — very high
-    // Target: AAPL 15% (gap 5% = 50,000), MSFT 10% (gap 10% = 100,000)
-    // cashTargetPercent 10% → floor 100,000 → deployable = 400,000
-    // Aggregate gaps = 150,000 → should only deploy 150,000, not 400,000
     const snapshot = makeSnapshot(1_000_000, 500_000, [
       { symbol: "AAPL", marketValueBaseCurrency: 100_000 },
     ]);
@@ -106,32 +103,19 @@ describe("portfolio capital allocation engine", () => {
 
     const plan = computeCapitalAllocation(snapshot, target);
 
-    // Total suggested must not exceed the sum of position gaps in DKK
-    const aaplGap = 50_000;   // 5% of 1,000,000
-    const msftGap = 100_000;  // 10% of 1,000,000 (missing position)
-    const aggregateGap = aaplGap + msftGap; // 150,000
+    const aaplGap = 50_000;
+    const msftGap = 100_000;
+    const aggregateGap = aaplGap + msftGap;
 
     assert.ok(
       plan.totalSuggestedDeploymentBase <= aggregateGap + 1,
       `totalSuggestedDeploymentBase (${plan.totalSuggestedDeploymentBase}) must be ≤ aggregate gap (${aggregateGap})`
     );
-    assert.ok(
-      plan.totalSuggestedDeploymentBase > 0,
-      "totalSuggestedDeploymentBase must be > 0 when there are gaps"
-    );
-    // Residual cash should be high (most of the excess stays)
-    assert.ok(
-      plan.residualCashAfterDeploymentBase >= 500_000 - aggregateGap - 100,
-      "residual cash should reflect excess above aggregate gaps"
-    );
+    assert.ok(plan.totalSuggestedDeploymentBase > 0);
+    assert.ok(plan.residualCashAfterDeploymentBase >= 500_000 - aggregateGap - 100);
   });
 
   it("caps each item at its own position gap value", () => {
-    // Portfolio: totalValue 1,000,000
-    //   AAPL: 800,000 (80%)
-    //   Cash: 200,000 (20%)
-    // Target: AAPL 85% (gap 5% = 50,000), MSFT 10% (gap 10% = 100,000)
-    // cashTarget 5% → floor 50,000 → deployable = 150,000
     const snapshot = makeSnapshot(1_000_000, 200_000, [
       { symbol: "AAPL", marketValueBaseCurrency: 800_000 },
     ]);
@@ -152,13 +136,10 @@ describe("portfolio capital allocation engine", () => {
   });
 
   it("returns zero deployment when no cash is deployable (cash at floor)", () => {
-    // availableCash == cashFloor exactly → deployable = 0
     const snapshot = makeSnapshot(1_000_000, 100_000, [
       { symbol: "AAPL", marketValueBaseCurrency: 900_000 },
     ]);
-    const target = makeTarget(10, [
-      { ticker: "AAPL", targetPercent: 90 },
-    ]);
+    const target = makeTarget(10, [{ ticker: "AAPL", targetPercent: 90 }]);
 
     const plan = computeCapitalAllocation(snapshot, target);
     assert.equal(plan.deployableCashBase, 0);
@@ -167,7 +148,6 @@ describe("portfolio capital allocation engine", () => {
   });
 
   it("returns no items when all positions are at or above their target", () => {
-    // AAPL at 50%, target 45% — overweight, no gap
     const snapshot = makeSnapshot(1_000_000, 100_000, [
       { symbol: "AAPL", marketValueBaseCurrency: 500_000 },
       { symbol: "MSFT", marketValueBaseCurrency: 400_000 },
@@ -193,23 +173,132 @@ describe("portfolio capital allocation engine", () => {
   });
 
   it("proportional allocation distributes across multiple gaps", () => {
-    // Two equal gaps: AAPL 10%, MSFT 10% — each should get ~50% of deployable
     const snapshot = makeSnapshot(1_000_000, 300_000, [
       { symbol: "AAPL", marketValueBaseCurrency: 350_000 },
       { symbol: "MSFT", marketValueBaseCurrency: 350_000 },
     ]);
     const target = makeTarget(10, [
-      { ticker: "AAPL", targetPercent: 45 },  // gap 10%
-      { ticker: "MSFT", targetPercent: 45 },  // gap 10%
+      { ticker: "AAPL", targetPercent: 45 },
+      { ticker: "MSFT", targetPercent: 45 },
     ]);
 
     const plan = computeCapitalAllocation(snapshot, target);
     assert.equal(plan.items.length, 2);
-    // Both gaps equal → each item should be within 10% of each other
     const [a, b] = plan.items.sort((x, y) => x.ticker.localeCompare(y.ticker));
     assert.ok(
       Math.abs(a.suggestedAmountBase - b.suggestedAmountBase) <= 100,
       "Equal gaps should produce approximately equal deployment amounts"
     );
+  });
+});
+
+// ── Immutability guarantee ─────────────────────────────────────────────────────
+
+describe("portfolio capital allocation engine — immutability", () => {
+  it("does NOT mutate the supplied TargetPortfolio or its allocations", () => {
+    // Set up a portfolio where AAPL is StrategicTarget but TDE says it's blocked.
+    // Before the fix, computeCapitalAllocation wrote alloc.allocationStatus = "Blocked".
+    const snapshot = makeSnapshot(1_000_000, 300_000, [
+      { symbol: "MSFT", marketValueBaseCurrency: 700_000 },
+    ]);
+    const target = makeTarget(10, [
+      { ticker: "AAPL", targetPercent: 20, allocationStatus: "StrategicTarget" },
+      { ticker: "MSFT", targetPercent: 70 },
+    ]);
+
+    // Deep-clone the original allocation statuses before the call
+    const originalStatuses = target.allocations.map((a) => ({
+      ticker: a.ticker,
+      allocationStatus: a.allocationStatus,
+    }));
+    const originalAllocRef = target.allocations[0]; // reference to the first alloc object
+
+    // Call with a TDE entry that says AAPL is blocked
+    const tde = new Map([
+      ["AAPL", { readiness: "WaitingForReevaluation", blockedByEvent: false }],
+    ]);
+
+    computeCapitalAllocation(snapshot, target, tde);
+
+    // The TargetPortfolio object must be unchanged
+    for (let i = 0; i < originalStatuses.length; i++) {
+      assert.equal(
+        target.allocations[i].allocationStatus,
+        originalStatuses[i].allocationStatus,
+        `Allocation ${originalStatuses[i].ticker} was mutated: ` +
+        `original "${originalStatuses[i].allocationStatus}" → now "${target.allocations[i].allocationStatus}"`
+      );
+    }
+
+    // The object reference must be the same (no copy was created)
+    assert.strictEqual(target.allocations[0], originalAllocRef, "Allocation object reference changed");
+  });
+
+  it("TDE override produces the correct effectiveStatus in the output without touching the source", () => {
+    const snapshot = makeSnapshot(1_000_000, 300_000, [
+      { symbol: "MSFT", marketValueBaseCurrency: 700_000 },
+    ]);
+    const target = makeTarget(10, [
+      { ticker: "AAPL", targetPercent: 20, allocationStatus: "StrategicTarget" },
+    ]);
+
+    const tde = new Map([
+      ["AAPL", { readiness: "WaitingForReevaluation", blockedByEvent: false }],
+    ]);
+
+    const plan = computeCapitalAllocation(snapshot, target, tde);
+
+    // Should appear in provisionalItems (WaitingForReevaluation → Provisional)
+    assert.equal(plan.provisionalItems.length, 1);
+    assert.equal(plan.provisionalItems[0].ticker, "AAPL");
+    assert.equal(plan.provisionalItems[0].allocationStatus, "Provisional");
+
+    // Source alloc must remain StrategicTarget
+    assert.equal(target.allocations[0].allocationStatus, "StrategicTarget");
+  });
+});
+
+// ── Excluded allocations ──────────────────────────────────────────────────────
+
+describe("portfolio capital allocation engine — Excluded allocations", () => {
+  it("Excluded allocations appear in excludedItems, NOT in provisionalItems", () => {
+    const snapshot = makeSnapshot(1_000_000, 300_000, [
+      { symbol: "MSFT", marketValueBaseCurrency: 700_000 },
+    ]);
+    const target = makeTarget(10, [
+      { ticker: "AAPL", targetPercent: 20, allocationStatus: "Excluded" },
+    ]);
+
+    const plan = computeCapitalAllocation(snapshot, target);
+
+    assert.equal(plan.provisionalItems.length, 0, "Excluded must not appear in provisionalItems");
+    assert.equal(plan.excludedItems.length, 1, "Excluded must appear in excludedItems");
+    assert.equal(plan.excludedItems[0].ticker, "AAPL");
+    assert.equal(plan.excludedItems[0].allocationStatus, "Excluded");
+    assert.equal(plan.excludedItems[0].suggestedAmountBase, 0, "No capital suggested for Excluded");
+  });
+
+  it("Excluded allocations do not contribute to deployment suggestions", () => {
+    const snapshot = makeSnapshot(1_000_000, 400_000, [
+      { symbol: "MSFT", marketValueBaseCurrency: 600_000 },
+    ]);
+    const target = makeTarget(10, [
+      { ticker: "AAPL", targetPercent: 20, allocationStatus: "Excluded" },
+      { ticker: "MSFT", targetPercent: 70, allocationStatus: "StrategicTarget" },
+    ]);
+
+    const plan = computeCapitalAllocation(snapshot, target);
+
+    // Only MSFT (StrategicTarget, underweight) should be in actionableItems
+    assert.equal(plan.actionableItems.length, 1);
+    assert.equal(plan.actionableItems[0].ticker, "MSFT");
+
+    // AAPL must not appear anywhere except excludedItems
+    const aapl = [
+      ...plan.actionableItems,
+      ...plan.blockedItems,
+      ...plan.provisionalItems,
+    ].find((i) => i.ticker === "AAPL");
+    assert.equal(aapl, undefined, "AAPL should not appear in actionable/blocked/provisional");
   });
 });

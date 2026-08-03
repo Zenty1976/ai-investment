@@ -21,6 +21,13 @@
  *           from the equity budget. Adjust cashTargetPercent to compensate so
  *           equity + cash == 100. If the required cash would exceed CASH_HARD_MAX
  *           (40%), the allocation set is infeasible — throw to allow caller to retry.
+ *
+ * ## Strict required-field policy (v2.1)
+ *
+ * allocationStatus, conviction, reasonForStatus, blockingFactors, and
+ * supportingModules are all REQUIRED on every allocation.  Missing or invalid
+ * values cause the validation to throw so the synthesiser can retry, rather
+ * than silently defaulting to values that alter capital-deployment behaviour.
  */
 
 import type {
@@ -46,7 +53,7 @@ export interface AiTargetAllocationRaw {
   minPercent: number;
   maxPercent: number;
   rationale: string;
-  // New structured fields (optional — AI may not return all on every run)
+  // Required structured fields — validator throws if any are missing/invalid.
   conviction?: string;
   allocationStatus?: string;
   reasonForStatus?: string;
@@ -81,38 +88,75 @@ export function sanitiseRole(raw: string): PortfolioRole {
   );
 }
 
-// ── Conviction sanitiser ──────────────────────────────────────────────────────
+// ── Conviction validator ──────────────────────────────────────────────────────
 
 const VALID_CONVICTIONS = new Set<Conviction>(["High", "Medium", "Low"]);
 
-function sanitiseConviction(raw: string | undefined): Conviction {
-  if (raw && VALID_CONVICTIONS.has(raw as Conviction)) return raw as Conviction;
-  return "Medium"; // default when not supplied
+/**
+ * Validates conviction — throws if missing or invalid.
+ * conviction determines capital weighting; a silent default would mask AI errors.
+ */
+export function validateConviction(raw: string | undefined, ticker: string): Conviction {
+  if (!raw) {
+    throw new Error(
+      `Target synthesiser: allocation ${ticker} is missing "conviction". ` +
+      `conviction must be "High", "Medium", or "Low".`
+    );
+  }
+  if (!VALID_CONVICTIONS.has(raw as Conviction)) {
+    throw new Error(
+      `Target synthesiser: allocation ${ticker} has invalid conviction "${raw}". ` +
+      `Must be "High", "Medium", or "Low".`
+    );
+  }
+  return raw as Conviction;
 }
 
-// ── AllocationStatus sanitiser ────────────────────────────────────────────────
+// ── AllocationStatus validator ────────────────────────────────────────────────
 
 const VALID_STATUSES = new Set<AllocationStatus>([
   "StrategicTarget", "Provisional", "Blocked", "Excluded",
 ]);
 
-function sanitiseStatus(raw: string | undefined): AllocationStatus {
-  if (raw && VALID_STATUSES.has(raw as AllocationStatus)) return raw as AllocationStatus;
-  return "StrategicTarget"; // default when not supplied
+/**
+ * Validates allocationStatus — throws if missing or invalid.
+ * allocationStatus controls whether capital is deployed; a silent default to
+ * StrategicTarget would deploy capital to positions the CIO did not clear.
+ */
+export function validateAllocationStatus(raw: string | undefined, ticker: string): AllocationStatus {
+  if (!raw) {
+    throw new Error(
+      `Target synthesiser: allocation ${ticker} is missing "allocationStatus". ` +
+      `allocationStatus must be "StrategicTarget", "Provisional", "Blocked", or "Excluded".`
+    );
+  }
+  if (!VALID_STATUSES.has(raw as AllocationStatus)) {
+    throw new Error(
+      `Target synthesiser: allocation ${ticker} has invalid allocationStatus "${raw}". ` +
+      `Must be "StrategicTarget", "Provisional", "Blocked", or "Excluded".`
+    );
+  }
+  return raw as AllocationStatus;
 }
 
-// ── SupportingModule sanitiser ────────────────────────────────────────────────
+// ── SupportingModule validator ────────────────────────────────────────────────
 
 const VALID_MODULES = new Set<SupportingModule>([
   "PortfolioAnalyzer", "RiskAnalyzer", "OpportunityFinder", "CompanyMonitor",
   "TradeDecisionEngine", "SectorMonitor", "MarketAlerts", "MarketMonitor",
 ]);
 
-function sanitiseSupportingModules(
+function validateSupportingModules(
   raw: string[] | undefined,
+  ticker: string,
   suppliedModules: Set<string>
 ): SupportingModule[] {
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) {
+    throw new Error(
+      `Target synthesiser: allocation ${ticker} is missing "supportingModules". ` +
+      `supportingModules must be an array (may be empty []).`
+    );
+  }
   return raw
     .filter((m) => VALID_MODULES.has(m as SupportingModule))
     .filter((m) => suppliedModules.size === 0 || suppliedModules.has(m)) as SupportingModule[];
@@ -135,14 +179,19 @@ function sanitiseSupportingModules(
  * - any allocation uses role "Cash"
  * - any ticker is duplicated
  * - any role is not a known PortfolioRole
+ * - allocationStatus is missing or invalid (v2.1: no silent default)
+ * - conviction is missing or invalid (v2.1: no silent default)
+ * - reasonForStatus is missing or empty
+ * - blockingFactors is not an array
+ * - supportingModules is not an array
  * - a Blocked allocation has no blockingFactors
- * - a StrategicTarget allocation has a critical blocking factor with no explanation
+ * - a StrategicTarget allocation has any blockingFactors
  * - equity sum after normalisation is zero
  * - the allocation set is infeasible
  *
  * @param raw              Parsed AI JSON response
  * @param allowedTickers   Set of uppercase tickers the AI is permitted to include
- * @param suppliedModules  Set of module names actually provided as context (for supportingModules validation)
+ * @param suppliedModules  Set of module names actually provided as context
  */
 export function validateAndNormaliseTarget(
   raw: AiTargetPortfolioResponse,
@@ -181,7 +230,7 @@ export function validateAndNormaliseTarget(
     );
   }
 
-  // ── 4b. Reject 'Cash' as a ticker-level role ─────────────────────────────
+  // ── 4b. Reject 'Cash' as a ticker-level role ──────────────────────────────
   const cashRoleAllocations = filtered.filter(
     (a) => String(a.role ?? "").trim() === "Cash"
   );
@@ -208,10 +257,11 @@ export function validateAndNormaliseTarget(
     );
   }
 
-  // ── 5. Pass 1 — validate roles and initial clamp ──────────────────────────
-  // sanitiseRole throws on unknown roles — caller should retry rather than
-  // silently accepting a wrong allocation range.
+  // ── 5. Pass 1 — validate required structured fields + initial clamp ───────
+  // sanitiseRole throws on unknown roles.
+  // validateAllocationStatus and validateConviction throw on missing/invalid values.
   const allocations: TargetAllocation[] = filtered.map((a) => {
+    const ticker = a.ticker.toUpperCase().trim();
     const role    = sanitiseRole(String(a.role ?? ""));
     const roleDef = ROLE_DEFINITIONS[role];
 
@@ -227,15 +277,29 @@ export function validateAndNormaliseTarget(
     const min = Math.max(roleDef.typicalMinPercent, Math.min(rawMin, target));
     const max = Math.min(roleDef.typicalMaxPercent, Math.max(rawMax, target));
 
-    const allocationStatus = sanitiseStatus(a.allocationStatus);
-    const conviction       = sanitiseConviction(a.conviction);
-    const blockingFactors  = Array.isArray(a.blockingFactors)
-      ? a.blockingFactors.map(String).filter((s) => s.trim().length > 0)
-      : [];
-    const supportingModules = sanitiseSupportingModules(a.supportingModules, suppliedModules);
+    // Required structured fields — throw on missing/invalid (no silent defaults)
+    const allocationStatus = validateAllocationStatus(a.allocationStatus, ticker);
+    const conviction       = validateConviction(a.conviction, ticker);
+
+    if (!a.reasonForStatus || String(a.reasonForStatus).trim().length === 0) {
+      throw new Error(
+        `Target synthesiser: allocation ${ticker} is missing "reasonForStatus". ` +
+        `Every allocation must include a 1-sentence explanation of its allocationStatus.`
+      );
+    }
+
+    if (!Array.isArray(a.blockingFactors)) {
+      throw new Error(
+        `Target synthesiser: allocation ${ticker} is missing "blockingFactors". ` +
+        `blockingFactors must be an array (use [] when there are no blocking factors).`
+      );
+    }
+
+    const blockingFactors = a.blockingFactors.map(String).filter((s) => s.trim().length > 0);
+    const supportingModules = validateSupportingModules(a.supportingModules, ticker, suppliedModules);
 
     return {
-      ticker:         a.ticker.toUpperCase().trim(),
+      ticker,
       company:        String(a.company ?? a.ticker),
       role,
       targetPercent:  target,
@@ -244,7 +308,7 @@ export function validateAndNormaliseTarget(
       rationale:      String(a.rationale ?? ""),
       conviction,
       allocationStatus,
-      reasonForStatus: a.reasonForStatus ? String(a.reasonForStatus) : undefined,
+      reasonForStatus: String(a.reasonForStatus).trim(),
       blockingFactors,
       supportingModules,
     };
@@ -262,7 +326,7 @@ export function validateAndNormaliseTarget(
       throw new Error(
         `Target synthesiser: allocation ${a.ticker} has status "StrategicTarget" but lists blocking factors: ` +
         `[${a.blockingFactors.join(", ")}]. ` +
-        `A StrategicTarget must not have critical blocking factors — use Blocked or Provisional.`
+        `A StrategicTarget must not have blocking factors — use Blocked or Provisional.`
       );
     }
   }
@@ -293,7 +357,7 @@ export function validateAndNormaliseTarget(
   }
 
   // ── 8. Pass 4 — adjust cash to absorb equity deviation ───────────────────
-  const equityTotal = allocations.reduce((s, a) => s + a.targetPercent, 0);
+  const equityTotal  = allocations.reduce((s, a) => s + a.targetPercent, 0);
   const requiredCash = 100 - equityTotal;
 
   if (requiredCash > CASH_HARD_MAX) {

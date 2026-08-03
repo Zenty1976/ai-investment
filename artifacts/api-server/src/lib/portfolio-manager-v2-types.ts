@@ -167,6 +167,11 @@ export interface CapitalAllocationPlan {
   blockedItems: CapitalAllocationItem[];
   /** Allocations with Provisional status — visible gap but no deployment suggested */
   provisionalItems: CapitalAllocationItem[];
+  /**
+   * Allocations with Excluded status — CIO deliberately omitted these from capital deployment.
+   * Excluded is distinct from Provisional: no evidence is expected to change the decision.
+   */
+  excludedItems: CapitalAllocationItem[];
   /** Sum of suggestedAmountBase for actionableItems only */
   totalSuggestedDeploymentBase: number;
   residualCashAfterDeploymentBase: number;
@@ -193,10 +198,16 @@ export interface ReplacementOpportunity {
   rationale: string;
   priority: "High" | "Medium" | "Low";
   /**
-   * True when Company Monitor data is missing for either side —
-   * the comparison is indicative, not analytically complete.
+   * True when Company Monitor is missing for either side, Trade Decision is missing
+   * for the candidate, or the candidate is not ReadyForReview.
+   * A provisional comparison is a research idea, not a validated recommendation.
    */
   isProvisional: boolean;
+  /**
+   * Human-readable reasons why this comparison is provisional.
+   * Empty array when isProvisional is false.
+   */
+  provisionalReasons: string[];
 }
 
 // ── Change Explainer ──────────────────────────────────────────────────────────

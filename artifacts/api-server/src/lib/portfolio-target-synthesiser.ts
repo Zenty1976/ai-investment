@@ -21,21 +21,7 @@ import {
   validateAndNormaliseTarget,
   type AiTargetPortfolioResponse,
 } from "./portfolio-target-validation.js";
-
-// ── Fingerprint helper ────────────────────────────────────────────────────────
-
-/**
- * Deterministic djb2-family hash of a JSON-serialised object.
- * Used to detect whether material CIO inputs have changed since the last run.
- */
-export function computeCioFingerprint(data: unknown): string {
-  const str = JSON.stringify(data);
-  let h = 5381;
-  for (let i = 0; i < str.length; i++) {
-    h = (((h << 5) + h) ^ str.charCodeAt(i)) >>> 0;
-  }
-  return h.toString(16).padStart(8, "0");
-}
+export { computeCioFingerprint } from "./portfolio-cio-fingerprint.js";
 
 // ── Role range table for the system prompt ────────────────────────────────────
 

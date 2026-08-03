@@ -10,17 +10,42 @@
  * 5. Unknown tickers throw.
  * 6. Empty / malformed input throws.
  * 7. cashTargetPercent is adjusted to compensate for role-bound enforcement.
+ * 8. (v2.1) allocationStatus required — throws if missing or invalid.
+ * 9. (v2.1) conviction required — throws if missing or invalid.
+ * 10. (v2.1) reasonForStatus required — throws if missing or empty.
+ * 11. (v2.1) blockingFactors required as array — throws if not array.
+ * 12. (v2.1) supportingModules required as array — throws if not array.
  */
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   validateAndNormaliseTarget,
+  type AiTargetAllocationRaw,
   type AiTargetPortfolioResponse,
 } from "../portfolio-target-validation.js";
 import { ROLE_DEFINITIONS } from "../portfolio-role-config.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** A fully valid allocation with all required structured fields. */
+function makeAlloc(overrides: Partial<AiTargetAllocationRaw> = {}): AiTargetAllocationRaw {
+  return {
+    ticker: "AAPL",
+    company: "Apple Inc",
+    role: "CoreHolding",
+    targetPercent: 15,
+    minPercent: 10,
+    maxPercent: 20,
+    rationale: "Core holding",
+    conviction: "High",
+    allocationStatus: "StrategicTarget",
+    reasonForStatus: "Strong Buy rating with full analytical coverage.",
+    blockingFactors: [],
+    supportingModules: ["CompanyMonitor", "TradeDecisionEngine"],
+    ...overrides,
+  };
+}
 
 /** Build a raw AI response fixture with optional overrides. */
 function makeRaw(overrides: Partial<AiTargetPortfolioResponse> = {}): AiTargetPortfolioResponse {
@@ -29,24 +54,15 @@ function makeRaw(overrides: Partial<AiTargetPortfolioResponse> = {}): AiTargetPo
     strategicRationale: "Test portfolio",
     keyAssumptions: ["Assumption 1"],
     allocations: [
-      {
-        ticker: "AAPL",
-        company: "Apple Inc",
-        role: "CoreHolding",
-        targetPercent: 15,
-        minPercent: 10,
-        maxPercent: 20,
-        rationale: "Core holding",
-      },
-      {
+      makeAlloc({ ticker: "AAPL", targetPercent: 15 }),
+      makeAlloc({
         ticker: "MSFT",
         company: "Microsoft",
-        role: "CoreHolding",
         targetPercent: 75,
         minPercent: 60,
         maxPercent: 80,
         rationale: "Core holding",
-      },
+      }),
     ],
     ...overrides,
   };
@@ -68,23 +84,23 @@ function assertWithinRoleBounds(allocations: Array<{ ticker: string; role: strin
 }
 
 const ALLOWED_BOTH = new Set(["AAPL", "MSFT"]);
-
-// Larger allowed set for tests that need many positions
 const ALLOWED_FIVE = new Set(["AAPL", "MSFT", "GOOG", "AMZN", "META"]);
 
 /** A 5-CoreHolding position fixture — feasible equity budget of 90%. */
 function makeFivePosition(cashTarget = 10): AiTargetPortfolioResponse {
+  const tickers = ["AAPL", "MSFT", "GOOG", "AMZN", "META"];
+  const companies = ["Apple", "Microsoft", "Alphabet", "Amazon", "Meta"];
   return {
     cashTargetPercent: cashTarget,
     strategicRationale: "Diversified core portfolio",
     keyAssumptions: [],
-    allocations: [
-      { ticker: "AAPL", company: "Apple",     role: "CoreHolding", targetPercent: 25, minPercent: 8, maxPercent: 30, rationale: "Test" },
-      { ticker: "MSFT", company: "Microsoft", role: "CoreHolding", targetPercent: 25, minPercent: 8, maxPercent: 30, rationale: "Test" },
-      { ticker: "GOOG", company: "Alphabet",  role: "CoreHolding", targetPercent: 25, minPercent: 8, maxPercent: 30, rationale: "Test" },
-      { ticker: "AMZN", company: "Amazon",    role: "CoreHolding", targetPercent: 25, minPercent: 8, maxPercent: 30, rationale: "Test" },
-      { ticker: "META", company: "Meta",      role: "CoreHolding", targetPercent: 25, minPercent: 8, maxPercent: 30, rationale: "Test" },
-    ],
+    allocations: tickers.map((ticker, i) => makeAlloc({
+      ticker,
+      company: companies[i],
+      targetPercent: 25,
+      minPercent: 8,
+      maxPercent: 30,
+    })),
   };
 }
 
@@ -92,52 +108,42 @@ function makeFivePosition(cashTarget = 10): AiTargetPortfolioResponse {
 
 describe("validateAndNormaliseTarget — final role bounds (HARD)", () => {
   it("every final targetPercent is within its role's [typicalMin, typicalMax] — 5-position portfolio", () => {
-    // 5 CoreHolding positions each at 25% (above typicalMax of 20%).
-    // After normalisation each should be within [8, 20].
     const { allocations } = validateAndNormaliseTarget(makeFivePosition(10), ALLOWED_FIVE);
     assertWithinRoleBounds(allocations);
   });
 
   it("positions with mixed roles all end within their respective role bounds", () => {
-    // Mix: CoreHolding (max 20%), GrowthCore (max 15%), SpeculativeGrowth (max 8%),
-    // IncomeDividend (max 12%), Defensive (max 12%).
-    // AI returns all at 30% — all must be clamped to their role maxes.
     const raw: AiTargetPortfolioResponse = {
       cashTargetPercent: 5,
       strategicRationale: "Mixed roles",
       keyAssumptions: [],
       allocations: [
-        { ticker: "AAPL", company: "Apple",     role: "CoreHolding",       targetPercent: 30, minPercent: 5, maxPercent: 35, rationale: "Test" },
-        { ticker: "MSFT", company: "Microsoft", role: "GrowthCore",        targetPercent: 30, minPercent: 5, maxPercent: 35, rationale: "Test" },
-        { ticker: "GOOG", company: "Alphabet",  role: "SpeculativeGrowth", targetPercent: 30, minPercent: 5, maxPercent: 35, rationale: "Test" },
-        { ticker: "AMZN", company: "Amazon",    role: "IncomeDividend",    targetPercent: 30, minPercent: 5, maxPercent: 35, rationale: "Test" },
-        { ticker: "META", company: "Meta",      role: "Defensive",         targetPercent: 30, minPercent: 5, maxPercent: 35, rationale: "Test" },
+        makeAlloc({ ticker: "AAPL", role: "CoreHolding",       targetPercent: 30, minPercent: 5, maxPercent: 35 }),
+        makeAlloc({ ticker: "MSFT", role: "GrowthCore",        targetPercent: 30, minPercent: 5, maxPercent: 35 }),
+        makeAlloc({ ticker: "GOOG", role: "SpeculativeGrowth", targetPercent: 30, minPercent: 5, maxPercent: 35 }),
+        makeAlloc({ ticker: "AMZN", role: "IncomeDividend",    targetPercent: 30, minPercent: 5, maxPercent: 35 }),
+        makeAlloc({ ticker: "META", role: "Defensive",         targetPercent: 30, minPercent: 5, maxPercent: 35 }),
       ],
     };
-
     const { allocations } = validateAndNormaliseTarget(raw, ALLOWED_FIVE);
     assertWithinRoleBounds(allocations);
   });
 
   it("AI values already within role bounds pass through unchanged after normalisation", () => {
-    // 5 CoreHolding positions each at 18% — within [8, 20].
-    // After normalisation to 90% equity budget, they should scale to ~18% each.
     const raw: AiTargetPortfolioResponse = {
       cashTargetPercent: 10,
       strategicRationale: "In-bounds test",
       keyAssumptions: [],
       allocations: [
-        { ticker: "AAPL", company: "Apple",     role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "Test" },
-        { ticker: "MSFT", company: "Microsoft", role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "Test" },
-        { ticker: "GOOG", company: "Alphabet",  role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "Test" },
-        { ticker: "AMZN", company: "Amazon",    role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "Test" },
-        { ticker: "META", company: "Meta",      role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "Test" },
+        makeAlloc({ ticker: "AAPL", targetPercent: 18, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "MSFT", targetPercent: 18, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "GOOG", targetPercent: 18, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "AMZN", targetPercent: 18, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "META", targetPercent: 18, minPercent: 8, maxPercent: 20 }),
       ],
     };
-
     const { allocations, cashTargetPercent } = validateAndNormaliseTarget(raw, ALLOWED_FIVE);
     assertWithinRoleBounds(allocations);
-    // Equity = 90%, cash = 10%
     const equitySum = allocations.reduce((s, a) => s + a.targetPercent, 0);
     assert.ok(Math.abs(equitySum + cashTargetPercent - 100) <= 2, "total must be within 2pp of 100");
   });
@@ -145,61 +151,34 @@ describe("validateAndNormaliseTarget — final role bounds (HARD)", () => {
   it("min ≤ target ≤ max for all allocations after normalisation", () => {
     const { allocations } = validateAndNormaliseTarget(makeFivePosition(10), ALLOWED_FIVE);
     for (const a of allocations) {
-      assert.ok(
-        a.minPercent <= a.targetPercent + 0.01,
-        `${a.ticker}: min (${a.minPercent}) must be ≤ target (${a.targetPercent})`
-      );
-      assert.ok(
-        a.maxPercent >= a.targetPercent - 0.01,
-        `${a.ticker}: max (${a.maxPercent}) must be ≥ target (${a.targetPercent})`
-      );
+      assert.ok(a.minPercent <= a.targetPercent + 0.01, `${a.ticker}: min > target`);
+      assert.ok(a.maxPercent >= a.targetPercent - 0.01, `${a.ticker}: max < target`);
     }
   });
 
   it("equity + cash totals within 2pp of 100 after role-bound enforcement", () => {
-    const { allocations, cashTargetPercent } = validateAndNormaliseTarget(
-      makeFivePosition(10), ALLOWED_FIVE
-    );
+    const { allocations, cashTargetPercent } = validateAndNormaliseTarget(makeFivePosition(10), ALLOWED_FIVE);
     const equitySum = allocations.reduce((s, a) => s + a.targetPercent, 0);
-    assert.ok(
-      Math.abs(equitySum + cashTargetPercent - 100) <= 2,
-      `total ${(equitySum + cashTargetPercent).toFixed(2)}% must be within 2pp of 100`
-    );
+    assert.ok(Math.abs(equitySum + cashTargetPercent - 100) <= 2, `total deviates from 100`);
   });
 
   it("cash is adjusted upward when role maxes constrain equity below the initial budget", () => {
-    // 2 CoreHolding positions at 30% each → clamped to 20+20=40%.
-    // Equity budget (100-10=90%) exceeds max feasible equity (40%) → cash bumped.
-    // Should throw because 40% equity requires 60% cash > CASH_HARD_MAX (40%).
-    // (Infeasibility test — see infeasibility section below.)
-    //
-    // For a feasible case: use 4 CoreHolding + 1 GrowthCore → max = 4*20+15 = 95% > 90%.
     const raw: AiTargetPortfolioResponse = {
-      cashTargetPercent: 5,   // equity budget = 95%
+      cashTargetPercent: 5,
       strategicRationale: "Cash adjustment test",
       keyAssumptions: [],
       allocations: [
-        { ticker: "AAPL", company: "Apple",     role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35, rationale: "" },
-        { ticker: "MSFT", company: "Microsoft", role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35, rationale: "" },
-        { ticker: "GOOG", company: "Alphabet",  role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35, rationale: "" },
-        { ticker: "AMZN", company: "Amazon",    role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35, rationale: "" },
-        { ticker: "META", company: "Meta",      role: "GrowthCore",  targetPercent: 30, minPercent: 5, maxPercent: 35, rationale: "" },
+        makeAlloc({ ticker: "AAPL", role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35 }),
+        makeAlloc({ ticker: "MSFT", role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35 }),
+        makeAlloc({ ticker: "GOOG", role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35 }),
+        makeAlloc({ ticker: "AMZN", role: "CoreHolding", targetPercent: 30, minPercent: 8, maxPercent: 35 }),
+        makeAlloc({ ticker: "META", role: "GrowthCore",  targetPercent: 30, minPercent: 5, maxPercent: 35 }),
       ],
     };
-
     const { allocations, cashTargetPercent } = validateAndNormaliseTarget(raw, ALLOWED_FIVE);
-
-    // All positions within role bounds
     assertWithinRoleBounds(allocations);
-
-    // Total must still sum to ~100
     const equitySum = allocations.reduce((s, a) => s + a.targetPercent, 0);
-    assert.ok(
-      Math.abs(equitySum + cashTargetPercent - 100) <= 2,
-      `total ${(equitySum + cashTargetPercent).toFixed(2)}% must be within 2pp of 100`
-    );
-
-    // Cash may differ from the requested 5% because role bounds capped equity
+    assert.ok(Math.abs(equitySum + cashTargetPercent - 100) <= 2, `total deviates from 100`);
     assert.ok(cashTargetPercent >= 2, "cash must be ≥ CASH_HARD_MIN (2%)");
     assert.ok(cashTargetPercent <= 40, "cash must be ≤ CASH_HARD_MAX (40%)");
   });
@@ -209,32 +188,17 @@ describe("validateAndNormaliseTarget — final role bounds (HARD)", () => {
 
 describe("validateAndNormaliseTarget — infeasibility detection", () => {
   it("throws when too few positions to fill equity budget within role bounds", () => {
-    // 2 positions: SpeculativeGrowth (max 8%) + CoreHolding (max 20%) = 28% max equity.
-    // Equity budget = 90% (cash 10%). requiredCash = 100-28 = 72% > CASH_HARD_MAX (40%) → infeasible.
     const raw = makeRaw({
       allocations: [
-        {
-          ticker: "AAPL", company: "Apple", role: "SpeculativeGrowth",
-          targetPercent: 50, minPercent: 5, maxPercent: 55, rationale: "Test",
-        },
-        {
-          ticker: "MSFT", company: "Microsoft", role: "CoreHolding",
-          targetPercent: 40, minPercent: 8, maxPercent: 45, rationale: "Test",
-        },
+        makeAlloc({ ticker: "AAPL", role: "SpeculativeGrowth", targetPercent: 50, minPercent: 5, maxPercent: 55 }),
+        makeAlloc({ ticker: "MSFT", role: "CoreHolding",       targetPercent: 40, minPercent: 8, maxPercent: 45 }),
       ],
     });
-
-    assert.throws(
-      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
-      /infeasible/i
-    );
+    assert.throws(() => validateAndNormaliseTarget(raw, ALLOWED_BOTH), /infeasible/i);
   });
 
   it("does NOT throw when positions are sufficient to fill the equity budget", () => {
-    // 5 CoreHolding positions (max 20% each = 100% capacity) vs equity budget 90%.
-    assert.doesNotThrow(
-      () => validateAndNormaliseTarget(makeFivePosition(10), ALLOWED_FIVE)
-    );
+    assert.doesNotThrow(() => validateAndNormaliseTarget(makeFivePosition(10), ALLOWED_FIVE));
   });
 });
 
@@ -242,7 +206,7 @@ describe("validateAndNormaliseTarget — infeasibility detection", () => {
 
 describe("validateAndNormaliseTarget — ticker allowlist", () => {
   it("throws when AI returns a ticker not in the allowed set", () => {
-    const raw = makeRaw();  // has AAPL and MSFT
+    const raw = makeRaw();
     assert.throws(
       () => validateAndNormaliseTarget(raw, new Set(["AAPL"])),
       /tickers not in allowed set.*MSFT/i
@@ -250,10 +214,7 @@ describe("validateAndNormaliseTarget — ticker allowlist", () => {
   });
 
   it("passes when all tickers are in the allowed set", () => {
-    // Use a feasible 5-position portfolio to avoid infeasibility throws
-    assert.doesNotThrow(
-      () => validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE)
-    );
+    assert.doesNotThrow(() => validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE));
   });
 
   it("ticker matching is case-insensitive (normalised to uppercase)", () => {
@@ -262,14 +223,13 @@ describe("validateAndNormaliseTarget — ticker allowlist", () => {
       strategicRationale: "test",
       keyAssumptions: [],
       allocations: [
-        { ticker: "aapl", company: "Apple",     role: "CoreHolding", targetPercent: 20, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "msft", company: "Microsoft", role: "CoreHolding", targetPercent: 20, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "goog", company: "Alphabet",  role: "CoreHolding", targetPercent: 20, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "amzn", company: "Amazon",    role: "CoreHolding", targetPercent: 20, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "meta", company: "Meta",      role: "CoreHolding", targetPercent: 15, minPercent: 8, maxPercent: 20, rationale: "" },
+        makeAlloc({ ticker: "aapl", targetPercent: 20, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "msft", targetPercent: 20, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "goog", targetPercent: 20, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "amzn", targetPercent: 20, minPercent: 8, maxPercent: 20 }),
+        makeAlloc({ ticker: "meta", targetPercent: 15, minPercent: 8, maxPercent: 20 }),
       ],
     };
-    // Allowed set has uppercase, raw has lowercase — should match
     assert.doesNotThrow(() => validateAndNormaliseTarget(raw, ALLOWED_FIVE));
   });
 });
@@ -286,9 +246,7 @@ describe("validateAndNormaliseTarget — empty or malformed input", () => {
 
   it("throws when all allocations have non-numeric targetPercent", () => {
     const raw = makeRaw({
-      allocations: [
-        { ticker: "AAPL", company: "Apple", role: "CoreHolding", targetPercent: NaN, minPercent: 5, maxPercent: 20, rationale: "" },
-      ],
+      allocations: [makeAlloc({ ticker: "AAPL", targetPercent: NaN })],
     });
     assert.throws(
       () => validateAndNormaliseTarget(raw, new Set(["AAPL"])),
@@ -304,19 +262,16 @@ describe("validateAndNormaliseTarget — empty or malformed input", () => {
   });
 
   it("throws when any allocation uses role Cash — cash must only be in cashTargetPercent", () => {
-    // A Cash-role allocation creates a fictitious ticker-level entry that would
-    // corrupt drift (no position exists for that ticker) and capital allocation
-    // (engine would recommend opening a "cash" position).
     const raw: AiTargetPortfolioResponse = {
       cashTargetPercent: 10,
       strategicRationale: "Cash role test",
       keyAssumptions: [],
       allocations: [
-        { ticker: "AAPL", company: "Apple",     role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "MSFT", company: "Microsoft", role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "CASH", company: "Cash",      role: "Cash",        targetPercent: 14, minPercent: 5, maxPercent: 25, rationale: "" },
-        { ticker: "GOOG", company: "Alphabet",  role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "AMZN", company: "Amazon",    role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
+        makeAlloc({ ticker: "AAPL", targetPercent: 18 }),
+        makeAlloc({ ticker: "MSFT", targetPercent: 18 }),
+        makeAlloc({ ticker: "CASH", role: "Cash", targetPercent: 14 }),
+        makeAlloc({ ticker: "GOOG", targetPercent: 18 }),
+        makeAlloc({ ticker: "AMZN", targetPercent: 18 }),
       ],
     };
     assert.throws(
@@ -326,19 +281,16 @@ describe("validateAndNormaliseTarget — empty or malformed input", () => {
   });
 
   it("throws when the AI returns the same ticker twice", () => {
-    // Duplicate tickers create internally inconsistent targets: drift uses the last
-    // entry for a ticker while capital allocation iterates both, potentially
-    // recommending two separate purchases for the same position.
     const raw: AiTargetPortfolioResponse = {
       cashTargetPercent: 5,
       strategicRationale: "Duplicate test",
       keyAssumptions: [],
       allocations: [
-        { ticker: "AAPL", company: "Apple",     role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "MSFT", company: "Microsoft", role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "AAPL", company: "Apple Inc", role: "GrowthCore",  targetPercent: 14, minPercent: 5, maxPercent: 15, rationale: "" }, // duplicate
-        { ticker: "GOOG", company: "Alphabet",  role: "CoreHolding", targetPercent: 18, minPercent: 8, maxPercent: 20, rationale: "" },
-        { ticker: "AMZN", company: "Amazon",    role: "CoreHolding", targetPercent: 17, minPercent: 8, maxPercent: 20, rationale: "" },
+        makeAlloc({ ticker: "AAPL", targetPercent: 18 }),
+        makeAlloc({ ticker: "MSFT", targetPercent: 18 }),
+        makeAlloc({ ticker: "AAPL", role: "GrowthCore", targetPercent: 14 }), // duplicate
+        makeAlloc({ ticker: "GOOG", targetPercent: 18 }),
+        makeAlloc({ ticker: "AMZN", targetPercent: 17 }),
       ],
     };
     assert.throws(
@@ -348,10 +300,7 @@ describe("validateAndNormaliseTarget — empty or malformed input", () => {
   });
 
   it("passes when every ticker is unique (no false positives)", () => {
-    // All 5 distinct tickers — should not throw for uniqueness
-    assert.doesNotThrow(
-      () => validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE)
-    );
+    assert.doesNotThrow(() => validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE));
   });
 });
 
@@ -359,7 +308,6 @@ describe("validateAndNormaliseTarget — empty or malformed input", () => {
 
 describe("validateAndNormaliseTarget — sum and cash normalisation", () => {
   it("cashTargetPercent is clamped to [2, 40] regardless of AI value", () => {
-    // Use 5-position fixture to avoid infeasibility
     const low = validateAndNormaliseTarget({ ...makeFivePosition(), cashTargetPercent: 0 }, ALLOWED_FIVE);
     assert.ok(low.cashTargetPercent >= 2, "cash must be ≥ 2");
 
@@ -370,10 +318,181 @@ describe("validateAndNormaliseTarget — sum and cash normalisation", () => {
   it("returned allocations all have roles within ROLE_DEFINITIONS", () => {
     const { allocations } = validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE);
     for (const a of allocations) {
-      assert.ok(
-        a.role in ROLE_DEFINITIONS,
-        `${a.ticker}: role "${a.role}" is not in ROLE_DEFINITIONS`
-      );
+      assert.ok(a.role in ROLE_DEFINITIONS, `${a.ticker}: role "${a.role}" not in ROLE_DEFINITIONS`);
     }
+  });
+});
+
+// ── v2.1: Strict required-field validation ────────────────────────────────────
+
+describe("validateAndNormaliseTarget — v2.1 strict required fields", () => {
+  it("throws when allocationStatus is missing", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", allocationStatus: undefined }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /allocationStatus/i
+    );
+  });
+
+  it("throws when allocationStatus is an unrecognised string", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", allocationStatus: "OnWatch" }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /allocationStatus/i
+    );
+  });
+
+  it("throws when conviction is missing", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", conviction: undefined }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /conviction/i
+    );
+  });
+
+  it("throws when conviction is an unrecognised string", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", conviction: "VeryHigh" }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /conviction/i
+    );
+  });
+
+  it("throws when reasonForStatus is missing", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", reasonForStatus: undefined }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /reasonForStatus/i
+    );
+  });
+
+  it("throws when reasonForStatus is an empty string", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", reasonForStatus: "   " }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /reasonForStatus/i
+    );
+  });
+
+  it("throws when blockingFactors is not an array", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", blockingFactors: undefined }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /blockingFactors/i
+    );
+  });
+
+  it("throws when supportingModules is not an array", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({ ticker: "AAPL", supportingModules: undefined }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /supportingModules/i
+    );
+  });
+
+  it("passes when all required fields are present and valid", () => {
+    // All five allocations have all required fields
+    assert.doesNotThrow(() => validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE));
+  });
+
+  it("accepts empty blockingFactors array for StrategicTarget", () => {
+    // StrategicTarget with [] blockingFactors — valid.
+    // Use 5 positions so equity budget (90%) is feasible within role bounds.
+    assert.doesNotThrow(() => validateAndNormaliseTarget(makeFivePosition(), ALLOWED_FIVE));
+  });
+
+  it("accepts Blocked allocation when blockingFactors is non-empty", () => {
+    // Five positions, first one Blocked with reasons — still feasible.
+    const five = makeFivePosition();
+    const allocations = [
+      makeAlloc({
+        ticker: "AAPL",
+        company: "Apple",
+        allocationStatus: "Blocked",
+        reasonForStatus: "Earnings release this week creates uncertainty.",
+        blockingFactors: ["Earnings release this week"],
+        targetPercent: 25,
+        minPercent: 8,
+        maxPercent: 30,
+      }),
+      ...five.allocations.filter((a) => a.ticker !== "AAPL"),
+    ];
+    const raw: AiTargetPortfolioResponse = { ...five, allocations };
+    assert.doesNotThrow(() => validateAndNormaliseTarget(raw, ALLOWED_FIVE));
+  });
+
+  it("throws when Blocked allocation has empty blockingFactors", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({
+          ticker: "AAPL",
+          allocationStatus: "Blocked",
+          reasonForStatus: "Something blocks this.",
+          blockingFactors: [],
+        }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /Blocked.*no blockingFactors|blockingFactors.*Blocked/i
+    );
+  });
+
+  it("throws when StrategicTarget has non-empty blockingFactors", () => {
+    const raw = makeRaw({
+      allocations: [
+        makeAlloc({
+          ticker: "AAPL",
+          allocationStatus: "StrategicTarget",
+          blockingFactors: ["Earnings next week"],
+        }),
+        makeAlloc({ ticker: "MSFT" }),
+      ],
+    });
+    assert.throws(
+      () => validateAndNormaliseTarget(raw, ALLOWED_BOTH),
+      /StrategicTarget.*blocking|blocking.*StrategicTarget/i
+    );
   });
 });

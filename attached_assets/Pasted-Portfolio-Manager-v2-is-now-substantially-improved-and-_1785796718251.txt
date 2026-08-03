@@ -1,0 +1,246 @@
+Portfolio Manager v2 is now substantially improved and most requested architecture is implemented correctly.
+
+Please make the following final correctness fixes.
+
+Do not redesign the UI or change the overall CIO architecture.
+
+1. Do not default missing allocation status to StrategicTarget
+
+The current allocation-status sanitiser returns:
+
+StrategicTarget
+
+when allocationStatus is missing or unknown.
+
+This is unsafe because StrategicTarget is the only immediately deployable status.
+
+Change validation rules:
+
+- allocationStatus is required for every target allocation
+- conviction is required
+- reasonForStatus is required
+- blockingFactors is required as an array, although it may be empty
+- supportingModules is required as an array, although it may be empty
+
+If allocationStatus is missing or invalid:
+- reject the AI response
+- retry the target synthesis
+- do not silently convert it to StrategicTarget
+
+If conviction is missing or invalid:
+- reject and retry
+- do not silently default it to Medium
+
+Keep these consistency rules:
+
+- Blocked requires at least one blocking factor
+- StrategicTarget requires an empty blockingFactors array
+- Excluded must not receive deployable capital
+- Provisional must explain what evidence is incomplete
+
+2. Do not mutate Target Portfolio inside capital allocation
+
+computeCapitalAllocation currently modifies the source TargetAllocation object using code equivalent to:
+
+alloc.allocationStatus = "Blocked"
+
+or:
+
+alloc.allocationStatus = "Provisional"
+
+Do not mutate target.allocations.
+
+Target Portfolio is the persisted strategic CIO conclusion and must remain immutable during deterministic calculations.
+
+Instead calculate a local effective status:
+
+let effectiveStatus = alloc.allocationStatus
+
+Then modify only effectiveStatus based on Trade Decision readiness and blocking events.
+
+Store effectiveStatus in the internal Gap object and the resulting CapitalAllocationItem.
+
+The original target allocation must remain unchanged.
+
+Add a test confirming that computeCapitalAllocation does not modify the supplied TargetPortfolio object.
+
+3. Improve the CIO input fingerprint
+
+The fingerprint should react to material strategic changes while ignoring timestamp-only refreshes.
+
+Company Monitor:
+
+Do not fingerprint only updatedAt.
+
+For each relevant ticker use material fields such as:
+
+- updateType
+- investmentCaseStrength
+- investmentView rating and outlook
+- investmentCaseChange.changed and severity
+- thesis IDs and statuses
+- meaningfulChange
+
+A NoMaterialChange update with the same material values must not force a new AI CIO call.
+
+Trade Decision:
+
+Include:
+
+- subject/ticker
+- decision type
+- readiness
+- blockedByEvent
+- blocking event/date
+- confidence
+- evidence band
+- targetAllocationPercent
+- decision version or material fingerprint
+
+Market Alerts:
+
+Do not fingerprint only overallAlertLevel.
+
+Include the latest meaningful update identity, for example:
+
+- lastMeaningfulUpdateAt
+- headline
+- normalized alert titles/categories/importance
+- affected holdings
+
+A different Medium alert must produce a different fingerprint.
+
+Sector Monitor:
+
+Include compact material sector information, for example:
+
+- overall outlook
+- top-sector name
+- sector names, ratings and trends
+
+Market Monitor:
+
+Include at least:
+
+- market sentiment
+- risk level
+- material outlook/summary version
+
+Opportunity Finder:
+
+Include:
+
+- ticker
+- rank
+- overall score
+- confidence
+- priority
+- catalyst
+- company-analysis availability
+
+Portfolio Analyzer and Risk Analyzer:
+
+Include their material conclusion version, scores and key structured risk/outlook values rather than only one or two fields.
+
+Keep current rounding tolerances for portfolio values so normal market noise does not always rerun the AI target synthesis.
+
+4. Limit Company Monitor fingerprint and provenance to relevant companies
+
+The current companyMonitorByTicker map contains every stored Company Monitor analysis.
+
+Fingerprint and provenance should include only:
+
+- current holdings
+- current Opportunity Finder candidates within the target limit
+- active Trade Decision subjects
+
+An unrelated stale Company Monitor analysis must not:
+
+- reduce target confidence
+- appear as a stale source
+- change the CIO fingerprint
+- trigger a new target synthesis
+
+Use the shared Company Identity service when resolving these tickers.
+
+5. Strengthen replacement validation
+
+A replacement comparison must be marked Provisional when Company Monitor data is missing for either:
+
+- the current holding
+- the candidate
+
+Use:
+
+isProvisional = !holdingCm || !candidateCm
+
+Also mark it provisional when the candidate has no Trade Decision validation.
+
+Do not present a replacement as fully supported unless:
+
+- both sides have fresh Company Monitor data
+- the candidate is not blocked
+- the candidate has sufficient Trade Decision evidence/readiness
+- the existing holding has a genuine weakness or inferior strategic fit
+
+A candidate without Trade Decision may still appear as a provisional research idea, but not as a validated replacement.
+
+Add a field explaining provisional status, such as:
+
+provisionalReasons: string[]
+
+Examples:
+
+- Missing Company Monitor for candidate
+- Missing Trade Decision validation
+- Candidate is not ReadyForReview
+- Holding analysis is stale
+
+6. Do not treat Excluded allocations as Provisional
+
+The capital allocation engine currently groups Excluded allocations together with provisional gaps.
+
+Keep three distinct groups:
+
+- actionableItems
+- blockedItems
+- provisionalItems
+
+Optionally add:
+
+- excludedItems
+
+Excluded means the CIO deliberately does not want capital allocated.
+
+It should not be described as merely pending evidence.
+
+If adding excludedItems would break the current API, omit Excluded entries from capital allocation suggestions entirely, but do not label them Provisional.
+
+7. Add deterministic tests
+
+Add tests for:
+
+- missing allocationStatus fails validation
+- missing conviction fails validation
+- capital-allocation calculation does not mutate TargetPortfolio
+- Company Monitor NoMaterialChange does not change CIO fingerprint
+- material Company Monitor change does change fingerprint
+- different alerts with the same alert level produce different fingerprints
+- unrelated Company Monitor entries do not affect fingerprint or target confidence
+- missing candidate Company Monitor produces a provisional replacement
+- missing candidate Trade Decision produces a provisional replacement
+- Excluded allocations are not returned as provisional allocation items
+
+Preserve:
+
+- current multi-module CIO context
+- health scoring
+- target roles and ranges
+- actionable/blocked/provisional capital allocation
+- source provenance
+- target confidence
+- history
+- snapshot version guards
+- AI-skip behaviour
+- Orchestrator integration
+- no order creation or Saxo execution

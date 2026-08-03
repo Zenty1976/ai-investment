@@ -180,6 +180,12 @@ export interface CapitalAllocationPlan {
   actionableItems: CapitalAllocationItem[];
   blockedItems: CapitalAllocationItem[];
   provisionalItems: CapitalAllocationItem[];
+  /**
+   * Allocations with Excluded status — CIO deliberately omitted these from
+   * capital deployment. Distinct from Provisional: no new evidence is expected
+   * to change the decision.
+   */
+  excludedItems: CapitalAllocationItem[];
   totalSuggestedDeploymentBase: number;
   residualCashAfterDeploymentBase: number;
   computedAt: string;
@@ -202,6 +208,8 @@ export interface ReplacementOpportunity {
   rationale: string;
   priority: "High" | "Medium" | "Low";
   isProvisional: boolean;
+  /** Human-readable reasons why this comparison is provisional. Empty when isProvisional is false. */
+  provisionalReasons: string[];
 }
 
 export type PortfolioChangeType =

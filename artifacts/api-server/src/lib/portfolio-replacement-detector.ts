@@ -17,10 +17,18 @@
  *   - OF overallScore         — primary score
  *   - CM investmentCaseStrength if available — corroborating evidence
  *   - TDE evidenceBand for PrepareToBuy — buying support
- *   - Portfolio fit and diversification benefit
  *
- * If Company Monitor is missing for the holding → mark comparison as Provisional.
- * If Trade Decision blocks the candidate → exclude from replacements.
+ * Provisional status (isProvisional = true) when ANY of:
+ *   - Company Monitor missing for the holding
+ *   - Company Monitor missing for the candidate
+ *   - Trade Decision missing for the candidate
+ *   - Candidate is not ReadyForReview
+ *
+ * A replacement is fully validated only when both sides have CM data and the
+ * candidate has TDE validation with ReadyForReview readiness.
+ *
+ * A blocked or event-gated candidate is excluded from replacements entirely
+ * (not even shown as provisional).
  *
  * No AI calls — purely deterministic.
  */
@@ -38,6 +46,9 @@ export interface OpportunityCandidate {
   investmentThesis?: string[];
   mainCatalyst?: string;
   sector?: string;
+  rank?: number;
+  confidence?: string;
+  companyAnalysisAvailable?: boolean;
 }
 
 export interface CmReplacementData {
@@ -141,6 +152,33 @@ function candidateQualityScore(
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+// ── Provisional reason builder ────────────────────────────────────────────────
+
+function buildProvisionalReasons(
+  holdingTicker: string,
+  candidateTicker: string,
+  holdingCm: CmReplacementData | undefined,
+  candidateCm: CmReplacementData | undefined,
+  candidateTde: TdeReplacementData | undefined
+): string[] {
+  const reasons: string[] = [];
+  if (!holdingCm) {
+    reasons.push(`Missing Company Monitor for holding ${holdingTicker}`);
+  }
+  if (!candidateCm) {
+    reasons.push(`Missing Company Monitor for candidate ${candidateTicker}`);
+  }
+  if (!candidateTde) {
+    reasons.push(`Missing Trade Decision validation for candidate ${candidateTicker}`);
+  } else if (candidateTde.readiness !== "ReadyForReview") {
+    reasons.push(
+      `Candidate ${candidateTicker} Trade Decision is not ReadyForReview` +
+      (candidateTde.readiness ? ` (readiness: ${candidateTde.readiness})` : "")
+    );
+  }
+  return reasons;
+}
+
 // ── Main entry point ──────────────────────────────────────────────────────────
 
 export function detectReplacements(
@@ -159,11 +197,12 @@ export function detectReplacements(
     allPositions.map((p) => p.symbol.toUpperCase().trim())
   );
 
-  // Exclude candidates that are event-blocked or have a Reduce decision with strong evidence
+  // Exclude candidates that are event-blocked or have a Reduce decision with strong evidence.
+  // Such candidates don't appear even as provisional — they are actively contra-indicated.
   const eligibleCandidates = opportunityCandidates.filter((c) => {
     const t   = c.ticker.toUpperCase().trim();
     const tde = tdeByTicker.get(t);
-    if (!tde) return true; // no TDE data → eligible
+    if (!tde) return true; // no TDE data → eligible (but will be provisional)
     if (tde.blockedByEvent) return false;
     if (tde.decision === "PrepareToReduce" && tde.evidenceBand === "Strong") return false;
     return true;
@@ -204,26 +243,33 @@ export function detectReplacements(
 
       if (delta < SCORE_DELTA_THRESHOLD) continue;
 
+      // Provisional when CM is missing for either side OR TDE missing/not ready for candidate
+      const isProvisional =
+        !holdingCm ||
+        !candCm ||
+        !candTde ||
+        candTde.readiness !== "ReadyForReview";
+
+      const provisionalReasons = isProvisional
+        ? buildProvisionalReasons(holdingTicker, candTicker, holdingCm, candCm, candTde)
+        : [];
+
       const priority: "High" | "Medium" | "Low" =
         delta >= 35 ? "High" : delta >= 27 ? "Medium" : "Low";
 
-      const isProvisional = !hasCmData; // if holding has no CM data, comparison is indicative only
-
       // Build rationale from available evidence
       const holdingViewHint = holdingCm?.investmentViewRating
-        ? ` (${holdingCm.investmentViewRating})`
-        : "";
+        ? ` (${holdingCm.investmentViewRating})` : "";
       const candViewHint = candCm?.investmentViewRating
-        ? ` (${candCm.investmentViewRating})`
-        : "";
+        ? ` (${candCm.investmentViewRating})` : "";
       const tdeHint = holdingTde?.decision === "PrepareToReduce"
         ? ` TDE recommends reducing ${holdingTicker}.`
         : candTde?.decision === "PrepareToBuy"
         ? ` TDE supports opening ${candTicker}.`
         : "";
-      const provisionalNote = isProvisional ? " [Provisional — missing Company Monitor for holding]" : "";
       const catalystHint = candidate.mainCatalyst ? ` Catalyst: ${candidate.mainCatalyst}.` : "";
       const thesisHint = candidate.investmentThesis?.[0] ? ` ${candidate.investmentThesis[0]}.` : "";
+      const provisionalNote = isProvisional ? ` [Provisional: ${provisionalReasons[0]}]` : "";
 
       const rationale =
         `${holdingTicker}${holdingViewHint} scores ${holdingScore}; ` +
@@ -249,6 +295,7 @@ export function detectReplacements(
         rationale,
         priority,
         isProvisional,
+        provisionalReasons,
       });
     }
   }

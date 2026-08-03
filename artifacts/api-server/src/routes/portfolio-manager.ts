@@ -500,14 +500,17 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
       for (const c of raw) {
         if (c.ticker && typeof c.overallScore === "number") {
           ofCandidates.push({
-            ticker:          String(c.ticker),
-            company:         String(c.company ?? c.ticker),
-            overallScore:    c.overallScore,
-            priority:        c.priority as string | undefined,
-            investmentThesis: Array.isArray(c.investmentThesis)
+            ticker:                  String(c.ticker),
+            company:                 String(c.company ?? c.ticker),
+            overallScore:            c.overallScore,
+            priority:                c.priority as string | undefined,
+            investmentThesis:        Array.isArray(c.investmentThesis)
               ? (c.investmentThesis as string[]).slice(0, 2) : undefined,
-            mainCatalyst:    c.mainCatalyst as string | undefined,
-            sector:          c.sector as string | undefined,
+            mainCatalyst:            c.mainCatalyst as string | undefined,
+            sector:                  c.sector as string | undefined,
+            rank:                    typeof c.rank === "number" ? c.rank : undefined,
+            confidence:              c.confidence as string | undefined,
+            companyAnalysisAvailable: Boolean(c.companyAnalysisAvailable),
           });
         }
       }
@@ -519,9 +522,25 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
       ...ofCandidates.map((c) => c.ticker.toUpperCase().trim()),
     ]);
 
+    // ── 4b. Relevant tickers = holdings + OF candidates + TDE subjects ─────
+    // Company Monitor is only considered for these tickers in fingerprint,
+    // provenance, and downstream engines. Unrelated stale CM entries must not
+    // reduce target confidence or trigger a new AI synthesis.
+    const relevantTickers = new Set<string>([
+      ...allPositions.map((p) => p.symbol.toUpperCase().trim()),
+      ...ofCandidates.map((c) => c.ticker.toUpperCase().trim()),
+      ...[...tdeByTickerRaw.keys()],
+    ]);
+
+    // Filtered CM map — only relevant tickers
+    const relevantCmByTicker = new Map<string, Record<string, unknown>>();
+    for (const [ticker, cm] of companyMonitorByTicker) {
+      if (relevantTickers.has(ticker)) relevantCmByTicker.set(ticker, cm);
+    }
+
     // ── 5. Build sector-by-ticker map (CM sector → held tickers + OF cands) ─
     const sectorByTicker = new Map<string, string>();
-    for (const [ticker, cm] of companyMonitorByTicker) {
+    for (const [ticker, cm] of relevantCmByTicker) {
       const sector = (cm.company as Record<string, unknown> | undefined)?.sector as string | undefined
         ?? cm.sector as string | undefined;
       if (sector && sector.trim()) sectorByTicker.set(ticker, sector.trim());
@@ -533,7 +552,7 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
 
     // ── 6. Build typed per-ticker maps for downstream engines ───────────────
     const cmHealthByTicker = new Map<string, CmHealthData>();
-    for (const [ticker, cm] of companyMonitorByTicker) {
+    for (const [ticker, cm] of relevantCmByTicker) {
       const iv = cm.investmentView as Record<string, unknown> | undefined;
       cmHealthByTicker.set(ticker, {
         ticker,
@@ -568,7 +587,7 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
     }
 
     const cmReplacementByTicker = new Map<string, CmReplacementData>();
-    for (const [ticker, cm] of companyMonitorByTicker) {
+    for (const [ticker, cm] of relevantCmByTicker) {
       const iv = cm.investmentView as Record<string, unknown> | undefined;
       cmReplacementByTicker.set(ticker, {
         investmentCaseStrength: cm.investmentCaseStrength as number | undefined,
@@ -592,6 +611,15 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
       : undefined;
 
     // ── 7. Compute deterministic input fingerprint ──────────────────────────
+    // Uses RELEVANT CM entries only — unrelated stale analyses must not
+    // trigger a new AI synthesis.  Each module contributes its material
+    // strategic fields, not just timestamps, so a NoMaterialChange update
+    // with identical content does NOT change the fingerprint.
+    const sectorResult   = sectorEntry?.result  as Record<string, unknown> | undefined;
+    const alertsResult   = alertsEntry?.result  as Record<string, unknown> | undefined;
+    const mktResult      = mktMonEntry?.result  as Record<string, unknown> | undefined;
+    const alertLevel     = alertsResult?.overallAlertLevel as string | undefined;
+
     const fingerprintInput = {
       // Portfolio positions (symbol + quantity, rounded value)
       positions: allPositions.map((p) => ({
@@ -601,31 +629,125 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
       })).sort((a, b) => a.s.localeCompare(b.s)),
       cash:       Math.round((snapshot.totalAvailableCash ?? 0) / 1000),
       totalValue: Math.round((snapshot.totalValue ?? 0) / 1000),
-      // Per-ticker CM versions (updatedAt)
-      cmVersions: Object.fromEntries(
-        [...companyMonitorByTicker.entries()].map(([k, v]) => [k, (v.updatedAt ?? "") as string])
+
+      // Company Monitor — material strategic fields per RELEVANT ticker only.
+      // updatedAt alone is intentionally excluded so NoMaterialChange updates
+      // (same field values, different timestamp) don't force re-synthesis.
+      cm: Object.fromEntries(
+        [...relevantCmByTicker.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([ticker, cm]) => {
+            const iv     = cm.investmentView     as Record<string, unknown> | undefined;
+            const change = cm.investmentCaseChange as Record<string, unknown> | undefined;
+            const thesis = cm.investmentThesis    as Array<Record<string, unknown>> | undefined;
+            return [ticker, {
+              updateType:       cm.updateType,
+              strength:         cm.investmentCaseStrength,
+              viewRating:       iv?.rating,
+              viewOutlook:      iv?.outlook,
+              caseChanged:      change?.changed,
+              caseSeverity:     change?.severity,
+              meaningfulChange: cm.meaningfulChange,
+              thesisIds: thesis
+                ?.map((t) => `${String(t.id ?? t.pointId ?? "")}:${String(t.status ?? "")}`)
+                .sort() ?? [],
+            }];
+          })
       ),
-      // Risk Analyzer material values (rounded)
-      riskLevel: (riskEntry?.result?.overallRiskLevel as string) ?? null,
-      riskScore: riskEntry?.result?.riskScore != null
-        ? Math.round((riskEntry.result.riskScore as number) / 5) * 5 : null,
-      // Portfolio Analyzer material values
-      paRating:  (paEntry?.result?.overallRating  as string) ?? null,
-      paOutlook: (paEntry?.result?.overallOutlook as string) ?? null,
-      // Opportunity Finder candidates
-      ofCandidates: ofCandidates
-        .map((c) => ({ t: c.ticker.toUpperCase(), s: Math.round(c.overallScore) }))
+
+      // Trade Decision Engine — full per-ticker decision fields
+      tde: Object.fromEntries(
+        [...tdeByTickerRaw.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([ticker, d]) => [ticker, {
+            decision:           d.decision,
+            readiness:          d.readiness,
+            blockedByEvent:     d.blockedByEvent,
+            blockingEvent:      d.blockingEvent,
+            blockingEventDate:  d.blockingEventDate,
+            confidence:         d.confidence,
+            evidenceBand:       d.evidenceBand,
+            targetAllocPct:     typeof d.targetAllocationPercent === "number"
+              ? Math.round((d.targetAllocationPercent as number) * 2) / 2 : null,
+          }])
+      ),
+
+      // Market Alerts — identity of meaningful alerts, not just the level.
+      // Two "Medium" alerts with different content must produce different fingerprints.
+      alerts: alertsResult ? {
+        level:                    alertLevel,
+        headline:                 alertsResult.headline,
+        lastMeaningfulUpdateAt:   alertsResult.lastMeaningfulUpdateAt,
+        topAlertKeys: Array.isArray(alertsResult.alerts)
+          ? (alertsResult.alerts as Array<Record<string, unknown>>)
+              .filter((a) => a.importance === "High" || a.requiresAttention)
+              .map((a) => [
+                String(a.title ?? ""),
+                String(a.category ?? ""),
+                String(a.importance ?? ""),
+                ((a.affectedHoldings as string[] | undefined) ?? []).sort().join(","),
+              ].join("|"))
+              .sort()
+              .slice(0, 15)
+          : [],
+      } : null,
+
+      // Sector Monitor — outlook, top sector, all sector name/rating/trend
+      sector: sectorResult ? {
+        overallOutlook: sectorResult.overallOutlook,
+        topSectorName:  (sectorResult.topSector as Record<string, string> | undefined)?.name,
+        sectorKeys: Array.isArray(sectorResult.sectors)
+          ? (sectorResult.sectors as Array<Record<string, unknown>>)
+              .map((s) => `${String(s.name ?? "")}:${String(s.rating ?? "")}:${String(s.trend ?? "")}`)
+              .sort()
+          : [],
+      } : null,
+
+      // Market Monitor — sentiment, risk level, outlook version
+      market: mktResult ? {
+        overallOutlook: mktResult.overallOutlook,
+        sentiment:      mktResult.marketSentiment ?? mktResult.sentiment,
+        riskLevel:      mktResult.overallRiskLevel ?? mktResult.riskLevel,
+      } : null,
+
+      // Portfolio Analyzer — material conclusion fields
+      pa: paEntry ? {
+        rating:             paEntry.result.overallRating,
+        outlook:            paEntry.result.overallOutlook,
+        scoreBucket:        paEntry.result.portfolioScore != null
+          ? Math.round((paEntry.result.portfolioScore as number) / 5) * 5 : null,
+        conclusionTitle:    (paEntry.result.mainConclusion as Record<string, unknown> | undefined)?.title,
+        topRiskCount:       Array.isArray(paEntry.result.topRisks) ? (paEntry.result.topRisks as unknown[]).length : 0,
+        topOppsCount:       Array.isArray(paEntry.result.topOpportunities) ? (paEntry.result.topOpportunities as unknown[]).length : 0,
+      } : null,
+
+      // Risk Analyzer — risk level, score bucket, key risk titles
+      risk: riskEntry ? {
+        level:           riskEntry.result.overallRiskLevel,
+        scoreBucket:     riskEntry.result.riskScore != null
+          ? Math.round((riskEntry.result.riskScore as number) / 5) * 5 : null,
+        conclusionTitle: (riskEntry.result.mainConclusion as Record<string, unknown> | undefined)?.title,
+        topRiskKeys: Array.isArray(riskEntry.result.topRisks)
+          ? (riskEntry.result.topRisks as Array<Record<string, unknown>>)
+              .slice(0, 5)
+              .map((r) => `${String(r.title ?? "")}:${String(r.severity ?? "")}`)
+          : [],
+      } : null,
+
+      // Opportunity Finder — richer candidate identity (rank, score, confidence,
+      // priority, catalyst prefix, company-analysis availability)
+      of: ofCandidates
+        .slice(0, 8)
+        .map((c) => ({
+          t:           c.ticker.toUpperCase(),
+          rank:        c.rank,
+          s:           Math.round(c.overallScore),
+          conf:        c.confidence,
+          pri:         c.priority,
+          cat:         c.mainCatalyst?.slice(0, 50),
+          hasAnalysis: c.companyAnalysisAvailable,
+        }))
         .sort((a, b) => a.t.localeCompare(b.t)),
-      // TDE readiness per ticker
-      tdeReadiness: Object.fromEntries(
-        [...tdeByTickerRaw.entries()].map(([k, d]) => [
-          k, String(d.readiness ?? "") + (d.blockedByEvent ? ":B" : ""),
-        ])
-      ),
-      // Sector Monitor: top sector name
-      sectorTop: ((sectorEntry?.result as Record<string, unknown> | undefined)?.topSector as Record<string, string> | undefined)?.name ?? null,
-      // Market Alerts: overall level
-      alertLevel: (alertsEntry?.result?.overallAlertLevel as string) ?? null,
     };
     const inputFingerprint = computeCioFingerprint(fingerprintInput);
 
@@ -676,15 +798,9 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
           }))
         : null;
 
-      // Company Monitor: build per-company context for held tickers + OF candidates
-      const relevantCmTickers = new Set<string>([
-        ...allPositions.map((p) => p.symbol.toUpperCase().trim()),
-        ...ofCandidates.map((c) => c.ticker.toUpperCase().trim()),
-      ]);
+      // Company Monitor: build per-company context using the relevant-only map
       const cmContextItems: Record<string, unknown>[] = [];
-      for (const ticker of relevantCmTickers) {
-        const cm = companyMonitorByTicker.get(ticker);
-        if (!cm) continue;
+      for (const [ticker, cm] of relevantCmByTicker) {
         const iv = cm.investmentView as Record<string, unknown> | undefined;
         cmContextItems.push({
           ticker,
@@ -718,8 +834,7 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
           ))
         : null;
 
-      // Sector Monitor (top sectors only)
-      const sectorResult = sectorEntry?.result as Record<string, unknown> | undefined;
+      // Sector Monitor (top sectors only) — sectorResult already declared
       const sectorContext = sectorResult
         ? (suppliedModules.add("SectorMonitor"), JSON.stringify({
             executiveSummary: sectorResult.executiveSummary,
@@ -733,9 +848,7 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
           }))
         : null;
 
-      // Market Alerts — only when alerts affect held holdings or have High level
-      const alertsResult = alertsEntry?.result as Record<string, unknown> | undefined;
-      const alertLevel   = alertsResult?.overallAlertLevel as string | undefined;
+      // Market Alerts — alertsResult / alertLevel already declared
       const alertsContext = alertsResult && (alertLevel === "High" || alertLevel === "Medium")
         ? (suppliedModules.add("MarketAlerts"), JSON.stringify({
             overallAlertLevel: alertLevel,
@@ -749,8 +862,7 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
           }))
         : null;
 
-      // Market Monitor — broad risk posture and cash-target context
-      const mktResult    = mktMonEntry?.result as Record<string, unknown> | undefined;
+      // Market Monitor — mktResult already declared
       const marketContext = mktResult
         ? (suppliedModules.add("MarketMonitor"), JSON.stringify({
             executiveSummary: mktResult.executiveSummary,
@@ -804,7 +916,7 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
 
     const moduleChecks: Array<{
       key: string;
-      entry: { savedAt?: string } | undefined | null;
+      entry: unknown;
       critical: boolean;
     }> = [
       { key: "PortfolioAnalyzer", entry: paEntry,      critical: true  },
@@ -826,15 +938,16 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
       const staleLimit = critical ? STALE_HOURS_CRITICAL : STALE_HOURS_SECONDARY;
       if (ageHours(savedAt) > staleLimit) staleSources.push(key);
     }
-    // Add per-ticker Company Monitor entries
-    for (const [ticker, cm] of companyMonitorByTicker) {
+    // Add per-ticker Company Monitor entries — RELEVANT tickers only.
+    // Unrelated stale CM analyses must not reduce target confidence.
+    for (const [ticker, cm] of relevantCmByTicker) {
       const key = `CompanyMonitor:${ticker}`;
       sourceModulesUsed.push(key);
       const updatedAt = (cm.updatedAt ?? "") as string;
       sourceUpdatedAt[key] = updatedAt;
       if (ageHours(updatedAt) > STALE_HOURS_SECONDARY) staleSources.push(key);
     }
-    if (companyMonitorByTicker.size === 0) missingSources.push("CompanyMonitor");
+    if (relevantCmByTicker.size === 0) missingSources.push("CompanyMonitor");
 
     const criticalStale = staleSources.some((k) => k === "PortfolioAnalyzer" || k === "RiskAnalyzer");
     const criticalMissing = missingSources.includes("PortfolioAnalyzer") || missingSources.includes("RiskAnalyzer");

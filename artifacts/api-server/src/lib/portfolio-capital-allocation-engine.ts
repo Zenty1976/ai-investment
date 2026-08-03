@@ -5,15 +5,23 @@
  * the current portfolio and the target allocation.
  *
  * Deployment gates (items are only actionable when ALL conditions hold):
- *  1. allocationStatus === "StrategicTarget" (or allocationStatus absent → treated as StrategicTarget)
+ *  1. allocationStatus === "StrategicTarget" (missing → treated as StrategicTarget)
  *  2. No TDE entry exists for the ticker, OR TDE readiness === "ReadyForReview"
  *  3. TDE blockedByEvent === false (or no TDE entry)
  *
  * Items failing these gates are surfaced in blockedItems or provisionalItems
  * with suggestedAmountBase = 0, so the UI can explain why cash is not deployed.
  *
+ * Excluded allocations are returned in excludedItems — they are deliberately
+ * out of scope, not merely pending evidence, and must never appear as provisional.
+ *
+ * IMMUTABILITY GUARANTEE:
+ *   This function never mutates the supplied TargetPortfolio or its allocations.
+ *   An effectiveStatus local variable absorbs TDE-driven status changes.
+ *
  * Backward compatibility:
- *  plan.items is always equal to plan.actionableItems so existing consumers continue to work.
+ *   plan.items is always equal to plan.actionableItems so existing consumers
+ *   continue to work.
  */
 
 import type { PortfolioSnapshot } from "../routes/portfolio-manager.js";
@@ -43,7 +51,8 @@ interface Gap {
   targetPercent: number;
   gapPercent: number;
   gapValueBase: number;
-  allocationStatus: AllocationStatus;
+  /** Effective status after TDE override — never written back to the source alloc */
+  effectiveStatus: AllocationStatus;
   blockingReason?: string;
 }
 
@@ -72,6 +81,7 @@ export function computeCapitalAllocation(
     actionableItems:                 [],
     blockedItems:                    [],
     provisionalItems:                [],
+    excludedItems:                   [],
     totalSuggestedDeploymentBase:    0,
     residualCashAfterDeploymentBase: Math.round(availableCash),
     computedAt:                      now,
@@ -87,7 +97,7 @@ export function computeCapitalAllocation(
     currentMarketValue.set(ticker, (currentMarketValue.get(ticker) ?? 0) + pos.marketValueBaseCurrency);
   }
 
-  // ── Classify each target position ─────────────────────────────────────────
+  // ── Classify each target position — reading alloc read-only ───────────────
   const gaps: Gap[] = [];
 
   for (const alloc of target.allocations) {
@@ -97,31 +107,31 @@ export function computeCapitalAllocation(
     const gapPct      = alloc.targetPercent - currentPct;
     if (gapPct < 1) continue; // at or above target
 
-    const allocStatus: AllocationStatus = alloc.allocationStatus ?? "StrategicTarget";
+    // Read the CIO-assigned status (never mutated from here)
+    const cioStatus: AllocationStatus = alloc.allocationStatus ?? "StrategicTarget";
 
-    // ── Deployment gate ────────────────────────────────────────────────────
+    // Compute effective deployment status locally — does NOT write back to alloc
+    let effectiveStatus: AllocationStatus = cioStatus;
     let blockingReason: string | undefined;
 
-    if (allocStatus === "Blocked") {
+    if (cioStatus === "Blocked") {
       blockingReason = alloc.blockingFactors?.join("; ") ?? alloc.reasonForStatus ?? "Allocation is blocked.";
-    } else if (allocStatus === "Provisional") {
+    } else if (cioStatus === "Provisional") {
       blockingReason = alloc.reasonForStatus ?? "Allocation is provisional — evidence incomplete.";
-    } else if (allocStatus === "Excluded") {
+    } else if (cioStatus === "Excluded") {
       blockingReason = alloc.reasonForStatus ?? "Allocation is excluded from capital deployment.";
     } else {
-      // StrategicTarget — check TDE readiness
+      // StrategicTarget — check TDE readiness, may downgrade effectiveStatus locally
       const tdeEntry = tde.get(ticker);
       if (tdeEntry) {
         if (tdeEntry.blockedByEvent) {
+          effectiveStatus = "Blocked";
           blockingReason = tdeEntry.blockingEvent
             ? `Trade Decision blocked pending event: ${tdeEntry.blockingEvent}`
             : "Trade Decision blocked by an imminent event.";
-          // Treat as effectively Blocked
-          (alloc as { allocationStatus?: AllocationStatus }).allocationStatus = "Blocked";
         } else if (tdeEntry.readiness !== "ReadyForReview") {
+          effectiveStatus = "Provisional";
           blockingReason = `Trade Decision readiness is "${tdeEntry.readiness}" — not yet ReadyForReview.`;
-          // Treat as Provisional (needs more evidence)
-          (alloc as { allocationStatus?: AllocationStatus }).allocationStatus = "Provisional";
         }
       }
     }
@@ -134,7 +144,7 @@ export function computeCapitalAllocation(
       targetPercent:  alloc.targetPercent,
       gapPercent:     Math.round(gapPct * 10) / 10,
       gapValueBase:   (gapPct / 100) * totalValue,
-      allocationStatus: (alloc as { allocationStatus?: AllocationStatus }).allocationStatus ?? allocStatus,
+      effectiveStatus,
       blockingReason,
     });
   }
@@ -149,26 +159,30 @@ export function computeCapitalAllocation(
     actionableItems:                 [],
     blockedItems:                    [],
     provisionalItems:                [],
+    excludedItems:                   [],
     totalSuggestedDeploymentBase:    0,
     residualCashAfterDeploymentBase: Math.round(availableCash),
     computedAt:                      now,
   };
 
-  // ── Split into actionable / blocked / provisional ─────────────────────────
-  const actionableGaps  = gaps.filter((g) => g.allocationStatus === "StrategicTarget" && !g.blockingReason);
-  const blockedGaps     = gaps.filter((g) => g.allocationStatus === "Blocked"    || (g.blockingReason && g.allocationStatus !== "Provisional"));
-  const provisionalGaps = gaps.filter((g) => g.allocationStatus === "Provisional" || g.allocationStatus === "Excluded");
+  // ── Split into four groups ──────────────────────────────────────────────────
+  // Excluded is kept strictly separate — it is not provisional (the CIO decided
+  // this company should not receive capital, period).
+  const actionableGaps  = gaps.filter((g) => g.effectiveStatus === "StrategicTarget" && !g.blockingReason);
+  const blockedGaps     = gaps.filter((g) => g.effectiveStatus === "Blocked");
+  const provisionalGaps = gaps.filter((g) => g.effectiveStatus === "Provisional");
+  const excludedGaps    = gaps.filter((g) => g.effectiveStatus === "Excluded");
 
   // Effective deployable is capped at aggregate gap of actionable items only
-  const actionableGapValue = actionableGaps.reduce((s, g) => s + g.gapValueBase, 0);
+  const actionableGapValue  = actionableGaps.reduce((s, g) => s + g.gapValueBase, 0);
   const effectiveDeployable = Math.min(deployableCash, actionableGapValue);
-  const totalGapPct = actionableGaps.reduce((s, g) => s + g.gapPercent, 0);
+  const totalGapPct         = actionableGaps.reduce((s, g) => s + g.gapPercent, 0);
 
   // ── Build actionable items with proportional deployment ───────────────────
   const actionableItems: CapitalAllocationItem[] = actionableGaps
     .sort((a, b) => b.gapPercent - a.gapPercent)
     .map((gap) => {
-      const proportion = totalGapPct > 0 ? gap.gapPercent / totalGapPct : 1 / actionableGaps.length;
+      const proportion        = totalGapPct > 0 ? gap.gapPercent / totalGapPct : 1 / actionableGaps.length;
       const proportionalShare = effectiveDeployable * proportion;
       const suggestedAmount   = Math.round(Math.min(proportionalShare, gap.gapValueBase));
       const priority: "High" | "Medium" | "Low" =
@@ -186,7 +200,7 @@ export function computeCapitalAllocation(
         suggestedAmountBase: suggestedAmount,
         priority,
         rationale,
-        allocationStatus:    "StrategicTarget",
+        allocationStatus:    "StrategicTarget" as AllocationStatus,
       };
     });
 
@@ -203,7 +217,7 @@ export function computeCapitalAllocation(
       suggestedAmountBase: 0,
       priority:            "Low" as const,
       rationale:           gap.blockingReason ?? "Blocked — cannot deploy capital now.",
-      allocationStatus:    "Blocked",
+      allocationStatus:    "Blocked" as AllocationStatus,
       blockingReason:      gap.blockingReason,
     }));
 
@@ -220,7 +234,25 @@ export function computeCapitalAllocation(
       suggestedAmountBase: 0,
       priority:            "Low" as const,
       rationale:           gap.blockingReason ?? "Provisional — deployment pending complete evidence.",
-      allocationStatus:    gap.allocationStatus === "Excluded" ? "Excluded" : "Provisional",
+      allocationStatus:    "Provisional" as AllocationStatus,
+      blockingReason:      gap.blockingReason,
+    }));
+
+  // ── Build excluded items (suggestedAmount = 0) ────────────────────────────
+  // These are shown for awareness only — no capital suggestion.
+  const excludedItems: CapitalAllocationItem[] = excludedGaps
+    .sort((a, b) => b.gapPercent - a.gapPercent)
+    .map((gap) => ({
+      ticker:              gap.ticker,
+      company:             gap.company,
+      role:                gap.role,
+      currentPercent:      gap.currentPercent,
+      targetPercent:       gap.targetPercent,
+      gapPercent:          gap.gapPercent,
+      suggestedAmountBase: 0,
+      priority:            "Low" as const,
+      rationale:           gap.blockingReason ?? "Excluded — CIO does not want capital allocated here.",
+      allocationStatus:    "Excluded" as AllocationStatus,
       blockingReason:      gap.blockingReason,
     }));
 
@@ -232,10 +264,11 @@ export function computeCapitalAllocation(
     cashPercent:                     Math.round(cashPercent * 10) / 10,
     cashTargetPercent:               target.cashTargetPercent,
     deployableCashBase:              Math.round(deployableCash),
-    items:                           actionableItems,  // backward-compat alias
+    items:                           actionableItems, // backward-compat alias
     actionableItems,
     blockedItems,
     provisionalItems,
+    excludedItems,
     totalSuggestedDeploymentBase:    Math.round(totalSuggested),
     residualCashAfterDeploymentBase: Math.round(availableCash - totalSuggested),
     computedAt:                      now,
