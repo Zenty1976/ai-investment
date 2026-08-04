@@ -641,9 +641,25 @@ class AutomationOrchestratorService {
       // We already confirmed CM has run; call it Fresh to avoid a false NeverRun.
       if (agg.targetCount === 0) return "Fresh";
 
-      // Some required tickers are missing or stale → more work to do.
-      // Return Stale (not NeverRun) — the module HAS run; it just isn't complete.
-      if (agg.missingTargetCount > 0 || agg.staleTargetCount > 0) return "Stale";
+      // Evaluate staleness with a distinction between portfolio holdings and
+      // opportunistic candidates (OF / TDE tickers added after CM already ran).
+      //
+      // Rule:
+      //  • Portfolio holding is stale/missing  → "Stale"   (critical gap)
+      //  • Only OF/TDE-only tickers are missing → "DueSoon" (next run will cover them)
+      //  • Any ticker (portfolio or not) is past its stale window → "Stale"
+      if (agg.staleTargetCount > 0) return "Stale";
+
+      if (agg.missingTargetCount > 0) {
+        // Are any of the missing tickers portfolio holdings?
+        const portfolioSet = new Set(this._getPortfolioTickers());
+        const missingPortfolioHolding = agg.staleOrMissingTickers.some(
+          t => portfolioSet.has(t)
+        );
+        // Portfolio holding missing → Stale.
+        // Only OF/TDE candidates missing → DueSoon (will be covered next run).
+        return missingPortfolioHolding ? "Stale" : "DueSoon";
+      }
 
       // All required targets are fresh.  Check DueSoon (≥ 85 % of stale window).
       const staleMs = settings.staleAfterMinutes * 60_000;
@@ -1080,21 +1096,35 @@ class AutomationOrchestratorService {
 
   // ── Company Monitor targeting ───────────────────────────────────────────────
 
+  /**
+   * Returns only portfolio holding tickers (no TDE/OF candidates).
+   * Used by freshness logic to distinguish "required" from "opportunistic" tickers.
+   */
+  private _getPortfolioTickers(): string[] {
+    const tickers: string[] = [];
+    try {
+      const pm = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
+      const accounts = Array.isArray(pm?.result?.accounts)
+        ? pm!.result!.accounts as Array<Record<string, unknown>>
+        : [];
+      for (const acc of accounts) {
+        const positions = Array.isArray(acc.positions)
+          ? acc.positions as Array<Record<string, unknown>>
+          : [];
+        for (const pos of positions) {
+          const sym = String(pos.symbol ?? "").toUpperCase();
+          if (sym) tickers.push(sym);
+        }
+      }
+    } catch { /* ignore */ }
+    return tickers;
+  }
+
   private _getTargetTickers(maxCount = 5): string[] {
     const tickers = new Set<string>();
 
     // Portfolio holdings
-    try {
-      const pm = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
-      const accounts = Array.isArray(pm?.result?.accounts) ? pm!.result!.accounts as Array<Record<string, unknown>> : [];
-      for (const acc of accounts) {
-        const positions = Array.isArray(acc.positions) ? acc.positions as Array<Record<string, unknown>> : [];
-        for (const pos of positions) {
-          const sym = String(pos.symbol ?? "").toUpperCase();
-          if (sym) tickers.add(sym);
-        }
-      }
-    } catch { /* ignore */ }
+    for (const sym of this._getPortfolioTickers()) tickers.add(sym);
 
     // Trade Decision Engine subjects
     try {
