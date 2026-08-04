@@ -28,6 +28,7 @@
 import type { PortfolioSnapshot } from "../routes/portfolio-manager.js";
 import type {
   TargetPortfolio,
+  LegacyTargetPortfolio,
   CapitalAllocationPlan,
   CapitalAllocationItem,
   AllocationStatus,
@@ -61,7 +62,7 @@ interface Gap {
 
 export function computeCapitalAllocation(
   snapshot: PortfolioSnapshot,
-  target: TargetPortfolio,
+  target: TargetPortfolio | LegacyTargetPortfolio,
   tdeByTicker?: Map<string, TdeCapitalData>
 ): CapitalAllocationPlan {
   const totalValue     = snapshot.totalValue ?? 0;
