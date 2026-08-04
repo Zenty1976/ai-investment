@@ -103,6 +103,7 @@ If reliable information is unavailable, state this clearly.
 
 OUTPUT RULES:
 - Return a single raw JSON object only — no markdown, no code fences, no introductory text. Your entire response must begin with { and end with }
+- company.ticker MUST be exactly the ticker symbol provided in the request — do not substitute a different exchange's symbol or regional listing for the same company (e.g. if asked for "NOVO B", return "NOVO B", not "NVO" or any other variant)
 - catalysts: maximum 5 items
 - risks: maximum 5 items
 - investmentThesis: 3–6 bullet points stating WHY this company is or is not a compelling investment — these are the permanent thesis points re-evaluated on every future update
@@ -174,6 +175,7 @@ DATE RULES:
 
 OUTPUT RULES:
 - Return a single raw JSON object only — no markdown, no code fences, no introductory text. Your entire response must begin with { and end with }
+- company.ticker MUST be exactly the ticker symbol provided in the request — do not substitute a different exchange's symbol or regional listing for the same company (e.g. if asked for "NOVO B", return "NOVO B", not "NVO" or any other variant)
 - catalysts: maximum 5 items
 - risks: maximum 5 items
 - marketSentiment: company-specific field. Must be exactly "Positive", "Mixed", or "Negative". Do NOT copy the Market Monitor marketSentiment value — that field uses different enum values. When the broader market is neutral but company signals are balanced, use "Mixed"
@@ -816,6 +818,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
   let lastZodErrors: string | null = null;
   let lastRawResponse: string | null = null;
   let lastNormalizations: string[] = [];
+  let lastWrongTickerReturned: string | null = null;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
@@ -826,7 +829,21 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     const JSON_ONLY_REMINDER = "Your entire response must begin with { and end with }. Do not add introductory text, markdown fences, or any prose outside the JSON.";
 
     let effectiveUserPrompt = userPrompt;
-    if (lastConsistencyError) {
+    if (lastWrongTickerReturned) {
+      // Wrong-ticker retry: name the exact mistake and demand the correct value.
+      // This is the most common failure for non-US tickers where the model knows
+      // a different exchange's symbol better (e.g. "NOVO B" → "NVO").
+      effectiveUserPrompt = [
+        `The previous response returned company.ticker="${lastWrongTickerReturned}" but the requested ticker is "${ticker}".`,
+        "",
+        `You MUST set company.ticker to exactly "${ticker}" — do not substitute any other exchange's symbol or ADR ticker for the same company.`,
+        JSON_ONLY_REMINDER,
+        "",
+        "---",
+        "",
+        userPrompt,
+      ].join("\n");
+    } else if (lastConsistencyError) {
       effectiveUserPrompt = [
         "The previous response failed server-side consistency validation.",
         "",
@@ -942,14 +959,25 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
     const returnedTicker = parsed.data.company.ticker.toUpperCase().trim();
     if (returnedTicker !== ticker) {
+      lastWrongTickerReturned = returnedTicker;
+      lastConsistencyError = null; // focus the next prompt on the ticker, not another error
+      lastZodErrors = null;
       req.log.warn({ requestedTicker: ticker, returnedTicker }, "AI returned analysis for wrong ticker — rejecting");
-      if (attempt < MAX_ATTEMPTS) { req.log.info("Retrying after wrong-ticker response"); continue; }
+      if (attempt < MAX_ATTEMPTS) {
+        req.log.info({ attempt }, "Retrying — injecting wrong-ticker correction into next prompt");
+        continue;
+      }
+      systemLog.logError("Company Monitor", `Company analysis failed for ${ticker}: AI returned wrong ticker "${returnedTicker}" after ${attempt} attempt(s)`);
       res.status(500).json({
-        error: `AI returned an analysis for ${returnedTicker} instead of ${ticker}. Please try again.`,
+        error: `AI returned an analysis for "${returnedTicker}" instead of "${ticker}" after ${attempt} attempt(s). The model may not recognise this exchange-specific ticker — try adding the full company name.`,
+        errorStage: "ticker-identity",
+        requestedTicker: ticker,
+        returnedTicker,
         _debug: lastDebug,
       });
       return;
     }
+    lastWrongTickerReturned = null; // ticker verified — clear any previous wrong-ticker state
 
     if (companyName) {
       const returnedName = parsed.data.company.name.toLowerCase();
