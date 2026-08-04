@@ -625,7 +625,15 @@ class AutomationOrchestratorService {
     if (moduleId === "company-monitor") {
       const agg = this._companyMonitorAggregate(settings.staleAfterMinutes);
       if (agg.targetCount === 0) return "NeverRun";
-      if (agg.missingTargetCount > 0) return "NeverRun";
+      if (agg.missingTargetCount > 0) {
+        // Some tickers have no CM entry yet.  Distinguish between:
+        //  - Truly never run: no ticker has ever been analysed → NeverRun
+        //  - Partial: at least one ticker is fresh/stale → Stale (pending work,
+        //    not "nothing done").  This prevents spurious NeverRun when a full
+        //    cycle adds new OF/TDE tickers after the CM stage already completed.
+        const anyAnalysed = agg.freshTargetCount > 0 || agg.staleTargetCount > 0;
+        return anyAnalysed ? "Stale" : "NeverRun";
+      }
       if (agg.staleTargetCount > 0) return "Stale";
       // Check DueSoon: any target age ≥ 85% of stale threshold
       const staleMs = settings.staleAfterMinutes * 60_000;
@@ -1179,11 +1187,33 @@ class AutomationOrchestratorService {
       await this._runStage(["sector-monitor"], corrId, "RunAllNow");
       completeStage("sector-monitor");
 
-      // Stage 4: Company Monitor for each target ticker (sequential)
+      // Stage 4: Company Monitor for each target ticker (sequential, fault-isolated).
+      // A single ticker failure (e.g. transient AI error for one stock) must not
+      // abort the entire cycle.  We continue to the next ticker, log the error,
+      // and only fail the whole cycle if every ticker failed (nothing succeeded).
       const tickers = this._getTargetTickers(5);
+      let cmSuccesses = 0;
+      let cmFailures = 0;
       for (const ticker of tickers) {
-        const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId });
-        await this._waitForJob(job.id, 300_000);
+        try {
+          const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId });
+          await this._waitForJob(job.id, 300_000);
+          cmSuccesses++;
+        } catch (err) {
+          cmFailures++;
+          const msg = err instanceof Error ? err.message : String(err);
+          systemLog.logError(MODULE_NAME,
+            `Full cycle: Company Monitor failed for ${ticker} — continuing with remaining tickers (${msg})`
+          );
+        }
+      }
+      if (tickers.length > 0 && cmSuccesses === 0) {
+        throw new Error(`company-monitor: all ${tickers.length} ticker(s) failed`);
+      }
+      if (cmFailures > 0) {
+        systemLog.logWarning(MODULE_NAME,
+          `Full cycle: Company Monitor completed with ${cmSuccesses} success(es) and ${cmFailures} failure(s)`
+        );
       }
       completeStage("company-monitor");
 

@@ -21,5 +21,87 @@
       "trade-decision-engine",
       "trade-review"
     ]
+  },
+  {
+    "id": "038f79b8-2495-415f-aea6-68aa6766c674",
+    "correlationId": "f07f74a9-3a9d-4910-8423-4fee53b5c71c",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-04T19:09:42.207Z",
+    "completedAt": "2026-08-04T19:11:40.425Z",
+    "durationMs": 118219,
+    "status": "Failed",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor"
+    ],
+    "error": "company-monitor failed: HTTP 500: {\"error\":\"Company Monitor consistency validation failed\",\"errorStage\":\"consistency-validation\",\"validationError\":\"FullAnalysis: thesis point id \\\"ai‑power‑demand\\\" must be kebab-case (e.g. \\\"revenue-g",
+    "failedModuleId": "company-monitor"
+  },
+  {
+    "id": "763ea076-76d5-4948-abd5-9ff3d70db7aa",
+    "correlationId": "f9db952d-fc74-448a-b8c5-ae66db4462f0",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-04T19:16:21.004Z",
+    "completedAt": "2026-08-04T19:18:46.132Z",
+    "durationMs": 145128,
+    "status": "Completed",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor",
+      "company-monitor",
+      "market-alerts",
+      "risk-analyzer",
+      "portfolio-analyzer",
+      "opportunity-finder",
+      "trade-decision-engine",
+      "trade-review"
+    ]
+  },
+  {
+    "id": "bd06694e-cc7e-4936-a692-6894cdd558a2",
+    "correlationId": "354aeac5-3864-4990-8ec7-70ce44d3026f",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-04T19:57:01.305Z",
+    "completedAt": "2026-08-04T19:58:25.379Z",
+    "durationMs": 84075,
+    "status": "Failed",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor"
+    ],
+    "error": "company-monitor failed: HTTP 500: {\"error\":\"AI returned an analysis for NVO instead of NOVO B. Please try again.\",\"_debug\":{\"request\":{\"model\":\"gpt-4o\",\"max_output_tokens\":4000,\"temperature\":0.1,\"tools\":[{\"type\":\"web_search\",\"search_c",
+    "failedModuleId": "company-monitor"
+  },
+  {
+    "id": "eb77ab07-91a2-4bb3-a07c-dbe804fb9243",
+    "correlationId": "5c960d33-be66-47cd-b385-a7ca755d8a2b",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-04T19:59:43.009Z",
+    "completedAt": "2026-08-04T20:03:04.247Z",
+    "durationMs": 201238,
+    "status": "Completed",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor",
+      "company-monitor",
+      "market-alerts",
+      "risk-analyzer",
+      "portfolio-analyzer",
+      "opportunity-finder",
+      "trade-decision-engine",
+      "trade-review"
+    ]
   }
 ]
