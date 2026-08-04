@@ -623,21 +623,30 @@ class AutomationOrchestratorService {
 
     // Company Monitor: aggregate freshness across all required targets.
     if (moduleId === "company-monitor") {
-      const agg = this._companyMonitorAggregate(settings.staleAfterMinutes);
-      if (agg.targetCount === 0) return "NeverRun";
-      if (agg.missingTargetCount > 0) {
-        // Some tickers have no CM entry yet.  Distinguish between:
-        //  - Truly never run: no ticker has ever been analysed → NeverRun
-        //  - Partial: at least one ticker is fresh/stale → Stale (pending work,
-        //    not "nothing done").  This prevents spurious NeverRun when a full
-        //    cycle adds new OF/TDE tickers after the CM stage already completed.
-        const anyAnalysed = agg.freshTargetCount > 0 || agg.staleTargetCount > 0;
-        return anyAnalysed ? "Stale" : "NeverRun";
-      }
-      if (agg.staleTargetCount > 0) return "Stale";
-      // Check DueSoon: any target age ≥ 85% of stale threshold
-      const staleMs = settings.staleAfterMinutes * 60_000;
       const allEntries = analysisRepository.getAll();
+      const cmEntries = allEntries.filter(e => e.moduleName.startsWith("company-monitor:"));
+
+      // Truly never run: no CM results exist in the repository at all.
+      // Do NOT use _getTargetTickers() for this gate — the ticker list is empty
+      // on a fresh server start (in-memory repository is blank) or when the
+      // portfolio has no open positions, which would produce a false NeverRun
+      // even after CM has successfully analysed every required company.
+      if (cmEntries.length === 0) return "NeverRun";
+
+      // CM has run for at least one ticker.  Now measure coverage and freshness
+      // against the current set of required tickers.
+      const agg = this._companyMonitorAggregate(settings.staleAfterMinutes);
+
+      // _getTargetTickers() returned nothing (empty portfolio + no TDE/OF data).
+      // We already confirmed CM has run; call it Fresh to avoid a false NeverRun.
+      if (agg.targetCount === 0) return "Fresh";
+
+      // Some required tickers are missing or stale → more work to do.
+      // Return Stale (not NeverRun) — the module HAS run; it just isn't complete.
+      if (agg.missingTargetCount > 0 || agg.staleTargetCount > 0) return "Stale";
+
+      // All required targets are fresh.  Check DueSoon (≥ 85 % of stale window).
+      const staleMs = settings.staleAfterMinutes * 60_000;
       const tickers = this._getTargetTickers(10);
       const due = tickers.some(ticker => {
         const entry = allEntries.find(e => e.moduleName === `company-monitor:${ticker}`);
