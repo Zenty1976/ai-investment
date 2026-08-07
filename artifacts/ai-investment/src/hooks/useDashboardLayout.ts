@@ -1,30 +1,31 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { LayoutItem } from "react-grid-layout";
 
-// Bump version to clear any stale localStorage from previous layouts
-const STORAGE_KEY = "ai-dashboard-layout-v6";
-const MODULES_KEY = "ai-dashboard-modules-v6";
+// Grid: cols=24, rowHeight=20px.
+// w values are 2× the original 12-col values; h values are 4× the original 80px row-height.
+// Visual tile sizes are identical to the original; resize steps are ~56px wide × 20px tall.
+const STORAGE_KEY_BASE = "ai-dashboard-layout-v8";
+const MODULES_KEY_BASE = "ai-dashboard-modules-v8";
+export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v8";
 
-// Row height is 20px. Default h values are 4× the original 80px row height
-// so the visual tile size is identical — but each resize step is now 20px.
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
-  "automation":          { w: 6, h: 16 },
-  "portfolio-manager":   { w: 6, h: 16 },
-  "market-monitor":      { w: 4, h: 16 },
-  "event-monitor":       { w: 4, h: 16 },
-  "news-monitor":        { w: 4, h: 16 },
-  "sector-monitor":      { w: 4, h: 16 },
-  "market-alerts":       { w: 4, h: 16 },
-  "risk-analyzer":       { w: 4, h: 16 },
-  "portfolio-analyzer":  { w: 6, h: 20 },
-  "opportunity-finder":  { w: 6, h: 20 },
-  "company-monitor":     { w: 6, h: 20 },
-  "trade-decision":      { w: 6, h: 20 },
-  "investor-watch":      { w: 6, h: 16 },
+  "automation":          { w: 12, h: 16 },
+  "portfolio-manager":   { w: 12, h: 16 },
+  "market-monitor":      { w:  8, h: 16 },
+  "event-monitor":       { w:  8, h: 16 },
+  "news-monitor":        { w:  8, h: 16 },
+  "sector-monitor":      { w:  8, h: 16 },
+  "market-alerts":       { w:  8, h: 16 },
+  "risk-analyzer":       { w:  8, h: 16 },
+  "portfolio-analyzer":  { w: 12, h: 20 },
+  "opportunity-finder":  { w: 12, h: 20 },
+  "company-monitor":     { w: 12, h: 20 },
+  "trade-decision":      { w: 12, h: 20 },
+  "investor-watch":      { w: 12, h: 16 },
 };
 
-/** All 13 modules active by default. */
+/** Layout 1 default: all 13 modules. Layouts 2 & 3 start empty. */
 export const DEFAULT_MODULES = [
   "automation", "portfolio-manager",
   "market-monitor", "event-monitor", "news-monitor",
@@ -35,30 +36,30 @@ export const DEFAULT_MODULES = [
 ];
 
 /**
- * Default 12-column layout.
- * Row height = 20 px · h:16 = 320 px tile → 292 px inner content → "lg" view.
- * All h/y values are ×4 vs the original 80px row height — same visual size, 20px resize steps.
+ * Default 24-column layout, rowHeight=20px.
+ * 20px × h:16 = 320px tile, same visual size as the original.
+ * x/w values are ×2 vs old 12-col layout → each column ≈ 56px → fine horizontal steps.
  */
 export const DEFAULT_LAYOUT: LayoutItem[] = [
   // Row 0 — overview panels
-  { i: "automation",         x: 0, y: 0,   w: 6, h: 16, minW: 2, minH: 6 },
-  { i: "portfolio-manager",  x: 6, y: 0,   w: 6, h: 16, minW: 2, minH: 6 },
+  { i: "automation",         x:  0, y:  0,  w: 12, h: 16, minW: 4, minH: 6 },
+  { i: "portfolio-manager",  x: 12, y:  0,  w: 12, h: 16, minW: 4, minH: 6 },
   // Row 16 — market intelligence
-  { i: "market-monitor",     x: 0, y: 16,  w: 4, h: 16, minW: 2, minH: 6 },
-  { i: "event-monitor",      x: 4, y: 16,  w: 4, h: 16, minW: 2, minH: 6 },
-  { i: "news-monitor",       x: 8, y: 16,  w: 4, h: 16, minW: 2, minH: 6 },
+  { i: "market-monitor",     x:  0, y: 16,  w:  8, h: 16, minW: 4, minH: 6 },
+  { i: "event-monitor",      x:  8, y: 16,  w:  8, h: 16, minW: 4, minH: 6 },
+  { i: "news-monitor",       x: 16, y: 16,  w:  8, h: 16, minW: 4, minH: 6 },
   // Row 32 — sector & risk
-  { i: "sector-monitor",     x: 0, y: 32,  w: 4, h: 16, minW: 2, minH: 6 },
-  { i: "market-alerts",      x: 4, y: 32,  w: 4, h: 16, minW: 2, minH: 6 },
-  { i: "risk-analyzer",      x: 8, y: 32,  w: 4, h: 16, minW: 2, minH: 6 },
+  { i: "sector-monitor",     x:  0, y: 32,  w:  8, h: 16, minW: 4, minH: 6 },
+  { i: "market-alerts",      x:  8, y: 32,  w:  8, h: 16, minW: 4, minH: 6 },
+  { i: "risk-analyzer",      x: 16, y: 32,  w:  8, h: 16, minW: 4, minH: 6 },
   // Row 48 — deep analysis
-  { i: "portfolio-analyzer", x: 0, y: 48,  w: 6, h: 20, minW: 2, minH: 6 },
-  { i: "opportunity-finder", x: 6, y: 48,  w: 6, h: 20, minW: 2, minH: 6 },
+  { i: "portfolio-analyzer", x:  0, y: 48,  w: 12, h: 20, minW: 4, minH: 6 },
+  { i: "opportunity-finder", x: 12, y: 48,  w: 12, h: 20, minW: 4, minH: 6 },
   // Row 68 — decisions
-  { i: "company-monitor",    x: 0, y: 68,  w: 6, h: 20, minW: 2, minH: 6 },
-  { i: "trade-decision",     x: 6, y: 68,  w: 6, h: 20, minW: 2, minH: 6 },
+  { i: "company-monitor",    x:  0, y: 68,  w: 12, h: 20, minW: 4, minH: 6 },
+  { i: "trade-decision",     x: 12, y: 68,  w: 12, h: 20, minW: 4, minH: 6 },
   // Row 88 — informational
-  { i: "investor-watch",     x: 0, y: 88,  w: 6, h: 16, minW: 2, minH: 6 },
+  { i: "investor-watch",     x:  0, y: 88,  w: 12, h: 16, minW: 4, minH: 6 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -70,54 +71,90 @@ function readStorage<T>(key: string, fallback: T): T {
   }
 }
 
-export function useDashboardLayout() {
-  const [activeModules, setActiveModules] = useState<string[]>(() =>
-    readStorage(MODULES_KEY, DEFAULT_MODULES)
-  );
+/**
+ * Validate that the saved layout uses 24-column scale (max w ≥ 8).
+ * If all tiles have w ≤ 6, the layout was saved under the old 12-col grid
+ * and must be discarded so DEFAULT_LAYOUT takes over.
+ */
+function isValidLayout(layout: LayoutItem[]): boolean {
+  if (!Array.isArray(layout) || layout.length === 0) return false;
+  const maxW = Math.max(...layout.map(l => l.w));
+  return maxW >= 8; // 24-col grid: smallest tile is w:8 (1/3 width)
+}
 
-  const [layout, setLayout] = useState<LayoutItem[]>(() =>
-    readStorage(STORAGE_KEY, DEFAULT_LAYOUT)
-  );
+export type LayoutId = 1 | 2 | 3;
+
+export function readActiveLayoutId(): LayoutId {
+  try {
+    const v = parseInt(localStorage.getItem(ACTIVE_LAYOUT_KEY) ?? "1", 10);
+    return (v === 2 ? 2 : v === 3 ? 3 : 1) as LayoutId;
+  } catch {
+    return 1;
+  }
+}
+
+export function useDashboardLayout(layoutId: LayoutId = 1) {
+  const storageKey = `${STORAGE_KEY_BASE}-${layoutId}`;
+  const modulesKey = `${MODULES_KEY_BASE}-${layoutId}`;
+
+  const [layout, setLayout] = useState<LayoutItem[]>(() => {
+    const saved = readStorage(storageKey, DEFAULT_LAYOUT);
+    return isValidLayout(saved) ? saved : DEFAULT_LAYOUT;
+  });
+
+  const [activeModules, setActiveModules] = useState<string[]>(() => {
+    const defaultMods = layoutId === 1 ? DEFAULT_MODULES : [];
+    return readStorage(modulesKey, defaultMods);
+  });
+
+  // Re-read from the appropriate storage keys whenever the active layout changes
+  useEffect(() => {
+    const defaultMods = layoutId === 1 ? DEFAULT_MODULES : [];
+    const saved = readStorage(storageKey, DEFAULT_LAYOUT);
+    setLayout(isValidLayout(saved) ? saved : DEFAULT_LAYOUT);
+    setActiveModules(readStorage(modulesKey, defaultMods));
+  }, [storageKey, modulesKey, layoutId]);
 
   const saveLayout = useCallback((newLayout: LayoutItem[]) => {
     setLayout(newLayout);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newLayout));
-  }, []);
+    localStorage.setItem(storageKey, JSON.stringify(newLayout));
+  }, [storageKey]);
 
   const addModule = useCallback((moduleId: string) => {
     setActiveModules(prev => {
       if (prev.includes(moduleId)) return prev;
       const next = [...prev, moduleId];
-      localStorage.setItem(MODULES_KEY, JSON.stringify(next));
+      localStorage.setItem(modulesKey, JSON.stringify(next));
       return next;
     });
     setLayout(prev => {
       if (prev.find(l => l.i === moduleId)) return prev;
-      const { w, h } = DEFAULT_SIZES[moduleId] ?? { w: 4, h: 4 };
+      const { w, h } = DEFAULT_SIZES[moduleId] ?? { w: 8, h: 16 };
       const bottomY = prev.reduce((max, l) => Math.max(max, l.y + l.h), 0);
       const next: LayoutItem[] = [
         ...prev,
-        { i: moduleId, x: 0, y: bottomY, w, h, minW: 2, minH: 2 } as LayoutItem,
+        { i: moduleId, x: 0, y: bottomY, w, h, minW: 4, minH: 6 } as LayoutItem,
       ];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(storageKey, JSON.stringify(next));
       return next;
     });
-  }, []);
+  }, [modulesKey, storageKey]);
 
   const removeModule = useCallback((moduleId: string) => {
     setActiveModules(prev => {
       const next = prev.filter(id => id !== moduleId);
-      localStorage.setItem(MODULES_KEY, JSON.stringify(next));
+      localStorage.setItem(modulesKey, JSON.stringify(next));
       return next;
     });
-  }, []);
+  }, [modulesKey]);
 
   const resetLayout = useCallback(() => {
-    setActiveModules(DEFAULT_MODULES);
+    const defaultMods = layoutId === 1 ? DEFAULT_MODULES : [];
+    setActiveModules(defaultMods);
     setLayout(DEFAULT_LAYOUT);
-    localStorage.setItem(MODULES_KEY, JSON.stringify(DEFAULT_MODULES));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_LAYOUT));
-  }, []);
+    localStorage.setItem(modulesKey, JSON.stringify(defaultMods));
+    localStorage.setItem(storageKey, JSON.stringify(DEFAULT_LAYOUT));
+  }, [layoutId, modulesKey, storageKey]);
 
   return { activeModules, layout, saveLayout, addModule, removeModule, resetLayout };
 }

@@ -11,18 +11,67 @@ import type { LayoutItem } from "react-grid-layout";
 const GridLayout = GridLayoutBase as React.ComponentType<any>;
 import { LayoutGrid, Pencil, Check, RotateCcw } from "lucide-react";
 
-import { useDashboardLayout } from "@/hooks/useDashboardLayout";
+import {
+  useDashboardLayout,
+  readActiveLayoutId,
+  ACTIVE_LAYOUT_KEY,
+  type LayoutId,
+} from "@/hooks/useDashboardLayout";
 import { TileShell } from "./TileShell";
 import { AddModulePanel } from "./AddModulePanel";
 import { MODULE_REGISTRY } from "./ModuleRegistry";
 
+/** Pill of three numbered layout-selector buttons shown in the toolbar. */
+function LayoutSelector({
+  active,
+  onChange,
+}: {
+  active: LayoutId;
+  onChange: (id: LayoutId) => void;
+}) {
+  return (
+    <div
+      className="flex items-center gap-0.5 rounded border border-border/60 p-0.5"
+      title="Switch dashboard layout"
+    >
+      {([1, 2, 3] as const).map(id => (
+        <button
+          key={id}
+          onClick={() => onChange(id)}
+          className={`w-6 h-6 rounded text-[11px] font-bold transition-colors select-none ${
+            active === id
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+          }`}
+          title={`Layout ${id}`}
+        >
+          {id}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function DashboardGrid() {
+  // ── Active layout (persisted) ────────────────────────────────────────────
+  const [activeLayout, setActiveLayout] = useState<LayoutId>(readActiveLayoutId);
+
+  function handleSwitchLayout(id: LayoutId) {
+    setActiveLayout(id);
+    localStorage.setItem(ACTIVE_LAYOUT_KEY, String(id));
+    // Leave edit mode when switching layouts
+    setEditMode(false);
+    setShowAdd(false);
+  }
+
+  // ── Per-layout data ──────────────────────────────────────────────────────
   const { activeModules, layout, saveLayout, addModule, removeModule, resetLayout } =
-    useDashboardLayout();
+    useDashboardLayout(activeLayout);
+
   const [editMode, setEditMode] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
 
-  // Measure container width so GridLayout fills its parent without WidthProvider
+  // ── Container width ──────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement>(null);
   const [gridWidth, setGridWidth] = useState(1200);
 
@@ -37,6 +86,7 @@ export function DashboardGrid() {
     return () => obs.disconnect();
   }, []);
 
+  // ── Layout computation ───────────────────────────────────────────────────
   const activeModuleDefs = MODULE_REGISTRY.filter(m => activeModules.includes(m.id));
 
   // Ensure every active module has a layout entry; add missing ones at bottom.
@@ -46,8 +96,8 @@ export function DashboardGrid() {
     const existing = layout.find(l => l.i === m.id);
     const bottomY = layout.reduce((max, l) => Math.max(max, l.y + l.h), 0);
     const base: LayoutItem = existing
-      ? { ...existing, minW: 2, minH: 2 } as LayoutItem
-      : { i: m.id, x: 0, y: bottomY, w: 4, h: 4, minW: 2, minH: 2 } as LayoutItem;
+      ? { ...existing, minW: 4, minH: 6 } as LayoutItem
+      : { i: m.id, x: 0, y: bottomY, w: 8, h: 16, minW: 4, minH: 6 } as LayoutItem;
     return editMode ? base : { ...base, static: true } as LayoutItem;
   });
 
@@ -65,15 +115,19 @@ export function DashboardGrid() {
     <div className="flex flex-col gap-2">
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
+        {/* Left: title + layout selector */}
         <div className="flex items-center gap-2">
           <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground">Dashboard</span>
+          <LayoutSelector active={activeLayout} onChange={handleSwitchLayout} />
           {editMode && (
             <span className="text-[10px] text-muted-foreground hidden sm:inline">
               — grab handles to drag · resize from corners · × to remove
             </span>
           )}
         </div>
+
+        {/* Right: edit controls */}
         <div className="flex items-center gap-1.5">
           {editMode && (
             <>
@@ -118,7 +172,9 @@ export function DashboardGrid() {
       {activeModules.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
           <LayoutGrid className="h-8 w-8 text-muted-foreground/30" />
-          <p className="text-sm text-muted-foreground">No modules on the dashboard.</p>
+          <p className="text-sm text-muted-foreground">
+            Layout {activeLayout} er tom — tilføj moduler for at komme i gang.
+          </p>
           <button
             onClick={() => { setEditMode(true); setShowAdd(true); }}
             className="text-xs px-3 py-1.5 rounded border border-border hover:bg-white/5 transition-colors"
@@ -134,7 +190,7 @@ export function DashboardGrid() {
           <GridLayout
             layout={effectiveLayout}
             width={gridWidth}
-            cols={12}
+            cols={24}
             rowHeight={20}
             margin={[6, 6]}
             containerPadding={[0, 0]}
