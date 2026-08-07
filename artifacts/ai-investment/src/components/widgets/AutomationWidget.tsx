@@ -101,7 +101,7 @@ function StatusBar({
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Mode
         </span>
-        <span className={`text-2xl font-bold uppercase tracking-wide truncate ${modeColor}`}>
+        <span className={`text-lg font-bold uppercase tracking-wide truncate ${modeColor}`}>
           {modeLabel}
         </span>
       </div>
@@ -109,12 +109,12 @@ function StatusBar({
       {/* ── Center: System Health ── */}
       <div className="px-4 py-3 flex items-center gap-3 min-w-0">
         <Icon
-          className={`h-9 w-9 shrink-0 ${health.color} ${
+          className={`h-7 w-7 shrink-0 ${health.color} ${
             health.label === "Cycle Running" ? "animate-spin" : ""
           }`}
         />
         <div className="min-w-0">
-          <p className={`text-xl font-bold uppercase tracking-wide truncate ${health.color}`}>
+          <p className={`text-base font-bold uppercase tracking-wide truncate ${health.color}`}>
             {health.label}
           </p>
           <p className="text-xs text-muted-foreground truncate">{health.sub}</p>
@@ -124,13 +124,13 @@ function StatusBar({
       {/* ── Right: Next Update ── */}
       <div className="px-4 py-3 flex items-center gap-3 min-w-0">
         <Clock
-          className={`h-8 w-8 shrink-0 ${cycleRunning ? "text-blue-400 animate-pulse" : "text-muted-foreground"}`}
+          className={`h-6 w-6 shrink-0 ${cycleRunning ? "text-blue-400 animate-pulse" : "text-muted-foreground"}`}
         />
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Next Update
           </p>
-          <p className="text-2xl font-bold text-foreground truncate">
+          <p className="text-lg font-bold text-foreground truncate">
             {cycleRunning ? "Running…" : nextTime ?? "—"}
           </p>
         </div>
