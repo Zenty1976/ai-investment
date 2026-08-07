@@ -192,10 +192,11 @@ export function DashboardGrid() {
             width={gridWidth}
             cols={24}
             rowHeight={10}
-            margin={[6, 6]}
+            margin={[6, 2]}
             containerPadding={[0, 0]}
             isDraggable={editMode}
             isResizable={editMode}
+            resizeHandles={["s", "se", "e"]}
             draggableHandle=".drag-handle"
             onDragStop={(newLayout: LayoutItem[]) => saveLayout(newLayout)}
             onResizeStop={(newLayout: LayoutItem[]) => saveLayout(newLayout)}

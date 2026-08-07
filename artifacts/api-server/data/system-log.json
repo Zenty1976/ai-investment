@@ -1,229 +1,5 @@
 [
   {
-    "id": "2c42ff83-991a-428b-85aa-f643d8ca672d",
-    "timestamp": "2026-08-04T20:16:51.852Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to add Micron on strong AI‑memory momentum\" (MU): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "d4054202-7ef3-456b-bc40-082aa8162de4",
-    "timestamp": "2026-08-04T20:16:51.855Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to add NVIDIA ahead of Q2 earnings\" (NVDA): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "f5d2e9c7-7c2b-4cfb-bcab-2d2c08f94307",
-    "timestamp": "2026-08-04T20:16:51.922Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] MU (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "89b4c2b3-37b9-4aa7-8f9e-c25c1ff95da2",
-    "timestamp": "2026-08-04T20:16:52.079Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] NVDA (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "6dc5fcaf-6b58-4fca-9a16-ec0407262fa5",
-    "timestamp": "2026-08-04T20:16:52.082Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] LLY (PrepareToBuy): score=45 band=Adequate supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "8a90fab0-4d02-45a6-b0d7-2480bbf6b290",
-    "timestamp": "2026-08-04T20:16:52.096Z",
-    "module": "TradeDecisionOutcome",
-    "level": "internal",
-    "message": "Opportunity:LLY: v1 created (New)"
-  },
-  {
-    "id": "748e2b64-51f9-47d8-90c9-8df3769d7e2c",
-    "timestamp": "2026-08-04T20:16:52.097Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "ef9a59d0-39bf-49b9-8226-bcdfd2708180",
-    "timestamp": "2026-08-04T20:16:52.099Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "1f35b673-c1ce-4a2e-822c-93e8b6ad577f",
-    "timestamp": "2026-08-04T20:16:52.101Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 65/100"
-  },
-  {
-    "id": "541702ae-f8ba-4288-aba5-e61bf90b337a",
-    "timestamp": "2026-08-04T20:16:52.103Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "1 decision(s) ReadyForReview: LLY"
-  },
-  {
-    "id": "bab6e700-5609-4ea6-bac4-170a97cefd8b",
-    "timestamp": "2026-08-04T20:16:52.105Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "1 WaitingForReevaluation"
-  },
-  {
-    "id": "aa1fa2b4-5524-462f-993c-02af74d2bf3f",
-    "timestamp": "2026-08-04T20:16:52.108Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "New: Prepare to add Micron on strong AI‑memory momentum; Prepare to add NVIDIA ahead of Q2 earnings; Prepare to add Eli Lilly on Q2 catalyst and healthcare diversification"
-  },
-  {
-    "id": "413718cd-1ae8-4539-91e8-5836ba69a2c8",
-    "timestamp": "2026-08-04T20:16:52.112Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Withdrawn (subject absent): CAT, PG"
-  },
-  {
-    "id": "8541dbd9-371e-408a-9168-2ae9205416ec",
-    "timestamp": "2026-08-04T20:16:52.116Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 2 decision(s) downgraded"
-  },
-  {
-    "id": "e6a954e4-a2b0-44b4-8c2f-bbf2375d2812",
-    "timestamp": "2026-08-04T20:16:52.121Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via RunAllNow (18908ms, change: High)"
-  },
-  {
-    "id": "2e2240f8-86a0-4c88-b581-684fb02c3f83",
-    "timestamp": "2026-08-04T20:16:52.723Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
-  },
-  {
-    "id": "42149205-499a-416c-ba60-5a2a22cf9e5a",
-    "timestamp": "2026-08-04T20:16:52.724Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Trade Review proposal created: BUY LLY → Ready (new outcome version: Opportunity:LLY:v1)"
-  },
-  {
-    "id": "4c5faa08-1570-4cc0-8799-53424c450032",
-    "timestamp": "2026-08-04T20:16:52.731Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via RunAllNow (12ms, change: Medium)"
-  },
-  {
-    "id": "7cb2461d-72b4-4cf3-8d7a-e15246dc674e",
-    "timestamp": "2026-08-04T20:16:53.222Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle completed in 155s"
-  },
-  {
-    "id": "774f916c-adf7-45ad-b3f1-16ba3f5b9a1d",
-    "timestamp": "2026-08-04T20:28:32.818Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [236f2ff7-d333-4379-b9a2-18c6ad05fb6d]"
-  },
-  {
-    "id": "337a846d-fbce-4763-9e95-5241b3eed5b7",
-    "timestamp": "2026-08-04T20:28:32.915Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "18e61fee-9d87-4430-a6a6-75f887566500",
-    "timestamp": "2026-08-04T20:28:32.917Z",
-    "module": "Portfolio Manager",
-    "level": "warning",
-    "message": "Portfolio update is using mock Saxo data"
-  },
-  {
-    "id": "739d0075-5486-4879-89ac-5b4138652517",
-    "timestamp": "2026-08-04T20:28:33.005Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "ae367cf9-d0cf-428e-a2c2-df1ffb92735b",
-    "timestamp": "2026-08-04T20:28:33.024Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "b02b6d19-3c70-4a92-8e29-6c58062f9fc4",
-    "timestamp": "2026-08-04T20:28:33.087Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (258ms, change: None)"
-  },
-  {
-    "id": "d06f40c8-6685-4b85-ba61-a0946036711b",
-    "timestamp": "2026-08-04T20:28:33.396Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "084b7d51-94db-4ce1-bd68-462f1eb883f5",
-    "timestamp": "2026-08-04T20:28:33.403Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "5a735da8-2147-400b-8a63-a2f72f052482",
-    "timestamp": "2026-08-04T20:28:33.408Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "ce308639-4b0e-4b76-8ef4-4f682ca359da",
-    "timestamp": "2026-08-04T20:28:35.673Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
-  },
-  {
-    "id": "531aaac6-c7ae-4c7d-8f6a-7f625bad0ac3",
-    "timestamp": "2026-08-04T20:28:38.708Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed: 3 market-moving stories found"
-  },
-  {
-    "id": "a62880ff-6e0d-4f2b-b407-2224d1ff46f8",
-    "timestamp": "2026-08-04T20:28:38.711Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via RunAllNow (5325ms, change: Medium)"
-  },
-  {
-    "id": "1751dee5-6fdb-4242-ba13-b53c6d09e426",
-    "timestamp": "2026-08-04T20:28:38.750Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
     "id": "acaa0e4c-f5af-4b3d-8827-4677d1e1b08c",
     "timestamp": "2026-08-04T20:28:38.754Z",
     "module": "AutomationOrchestrator",
@@ -3498,5 +3274,229 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "market-alerts completed via Scheduled (4642ms, change: High)"
+  },
+  {
+    "id": "b6ca5332-a215-4605-b53d-1e3ea902bd0f",
+    "timestamp": "2026-08-07T18:37:18.041Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "0a78c593-cad6-4ef6-9998-159a549586d3",
+    "timestamp": "2026-08-07T18:37:18.044Z",
+    "module": "Risk Analyzer",
+    "level": "warning",
+    "message": "Risk analysis performed using mock portfolio data"
+  },
+  {
+    "id": "68e3afb3-54fd-4f3a-84b8-b5a79fef61fe",
+    "timestamp": "2026-08-07T18:37:28.422Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Risk analysis completed"
+  },
+  {
+    "id": "362d2881-1255-46f2-89ad-1534b2eb6fcf",
+    "timestamp": "2026-08-07T18:37:28.423Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk score: 62 ▲ 4 (was 58)"
+  },
+  {
+    "id": "637ac5f8-8d2d-4730-a265-052ec7b35f67",
+    "timestamp": "2026-08-07T18:37:28.425Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Highest portfolio risk: Geopolitical‑driven energy and market volatility [Geopolitical, High severity]"
+  },
+  {
+    "id": "c0900feb-e490-439e-9f41-39e4e829107f",
+    "timestamp": "2026-08-07T18:37:28.427Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Geopolitical‑driven energy and market volatility"
+  },
+  {
+    "id": "388b3ba3-9df8-4412-aef2-65c61fe1a590",
+    "timestamp": "2026-08-07T18:37:28.429Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Serve Robotics execution and cash‑burn risk"
+  },
+  {
+    "id": "aa7c2fbd-7a39-49a8-9872-cb0360a046c0",
+    "timestamp": "2026-08-07T18:37:28.431Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: U.S. monetary policy uncertainty and data surprises"
+  },
+  {
+    "id": "d179331a-c2f8-45fe-b25d-77a7f3451a32",
+    "timestamp": "2026-08-07T18:37:28.433Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Currency volatility (DKK‑USD)"
+  },
+  {
+    "id": "5ed96e96-643d-40a1-b49b-6c4656ef6ca7",
+    "timestamp": "2026-08-07T18:37:28.436Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Novo Nordisk EU launch execution and competitive pressure"
+  },
+  {
+    "id": "9ad283ed-fb11-4ae9-a00e-7c0465f73793",
+    "timestamp": "2026-08-07T18:37:28.438Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Serve Robotics Q2 earnings and guidance"
+  },
+  {
+    "id": "5e9e0c8b-4ca3-4b0f-bc06-8c16b4843f6f",
+    "timestamp": "2026-08-07T18:37:28.440Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Memory‑chip and AI infrastructure bottlenecks"
+  },
+  {
+    "id": "1a1fd870-f028-4bb3-9da4-a14941c7c56b",
+    "timestamp": "2026-08-07T18:37:28.442Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Iran conflict and energy‑driven inflation/stagflation risk"
+  },
+  {
+    "id": "93d16be2-b3a9-4a3c-87d9-292fabeb7da3",
+    "timestamp": "2026-08-07T18:37:28.444Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Clustered macro data shocks (inflation, employment, Fed policy)"
+  },
+  {
+    "id": "fb7259fa-6c15-4898-b589-9c3f3879b491",
+    "timestamp": "2026-08-07T18:37:28.446Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Capex‑driven margin pressure at Microsoft"
+  },
+  {
+    "id": "aa88a4b4-25b9-4a6f-9103-70e46ac44786",
+    "timestamp": "2026-08-07T18:37:28.451Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer completed via Scheduled (10418ms, change: Medium)"
+  },
+  {
+    "id": "0d2ecc0f-58b0-497b-81d8-6b250a844b00",
+    "timestamp": "2026-08-07T18:37:48.037Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "26936ef4-5b9e-4ed7-aed0-3366f3de50a8",
+    "timestamp": "2026-08-07T18:37:48.038Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "93583d52-8312-4129-8536-f793b159ca00",
+    "timestamp": "2026-08-07T18:37:59.874Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Prepare to buy Applied Materials — semiconductor equipment exposure ahead of earnings\" (AMAT): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "6adf9030-0371-4ad7-90a6-4f08f0db5875",
+    "timestamp": "2026-08-07T18:37:59.877Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] NVDA (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "b61ab4ee-4398-41fc-9602-95dc4ded9a1e",
+    "timestamp": "2026-08-07T18:37:59.878Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] AMAT (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "dad15991-63e1-45ae-8f74-9cf5975006cb",
+    "timestamp": "2026-08-07T18:37:59.903Z",
+    "module": "TradeDecisionOutcome",
+    "level": "internal",
+    "message": "Opportunity:NVDA: v2 created (fingerprint changed)"
+  },
+  {
+    "id": "cece4709-cb48-4a9a-86ef-3e58b48c8351",
+    "timestamp": "2026-08-07T18:37:59.904Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "dc2fa402-da09-4cb7-bf2b-a63d4953ae9e",
+    "timestamp": "2026-08-07T18:37:59.907Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "fc05996b-4582-4214-a70d-1f37f211e743",
+    "timestamp": "2026-08-07T18:37:59.909Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 75/100"
+  },
+  {
+    "id": "b55084aa-34f0-496c-9d56-69b3877805eb",
+    "timestamp": "2026-08-07T18:37:59.911Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "1 decision(s) ReadyForReview: NVDA"
+  },
+  {
+    "id": "2525807d-a5bc-4c2a-b319-d003a6c67d7e",
+    "timestamp": "2026-08-07T18:37:59.912Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Changed: Strengthened Prepare to buy NVIDIA — AI infrastructure leader with upcoming earnings catalyst; Strengthened Prepare to buy Applied Materials — semiconductor equipment exposure ahead of earnings"
+  },
+  {
+    "id": "bb35844f-5412-438b-847b-9c790bfca32f",
+    "timestamp": "2026-08-07T18:38:00.016Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Gate: 1 decision(s) downgraded"
+  },
+  {
+    "id": "5965a634-405f-43f6-9c26-a9b627c2f12a",
+    "timestamp": "2026-08-07T18:38:00.021Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine completed via Scheduled (11987ms, change: High)"
+  },
+  {
+    "id": "a79d9d36-1082-4eed-b61b-f5df52134d84",
+    "timestamp": "2026-08-07T18:38:00.025Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
+  },
+  {
+    "id": "bccd3d0c-8b83-4ce8-8791-913eb5fa946a",
+    "timestamp": "2026-08-07T18:38:00.026Z",
+    "module": "TradeReview",
+    "level": "internal",
+    "message": "Trade Review proposal created: BUY NVDA → Waiting (new outcome version: Opportunity:NVDA:v2)"
+  },
+  {
+    "id": "6e26320c-b05e-45fe-a058-982cf1521169",
+    "timestamp": "2026-08-07T18:38:00.032Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via Dependency (9ms, change: Medium)"
   }
 ]
