@@ -18,6 +18,12 @@ function decisionIcon(type: string) {
   return "·";
 }
 
+function decisionColor(type: string) {
+  if (/buy/i.test(type)) return "text-green-400";
+  if (/sell|reduce/i.test(type)) return "text-red-400";
+  return "text-muted-foreground";
+}
+
 export function TradeDecisionWidget() {
   const ref = useRef<HTMLDivElement>(null);
   const size = useTileSize(ref);
@@ -75,10 +81,10 @@ export function TradeDecisionWidget() {
               </div>
               <ScoreBar score={score} color={scoreColor} />
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
-                {decisions.slice(0, 4).map((dec: any, i: number) => (
+                {decisions.map((dec: any, i: number) => (
                   <div key={i} className="flex items-start gap-1.5 text-[10px]">
-                    <span className={`shrink-0 ${dec.decisionType?.includes("Buy") ? "text-green-400" : dec.decisionType?.includes("Reduce") ? "text-red-400" : "text-muted-foreground"}`}>
-                      {decisionIcon(dec.decisionType ?? "")}
+                    <span className={`shrink-0 font-bold ${decisionColor(dec.decisionType ?? dec.decision ?? "")}`}>
+                      {decisionIcon(dec.decisionType ?? dec.decision ?? "")}
                     </span>
                     <span className="font-medium text-foreground w-12 truncate">{dec.ticker}</span>
                     <span className="text-muted-foreground truncate flex-1">{dec.title}</span>
@@ -91,6 +97,7 @@ export function TradeDecisionWidget() {
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              {/* Score header */}
               <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-baseline gap-1.5">
                   <span className={`text-3xl font-bold ${pColor}`}>{score}</span>
@@ -98,33 +105,46 @@ export function TradeDecisionWidget() {
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-semibold ${pColor}`}>{posture}</p>
-                  <p className="text-[10px] text-muted-foreground">{decisions.length} decisions</p>
+                  <p className="text-[10px] text-muted-foreground">{decisions.length} decisions · {timeAgo(updatedAt)}</p>
                 </div>
               </div>
               <ScoreBar score={score} color={scoreColor} />
+
               {d.mainConclusion && (
                 <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{safeText(d.mainConclusion)}</p>
               )}
+
+              {/* Decision list with reason */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
-                {decisions.map((dec: any, i: number) => (
-                  <div key={i} className="flex items-start gap-2 rounded border border-border/40 px-1.5 py-1">
-                    <span className={`text-sm font-bold shrink-0 ${dec.decisionType?.includes("Buy") ? "text-green-400" : dec.decisionType?.includes("Reduce") ? "text-red-400" : "text-muted-foreground"}`}>
-                      {decisionIcon(dec.decisionType ?? "")}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1">
+                {decisions.map((dec: any, i: number) => {
+                  const dtype = dec.decisionType ?? dec.decision ?? "";
+                  return (
+                    <div key={i} className="border-t border-border/30 pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-base font-bold shrink-0 w-4 ${decisionColor(dtype)}`}>
+                          {decisionIcon(dtype)}
+                        </span>
                         <span className="text-[11px] font-semibold text-foreground">{dec.ticker}</span>
-                        <span className="text-[10px] text-muted-foreground truncate">{dec.decisionType}</span>
+                        <span className="text-[10px] text-muted-foreground truncate flex-1">{dtype}</span>
+                        <span className={`text-[10px] shrink-0 ${
+                          dec.confidence === "High" ? "text-green-400"
+                          : dec.confidence === "Medium" ? "text-yellow-400"
+                          : "text-muted-foreground"
+                        }`}>{dec.confidence}</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground truncate">{dec.title}</p>
+                      {dec.title && (
+                        <p className="text-[10px] text-foreground/80 mt-0.5 ml-5 font-medium line-clamp-1">{dec.title}</p>
+                      )}
+                      {dec.reason && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5 ml-5 line-clamp-2">{dec.reason}</p>
+                      )}
+                      {dec.readiness && dec.readiness !== "Ready" && (
+                        <p className="text-[9px] text-yellow-400/70 mt-0.5 ml-5">{dec.readinessReason ?? dec.readiness}</p>
+                      )}
                     </div>
-                    <span className={`text-[10px] shrink-0 ml-auto ${dec.confidence === "High" ? "text-green-400" : dec.confidence === "Medium" ? "text-yellow-400" : "text-muted-foreground"}`}>
-                      {dec.confidence}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>

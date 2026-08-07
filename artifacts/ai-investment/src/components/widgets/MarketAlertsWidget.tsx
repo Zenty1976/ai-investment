@@ -22,6 +22,12 @@ export function MarketAlertsWidget() {
     : alertLevel === "Low" ? "text-green-400"
     : "text-muted-foreground";
 
+  function importanceColor(imp: string) {
+    if (imp === "High") return "text-red-400";
+    if (imp === "Medium") return "text-yellow-400";
+    return "text-muted-foreground";
+  }
+
   return (
     <div ref={ref} className="h-full w-full overflow-hidden p-2 flex flex-col gap-1.5">
       {isLoading && <WidgetSpinner />}
@@ -55,18 +61,17 @@ export function MarketAlertsWidget() {
               <div className="flex items-center gap-1.5 shrink-0">
                 <Dot color={levelColor} />
                 <span className={`text-xs font-semibold ${levelColor}`}>{alertLevel}</span>
-                <span className="text-muted-foreground mx-0.5 text-[10px]">·</span>
-                <span className="text-[10px] text-muted-foreground">{alerts.length} alert{alerts.length !== 1 ? "s" : ""}</span>
+                <span className="text-[10px] text-muted-foreground">· {alerts.length} alert{alerts.length !== 1 ? "s" : ""}</span>
               </div>
               {noChanges
-                ? <p className="text-[11px] text-muted-foreground">No new developments since last check</p>
+                ? <p className="text-[11px] text-muted-foreground shrink-0">No new developments since last check</p>
                 : <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.headline}</p>
               }
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
-                {alerts.slice(0, 4).map((a: any, i: number) => (
+                {alerts.map((a: any, i: number) => (
                   <div key={i} className="flex items-start gap-1.5 text-[10px]">
-                    <Dot color={a.importance === "High" ? "text-red-400" : a.importance === "Medium" ? "text-yellow-400" : "text-muted-foreground"} />
-                    <span className="text-foreground/80 truncate">{a.title}</span>
+                    <Dot color={importanceColor(a.importance)} />
+                    <span className="text-foreground/80 truncate flex-1">{a.title}</span>
                     {a.status === "New" && <span className="text-blue-400 shrink-0">New</span>}
                   </div>
                 ))}
@@ -77,35 +82,48 @@ export function MarketAlertsWidget() {
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              {/* Header */}
               <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1.5">
                   <Dot color={levelColor} />
                   <span className={`text-xs font-semibold ${levelColor}`}>{alertLevel} Alert Level</span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-[10px]">
                   {highAlerts > 0 && <span className="text-red-400">{highAlerts} high</span>}
-                  <span>{alerts.length} total</span>
+                  <span className="text-muted-foreground">{alerts.length} total · {timeAgo(updatedAt)}</span>
                 </div>
               </div>
+
               {noChanges
-                ? <p className="text-[11px] text-green-400">✓ No new developments since last check</p>
-                : <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.headline}</p>
+                ? <p className="text-[11px] text-green-400 shrink-0">✓ No new developments since last check</p>
+                : d.headline && <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.headline}</p>
               }
+
+              {/* Alert list with summary */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
                 {alerts.map((a: any, i: number) => (
-                  <div key={i} className="flex items-start gap-1.5">
-                    <Dot color={a.importance === "High" ? "text-red-400" : a.importance === "Medium" ? "text-yellow-400" : "text-green-400"} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1">
-                        <p className="text-[11px] text-foreground/90 truncate">{a.title}</p>
-                        {a.status === "New" && <span className="text-[9px] text-blue-400 shrink-0 font-medium">NEW</span>}
+                  <div key={i} className="border-t border-border/30 pt-1">
+                    <div className="flex items-start gap-1.5">
+                      <Dot color={importanceColor(a.importance)} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1">
+                          <p className="text-[11px] text-foreground/90 font-medium truncate flex-1">{a.title}</p>
+                          {a.status === "New" && (
+                            <span className="text-[9px] text-blue-400 shrink-0 font-medium">NEW</span>
+                          )}
+                        </div>
+                        <p className="text-[9px] text-muted-foreground/70">{a.category} · {a.importance}</p>
+                        {a.summary && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{a.summary}</p>
+                        )}
+                        {a.whyItMatters && !a.summary && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{a.whyItMatters}</p>
+                        )}
                       </div>
-                      {a.category && <p className="text-[10px] text-muted-foreground">{a.category}</p>}
                     </div>
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>

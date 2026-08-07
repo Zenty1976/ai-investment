@@ -16,12 +16,19 @@ export function SectorMonitorWidget() {
   const topSector = d?.topSector ?? sectors[0];
   const outlook = d?.overallOutlook ?? "";
 
-  const ratingDot = (rating: string) => {
+  function ratingColor(rating: string) {
     if (/strong/i.test(rating)) return "text-green-400";
     if (/neutral/i.test(rating)) return "text-yellow-400";
     if (/weak/i.test(rating)) return "text-red-400";
     return "text-muted-foreground";
-  };
+  }
+
+  function trendArrow(trend: string | undefined) {
+    if (!trend) return "→";
+    if (/improv/i.test(trend)) return "↑";
+    if (/weaken/i.test(trend)) return "↓";
+    return "→";
+  }
 
   return (
     <div ref={ref} className="h-full w-full overflow-hidden p-2 flex flex-col gap-1.5">
@@ -58,11 +65,11 @@ export function SectorMonitorWidget() {
                 <span className={`text-xs font-semibold ${sentimentColor(outlook)}`}>{outlook || "—"}</span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
-                {sectors.slice(0, 5).map((s: any) => (
-                  <div key={s.name} className="flex items-center gap-1.5 text-[10px]">
-                    <Dot color={ratingDot(s.rating ?? "")} />
+                {sectors.map((s: any, i: number) => (
+                  <div key={`${s.name}-${i}`} className="flex items-center gap-1.5 text-[10px]">
+                    <span className={`${ratingColor(s.rating ?? "")} shrink-0 w-3`}>{trendArrow(s.trend)}</span>
                     <span className="text-foreground/90 truncate flex-1">{s.name}</span>
-                    <span className={`shrink-0 ${ratingDot(s.rating ?? "")}`}>{s.rating?.replace("Moderately ", "Mod. ") ?? ""}</span>
+                    <span className={`shrink-0 ${ratingColor(s.rating ?? "")}`}>{s.rating?.replace("Moderately ", "Mod. ") ?? ""}</span>
                   </div>
                 ))}
               </div>
@@ -77,22 +84,34 @@ export function SectorMonitorWidget() {
                   <Dot color={sentimentColor(outlook)} />
                   <span className={`text-xs font-semibold ${sentimentColor(outlook)}`}>{outlook || "—"}</span>
                 </div>
-                {d.summary && <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>}
+                <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>
               </div>
-              {d.summary && (
-                <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.summary}</p>
+
+              {d.executiveSummary && (
+                <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.executiveSummary}</p>
               )}
-              <div className="flex-1 overflow-y-auto min-h-0">
-                <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-                  {sectors.map((s: any) => (
-                    <div key={s.name} className="flex items-center gap-1 text-[10px]">
-                      <span className={`${ratingDot(s.rating ?? "")} shrink-0`}>
-                        {s.trend === "Improving" ? "↑" : s.trend === "Weakening" ? "↓" : "→"}
+
+              {/* Per-sector cards */}
+              <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+                {sectors.map((s: any, i: number) => (
+                  <div key={`${s.name}-${i}`} className="border-t border-border/30 pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[11px] font-semibold ${ratingColor(s.rating ?? "")} w-4 shrink-0`}>
+                        {trendArrow(s.trend)}
                       </span>
-                      <span className="text-foreground/80 truncate">{s.name}</span>
+                      <span className="text-[11px] font-medium text-foreground/90 flex-1 truncate">{s.name}</span>
+                      <span className={`text-[10px] shrink-0 ${ratingColor(s.rating ?? "")}`}>
+                        {s.rating?.replace("Moderately ", "Mod. ") ?? ""}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    {s.summary && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5 ml-5 line-clamp-1">{s.summary}</p>
+                    )}
+                    {s.outlook && (
+                      <p className="text-[10px] text-foreground/50 mt-0.5 ml-5 line-clamp-1 italic">{s.outlook}</p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}

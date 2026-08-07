@@ -1,23 +1,24 @@
 import { useState, useCallback } from "react";
 import type { LayoutItem } from "react-grid-layout";
 
-const STORAGE_KEY = "ai-dashboard-layout-v2";
-const MODULES_KEY = "ai-dashboard-modules-v2";
+// Bump version to clear any stale localStorage from previous layouts
+const STORAGE_KEY = "ai-dashboard-layout-v3";
+const MODULES_KEY = "ai-dashboard-modules-v3";
 
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
-  "automation":          { w: 6, h: 3 },
-  "portfolio-manager":   { w: 6, h: 3 },
-  "market-monitor":      { w: 4, h: 3 },
-  "event-monitor":       { w: 4, h: 3 },
-  "news-monitor":        { w: 4, h: 3 },
-  "sector-monitor":      { w: 4, h: 3 },
-  "market-alerts":       { w: 4, h: 3 },
-  "risk-analyzer":       { w: 4, h: 3 },
-  "portfolio-analyzer":  { w: 6, h: 4 },
-  "opportunity-finder":  { w: 6, h: 4 },
-  "company-monitor":     { w: 6, h: 4 },
-  "trade-decision":      { w: 6, h: 4 },
+  "automation":          { w: 6, h: 4 },
+  "portfolio-manager":   { w: 6, h: 4 },
+  "market-monitor":      { w: 4, h: 4 },
+  "event-monitor":       { w: 4, h: 4 },
+  "news-monitor":        { w: 4, h: 4 },
+  "sector-monitor":      { w: 4, h: 4 },
+  "market-alerts":       { w: 4, h: 4 },
+  "risk-analyzer":       { w: 4, h: 4 },
+  "portfolio-analyzer":  { w: 6, h: 5 },
+  "opportunity-finder":  { w: 6, h: 5 },
+  "company-monitor":     { w: 6, h: 5 },
+  "trade-decision":      { w: 6, h: 5 },
 };
 
 /** All 12 modules active by default. */
@@ -29,25 +30,28 @@ export const DEFAULT_MODULES = [
   "company-monitor", "trade-decision",
 ];
 
-/** Default 12-column layout (row height = 80 px). */
+/**
+ * Default 12-column layout.
+ * Row height = 80 px · h:4 = 320 px tile → 292 px inner content → "lg" view.
+ */
 export const DEFAULT_LAYOUT: LayoutItem[] = [
-  // Row 0
-  { i: "automation",         x: 0, y: 0,  w: 6, h: 3, minW: 2, minH: 2 },
-  { i: "portfolio-manager",  x: 6, y: 0,  w: 6, h: 3, minW: 2, minH: 2 },
-  // Row 3
-  { i: "market-monitor",     x: 0, y: 3,  w: 4, h: 3, minW: 2, minH: 2 },
-  { i: "event-monitor",      x: 4, y: 3,  w: 4, h: 3, minW: 2, minH: 2 },
-  { i: "news-monitor",       x: 8, y: 3,  w: 4, h: 3, minW: 2, minH: 2 },
-  // Row 6
-  { i: "sector-monitor",     x: 0, y: 6,  w: 4, h: 3, minW: 2, minH: 2 },
-  { i: "market-alerts",      x: 4, y: 6,  w: 4, h: 3, minW: 2, minH: 2 },
-  { i: "risk-analyzer",      x: 8, y: 6,  w: 4, h: 3, minW: 2, minH: 2 },
-  // Row 9
-  { i: "portfolio-analyzer", x: 0, y: 9,  w: 6, h: 4, minW: 2, minH: 2 },
-  { i: "opportunity-finder", x: 6, y: 9,  w: 6, h: 4, minW: 2, minH: 2 },
-  // Row 13
-  { i: "company-monitor",    x: 0, y: 13, w: 6, h: 4, minW: 2, minH: 2 },
-  { i: "trade-decision",     x: 6, y: 13, w: 6, h: 4, minW: 2, minH: 2 },
+  // Row 0 — overview panels
+  { i: "automation",         x: 0, y: 0,  w: 6, h: 4, minW: 2, minH: 2 },
+  { i: "portfolio-manager",  x: 6, y: 0,  w: 6, h: 4, minW: 2, minH: 2 },
+  // Row 4 — market intelligence
+  { i: "market-monitor",     x: 0, y: 4,  w: 4, h: 4, minW: 2, minH: 2 },
+  { i: "event-monitor",      x: 4, y: 4,  w: 4, h: 4, minW: 2, minH: 2 },
+  { i: "news-monitor",       x: 8, y: 4,  w: 4, h: 4, minW: 2, minH: 2 },
+  // Row 8 — sector & risk
+  { i: "sector-monitor",     x: 0, y: 8,  w: 4, h: 4, minW: 2, minH: 2 },
+  { i: "market-alerts",      x: 4, y: 8,  w: 4, h: 4, minW: 2, minH: 2 },
+  { i: "risk-analyzer",      x: 8, y: 8,  w: 4, h: 4, minW: 2, minH: 2 },
+  // Row 12 — deep analysis
+  { i: "portfolio-analyzer", x: 0, y: 12, w: 6, h: 5, minW: 2, minH: 2 },
+  { i: "opportunity-finder", x: 6, y: 12, w: 6, h: 5, minW: 2, minH: 2 },
+  // Row 17 — decisions
+  { i: "company-monitor",    x: 0, y: 17, w: 6, h: 5, minW: 2, minH: 2 },
+  { i: "trade-decision",     x: 6, y: 17, w: 6, h: 5, minW: 2, minH: 2 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -82,7 +86,7 @@ export function useDashboardLayout() {
     });
     setLayout(prev => {
       if (prev.find(l => l.i === moduleId)) return prev;
-      const { w, h } = DEFAULT_SIZES[moduleId] ?? { w: 4, h: 3 };
+      const { w, h } = DEFAULT_SIZES[moduleId] ?? { w: 4, h: 4 };
       const bottomY = prev.reduce((max, l) => Math.max(max, l.y + l.h), 0);
       const next: LayoutItem[] = [
         ...prev,

@@ -40,13 +40,15 @@ export function DashboardGrid() {
   const activeModuleDefs = MODULE_REGISTRY.filter(m => activeModules.includes(m.id));
 
   // Ensure every active module has a layout entry; add missing ones at bottom.
+  // When NOT in edit mode, mark every item static so react-grid-layout
+  // completely blocks drag and resize (isDraggable alone is unreliable).
   const effectiveLayout: LayoutItem[] = activeModuleDefs.map(m => {
     const existing = layout.find(l => l.i === m.id);
-    if (existing) return { ...existing, minW: 2, minH: 2 } as LayoutItem;
-    const bottomY = layout.reduce(
-      (max, l) => Math.max(max, l.y + l.h), 0
-    );
-    return { i: m.id, x: 0, y: bottomY, w: 4, h: 3, minW: 2, minH: 2 } as LayoutItem;
+    const bottomY = layout.reduce((max, l) => Math.max(max, l.y + l.h), 0);
+    const base: LayoutItem = existing
+      ? { ...existing, minW: 2, minH: 2 } as LayoutItem
+      : { i: m.id, x: 0, y: bottomY, w: 4, h: 4, minW: 2, minH: 2 } as LayoutItem;
+    return editMode ? base : { ...base, static: true } as LayoutItem;
   });
 
   function handleToggleEdit() {

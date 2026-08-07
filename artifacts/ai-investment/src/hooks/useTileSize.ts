@@ -6,11 +6,13 @@ export type TileSize = "xs" | "sm" | "md" | "lg";
  * Observes the size of the given element ref and returns a semantic size tier.
  * Widgets use this to decide how much information to render.
  *
- * Tiers (based on pixel dimensions):
- *   xs  — very small tile: icon + status badge only
- *   sm  — compact tile: title + 1-2 key metrics
- *   md  — medium tile: summary + key metrics list
- *   lg  — large tile: full-featured view with lists/charts
+ * Tiers (based on inner pixel dimensions after TileShell chrome ~28px is removed):
+ *   xs  — very small: icon + status only
+ *   sm  — compact: title + 1–2 key metrics
+ *   md  — medium: summary + short list
+ *   lg  — large: full view — default at h:4 tiles (320px tile − 28px header = 292px content)
+ *
+ * Thresholds are tuned so that the default h:4 grid row (292px content) reaches "lg".
  */
 export function useTileSize(ref: React.RefObject<HTMLElement | null>): TileSize {
   const [size, setSize] = useState<TileSize>("md");
@@ -20,9 +22,9 @@ export function useTileSize(ref: React.RefObject<HTMLElement | null>): TileSize 
     if (!el) return;
 
     const compute = (width: number, height: number): TileSize => {
-      if (width < 210 || height < 140) return "xs";
-      if (width < 360 || height < 230) return "sm";
-      if (width < 530 || height < 340) return "md";
+      if (width < 180 || height < 110) return "xs";
+      if (width < 300 || height < 185) return "sm";
+      if (width < 380 || height < 260) return "md";
       return "lg";
     };
 
@@ -32,7 +34,6 @@ export function useTileSize(ref: React.RefObject<HTMLElement | null>): TileSize 
     });
 
     observer.observe(el);
-    // Compute immediately from current dimensions
     const { width, height } = el.getBoundingClientRect();
     setSize(compute(width, height));
 

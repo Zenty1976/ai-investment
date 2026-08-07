@@ -13,8 +13,16 @@ export function NewsMonitorWidget() {
   const updatedAt = (entry as any)?.updatedAt as string | undefined;
 
   const topStory = d?.topStory;
-  const items: any[] = d?.items ?? [];
-  const highImpact = items.filter(i => i.importance === "High" || i.marketImpact === "High").length;
+  // API returns field "news", not "items"
+  const items: any[] = d?.news ?? d?.items ?? [];
+  const highImpact = items.filter((i: any) => i.importance === "High").length;
+
+  function impactColor(impact: string | undefined): string {
+    if (!impact) return "text-muted-foreground";
+    if (/positive/i.test(impact)) return "text-green-400";
+    if (/negative/i.test(impact)) return "text-red-400";
+    return "text-yellow-400";
+  }
 
   return (
     <div ref={ref} className="h-full w-full overflow-hidden p-2 flex flex-col gap-1.5">
@@ -50,13 +58,10 @@ export function NewsMonitorWidget() {
                   <p className="text-[11px] text-foreground font-medium line-clamp-2 leading-tight">{topStory.title}</p>
                 </div>
               )}
-              {d.executiveSummary && (
-                <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.executiveSummary}</p>
-              )}
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
-                {items.slice(0, 3).map((item: any, i: number) => (
+                {items.slice(0, 4).map((item: any, i: number) => (
                   <div key={i} className="flex items-start gap-1.5 text-[10px]">
-                    <Dot color={sentimentColor(item.marketImpact === "Positive" ? "positive" : item.marketImpact === "Negative" ? "negative" : "neutral")} />
+                    <Dot color={sentimentColor(item.marketImpact?.toLowerCase?.().includes("positive") ? "positive" : item.marketImpact?.toLowerCase?.().includes("negative") ? "negative" : "neutral")} />
                     <span className="text-foreground/80 truncate">{item.title}</span>
                   </div>
                 ))}
@@ -67,23 +72,40 @@ export function NewsMonitorWidget() {
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              {/* Top story card */}
               {topStory && (
                 <div className="rounded border border-orange-400/20 bg-orange-400/5 p-2 shrink-0">
                   <p className="text-[10px] text-orange-400 font-medium mb-1">Top Story</p>
                   <p className="text-[11px] text-foreground font-medium leading-tight">{topStory.title}</p>
-                  {topStory.summary && <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">{topStory.summary}</p>}
+                  {topStory.summary && (
+                    <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">{topStory.summary}</p>
+                  )}
+                  {topStory.whyItMatters && (
+                    <p className="text-[10px] text-foreground/60 mt-0.5 line-clamp-1 italic">{topStory.whyItMatters}</p>
+                  )}
                 </div>
               )}
+
               {d.executiveSummary && (
                 <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.executiveSummary}</p>
               )}
+
+              {/* News list */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
-                {items.slice(0, 6).map((item: any, i: number) => (
-                  <div key={i} className="flex items-start gap-1.5">
-                    <Dot color={item.marketImpact === "Positive" ? "text-green-400" : item.marketImpact === "Negative" ? "text-red-400" : "text-yellow-400"} />
-                    <div className="min-w-0">
-                      <p className="text-[11px] text-foreground/90 truncate">{item.title}</p>
-                      <p className="text-[10px] text-muted-foreground">{item.category} · {item.publishedAt ? timeAgo(item.publishedAt) : ""}</p>
+                {items.map((item: any, i: number) => (
+                  <div key={i} className="border-t border-border/30 pt-1">
+                    <div className="flex items-start gap-1.5">
+                      <Dot color={impactColor(item.marketImpact)} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] text-foreground/90 leading-tight">{item.title}</p>
+                        {item.summary && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{item.summary}</p>
+                        )}
+                        {item.whyItMatters && !item.summary && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{item.whyItMatters}</p>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground shrink-0">{item.category}</span>
                     </div>
                   </div>
                 ))}

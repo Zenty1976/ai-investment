@@ -14,9 +14,16 @@ export function RiskAnalyzerWidget() {
 
   const score: number = d?.riskScore ?? 0;
   const level: string = d?.overallRiskLevel ?? "";
-  const risks: any[] = d?.risks ?? [];
+  // API returns topRisks, not risks
+  const risks: any[] = d?.topRisks ?? d?.risks ?? [];
   const scoreColor = score >= 70 ? "bg-red-400" : score >= 40 ? "bg-yellow-400" : "bg-green-400";
   const levelColor = sentimentColor(`${level} risk`);
+
+  function severityColor(s: string) {
+    if (s === "High") return "text-red-400";
+    if (s === "Medium") return "text-yellow-400";
+    return "text-green-400";
+  }
 
   return (
     <div ref={ref} className="h-full w-full overflow-hidden p-2 flex flex-col gap-1.5">
@@ -54,12 +61,15 @@ export function RiskAnalyzerWidget() {
                 <span className={`text-[11px] ${levelColor}`}>{level}</span>
               </div>
               <ScoreBar score={score} color={scoreColor} />
-              {d.mainConclusion && <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{safeText(d.mainConclusion)}</p>}
+              {d.mainConclusion && (
+                <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{safeText(d.mainConclusion)}</p>
+              )}
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
-                {risks.slice(0, 3).map((r: any, i: number) => (
+                {risks.slice(0, 4).map((r: any, i: number) => (
                   <div key={i} className="flex items-start gap-1.5 text-[10px]">
-                    <Dot color={r.severity === "High" ? "text-red-400" : r.severity === "Medium" ? "text-yellow-400" : "text-green-400"} />
-                    <span className="text-foreground/80 truncate">{r.title}</span>
+                    <Dot color={severityColor(r.severity)} />
+                    <span className="text-foreground/80 truncate flex-1">{r.title}</span>
+                    <span className={`shrink-0 ${severityColor(r.severity)}`}>{r.severity}</span>
                   </div>
                 ))}
               </div>
@@ -69,35 +79,55 @@ export function RiskAnalyzerWidget() {
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              {/* Score header */}
               <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-baseline gap-1.5">
                   <span className={`text-3xl font-bold ${levelColor}`}>{score}</span>
                   <span className="text-xs text-muted-foreground">/100</span>
+                  <span className={`text-sm font-semibold ml-1 ${levelColor}`}>{level} Risk</span>
                 </div>
                 <div className="text-right">
-                  <p className={`text-xs font-semibold ${levelColor}`}>{level} Risk</p>
                   {d.previousRiskScore !== undefined && (
                     <p className="text-[10px] text-muted-foreground">
                       Prev: {d.previousRiskScore} ({score - d.previousRiskScore > 0 ? "+" : ""}{score - d.previousRiskScore})
                     </p>
                   )}
+                  <p className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</p>
                 </div>
               </div>
               <ScoreBar score={score} color={scoreColor} />
-              {d.mainConclusion && <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{safeText(d.mainConclusion)}</p>}
-              <p className="text-[10px] text-muted-foreground font-medium shrink-0">Top Risks</p>
+
+              {d.mainConclusion && (
+                <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{safeText(d.mainConclusion)}</p>
+              )}
+
+              <p className="text-[10px] text-muted-foreground font-medium shrink-0">
+                Top Risks ({risks.length})
+              </p>
+
+              {/* Risk list with reason */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
                 {risks.map((r: any, i: number) => (
-                  <div key={i} className="flex items-start gap-1.5">
-                    <Dot color={r.severity === "High" ? "text-red-400" : r.severity === "Medium" ? "text-yellow-400" : "text-green-400"} />
-                    <div className="min-w-0">
-                      <p className="text-[11px] text-foreground/90 truncate">{r.title}</p>
-                      <p className="text-[10px] text-muted-foreground">{r.category} · {r.probability} prob · {r.timeHorizon}</p>
+                  <div key={i} className="border-t border-border/30 pt-1">
+                    <div className="flex items-start gap-1.5">
+                      <Dot color={severityColor(r.severity)} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] text-foreground/90 font-medium leading-tight">{r.title}</p>
+                        <p className="text-[9px] text-muted-foreground/70">
+                          {r.category} · {r.probability} prob · {r.severity} severity
+                          {r.timeHorizon ? ` · ${r.timeHorizon}` : ""}
+                        </p>
+                        {r.reason && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{r.reason}</p>
+                        )}
+                        {r.portfolioImpact && !r.reason && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{r.portfolioImpact}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>
