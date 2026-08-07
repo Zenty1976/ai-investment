@@ -191,7 +191,7 @@ export function DashboardGrid() {
             layout={effectiveLayout}
             width={gridWidth}
             cols={24}
-            rowHeight={20}
+            rowHeight={10}
             margin={[6, 6]}
             containerPadding={[0, 0]}
             isDraggable={editMode}

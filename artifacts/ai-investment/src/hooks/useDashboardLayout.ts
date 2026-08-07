@@ -4,25 +4,28 @@ import type { LayoutItem } from "react-grid-layout";
 // Grid: cols=24, rowHeight=20px.
 // w values are 2× the original 12-col values; h values are 4× the original 80px row-height.
 // Visual tile sizes are identical to the original; resize steps are ~56px wide × 20px tall.
-const STORAGE_KEY_BASE = "ai-dashboard-layout-v8";
-const MODULES_KEY_BASE = "ai-dashboard-modules-v8";
-export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v8";
+const STORAGE_KEY_BASE = "ai-dashboard-layout-v9";
+const MODULES_KEY_BASE = "ai-dashboard-modules-v9";
+export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v9";
 
+// Grid: cols=24, rowHeight=10px.
+// w values are ×2 vs original 12-col; h values are ×8 vs original 80px rowHeight.
+// Visual sizes identical; each resize step is 10px tall × ~56px wide.
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
-  "automation":          { w: 12, h: 16 },
-  "portfolio-manager":   { w: 12, h: 16 },
-  "market-monitor":      { w:  8, h: 16 },
-  "event-monitor":       { w:  8, h: 16 },
-  "news-monitor":        { w:  8, h: 16 },
-  "sector-monitor":      { w:  8, h: 16 },
-  "market-alerts":       { w:  8, h: 16 },
-  "risk-analyzer":       { w:  8, h: 16 },
-  "portfolio-analyzer":  { w: 12, h: 20 },
-  "opportunity-finder":  { w: 12, h: 20 },
-  "company-monitor":     { w: 12, h: 20 },
-  "trade-decision":      { w: 12, h: 20 },
-  "investor-watch":      { w: 12, h: 16 },
+  "automation":          { w: 12, h: 32 },
+  "portfolio-manager":   { w: 12, h: 32 },
+  "market-monitor":      { w:  8, h: 32 },
+  "event-monitor":       { w:  8, h: 32 },
+  "news-monitor":        { w:  8, h: 32 },
+  "sector-monitor":      { w:  8, h: 32 },
+  "market-alerts":       { w:  8, h: 32 },
+  "risk-analyzer":       { w:  8, h: 32 },
+  "portfolio-analyzer":  { w: 12, h: 40 },
+  "opportunity-finder":  { w: 12, h: 40 },
+  "company-monitor":     { w: 12, h: 40 },
+  "trade-decision":      { w: 12, h: 40 },
+  "investor-watch":      { w: 12, h: 32 },
 };
 
 /** Layout 1 default: all 13 modules. Layouts 2 & 3 start empty. */
@@ -36,30 +39,30 @@ export const DEFAULT_MODULES = [
 ];
 
 /**
- * Default 24-column layout, rowHeight=20px.
- * 20px × h:16 = 320px tile, same visual size as the original.
- * x/w values are ×2 vs old 12-col layout → each column ≈ 56px → fine horizontal steps.
+ * Default 24-column layout, rowHeight=10px.
+ * 10px × h:32 = 320px tile — same visual size as the original.
+ * Each resize step is now 10px tall × ~56px wide.
  */
 export const DEFAULT_LAYOUT: LayoutItem[] = [
   // Row 0 — overview panels
-  { i: "automation",         x:  0, y:  0,  w: 12, h: 16, minW: 4, minH: 6 },
-  { i: "portfolio-manager",  x: 12, y:  0,  w: 12, h: 16, minW: 4, minH: 6 },
-  // Row 16 — market intelligence
-  { i: "market-monitor",     x:  0, y: 16,  w:  8, h: 16, minW: 4, minH: 6 },
-  { i: "event-monitor",      x:  8, y: 16,  w:  8, h: 16, minW: 4, minH: 6 },
-  { i: "news-monitor",       x: 16, y: 16,  w:  8, h: 16, minW: 4, minH: 6 },
-  // Row 32 — sector & risk
-  { i: "sector-monitor",     x:  0, y: 32,  w:  8, h: 16, minW: 4, minH: 6 },
-  { i: "market-alerts",      x:  8, y: 32,  w:  8, h: 16, minW: 4, minH: 6 },
-  { i: "risk-analyzer",      x: 16, y: 32,  w:  8, h: 16, minW: 4, minH: 6 },
-  // Row 48 — deep analysis
-  { i: "portfolio-analyzer", x:  0, y: 48,  w: 12, h: 20, minW: 4, minH: 6 },
-  { i: "opportunity-finder", x: 12, y: 48,  w: 12, h: 20, minW: 4, minH: 6 },
-  // Row 68 — decisions
-  { i: "company-monitor",    x:  0, y: 68,  w: 12, h: 20, minW: 4, minH: 6 },
-  { i: "trade-decision",     x: 12, y: 68,  w: 12, h: 20, minW: 4, minH: 6 },
-  // Row 88 — informational
-  { i: "investor-watch",     x:  0, y: 88,  w: 12, h: 16, minW: 4, minH: 6 },
+  { i: "automation",         x:  0, y:   0, w: 12, h: 32, minW: 2, minH: 2 },
+  { i: "portfolio-manager",  x: 12, y:   0, w: 12, h: 32, minW: 2, minH: 2 },
+  // Row 32 — market intelligence
+  { i: "market-monitor",     x:  0, y:  32, w:  8, h: 32, minW: 2, minH: 2 },
+  { i: "event-monitor",      x:  8, y:  32, w:  8, h: 32, minW: 2, minH: 2 },
+  { i: "news-monitor",       x: 16, y:  32, w:  8, h: 32, minW: 2, minH: 2 },
+  // Row 64 — sector & risk
+  { i: "sector-monitor",     x:  0, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
+  { i: "market-alerts",      x:  8, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
+  { i: "risk-analyzer",      x: 16, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
+  // Row 96 — deep analysis
+  { i: "portfolio-analyzer", x:  0, y:  96, w: 12, h: 40, minW: 2, minH: 2 },
+  { i: "opportunity-finder", x: 12, y:  96, w: 12, h: 40, minW: 2, minH: 2 },
+  // Row 136 — decisions
+  { i: "company-monitor",    x:  0, y: 136, w: 12, h: 40, minW: 2, minH: 2 },
+  { i: "trade-decision",     x: 12, y: 136, w: 12, h: 40, minW: 2, minH: 2 },
+  // Row 176 — informational
+  { i: "investor-watch",     x:  0, y: 176, w: 12, h: 32, minW: 2, minH: 2 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {

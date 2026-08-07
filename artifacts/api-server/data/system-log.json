@@ -1,89 +1,5 @@
 [
   {
-    "id": "5f05b930-eedb-427c-ac67-511528531b35",
-    "timestamp": "2026-08-04T20:16:32.805Z",
-    "module": "Opportunity Finder",
-    "level": "info",
-    "message": "Overall opportunity level: High"
-  },
-  {
-    "id": "11ea697d-bf29-4907-b5c9-586ffdd67b14",
-    "timestamp": "2026-08-04T20:16:32.808Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "Highest-ranked opportunity: Micron Technology, Inc. (MU) — score 88 — Direct AI infrastructure exposure via memory demand, upcoming earnings, strong momentum."
-  },
-  {
-    "id": "45394676-b314-4b59-b743-6434bf33255b",
-    "timestamp": "2026-08-04T20:16:32.810Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "MU entered the list at rank 1 (score: 88)"
-  },
-  {
-    "id": "11bb20ee-d07e-42e4-93ec-78cb526f1854",
-    "timestamp": "2026-08-04T20:16:32.812Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "NVDA entered the list at rank 2 (score: 85)"
-  },
-  {
-    "id": "662d2626-6757-4efd-bcd3-8676d61f8590",
-    "timestamp": "2026-08-04T20:16:32.814Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "CSCO entered the list at rank 3 (score: 78)"
-  },
-  {
-    "id": "984fa8d9-ad49-46a7-9026-93852f2b1212",
-    "timestamp": "2026-08-04T20:16:32.815Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "LLY entered the list at rank 4 (score: 72)"
-  },
-  {
-    "id": "145e478b-2811-45ed-8013-d162621dd28a",
-    "timestamp": "2026-08-04T20:16:32.817Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "JPM entered the list at rank 5 (score: 68)"
-  },
-  {
-    "id": "69ae0d26-daff-47cd-b81b-a15c5ddcfd82",
-    "timestamp": "2026-08-04T20:16:32.819Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "CAT left the list (was rank 1)"
-  },
-  {
-    "id": "45c93b4e-2308-4a2a-a73e-af9e3b57740b",
-    "timestamp": "2026-08-04T20:16:32.821Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "PG left the list (was rank 2)"
-  },
-  {
-    "id": "832a05cb-7be7-4cf0-893b-abb37d319621",
-    "timestamp": "2026-08-04T20:16:32.826Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder completed via RunAllNow (13120ms, change: Medium)"
-  },
-  {
-    "id": "863a3a55-9567-4edc-ab57-91a9562d0c69",
-    "timestamp": "2026-08-04T20:16:33.215Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "456eb5c1-3460-4227-bb26-e79852d57412",
-    "timestamp": "2026-08-04T20:16:33.217Z",
-    "module": "Trade Decision Engine",
-    "level": "warning",
-    "message": "Using mock portfolio data — decisions reflect simulated positions only"
-  },
-  {
     "id": "2c42ff83-991a-428b-85aa-f643d8ca672d",
     "timestamp": "2026-08-04T20:16:51.852Z",
     "module": "Trade Decision Engine",
@@ -3498,5 +3414,89 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "market-alerts completed via Scheduled (4430ms, change: Medium)"
+  },
+  {
+    "id": "c72db732-fb41-41c2-96d1-9deb63bacfbb",
+    "timestamp": "2026-08-07T18:30:18.036Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "42b9b649-1042-4363-b227-c9fa3cc44307",
+    "timestamp": "2026-08-07T18:30:18.040Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "9b6d1d9d-fa7c-4044-af0a-40e2fb9bd8aa",
+    "timestamp": "2026-08-07T18:30:23.464Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "0c379991-d97f-4666-b6e6-0e7ee6b20284",
+    "timestamp": "2026-08-07T18:30:23.467Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (5455ms, change: Medium)"
+  },
+  {
+    "id": "9be1a9d7-983e-4daa-8c71-b5649c22eed7",
+    "timestamp": "2026-08-07T18:30:24.647Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 3 market-moving stories found"
+  },
+  {
+    "id": "45a0ddc2-8694-4771-a989-a3993d13b482",
+    "timestamp": "2026-08-07T18:30:24.650Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (6626ms, change: Medium)"
+  },
+  {
+    "id": "f517da58-14a6-4d84-8a75-92969b0dc107",
+    "timestamp": "2026-08-07T18:30:48.015Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "66123c16-5255-40d3-bffa-7872a2e3a5fc",
+    "timestamp": "2026-08-07T18:30:52.647Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "3170d96d-d1ed-4e8c-80b7-4be9dc5ab1ca",
+    "timestamp": "2026-08-07T18:30:52.648Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 new alert(s): Novo Nordisk CEO emphasizes pipeline rebuilding and bolt‑on acquisitions"
+  },
+  {
+    "id": "5edfff08-afd3-46a3-b3d6-026d96d85767",
+    "timestamp": "2026-08-07T18:30:52.651Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: U.S. unexpectedly lost 23,000 jobs in July; SpaceX Q2 earnings as public company: strong revenue, heavy AI capex"
+  },
+  {
+    "id": "3bb1f4b5-7f20-42aa-87e4-57bbd9f35cd0",
+    "timestamp": "2026-08-07T18:30:52.652Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Novo Nordisk CEO emphasizes pipeline rebuilding and bolt‑on acquisitions [Company]"
+  },
+  {
+    "id": "63a0e203-eb0f-453f-955c-dbe0a9a00722",
+    "timestamp": "2026-08-07T18:30:52.656Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (4642ms, change: High)"
   }
 ]
