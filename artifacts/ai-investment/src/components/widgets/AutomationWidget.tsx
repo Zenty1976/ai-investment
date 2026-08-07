@@ -97,41 +97,41 @@ function StatusBar({
   return (
     <div className="shrink-0 grid grid-cols-3 divide-x divide-border/40 rounded border border-border/40 bg-black/25 overflow-hidden">
       {/* ── Left: Mode ── */}
-      <div className="px-3 py-2 flex flex-col justify-center gap-0.5 min-w-0">
-        <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <div className="px-4 py-3 flex flex-col justify-center gap-1 min-w-0">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Mode
         </span>
-        <span className={`text-sm font-bold uppercase tracking-wide truncate ${modeColor}`}>
+        <span className={`text-2xl font-bold uppercase tracking-wide truncate ${modeColor}`}>
           {modeLabel}
         </span>
       </div>
 
       {/* ── Center: System Health ── */}
-      <div className="px-3 py-2 flex items-center gap-2.5 min-w-0">
+      <div className="px-4 py-3 flex items-center gap-3 min-w-0">
         <Icon
-          className={`h-6 w-6 shrink-0 ${health.color} ${
+          className={`h-9 w-9 shrink-0 ${health.color} ${
             health.label === "Cycle Running" ? "animate-spin" : ""
           }`}
         />
         <div className="min-w-0">
-          <p className={`text-sm font-bold uppercase tracking-wide truncate ${health.color}`}>
+          <p className={`text-xl font-bold uppercase tracking-wide truncate ${health.color}`}>
             {health.label}
           </p>
-          <p className="text-[10px] text-muted-foreground truncate">{health.sub}</p>
+          <p className="text-xs text-muted-foreground truncate">{health.sub}</p>
         </div>
       </div>
 
       {/* ── Right: Next Update ── */}
-      <div className="px-3 py-2 flex items-center gap-2.5 min-w-0">
+      <div className="px-4 py-3 flex items-center gap-3 min-w-0">
         <Clock
-          className={`h-5 w-5 shrink-0 ${cycleRunning ? "text-blue-400 animate-pulse" : "text-muted-foreground"}`}
+          className={`h-8 w-8 shrink-0 ${cycleRunning ? "text-blue-400 animate-pulse" : "text-muted-foreground"}`}
         />
         <div className="min-w-0">
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Next Update
           </p>
-          <p className="text-sm font-bold text-foreground truncate">
-            {cycleRunning ? "Running now" : nextTime ?? "—"}
+          <p className="text-2xl font-bold text-foreground truncate">
+            {cycleRunning ? "Running…" : nextTime ?? "—"}
           </p>
         </div>
       </div>
