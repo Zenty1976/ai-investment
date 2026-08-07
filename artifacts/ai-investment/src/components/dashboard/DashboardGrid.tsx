@@ -194,6 +194,8 @@ export function DashboardGrid() {
             rowHeight={10}
             margin={[6, 2]}
             containerPadding={[0, 0]}
+            compactType={null}
+            preventCollision={true}
             isDraggable={editMode}
             isResizable={editMode}
             resizeHandles={["s", "se", "e"]}

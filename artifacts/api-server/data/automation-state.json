@@ -1,36 +1,36 @@
 {
   "portfolio-manager": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T17:59:52.401Z",
-    "lastSuccessfulRunAt": "2026-08-07T17:59:52.481Z",
-    "nextRunAt": "2026-08-07T18:59:52.481Z",
+    "lastRunAt": "2026-08-07T20:38:01.410Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:01.527Z",
+    "nextRunAt": "2026-08-07T21:38:01.527Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "market-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T18:30:18.012Z",
-    "lastSuccessfulRunAt": "2026-08-07T18:30:23.467Z",
-    "nextRunAt": "2026-08-07T19:00:23.467Z",
+    "lastRunAt": "2026-08-07T20:38:01.430Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:06.240Z",
+    "nextRunAt": "2026-08-07T21:08:06.240Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "news-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T18:30:18.023Z",
-    "lastSuccessfulRunAt": "2026-08-07T18:30:24.649Z",
-    "nextRunAt": "2026-08-07T19:00:24.649Z",
+    "lastRunAt": "2026-08-07T20:38:01.432Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:07.536Z",
+    "nextRunAt": "2026-08-07T21:08:07.536Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "event-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T16:36:47.882Z",
-    "lastSuccessfulRunAt": "2026-08-07T16:36:56.695Z",
-    "nextRunAt": "2026-08-07T19:36:56.695Z",
+    "lastRunAt": "2026-08-07T20:38:01.434Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:09.437Z",
+    "nextRunAt": "2026-08-07T23:38:09.437Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
@@ -55,27 +55,27 @@
   },
   "market-alerts": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T18:46:18.065Z",
-    "lastSuccessfulRunAt": "2026-08-07T18:46:21.489Z",
-    "nextRunAt": "2026-08-07T19:01:21.489Z",
+    "lastRunAt": "2026-08-07T20:38:01.435Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:05.783Z",
+    "nextRunAt": "2026-08-07T20:53:05.783Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "risk-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T18:37:18.032Z",
-    "lastSuccessfulRunAt": "2026-08-07T18:37:28.450Z",
-    "nextRunAt": "2026-08-07T20:37:28.450Z",
+    "lastRunAt": "2026-08-07T20:38:26.407Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:35.904Z",
+    "nextRunAt": "2026-08-07T22:38:35.904Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "portfolio-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T16:36:47.887Z",
-    "lastSuccessfulRunAt": "2026-08-07T16:37:07.730Z",
-    "nextRunAt": "2026-08-07T19:37:07.730Z",
+    "lastRunAt": "2026-08-07T20:38:01.437Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:09.758Z",
+    "nextRunAt": "2026-08-07T23:38:09.758Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
@@ -96,13 +96,15 @@
     "nextRunAt": "2026-08-07T20:38:00.020Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": []
+    "waitingForDeps": [
+      "risk-analyzer"
+    ]
   },
   "trade-review": {
     "status": "Idle",
-    "lastRunAt": "2026-08-07T18:38:00.022Z",
-    "lastSuccessfulRunAt": "2026-08-07T18:38:00.031Z",
-    "nextRunAt": "2026-08-07T20:38:00.031Z",
+    "lastRunAt": "2026-08-07T20:38:01.438Z",
+    "lastSuccessfulRunAt": "2026-08-07T20:38:01.574Z",
+    "nextRunAt": "2026-08-07T22:38:01.574Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []

@@ -1,0 +1,31 @@
+Fix the dashboard tile resize behavior in the existing DashboardGrid.tsx. Do not redesign the dashboard or replace react-grid-layout.
+
+The current grid already uses cols={24} and rowHeight={10}, so vertical resizing should already have fine ~10–12px increments. However, in Edit Layout mode the tiles still behave as if their height can only change in large jumps. For example, dragging the bottom edge of the Automation tile only allows it to jump to a much larger/smaller height instead of following the mouse in fine grid increments.
+
+Please inspect the actual react-grid-layout behavior and fix this specifically.
+
+Required behavior:
+
+* While resizing from the south (s) or southeast (se) handle, the bottom edge must follow the mouse and snap approximately every 10px, not jump by the height/position of neighboring grid items.
+* A tile must be allowed to have arbitrary integer grid heights such as h=31, h=30, h=29, etc. It must NOT snap to the heights or row boundaries of other modules.
+* Resizing one tile should not cause react-grid-layout’s vertical compaction/reflow logic to determine the resize increments.
+* Keep collision prevention so tiles cannot overlap.
+* Do not implement resize using CSS pixel heights outside react-grid-layout. The saved layout should continue using RGL x/y/w/h grid coordinates and continue to be persisted by the existing useDashboardLayout.
+
+In DashboardGrid.tsx, configure GridLayout so automatic vertical compaction does not interfere with interactive resizing. In react-grid-layout this means testing/configuring compactType={null} while keeping collision prevention enabled (preventCollision={true} if necessary).
+
+The important distinction is:
+
+disable automatic compaction/reflow snapping, but do NOT disable collision detection.
+
+Keep:
+
+cols={24}
+rowHeight={10}
+the existing resize handles
+the existing localStorage persistence
+the existing three-dashboard system.
+
+After the change, test it manually with the Automation tile shown in the dashboard: drag only its bottom resize handle slowly upward. Its height should change in many small ~10px steps instead of making one large jump.
+
+Do not change default module sizes merely to hide the problem. Fix the interactive grid behavior itself.
