@@ -173,7 +173,7 @@ export function DashboardGrid() {
         <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
           <LayoutGrid className="h-8 w-8 text-muted-foreground/30" />
           <p className="text-sm text-muted-foreground">
-            Layout {activeLayout} er tom — tilføj moduler for at komme i gang.
+            Layout {activeLayout} is empty — add modules to get started.
           </p>
           <button
             onClick={() => { setEditMode(true); setShowAdd(true); }}

@@ -577,7 +577,7 @@ function SaxoBankSection() {
             Debug — genereret auth-URL
           </p>
           <p className="text-[11px] text-muted-foreground/50 leading-snug">
-            Klik på linket for at åbne Saxo-login, eller kopiér URL'en og inspicér parametrene.
+            Click the link to open the Saxo login page, or copy the URL and inspect the parameters.
           </p>
           <div className="flex items-start gap-2 min-w-0">
             <code className="text-[10px] text-primary/70 bg-background/60 border border-border/30 rounded px-2 py-1.5 break-all flex-1 leading-relaxed">
@@ -616,7 +616,7 @@ function SaxoBankSection() {
             className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 mt-1"
           >
             <LogIn className="h-3.5 w-3.5" />
-            Gå til Saxo-login
+            Go to Saxo login
           </Button>
         </div>
       )}

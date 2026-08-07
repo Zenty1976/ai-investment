@@ -2,65 +2,66 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices are mostly higher, led by U.S. gains and falling volatility; Asia lags. Central banks remain cautious amid geopolitical and inflation risks, while AI investment supports sentiment.",
-      "marketSentiment": "Positive",
+      "summary": "Global markets are consolidating amid central banks holding rates steady, cooling inflation, and AI sector rotation.",
+      "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "Equity gains in U.S. and Europe amid resilient growth and AI-driven investment supporting sentiment",
-        "Decline in VIX indicates reduced near-term volatility concerns"
+        "Central banks (Fed, ECB, BoE, BoC) held rates steady, reducing immediate policy uncertainty and supporting equities.",
+        "Cooling inflation and resilient US consumer and AI investment support growth outlook."
       ],
       "negativeFactors": [
-        "Geopolitical tensions and energy supply shocks pose inflation and growth risks",
-        "Central banks remain cautious, with sticky inflation and policy uncertainty"
+        "Volatile energy prices and geopolitical tensions (Middle East conflict) pose inflation and growth risks.",
+        "AI and memory chip sector corrections are weighing on tech-heavy indices."
       ],
       "strongSectors": [
-        "Health Care",
-        "Consumer Staples"
+        "US equities (especially AI-related technology)",
+        "Consumer and investment sectors in US"
       ],
       "weakSectors": [
-        "Technology"
+        "Memory chip/semiconductor sector",
+        "Energy-exposed European markets"
       ],
       "keyRisks": [
-        "Middle East conflict and energy disruptions",
-        "Uncertain central bank policy path amid inflation persistence"
+        "Middle East conflict driving energy volatility and inflation uncertainty",
+        "Potential further unwinding of AI trade and tech sector corrections"
       ],
       "sources": [
         {
-          "title": "Markets data - FT.com",
-          "url": "https://markets.ft.markitdigital.com/data/",
-          "published": ""
+          "title": "Markets entering consolidation phase; US economy resilient, Europe weaker",
+          "url": "",
+          "published": "2026-07-23"
         },
         {
-          "title": "Major World Market Indices - Investing.com",
-          "url": "https://www.investing.com/indices/major-indices?stream=top",
-          "published": ""
+          "title": "ECB holds rates steady amid energy price uncertainty",
+          "url": "",
+          "published": "2026-07-23"
         },
         {
-          "title": "Global Economic Outlook: July 2026 | S&P Global",
-          "url": "https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/07/global-economic-outlook-july-2026",
-          "published": "2026-07-16"
+          "title": "Fed holds rates steady; inflation elevated, AI investment supports growth",
+          "url": "",
+          "published": "2026-07-10"
         },
         {
-          "title": "Mid‑Year Market Outlook 2026 | J.P. Morgan Global Research",
-          "url": "https://www.jpmorgan.com/insights/global-research/outlook/mid-year-outlook",
-          "published": "2026-07-01"
+          "title": "Bank of England holds rate at 3.75%; inflation 2.6%, energy prices volatile",
+          "url": "",
+          "published": "2026-07-30"
         },
         {
-          "title": "Sector Heatmap Rotation?",
-          "url": "https://www.reddit.com/r/MarketProbabilities/comments/1v9fb65/sector_heatmap_rotation/",
-          "published": ""
+          "title": "Bank of Canada holds rate; US growth ~2½%, AI investment strong",
+          "url": "",
+          "published": "2026-07-15"
         },
         {
-          "title": "International Cash Management Market Commentary| BlackRock",
-          "url": "https://www.blackrock.com/cash/en-gb/emea-short-term-market-commentary",
-          "published": ""
+          "title": "Memory chip sector selloff ripples across markets",
+          "url": "",
+          "published": "2026-08-06"
         }
       ],
-      "timestamp": "2026-08-07T16:36:48.061Z",
-      "analysisDuration": 5415
+      "timestamp": "2026-08-07T17:59:52.494Z",
+      "analysisDuration": 5796
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-07T16:36:53.478Z"
+    "updatedAt": "2026-08-07T17:59:58.292Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -132,70 +133,70 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "U.S. July jobs report unexpectedly showed a loss of 23,000 positions, rattling markets and raising rate-cut speculation. Bank of Korea raised rates amid persistent inflation and geopolitical risks. ECB reiterated cautious stance amid energy volatility.",
-      "overallMarketImpact": "Markets turned cautious, with bond yields rising and risk sentiment dented by weak U.S. jobs data.",
+      "executiveSummary": "U.S. labor market unexpectedly contracted in July, raising hopes for a dovish Fed; geopolitical tensions around the Strait of Hormuz continue to pressure energy markets and bond yields.",
+      "overallMarketImpact": "Markets are tilting cautiously positive on rate relief hopes, while energy and bond markets remain sensitive to geopolitical risks.",
       "topStory": {
         "title": "U.S. July jobs loss shocks markets",
-        "summary": "U.S. unexpectedly lost 23,000 jobs in July, defying expectations and fueling rate‑cut speculation.",
+        "summary": "U.S. unexpectedly lost 23,000 jobs in July, weakening labor outlook and easing Fed rate‑hike pressure.",
         "importance": "High"
       },
       "news": [
         {
           "id": "us-july-jobs-loss-2026-08-07",
           "title": "U.S. July jobs loss shocks markets",
-          "summary": "U.S. economy lost 23,000 jobs in July versus expected gain, surprising markets.",
+          "summary": "U.S. economy lost 23,000 jobs in July versus expectations of gains, signaling labor market cooling.",
           "category": "Macro",
           "importance": "High",
           "affectedMarkets": [
-            "Bonds",
+            "Rates",
             "Equities",
-            "Rates"
+            "FX"
           ],
-          "whyItMatters": "Weak payrolls undermine Fed rate‑hike expectations and boost speculation of easing.",
-          "marketImpact": "Negative for bonds (yields lower), mixed for equities, dovish for rates",
+          "whyItMatters": "A weaker payrolls print reduces pressure on the Fed to hike rates, shifting rate expectations.",
+          "marketImpact": "Positive for bonds, modestly positive for equities, weaker dollar",
           "confidence": 0.85,
-          "source": "Reddit/CBS News summary",
-          "publishedAt": "2026-08-07"
+          "source": "AP News",
+          "publishedAt": "2026-08-07T06:29:02Z"
         },
         {
-          "id": "ecb-cautious-energy-volatility-2026-07-23",
-          "title": "ECB signals caution amid energy volatility",
-          "summary": "ECB president declined forward guidance, emphasizing data‑dependence amid energy price swings.",
-          "category": "Macro",
+          "id": "space-x-earnings-ai-spending-2026-08-05",
+          "title": "SpaceX earnings fuel AI infrastructure surge",
+          "summary": "SpaceX Q2 revenue nearly doubled to $7.8B; heavy AI infrastructure spending boosts Nvidia, dents AMD.",
+          "category": "Technology",
           "importance": "Medium",
           "affectedMarkets": [
-            "Euro bonds",
+            "Equities",
+            "AI"
+          ],
+          "whyItMatters": "Strong AI‑related capex signals continued tech investment trends.",
+          "marketImpact": "Positive for AI/tech stocks, mixed for semis",
+          "confidence": 0.7,
+          "source": "Reddit (EverHint)",
+          "publishedAt": "2026-08-05T00:00:00Z"
+        },
+        {
+          "id": "strait-of-hormuz-tensions-2026-07-13",
+          "title": "Middle East tensions lift oil, bond yields",
+          "summary": "Escalating U.S.–Iran tensions around the Strait of Hormuz push oil prices higher and bond yields up.",
+          "category": "Energy",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Commodities",
+            "Bonds",
             "Equities"
           ],
-          "whyItMatters": "ECB’s cautious tone adds uncertainty to euro‑area rate outlook.",
-          "marketImpact": "Mixed for euro bonds and equities",
-          "confidence": 0.7,
-          "source": "ECB press conference",
-          "publishedAt": "2026-07-23"
-        },
-        {
-          "id": "bank-of-korea-rate-hike-2026-07-16",
-          "title": "Bank of Korea raises rates 25bps",
-          "summary": "Bank of Korea raised its base rate to 2.75%, citing elevated inflation and financial stability risks.",
-          "category": "Rates",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "FX",
-            "Bonds",
-            "Asia equities"
-          ],
-          "whyItMatters": "Significant regional central bank tightening amid global uncertainty.",
-          "marketImpact": "Positive for KRW, negative for Korean bonds",
+          "whyItMatters": "Energy supply fears elevate inflation risks and pressure fixed‑income markets.",
+          "marketImpact": "Positive for oil, negative for bonds and equities",
           "confidence": 0.75,
-          "source": "Yonhap News Agency",
-          "publishedAt": "2026-07-16"
+          "source": "AA News",
+          "publishedAt": "2026-07-13T00:00:00Z"
         }
       ],
-      "timestamp": "2026-08-07T16:36:48.064Z",
-      "analysisDuration": 7814
+      "timestamp": "2026-08-07T17:59:52.502Z",
+      "analysisDuration": 5832
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-07T16:36:55.878Z"
+    "updatedAt": "2026-08-07T17:59:58.334Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -420,7 +421,7 @@
   "portfolio-manager": {
     "moduleName": "portfolio-manager",
     "result": {
-      "updatedAt": "2026-08-07T16:36:47.991Z",
+      "updatedAt": "2026-08-07T17:59:52.440Z",
       "environment": "sim",
       "baseCurrency": "DKK",
       "totalValue": 637800,
@@ -512,7 +513,7 @@
       "isMockData": true
     },
     "createdAt": "2026-08-01T15:14:57.937Z",
-    "updatedAt": "2026-08-07T16:36:48.018Z"
+    "updatedAt": "2026-08-07T17:59:52.449Z"
   },
   "portfolio-analyzer": {
     "moduleName": "portfolio-analyzer",
@@ -2471,8 +2472,8 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "High",
-      "executiveSummary": "Since the last analysis 0.3 hours ago, the only material new development is the release of the U.S. July jobs report, which showed an unexpected loss of 23,000 jobs. This weak labor data significantly shifts the macroeconomic outlook and may influence Federal Reserve policy expectations. No new company‑specific or portfolio‑specific developments have emerged.",
-      "headline": "U.S. July jobs report shows unexpected job loss, raising rate‑cut speculation",
+      "executiveSummary": "Two significant developments emerged since the last analysis: the U.S. labor market unexpectedly contracted in July, intensifying dovish Fed expectations, and SpaceX released its first earnings as a public company, showing strong revenue growth but massive AI‑infrastructure capex. Both warrant immediate attention due to their potential macro and sectoral implications.",
+      "headline": "July jobs contraction fuels Fed easing hopes; SpaceX Q2 public‑company debut shows booming revenue and heavy AI capex",
       "alerts": [
         {
           "title": "U.S. unexpectedly lost 23,000 jobs in July",
@@ -2481,31 +2482,113 @@
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [],
-          "summary": "The U.S. economy shed 23,000 jobs in July—well below expectations for a gain of ~80,000–87,000—and prior months were revised down significantly.",
-          "whyItMatters": "This signals a cooling labor market, increasing speculation of Federal Reserve easing and potentially lowering interest rate expectations, which could affect equity valuations and USD‑DKK FX dynamics.",
+          "summary": "July nonfarm payrolls fell by 23,000, the first decline since February, with steep downward revisions to prior months, signaling a cooling labor market.",
+          "whyItMatters": "Weaker employment reduces pressure on the Fed to hike rates, potentially easing monetary policy—beneficial for equities and bonds, and supportive of Microsoft’s AI/cloud growth and Serve Robotics’ financing environment.",
           "recommendedAttention": "Monitor",
+          "sourceType": "NewsMonitor",
+          "status": "New"
+        },
+        {
+          "title": "SpaceX Q2 earnings as public company: strong revenue, heavy AI capex",
+          "category": "Sector",
+          "importance": "Medium",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [],
+          "summary": "SpaceX reported a 92% jump in Q2 revenue (~$7.8 billion) and halved operating losses, but spent ~$18.4 billion in capex—nearly $16 billion on AI infrastructure.",
+          "whyItMatters": "Signals continued aggressive investment in AI infrastructure, reinforcing sector capex trends; memory‑chip cost pressures noted may affect broader tech supply chains, including Microsoft’s AI hardware costs.",
+          "recommendedAttention": "Watch",
           "sourceType": "NewsMonitor",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Upcoming Fed communications and rate‑cut expectations",
-        "Impact on USD‑DKK exchange rate and implications for USD‑denominated holdings"
+        "Upcoming U.S. inflation data (CPI, PPI) to confirm whether dovish Fed expectations persist",
+        "Memory‑chip price trends and supply‑chain impact from SpaceX’s AI capex surge"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-07T16:52:21.169Z",
-      "analysisDuration": 4257,
-      "lastCheckedAt": "2026-08-07T16:52:21.169Z",
-      "lastMeaningfulUpdateAt": "2026-08-07T16:52:21.169Z",
+      "timestamp": "2026-08-07T17:59:58.344Z",
+      "analysisDuration": 4683,
+      "lastCheckedAt": "2026-08-07T17:59:58.344Z",
+      "lastMeaningfulUpdateAt": "2026-08-07T17:59:58.344Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-07T16:52:25.427Z"
+    "updatedAt": "2026-08-07T18:00:03.028Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-07T17:59:58.344Z",
+          "overallAlertLevel": "High",
+          "headline": "July jobs contraction fuels Fed easing hopes; SpaceX Q2 public‑company debut shows booming revenue and heavy AI capex",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "U.S. unexpectedly lost 23,000 jobs in July",
+              "category": "Macro",
+              "importance": "High",
+              "summary": "July nonfarm payrolls fell by 23,000, the first decline since February, with steep downward revisions to prior months, signaling a cooling labor market.",
+              "normalizedKey": "u.s. unexpectedly lost 23,000 jobs in july|macro"
+            },
+            {
+              "title": "SpaceX Q2 earnings as public company: strong revenue, heavy AI capex",
+              "category": "Sector",
+              "importance": "Medium",
+              "summary": "SpaceX reported a 92% jump in Q2 revenue (~$7.8 billion) and halved operating losses, but spent ~$18.4 billion in capex—nearly $16 billion on AI infrastructure.",
+              "normalizedKey": "spacex q2 earnings as public company: strong revenue, heavy ai capex|sector"
+            }
+          ],
+          "newsIds": [
+            "us-july-jobs-loss-2026-08-07",
+            "space-x-earnings-ai-spending-2026-08-05",
+            "strait-of-hormuz-tensions-2026-07-13"
+          ],
+          "eventTitles": [
+            "U.S. Employment Situation – July 2026",
+            "FOMC Minutes – July 28–29 Meeting",
+            "EIA Short‑Term Energy Outlook",
+            "Producer Price Index – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
+        {
+          "timestamp": "2026-08-07T17:07:51.445Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Novo Nordisk shifts U.S. media account; Microsoft signals Xbox backward‑compatibility roadmap",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Novo Nordisk shifts U.S. media account to Omnicom",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Novo Nordisk has selected Omnicom as its agency‑of‑record to manage U.S. media buying beginning in Q4 2026.",
+              "normalizedKey": "novo nordisk shifts u.s. media account to omnicom|company"
+            },
+            {
+              "title": "Microsoft signals Xbox 360 backward‑compatibility for 2027–28",
+              "category": "Company",
+              "importance": "Low",
+              "summary": "Microsoft internal memo suggests next‑gen Xbox Helix will support backward compatibility for all Xbox games, with Xbox 360 titles coming to PC in 2027–28.",
+              "normalizedKey": "microsoft signals xbox 360 backward‑compatibility for 2027–28|company"
+            }
+          ],
+          "newsIds": [
+            "us-july-jobs-loss-2026-08-07",
+            "ecb-cautious-guidance-2026-07-23",
+            "bank-of-korea-rate-hike-2026-07-16",
+            "geopolitical-oil-risk-2026-07-13"
+          ],
+          "eventTitles": [
+            "U.S. Employment Situation – July 2026",
+            "FOMC Minutes – July 28–29 Meeting",
+            "EIA Short‑Term Energy Outlook",
+            "Producer Price Index – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-07T16:52:21.169Z",
           "overallAlertLevel": "High",
@@ -2993,39 +3076,11 @@
             "U.S. Producer Price Index (PPI) – July 2026"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-02T07:08:16.228Z",
-          "overallAlertLevel": "Medium",
-          "headline": "No new developments since prior update",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [],
-          "eventTitles": [
-            "U.S. Employment Situation (July 2026)",
-            "U.S. Consumer Price Index (CPI) – July 2026",
-            "U.S. Producer Price Index (PPI) – July 2026"
-          ],
-          "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-02T07:08:04.116Z",
-          "overallAlertLevel": "Medium",
-          "headline": "No new developments since prior update",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [],
-          "eventTitles": [
-            "U.S. Employment Situation (July 2026)",
-            "U.S. Consumer Price Index (CPI) – July 2026",
-            "U.S. Producer Price Index (PPI) – July 2026"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-07T16:52:25.431Z"
+    "updatedAt": "2026-08-07T18:00:03.031Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
