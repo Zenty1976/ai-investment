@@ -25,8 +25,12 @@ export function AutomationWidget() {
   const failed = modules.filter(m => m.freshness === "Failed").length;
   const running = modules.filter(m => m.freshness === "Running").length;
 
-  const modeLabel = status?.paused ? "Paused" : status?.mode === "FullAutomatic" ? "Auto" : status?.mode === "SemiAutomatic" ? "Semi-Auto" : "Manual";
-  const modeColor = status?.paused ? "text-yellow-400" : status?.mode === "FullAutomatic" ? "text-green-400" : "text-muted-foreground";
+  const modeLabel = status?.paused ? "Paused" : status?.mode === "FullAutomatic" ? "Full Auto" : status?.mode === "SemiAutomatic" ? "Semi-Auto" : "Manual";
+  const modeBadge = status?.paused ? "text-yellow-400 border-yellow-400/20 bg-yellow-400/5"
+    : status?.mode === "FullAutomatic" ? "text-green-400 border-green-400/20 bg-green-400/5"
+    : status?.mode === "SemiAutomatic" ? "text-blue-400 border-blue-400/20 bg-blue-400/5"
+    : "text-muted-foreground border-border/50 bg-muted/10";
+  const modeColor = status?.paused ? "text-yellow-400" : status?.mode === "FullAutomatic" ? "text-green-400" : status?.mode === "SemiAutomatic" ? "text-blue-400" : "text-muted-foreground";
 
   // Sort modules by severity of freshness
   const sortedModules = [...modules].sort(
@@ -49,10 +53,7 @@ export function AutomationWidget() {
 
           {size === "sm" && (
             <div className="h-full flex flex-col justify-between">
-              <div className="flex items-center gap-1.5">
-                <Dot color={modeColor} />
-                <span className={`text-[11px] font-medium ${modeColor}`}>{modeLabel}</span>
-              </div>
+              <span className={`self-start text-[10px] font-semibold px-1.5 py-0.5 rounded border ${modeBadge}`}>{modeLabel}</span>
               <div className="flex items-center gap-2 text-[10px]">
                 <span className="text-green-400">{fresh} fresh</span>
                 {stale > 0 && <span className="text-orange-400">{stale} stale</span>}
@@ -65,12 +66,9 @@ export function AutomationWidget() {
 
           {size === "md" && (
             <div className="h-full flex flex-col gap-1.5 overflow-hidden">
-              {/* Header stats */}
+              {/* Header: mode badge + freshness counts */}
               <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <Dot color={modeColor} />
-                  <span className={`text-xs font-semibold ${modeColor}`}>{modeLabel}</span>
-                </div>
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${modeBadge}`}>{modeLabel}</span>
                 <div className="flex items-center gap-1.5 text-[10px]">
                   {running > 0 && <span className="text-blue-400 animate-pulse">{running} ●</span>}
                   {failed > 0 && <span className="text-red-400">{failed} ✗</span>}
@@ -99,8 +97,12 @@ export function AutomationWidget() {
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
-              {/* Stats row */}
-              <div className="grid grid-cols-4 gap-1.5 shrink-0">
+              {/* Stats row — mode badge + 4 counters */}
+              <div className="grid grid-cols-5 gap-1.5 shrink-0">
+                <div className={`rounded border p-1.5 text-center col-span-1 ${modeBadge}`}>
+                  <p className={`text-sm font-bold leading-tight ${modeColor}`}>{modeLabel}</p>
+                  <p className="text-[9px] text-muted-foreground">Mode</p>
+                </div>
                 {[
                   { label: "Fresh", value: fresh, color: "text-green-400 border-green-400/20" },
                   { label: "Stale", value: stale, color: "text-orange-400 border-orange-400/20" },
@@ -113,11 +115,9 @@ export function AutomationWidget() {
                   </div>
                 ))}
               </div>
-              {/* Mode + cycle */}
+              {/* Cycle status row */}
               <div className="flex items-center gap-2 shrink-0">
-                <Dot color={modeColor} />
-                <span className={`text-[11px] font-medium ${modeColor}`}>{modeLabel}</span>
-                {status.cycleInProgress && <span className="text-[10px] text-blue-400 animate-pulse">Cycle running</span>}
+                {status.cycleInProgress && <><Dot color="text-blue-400" /><span className="text-[10px] text-blue-400 animate-pulse">Cycle running</span></>}
                 {status.lastFullCycleAt && (
                   <span className="text-[10px] text-muted-foreground ml-auto">Last cycle {timeAgo(status.lastFullCycleAt)}</span>
                 )}
