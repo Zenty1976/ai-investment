@@ -84,6 +84,7 @@ router.post("/automation/run/:moduleId", (req, res): void => {
     "portfolio-manager", "market-monitor", "news-monitor", "event-monitor",
     "sector-monitor", "company-monitor", "market-alerts", "risk-analyzer",
     "portfolio-analyzer", "opportunity-finder", "trade-decision-engine", "trade-review",
+    "investor-watch",
   ];
 
   if (!validModules.includes(moduleId as ModuleId)) {
@@ -132,6 +133,7 @@ router.put("/automation/modules/:moduleId/settings", (req, res): void => {
     "portfolio-manager", "market-monitor", "news-monitor", "event-monitor",
     "sector-monitor", "company-monitor", "market-alerts", "risk-analyzer",
     "portfolio-analyzer", "opportunity-finder", "trade-decision-engine", "trade-review",
+    "investor-watch",
   ];
 
   if (!validModules.includes(moduleId as ModuleId)) {

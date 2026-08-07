@@ -47,7 +47,8 @@ function writeJson(file: string, data: unknown): void {
 export type ModuleId =
   | "portfolio-manager" | "market-monitor" | "news-monitor" | "event-monitor"
   | "sector-monitor"   | "company-monitor" | "market-alerts" | "risk-analyzer"
-  | "portfolio-analyzer" | "opportunity-finder" | "trade-decision-engine" | "trade-review";
+  | "portfolio-analyzer" | "opportunity-finder" | "trade-decision-engine" | "trade-review"
+  | "investor-watch";
 
 export type AutomationMode = "Manual" | "SemiAutomatic" | "FullAutomatic";
 
@@ -364,6 +365,22 @@ const MODULE_DEFAULTS: ModuleDefaults[] = [
     supportsAutomaticRun: true,
     marketHoursOnly: false,
   },
+  {
+    // Investor Watch is intentionally isolated from the investment-decision
+    // pipeline. No dependencies on portfolio/risk/decision modules.
+    moduleId: "investor-watch",
+    displayName: "Investor Watch",
+    scheduleType: "fixed",
+    defaultIntervalMinutes: 360,   // every 6 hours
+    minimumIntervalMinutes: 60,
+    maximumIntervalMinutes: 1440,
+    staleAfterMinutes: 720,        // stale after 12 hours
+    dependencies: [],
+    runAfter: [],
+    priority: 25,                  // runs alongside informational modules
+    supportsAutomaticRun: true,
+    marketHoursOnly: false,
+  },
 ];
 
 // ── Module HTTP endpoints ─────────────────────────────────────────────────────
@@ -382,6 +399,8 @@ const MODULE_ENDPOINTS: Record<ModuleId, { method: "POST" | "GET"; path: string 
   "trade-decision-engine":{ method: "POST", path: "/api/trade-decision-engine/analyze" },
   // POST /generate forces fresh generation (bypasses cache); GET serves existing data.
   "trade-review":         { method: "POST", path: "/api/trade-review/generate" },
+  // Investor Watch is informational only — no downstream pipeline connections.
+  "investor-watch":       { method: "POST", path: "/api/investor-watch/analyze" },
 };
 
 const MAX_JOBS = 100;

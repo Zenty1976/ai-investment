@@ -18,6 +18,7 @@ import {
   History,
   Settings,
   Wifi,
+  Users,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
@@ -45,6 +46,7 @@ const NAV_ITEMS = [
   { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: true  },
   { label: "SECTORS",     href: "/sectors",   icon: PieChart,     enabled: true  },
   { label: "COMPANIES",  href: "/companies", icon: Building2,    enabled: true  },
+  { label: "INVESTORS",  href: "/investors", icon: Users,         enabled: true  },
   { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: true  },
   { label: "ANALYZER",    href: "/analyse",      icon: BarChart2,  enabled: true  },
   { label: "OPPORTUNITY", href: "/opportunities", icon: Lightbulb,  enabled: true  },

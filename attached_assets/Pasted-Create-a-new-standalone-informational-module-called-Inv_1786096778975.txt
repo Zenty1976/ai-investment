@@ -1,0 +1,616 @@
+Create a new standalone informational module called:
+
+Investor Watch
+
+This module is intentionally separate from the investment decision pipeline.
+
+It must NOT feed data into:
+
+* Trade Decision
+* Portfolio Manager
+* Risk Analyzer
+* Opportunity Finder
+* Trade Review
+* any automatic trading logic
+
+Its purpose is purely to give the user a compact overview of what a small group of notable investors currently appear to think, say or do.
+
+The module should use OpenAI with web search to find recent, verifiable information.
+
+⸻
+
+INITIAL PEOPLE TO FOLLOW
+
+Start with these six investors:
+
+Michael Burry
+Focus label:
+Bobler / overreaktioner / contrarian
+
+Stanley Druckenmiller
+Focus label:
+Makro / likviditet / sektorrotation
+
+Howard Marks
+Focus label:
+Risiko / markedspsykologi / kredit
+
+Warren Buffett / Berkshire Hathaway
+Focus label:
+Kvalitet / valuation / kapitalallokering / cash
+
+Bill Ackman
+Focus label:
+Koncentrerede aktiecases / aktivistinvestering
+
+David Tepper
+Focus label:
+Makro / opportunistiske investeringer / contrarian
+
+Store these people in a central configuration rather than hardcoding them across frontend and backend.
+
+Suggested person structure:
+
+id
+name
+organization
+focusLabel
+enabled
+displayOrder
+
+The architecture should allow more people to be added later without redesigning the module.
+
+⸻
+
+CORE PRINCIPLE
+
+Investor Watch must answer:
+
+“What is this investor currently thinking or doing, and what has materially changed since the previous update?”
+
+Do not create a generic biography or repeatedly summarize the person’s investment career.
+
+Focus on:
+
+* recent opinions
+* recent interviews
+* public statements
+* investor letters or memos
+* regulatory filings
+* portfolio disclosures
+* major disclosed position changes
+* macro views
+* sector views
+* bearish/bullish themes
+* material changes since the previous update
+
+⸻
+
+IMPORTANT SOURCE DISCIPLINE
+
+Internet coverage of famous investors is often misleading.
+
+The module must distinguish between:
+
+1. Direct / Verified
+
+Examples:
+
+* official investor letter
+* official memo
+* regulatory filing such as 13F
+* direct interview
+* verified social-media statement
+* official company/fund communication
+
+2. Reliable secondary reporting
+
+Examples:
+
+* Reuters
+* Bloomberg
+* Financial Times
+* Wall Street Journal
+* CNBC when directly reporting the investor’s statement
+
+3. Interpretation
+
+OpenAI infers the investor’s likely view from filings, portfolio changes or several pieces of evidence.
+
+Never present interpretation as a direct quote or confirmed opinion.
+
+Every important item should contain:
+
+evidenceType:
+Direct | Filing | ReliableReporting | Interpretation
+
+and:
+
+confidence:
+High | Medium | Low
+
+Prefer primary sources wherever possible.
+
+⸻
+
+WHAT THEY SAY VS WHAT THEY DO
+
+Where relevant, explicitly separate:
+
+Says / Thinks
+
+and
+
+Does / Positioning
+
+Example:
+
+Michael Burry
+
+Says / Thinks:
+Concerned about extreme valuations in parts of the market.
+
+Does / Positioning:
+Latest available filing shows reduced exposure to X and increased exposure to Y.
+
+Interpretation:
+His positioning appears broadly consistent with a more defensive or contrarian view.
+
+Do not assume a filing proves the investor’s exact opinion.
+
+Remember that filings such as 13F are delayed and may not represent the current portfolio.
+
+Always show the filing date or reporting period.
+
+⸻
+
+STATEFUL UPDATES
+
+Investor Watch should behave similarly to the stateful Company Monitor.
+
+Store the previous analysis for each person.
+
+On later updates, ask:
+
+* What has changed since the previous analysis?
+* Is the investor’s current view materially different?
+* Has a major theme strengthened or weakened?
+* Is there new positioning evidence?
+* Is there nothing meaningful to report?
+
+Do not rewrite the entire analysis every time.
+
+Possible update types:
+
+FullAnalysis
+
+MaterialUpdate
+
+NoMaterialChange
+
+NoMaterialChange is a completely valid result.
+
+If nothing meaningful has changed:
+
+* preserve the previous current-view summary
+* update lastCheckedAt
+* do not fabricate new information
+* do not change themes merely to make the update look different
+
+⸻
+
+STRUCTURED RESULT
+
+Suggested result structure per investor:
+
+person:
+
+* id
+* name
+* organization
+* focusLabel
+
+updateType:
+FullAnalysis | MaterialUpdate | NoMaterialChange
+
+headline:
+Very short description of the latest important point.
+
+shortSummary:
+Maximum approximately 1–2 short sentences.
+
+currentView:
+
+* overallTone: Bullish | Cautious | Bearish | Mixed | Unclear
+* summary
+* confidence
+
+keyThemes:
+Approximately 2–5 items.
+
+Each theme:
+
+* title
+* stance: Bullish | Bearish | Cautious | Neutral | Unclear
+* summary
+
+latestDevelopments:
+Maximum approximately 5 items.
+
+Each development:
+
+* title
+* date
+* summary
+* evidenceType
+* confidence
+* sourceName
+* sourceUrl when available
+
+positioning:
+
+* summary
+* filingDate
+* reportingPeriod
+* isDelayedData
+* notableChanges
+
+notableChanges may include:
+
+* asset/company
+* action: Increased | Reduced | New | Exited | Unknown
+* summary
+
+sayVsDo:
+
+* statementsSummary
+* positioningSummary
+* consistency:
+    Consistent | PartlyConsistent | Conflicting | InsufficientEvidence
+* explanation
+
+changeSincePrevious:
+
+* changed
+* severity: None | Low | Medium | High
+* summary
+
+thingsToWatch:
+Maximum approximately 3 items.
+
+lastCheckedAt
+
+Do not include long biographies.
+
+⸻
+
+COMPACT MAIN UI
+
+Add a new sidebar item:
+
+Investor Watch
+
+The main page should be extremely easy to scan.
+
+Show one compact card or row for each investor.
+
+Each collapsed item should show only:
+
+* name
+* focus label
+* current tone
+* very short latest summary
+* whether something new happened
+* last updated
+* Details control
+
+Example:
+
+Michael Burry
+Bobler / overreaktioner / contrarian
+
+Cautious
+
+Still warning about expensive market areas; no major new disclosed positioning.
+
+No material change
+Updated 3h ago
+
+[Details]
+
+Another example:
+
+Stanley Druckenmiller
+Makro / likviditet / sektorrotation
+
+Bullish
+
+New comments suggest greater confidence in industrial/cyclical exposure.
+
+NEW
+Updated 45m ago
+
+[Details]
+
+Do not put large amounts of text on the overview.
+
+The user should be able to scan all six people in seconds.
+
+⸻
+
+DETAIL VIEW
+
+Clicking a person should open an expanded view or dialog/page.
+
+The detailed view may show:
+
+* current view
+* latest developments
+* key themes
+* what they say
+* what they do
+* filing information
+* change since previous update
+* things to watch
+* sources
+
+Keep source links visible.
+
+Clearly label:
+
+Direct
+Filing
+Reporting
+Interpretation
+
+The user must easily understand how strong the evidence is.
+
+⸻
+
+SPECIAL HANDLING FOR EACH INITIAL INVESTOR
+
+Michael Burry
+
+Prioritize:
+
+* Scion Asset Management filings
+* direct public statements when available
+* notable contrarian positions
+* valuation/bubble warnings
+* major exits or new positions
+
+Be especially cautious with sensational headlines claiming that Burry “predicted a crash”.
+
+Verify the underlying primary evidence.
+
+Stanley Druckenmiller
+
+Prioritize:
+
+* macro outlook
+* rates
+* liquidity
+* monetary policy
+* sector rotation
+* major disclosed equity themes
+* interviews and conference appearances
+
+Howard Marks
+
+Prioritize:
+
+* official Oaktree memos
+* credit conditions
+* risk appetite
+* valuations
+* market psychology
+* cycle positioning
+
+Official Oaktree memos should have very high evidence priority.
+
+Warren Buffett / Berkshire Hathaway
+
+Focus primarily on observable Berkshire behaviour:
+
+* Berkshire filings
+* annual/quarterly reports
+* shareholder letters
+* major purchases and sales
+* cash levels
+* buybacks
+* major public comments
+
+Avoid inventing a “Buffett view” from unrelated market commentary.
+
+Bill Ackman
+
+Prioritize:
+
+* Pershing Square communications
+* direct public statements
+* major concentrated holdings
+* activist theses
+* macro statements
+* material position changes
+
+David Tepper
+
+Prioritize:
+
+* major interviews
+* Appaloosa disclosures
+* macro positioning
+* opportunistic/contrarian themes
+* major equity exposure changes
+
+⸻
+
+FRESHNESS
+
+Show:
+
+lastCheckedAt
+
+lastMaterialUpdateAt
+
+A person may have been checked recently without having a new material update.
+
+Example:
+
+Checked:
+30 min ago
+
+Last meaningful change:
+6 days ago
+
+This distinction is important.
+
+⸻
+
+ORCHESTRATOR INTEGRATION
+
+Register Investor Watch with the Automation Orchestrator.
+
+Do not give individual investors their own independent browser/frontend timers.
+
+The Orchestrator remains the central scheduler.
+
+Suggested default:
+
+Investor Watch:
+every 6 hours
+
+stale after:
+12 hours
+
+Allow the interval to be edited from the Automation page like other modules.
+
+The Orchestrator may run individual people rather than all six when appropriate.
+
+A manual action should also exist:
+
+Update all
+
+and optionally:
+
+Update
+
+for each individual investor.
+
+Investor Watch must not trigger downstream investment-analysis chains.
+
+Its meaningfulChange should only affect Investor Watch itself and System Log.
+
+⸻
+
+OPENAI / DEBUG
+
+Use the same shared OpenAI infrastructure as the other modules.
+
+Use web search.
+
+Use:
+
+* timeout
+* bounded retries
+* JSON/schema validation
+* debug information
+
+Add the same debug icon/dialog used by the existing OpenAI modules.
+
+The debug dialog should show:
+
+* system prompt
+* user prompt
+* raw OpenAI response
+* parsed result
+* validation error if any
+* attempt number
+* web-search usage
+* analysis duration
+
+⸻
+
+HISTORY
+
+Store compact history per investor.
+
+Suggested repository keys:
+
+investor-watch:
+
+investor-watch-history:
+
+Keep approximately the latest 20 material snapshots.
+
+Compact history should store:
+
+* timestamp
+* updateType
+* overallTone
+* headline
+* change severity
+* key theme titles
+* notable positioning changes
+
+Do not store complete OpenAI prompts in history.
+
+⸻
+
+NO DECISION PIPELINE INTEGRATION
+
+This is critical.
+
+Investor Watch is informational only.
+
+Do not provide Investor Watch data automatically to:
+
+* Company Monitor
+* Portfolio Analyzer
+* Portfolio Manager
+* Risk Analyzer
+* Opportunity Finder
+* Trade Decision
+* Trade Review
+
+Do not allow:
+
+“Michael Burry is bearish”
+
+to become deterministic evidence against a trade.
+
+If this is reconsidered in a future version, it must be an explicit architecture change.
+
+For now Investor Watch is the user’s additional information panel only.
+
+⸻
+
+SYSTEM LOG
+
+Keep logging minimal.
+
+Examples:
+
+Investor Watch updated — Michael Burry — no material change.
+
+Investor Watch — Howard Marks — new material view detected.
+
+Investor Watch update failed — Stanley Druckenmiller.
+
+Do not spam System Log with every source searched.
+
+⸻
+
+DESIGN GOAL
+
+Investor Watch should feel like a small personal “smart money briefing”.
+
+The main page answers:
+
+“What are these investors thinking right now?”
+
+The detail view answers:
+
+“Why do we believe that, what exactly is new, and what evidence supports it?”
+
+Keep the overview extremely compact and the detailed analysis available only when the user asks for it.

@@ -14,6 +14,7 @@ import RiskAnalyzer from '@/pages/RiskAnalyzer';
 import MarketAlerts from '@/pages/MarketAlerts';
 import TradeDecisionEngine from '@/pages/TradeDecisionEngine';
 import TradeReview from '@/pages/TradeReview';
+import InvestorWatch from '@/pages/InvestorWatch';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 import Automation from '@/pages/Automation';
@@ -46,6 +47,7 @@ function Router() {
         <Route path="/alerts" component={MarketAlerts} />
         <Route path="/decisions" component={TradeDecisionEngine} />
         <Route path="/trade-review" component={TradeReview} />
+        <Route path="/investors" component={InvestorWatch} />
         <Route path="/automation" component={Automation} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
