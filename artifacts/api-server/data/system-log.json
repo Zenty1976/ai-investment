@@ -1,47 +1,5 @@
 [
   {
-    "id": "e02ada4e-dd13-4b9b-a07d-5520e4dd6626",
-    "timestamp": "2026-08-04T20:15:29.913Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for MSFT: UpdateWithChanges, rating Buy, strength 80, meaningfulChange=Low"
-  },
-  {
-    "id": "e194ce07-49f4-4925-8767-e967751dd3f6",
-    "timestamp": "2026-08-04T20:15:29.916Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (11001ms, change: Medium)"
-  },
-  {
-    "id": "d4952211-9f85-4bb3-aafb-44324e1bd671",
-    "timestamp": "2026-08-04T20:15:30.418Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for SERV (trigger: RunAllNow)"
-  },
-  {
-    "id": "a4ef988e-e8c7-4520-a851-f2850709f76f",
-    "timestamp": "2026-08-04T20:15:37.886Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for SERV: NoMaterialChange, rating Watch, strength 48, meaningfulChange=None"
-  },
-  {
-    "id": "adf74bb5-91c2-4ffa-a95a-4f908d24d1b8",
-    "timestamp": "2026-08-04T20:15:37.890Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (7472ms, change: Medium)"
-  },
-  {
-    "id": "0ea53432-df92-401b-b42d-274595ca67a3",
-    "timestamp": "2026-08-04T20:15:38.188Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for CAT (trigger: RunAllNow)"
-  },
-  {
     "id": "c5f4ce2f-aa8e-4cff-af1c-043b1bf12d0f",
     "timestamp": "2026-08-04T20:15:45.908Z",
     "module": "Company Monitor",
@@ -3498,5 +3456,47 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "investor-watch completed via Scheduled (53360ms, change: None)"
+  },
+  {
+    "id": "032602b5-c5ba-4cba-a3b0-61f8f8412743",
+    "timestamp": "2026-08-07T16:52:21.167Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "1e9bae5e-ece1-4181-a53d-30c97eddffd8",
+    "timestamp": "2026-08-07T16:52:25.577Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "e577e729-010b-42b7-bf1c-2bf5c85c5e68",
+    "timestamp": "2026-08-07T16:52:25.579Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 new alert(s): U.S. unexpectedly lost 23,000 jobs in July"
+  },
+  {
+    "id": "8ed0edd1-e777-4f1f-a0f6-ce2feb07f2df",
+    "timestamp": "2026-08-07T16:52:25.580Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Microsoft Q4 FY26 earnings beat and stock rally; Serve Robotics Q2 miss and guidance cut"
+  },
+  {
+    "id": "0ddbb649-58b0-42a6-ac4d-3cae78fbc7fd",
+    "timestamp": "2026-08-07T16:52:25.582Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: U.S. unexpectedly lost 23,000 jobs in July [Macro]"
+  },
+  {
+    "id": "ac051703-b943-4b2f-9679-90d7f39749e5",
+    "timestamp": "2026-08-07T16:52:25.585Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (4424ms, change: High)"
   }
 ]

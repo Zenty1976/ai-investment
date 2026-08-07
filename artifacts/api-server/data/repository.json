@@ -2471,58 +2471,68 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "High",
-      "executiveSummary": "Since the last analysis 67.5 hours ago, two material developments have emerged: Microsoft’s Q4 FY26 earnings significantly beat expectations, driving a sharp stock rally, and Serve Robotics delivered disappointing Q2 results with a substantial downward revision to its full‑year revenue guidance. These developments materially affect the portfolio’s Microsoft and Serve Robotics positions and warrant immediate attention.",
-      "headline": "Microsoft beats on cloud/AI; Serve Robotics misses and cuts guidance",
+      "executiveSummary": "Since the last analysis 0.3 hours ago, the only material new development is the release of the U.S. July jobs report, which showed an unexpected loss of 23,000 jobs. This weak labor data significantly shifts the macroeconomic outlook and may influence Federal Reserve policy expectations. No new company‑specific or portfolio‑specific developments have emerged.",
+      "headline": "U.S. July jobs report shows unexpected job loss, raising rate‑cut speculation",
       "alerts": [
         {
-          "title": "Microsoft Q4 FY26 earnings beat and stock rally",
-          "category": "Company",
+          "title": "U.S. unexpectedly lost 23,000 jobs in July",
+          "category": "Macro",
           "importance": "High",
           "isNew": true,
           "requiresAttention": true,
-          "affectedHoldings": [
-            "MSFT"
-          ],
-          "summary": "Microsoft reported Q4 FY26 non‑GAAP EPS of $4.74 (+23% YoY) and revenue of $90 billion (+18% YoY), both beating estimates; Azure growth accelerated (~45%) and AI/cloud demand remains strong, prompting an ~8% stock surge.",
-          "whyItMatters": "Strong earnings reinforce the growth thesis for Microsoft, support valuation, and may justify increasing exposure or re‑assessing capex/margin risk in light of continued AI investment.",
-          "recommendedAttention": "Review",
-          "sourceType": "Web",
-          "status": "New"
-        },
-        {
-          "title": "Serve Robotics Q2 miss and guidance cut",
-          "category": "Company",
-          "importance": "High",
-          "isNew": true,
-          "requiresAttention": true,
-          "affectedHoldings": [
-            "SERV"
-          ],
-          "summary": "Serve Robotics missed both EPS and revenue estimates for Q2 and slashed full‑year 2026 revenue guidance to $9–$10 million (from ~$26 million previously), citing softer Uber Eats volumes.",
-          "whyItMatters": "The sharp downgrade undermines the scaling and revenue trajectory thesis, significantly increasing downside risk for the speculative robotics holding.",
-          "recommendedAttention": "Review",
-          "sourceType": "Web",
+          "affectedHoldings": [],
+          "summary": "The U.S. economy shed 23,000 jobs in July—well below expectations for a gain of ~80,000–87,000—and prior months were revised down significantly.",
+          "whyItMatters": "This signals a cooling labor market, increasing speculation of Federal Reserve easing and potentially lowering interest rate expectations, which could affect equity valuations and USD‑DKK FX dynamics.",
+          "recommendedAttention": "Monitor",
+          "sourceType": "NewsMonitor",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Novo Nordisk H1 2026 earnings reaction and any guidance update",
-        "Macro data (U.S. employment, CPI) due this week"
+        "Upcoming Fed communications and rate‑cut expectations",
+        "Impact on USD‑DKK exchange rate and implications for USD‑denominated holdings"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-07T16:36:48.072Z",
-      "analysisDuration": 5453,
-      "lastCheckedAt": "2026-08-07T16:36:48.072Z",
-      "lastMeaningfulUpdateAt": "2026-08-07T16:36:48.072Z",
+      "timestamp": "2026-08-07T16:52:21.169Z",
+      "analysisDuration": 4257,
+      "lastCheckedAt": "2026-08-07T16:52:21.169Z",
+      "lastMeaningfulUpdateAt": "2026-08-07T16:52:21.169Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-07T16:36:53.525Z"
+    "updatedAt": "2026-08-07T16:52:25.427Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-07T16:52:21.169Z",
+          "overallAlertLevel": "High",
+          "headline": "U.S. July jobs report shows unexpected job loss, raising rate‑cut speculation",
+          "alertCount": 1,
+          "alerts": [
+            {
+              "title": "U.S. unexpectedly lost 23,000 jobs in July",
+              "category": "Macro",
+              "importance": "High",
+              "summary": "The U.S. economy shed 23,000 jobs in July—well below expectations for a gain of ~80,000–87,000—and prior months were revised down significantly.",
+              "normalizedKey": "u.s. unexpectedly lost 23,000 jobs in july|macro"
+            }
+          ],
+          "newsIds": [
+            "us-july-jobs-loss-2026-08-07",
+            "ecb-cautious-energy-volatility-2026-07-23",
+            "bank-of-korea-rate-hike-2026-07-16"
+          ],
+          "eventTitles": [
+            "U.S. Employment Situation – July 2026",
+            "FOMC Minutes – July 28–29 Meeting",
+            "EIA Short‑Term Energy Outlook",
+            "Producer Price Index – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-07T16:36:48.072Z",
           "overallAlertLevel": "High",
@@ -3011,25 +3021,11 @@
             "U.S. Producer Price Index (PPI) – July 2026"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-02T07:07:59.604Z",
-          "overallAlertLevel": "Medium",
-          "headline": "No new developments since prior update",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [],
-          "eventTitles": [
-            "U.S. Employment Situation (July 2026)",
-            "U.S. Consumer Price Index (CPI) – July 2026",
-            "U.S. Producer Price Index (PPI) – July 2026"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-07T16:36:53.611Z"
+    "updatedAt": "2026-08-07T16:52:25.431Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
