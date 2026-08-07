@@ -181,10 +181,9 @@ export function AutomationWidget() {
   );
 
   const statsCells = [
-    { label: "Fresh",  value: fresh,                    color: "text-green-400  border-green-400/20" },
-    { label: "Stale",  value: stale,                    color: "text-orange-400 border-orange-400/20" },
-    { label: "Failed", value: failed,                   color: "text-red-400    border-red-400/20" },
-    { label: "Today",  value: stats?.analysesToday ?? 0, color: "text-muted-foreground border-border/50" },
+    { label: "Fresh",  value: fresh,  color: "text-green-400  border-green-400/20" },
+    { label: "Stale",  value: stale,  color: "text-orange-400 border-orange-400/20" },
+    { label: "Failed", value: failed, color: "text-red-400    border-red-400/20" },
   ];
 
   return (
@@ -205,7 +204,7 @@ export function AutomationWidget() {
 
           {/* ── Stats row: md and above ─────────────────────────────────── */}
           {(size === "md" || size === "lg") && (
-            <div className="grid grid-cols-4 gap-1.5 shrink-0">
+            <div className="grid grid-cols-3 gap-1.5 shrink-0">
               {statsCells.map(({ label, value, color }) => (
                 <div
                   key={label}
