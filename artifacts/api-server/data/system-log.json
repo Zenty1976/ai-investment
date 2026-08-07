@@ -1,26 +1,5 @@
 [
   {
-    "id": "d6e3676e-9aba-4e56-8d18-d315d7212f30",
-    "timestamp": "2026-08-04T20:36:37.259Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "8c303485-38b3-4e02-bdb6-fbae8a86abef",
-    "timestamp": "2026-08-04T20:36:39.178Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
-  },
-  {
-    "id": "539bc39e-e456-43e3-97fe-87427a33ea8e",
-    "timestamp": "2026-08-04T20:36:40.643Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
     "id": "076d988e-27d3-4172-bfaa-f17ef3eedf6e",
     "timestamp": "2026-08-04T20:36:40.646Z",
     "module": "AutomationOrchestrator",
@@ -3498,5 +3477,26 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "market-alerts completed via Dependency (7219ms, change: Medium)"
+  },
+  {
+    "id": "b5807b9d-0f2c-4c53-a4a3-fafd2fb6c37c",
+    "timestamp": "2026-08-07T21:25:23.015Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "9c43b765-9d40-44b4-bdcd-a4dc709659bc",
+    "timestamp": "2026-08-07T21:25:27.516Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "1fdf4b97-4ec0-4c29-8244-9c50da8e9998",
+    "timestamp": "2026-08-07T21:25:27.519Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (4509ms, change: Medium)"
   }
 ]

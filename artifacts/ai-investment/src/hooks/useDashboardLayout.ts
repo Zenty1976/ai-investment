@@ -1,16 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 import type { LayoutItem } from "react-grid-layout";
 
-// Grid: cols=24, rowHeight=20px.
-// w values are 2× the original 12-col values; h values are 4× the original 80px row-height.
-// Visual tile sizes are identical to the original; resize steps are ~56px wide × 20px tall.
-const STORAGE_KEY_BASE = "ai-dashboard-layout-v9";
-const MODULES_KEY_BASE = "ai-dashboard-modules-v9";
-export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v9";
-
-// Grid: cols=24, rowHeight=10px.
-// w values are ×2 vs original 12-col; h values are ×8 vs original 80px rowHeight.
-// Visual sizes identical; each resize step is 10px tall × ~56px wide.
+// Grid: cols=24, rowHeight=12px, margin=[6,0].
+// margin[1]=0 means element height = h*12 exactly, so snap formula has
+// zero accumulated error at any tile size (each step is always ~6 px drag).
+// w values are 2× the original 12-col values; h values give 12px per row.
+const STORAGE_KEY_BASE = "ai-dashboard-layout-v10";
+const MODULES_KEY_BASE = "ai-dashboard-modules-v10";
+export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v10";
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "automation":          { w: 12, h: 32 },

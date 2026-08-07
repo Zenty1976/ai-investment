@@ -191,8 +191,8 @@ export function DashboardGrid() {
             layout={effectiveLayout}
             width={gridWidth}
             cols={24}
-            rowHeight={10}
-            margin={[6, 2]}
+            rowHeight={12}
+            margin={[6, 0]}
             containerPadding={[0, 0]}
             compactType={null}
             preventCollision={true}
@@ -201,24 +201,7 @@ export function DashboardGrid() {
             resizeHandles={["s", "se", "e"]}
             draggableHandle=".drag-handle"
             onDragStop={(newLayout: LayoutItem[]) => saveLayout(newLayout)}
-            onResizeStart={(_layout: LayoutItem[], oldItem: LayoutItem, newItem: LayoutItem) => {
-              console.log("[RGL resize-start]", {
-                id: oldItem.i, oldH: oldItem.h, newH: newItem.h, y: newItem.y,
-              });
-            }}
-            onResize={(_layout: LayoutItem[], oldItem: LayoutItem, newItem: LayoutItem, _placeholder: LayoutItem, e: MouseEvent, element: HTMLElement) => {
-              const rect = element.getBoundingClientRect();
-              console.log("[RGL resize]", {
-                id: newItem.i, oldH: oldItem.h, newH: newItem.h, y: newItem.y,
-                px_h: Math.round(rect.height), mouse_y: e.clientY,
-              });
-            }}
-            onResizeStop={(newLayout: LayoutItem[], oldItem: LayoutItem, newItem: LayoutItem) => {
-              console.log("[RGL resize-stop]", {
-                id: newItem.i, oldH: oldItem.h, newH: newItem.h,
-              });
-              saveLayout(newLayout);
-            }}
+            onResizeStop={(newLayout: LayoutItem[]) => saveLayout(newLayout)}
             useCSSTransforms
           >
             {activeModuleDefs.map(mod => (
