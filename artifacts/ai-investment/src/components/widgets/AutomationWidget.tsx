@@ -95,7 +95,7 @@ function StatusBar({
 }) {
   const { Icon } = health;
   return (
-    <div className="shrink-0 grid grid-cols-3 divide-x divide-border/40 rounded border border-border/40 bg-black/25 overflow-hidden">
+    <div className="shrink-0 inline-flex flex-row items-stretch divide-x divide-border/40 rounded border border-border/40 bg-black/25 overflow-hidden">
       {/* ── Left: Mode ── */}
       <div className="px-4 py-3 flex flex-col justify-center gap-1 min-w-0">
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
