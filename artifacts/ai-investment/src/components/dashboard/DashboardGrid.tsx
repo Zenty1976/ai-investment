@@ -96,8 +96,8 @@ export function DashboardGrid() {
     const existing = layout.find(l => l.i === m.id);
     const bottomY = layout.reduce((max, l) => Math.max(max, l.y + l.h), 0);
     const base: LayoutItem = existing
-      ? { ...existing, minW: 4, minH: 6 } as LayoutItem
-      : { i: m.id, x: 0, y: bottomY, w: 8, h: 16, minW: 4, minH: 6 } as LayoutItem;
+      ? { ...existing, minW: 2, minH: 2 } as LayoutItem
+      : { i: m.id, x: 0, y: bottomY, w: 8, h: 16, minW: 2, minH: 2 } as LayoutItem;
     return editMode ? base : { ...base, static: true } as LayoutItem;
   });
 
