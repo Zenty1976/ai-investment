@@ -2,20 +2,20 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices mostly rose, led by U.S. and European markets, while Asian equities declined; volatility eased. Central banks held rates amid inflation concerns and geopolitical risks. Sentiment is cautiously positive.",
+      "summary": "Global equity indices mixed: US markets modestly higher, Asia weaker; volatility easing. Central banks largely on hold amid inflation and energy uncertainty.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. and European indices advanced, supporting risk appetite",
-        "Volatility (VIX) declined, easing investor anxiety"
+        "US equities modestly higher, supported by cooling PCE data and strong earnings season",
+        "ECB and other central banks holding rates, reducing immediate policy uncertainty"
       ],
       "negativeFactors": [
-        "Asian markets, notably Nikkei, fell, signaling regional weakness",
-        "Geopolitical tensions and limited central bank guidance sustain uncertainty"
+        "Asian markets under pressure, notably Nikkei, amid geopolitical and energy concerns",
+        "Volatility remains elevated due to limited Fed communication and Middle East energy risks"
       ],
       "strongSectors": [
         "Healthcare",
-        "Financials"
+        "Consumer Cyclical"
       ],
       "weakSectors": [
         "Technology",
@@ -23,40 +23,40 @@
       ],
       "keyRisks": [
         "Middle East conflict sustaining energy price volatility",
-        "Uncertainty around Fed’s policy path due to reduced forward guidance"
+        "Uncertainty from reduced Fed guidance increasing market volatility"
       ],
       "sources": [
         {
           "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
-          "url": "source",
+          "url": "https://www.nexqual.com/markets",
           "published": "2026-07-29"
         },
         {
-          "title": "Major World Market Indices Live - Investing.com",
-          "url": "source",
-          "published": ""
+          "title": "Markets data - stock market, bond, equity, commodity prices - FT.com",
+          "url": "https://markets.ft.markitdigital.com/data/",
+          "published": "2026-07-24"
         },
         {
           "title": "Fed leaves interest rate unchanged but with 3 dissents as Warsh praises 'good family fight'",
-          "url": "source",
+          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
           "published": "2026-07-28"
         },
         {
-          "title": "Wall Street: Less Fed information will mean more volatile markets",
-          "url": "source",
-          "published": "2026-08-04"
+          "title": "Europe's central bank raises rates to fight inflation from Iran war, the Fed to decide next week",
+          "url": "https://apnews.com/article/2a2c26c580961a979372393706a7f93c",
+          "published": "2026-06-11"
         },
         {
-          "title": "Monetary policy decisions | ECB",
-          "url": "source",
-          "published": "2026-07-23"
+          "title": "Wall Street: Less Fed information will mean more volatile markets",
+          "url": "https://www.axios.com/2026/08/04/fed-warsh-volatile-markets",
+          "published": "2026-08-04"
         }
       ],
-      "timestamp": "2026-08-07T20:38:01.533Z",
-      "analysisDuration": 4702
+      "timestamp": "2026-08-07T21:09:57.871Z",
+      "analysisDuration": 5260
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-07T20:38:06.235Z"
+    "updatedAt": "2026-08-07T21:10:03.132Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -154,52 +154,53 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "The U.S. economy unexpectedly lost 23,000 jobs in July, rattling markets and raising doubts about Fed rate hike odds. Simultaneously, SpaceX’s first public earnings report surged, boosting AI-related equities amid broader tech optimism.",
-      "overallMarketImpact": "Cautious to negative tone overall, with tech/AI buoyed but macro sentiment shaken by weak labor data.",
+      "executiveSummary": "U.S. payrolls unexpectedly fell by 23,000 in July, sharply cooling the labor market and reducing near‑term Fed rate‑hike expectations. Meanwhile, mortgage rates hit their highest level in over a year, pressuring housing affordability and bond yields.",
+      "overallMarketImpact": "Markets turned cautiously optimistic on rate pause prospects, while housing and fixed income faced headwinds.",
       "topStory": {
-        "title": "U.S. July jobs loss shocks markets",
-        "summary": "U.S. unexpectedly lost 23,000 jobs in July, first decline since February, undermining Fed rate‑hike expectations.",
+        "title": "U.S. July payrolls fall unexpectedly",
+        "summary": "Nonfarm payrolls dropped 23,000 in July, defying expectations and signaling labor market cooling.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "us-july-jobs-loss-2026-08-07",
-          "title": "U.S. July jobs loss shocks markets",
-          "summary": "U.S. economy lost 23,000 jobs in July versus expected gain, first decline since February.",
+          "id": "us-july-payrolls-fall-2026-08-07",
+          "title": "U.S. July payrolls fall unexpectedly",
+          "summary": "Nonfarm payrolls declined 23,000 in July, versus expectations of a gain, with unemployment rate edging lower amid falling participation.",
           "category": "Macro",
           "importance": "High",
           "affectedMarkets": [
             "Rates",
-            "Equities"
+            "Equities",
+            "Bonds"
           ],
-          "whyItMatters": "Weak labor data undermines Fed rate‑hike expectations and pressures bond yields.",
-          "marketImpact": "Negative for Treasury yields; reduces odds of Fed hike",
-          "confidence": 0.85,
-          "source": "Reddit (market commentary)",
+          "whyItMatters": "A weaker jobs report reduces pressure on the Fed to hike rates, shifting rate‑hike expectations and boosting risk assets.",
+          "marketImpact": "Positive for equities, negative for bond yields",
+          "confidence": 0.9,
+          "source": "Reuters",
           "publishedAt": "2026-08-07"
         },
         {
-          "id": "spacex-public-earnings-2026-08-05",
-          "title": "SpaceX Q2 debut earnings surprise",
-          "summary": "SpaceX reported $7.8B Q2 revenue in its first public earnings, doubling prior year, boosting AI‑infrastructure sentiment.",
-          "category": "Technology",
+          "id": "mortgage-rates-high-2026-08-05",
+          "title": "Mortgage rates hit highest in a year",
+          "summary": "30‑year fixed mortgage rates rose to ~6.8%, highest since mid‑2025, driven by inflation and bond yields.",
+          "category": "Rates",
           "importance": "Medium",
           "affectedMarkets": [
-            "Equities",
-            "AI"
+            "Housing",
+            "Bonds"
           ],
-          "whyItMatters": "Strong earnings from a major AI infrastructure player lifts sentiment across tech and AI sectors.",
-          "marketImpact": "Positive for AI and tech stocks",
-          "confidence": 0.75,
-          "source": "Reddit (market commentary)",
+          "whyItMatters": "Higher mortgage rates reduce housing affordability and reflect upward pressure on long‑term yields.",
+          "marketImpact": "Negative for housing, positive for bond yields",
+          "confidence": 0.8,
+          "source": "AP News",
           "publishedAt": "2026-08-05"
         }
       ],
-      "timestamp": "2026-08-07T20:38:01.538Z",
-      "analysisDuration": 5993
+      "timestamp": "2026-08-07T21:09:57.899Z",
+      "analysisDuration": 6973
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-07T20:38:07.531Z"
+    "updatedAt": "2026-08-07T21:10:04.873Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2592,18 +2593,36 @@
       ],
       "nothingImportantChanged": false,
       "timestamp": "2026-08-07T19:01:48.642Z",
-      "analysisDuration": 4223,
-      "lastCheckedAt": "2026-08-07T20:38:01.546Z",
+      "analysisDuration": 7204,
+      "lastCheckedAt": "2026-08-07T21:10:04.886Z",
       "lastMeaningfulUpdateAt": "2026-08-07T19:01:48.642Z",
       "noNewDevelopmentsSinceLastCheck": true
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-07T20:38:05.770Z"
+    "updatedAt": "2026-08-07T21:10:12.090Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-07T21:10:04.886Z",
+          "overallAlertLevel": "High",
+          "headline": "U.S. July payroll contraction and Novo Nordisk sues Eli Lilly over Wegovy patent",
+          "alertCount": 0,
+          "alerts": [],
+          "newsIds": [
+            "us-july-payrolls-fall-2026-08-07",
+            "mortgage-rates-high-2026-08-05"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "FOMC Minutes – July 28–29 Meeting",
+            "Corporate Earnings – August 10",
+            "U.S. Producer Price Index (PPI) – July"
+          ],
+          "checkResult": "NoChange"
+        },
         {
           "timestamp": "2026-08-07T20:38:01.546Z",
           "overallAlertLevel": "High",
@@ -3167,61 +3186,47 @@
             "U.S. Producer Price Index (PPI) – July 2026"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-02T07:31:51.982Z",
-          "overallAlertLevel": "High",
-          "headline": "Novo Nordisk ZEUS Phase 3 failure confirmed; impairment charge flagged",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [],
-          "eventTitles": [
-            "U.S. Employment Situation (July 2026)",
-            "U.S. Consumer Price Index (CPI) – July 2026",
-            "U.S. Producer Price Index (PPI) – July 2026"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-07T20:38:05.774Z"
+    "updatedAt": "2026-08-07T21:10:12.094Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
     "result": {
       "mainConclusion": {
-        "title": "Maintain high liquidity while selectively preparing for semiconductor exposure and closely monitoring execution risks",
-        "reason": "The portfolio’s strong cash buffer (~53 %) provides flexibility amid macro and geopolitical uncertainty. High‑conviction holdings Microsoft and Novo Nordisk remain fundamentally sound with reinforcing catalysts, while Serve Robotics’ execution risks warrant caution. Semiconductor opportunities (NVDA, AMAT) offer diversification and thematic exposure, supported by multiple independent modules."
+        "title": "Maintain cautious, event‑driven posture with selective preparation for semiconductor exposure",
+        "reason": "Portfolio remains anchored by strong fundamentals in Microsoft and Novo Nordisk, but elevated execution risk in Serve Robotics and macro/geopolitical uncertainty warrant close monitoring. High liquidity enables selective positioning into semiconductor opportunities ahead of key earnings."
       },
-      "executiveSummary": "The portfolio is well‑positioned with strong liquidity and high‑quality core holdings. Microsoft and Novo Nordisk continue to benefit from AI/cloud and GLP‑1 momentum, respectively, with recent positive developments reinforcing their theses. Serve Robotics remains a high‑risk holding due to execution and guidance concerns. Semiconductor names—particularly NVIDIA and Applied Materials—present compelling diversification opportunities ahead of earnings catalysts. Macro uncertainty (soft U.S. jobs data, upcoming Fed minutes) and geopolitical risks advise a cautious, staged approach.",
+      "executiveSummary": "The portfolio is well‑positioned with high‑conviction holdings in Microsoft and Novo Nordisk, both supported by recent positive developments. Serve Robotics continues to pose elevated execution and cash‑burn risk following a sharp guidance cut. Macro uncertainty—highlighted by weak U.S. July payrolls and upcoming inflation and Fed data—adds volatility. Given the strong cash buffer, selective preparation to add semiconductor exposure (e.g., NVIDIA, Applied Materials) ahead of earnings catalysts is prudent, while maintaining current core holdings and closely monitoring Serve.",
       "overallDecisionPosture": "SelectivePreparation",
       "decisionReadinessScore": 75,
       "readinessDrivers": [
         {
-          "factor": "High cash buffer (~53 %)",
+          "factor": "High liquidity (53 % cash)",
           "impact": "Positive",
-          "reason": "Provides flexibility to act on opportunities without overexposure."
+          "reason": "Provides flexibility to act on opportunities without forcing trades."
         },
         {
-          "factor": "Strong fundamentals at MSFT and NOVO B",
+          "factor": "Strong fundamentals in MSFT and NOVO B",
           "impact": "Positive",
-          "reason": "Reinforced by recent earnings, approvals, and strategic clarity."
+          "reason": "Recent earnings, capex clarity, EU approvals and pipeline momentum support theses."
         },
         {
           "factor": "Serve Robotics execution risk",
           "impact": "Negative",
-          "reason": "Q2 miss and guidance cut materially weaken thesis."
+          "reason": "Q2 miss and guidance cut materially weaken growth outlook and raise cash‑burn concerns."
         },
         {
-          "factor": "Macro uncertainty (jobs, Fed minutes)",
+          "factor": "Macro uncertainty (jobs, CPI, Fed minutes)",
           "impact": "Negative",
-          "reason": "Soft payrolls and upcoming FOMC minutes may drive volatility."
+          "reason": "Weak payrolls and upcoming inflation/Fed data may drive volatility across holdings."
         },
         {
-          "factor": "Semiconductor catalysts (NVDA, AMAT earnings)",
+          "factor": "Upcoming semiconductor earnings catalysts",
           "impact": "Positive",
-          "reason": "Upcoming earnings offer re‑rating potential and diversification."
+          "reason": "NVDA (Aug 26) and AMAT (Aug 13) earnings offer potential re‑rating opportunities."
         }
       ],
       "decisions": [
@@ -3231,79 +3236,76 @@
           "company": "Serve Robotics Inc",
           "ticker": "SERV",
           "decision": "Review",
-          "title": "Review Serve Robotics — execution risk remains elevated",
-          "reason": "Q2 earnings miss and sharp guidance cut materially weaken growth thesis; execution and cash‑burn risks remain high.",
+          "title": "Review Serve Robotics — elevated execution and cash‑burn risk persists",
+          "reason": "Q2 earnings miss and sharp full‑year guidance cut materially weaken the investment case; cash‑burn and demand softness remain key risks.",
           "supportingEvidence": [
-            "Company Monitor shows high‑severity weakening of investment case (strength 40)",
-            "Risk Analyzer flags execution and cash‑burn risk"
+            "Company Monitor shows investment case strength dropped to 40 with high‑severity change and weakened growth thesis",
+            "Risk Analyzer flags high probability and severity of execution and cash‑burn risk"
           ],
           "opposingEvidence": [],
-          "confidence": "Medium",
+          "confidence": "High",
           "urgency": "Immediate",
           "blockedByEvent": false,
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Clear operational improvements or healthcare vertical traction",
-            "Stabilized guidance or cash‑burn metrics"
+            "Evidence of operational efficiency improvements or healthcare vertical traction",
+            "Stabilization of revenue guidance or improved cash‑burn metrics"
           ],
           "missingEvidence": [
-            "Q3 revenue/EPS data",
-            "Cash‑burn runway details"
+            "Q3 revenue/EPS results",
+            "Updated cash‑burn runway or financing plans"
           ],
-          "portfolioImpact": "Small weight but high volatility; potential drag on sentiment",
-          "accountConsiderations": "USD‑denominated; FX exposure minor",
+          "portfolioImpact": "Reduces speculative volatility; small position but high risk",
+          "accountConsiderations": "USD‑denominated speculative holding; cash buffer can absorb volatility",
           "sourceModules": [
             "CompanyMonitor",
             "RiskAnalyzer"
           ],
-          "status": "Unchanged",
+          "status": "Strengthened",
           "readiness": "Informational",
           "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
-          "lastValidated": "2026-08-07T18:37:48.037Z"
+          "lastValidated": "2026-08-07T20:38:56.419Z"
         },
         {
           "rank": 2,
           "subjectType": "Opportunity",
           "company": "NVIDIA Corporation",
           "ticker": "NVDA",
-          "decision": "PrepareToBuy",
-          "title": "Prepare to buy NVIDIA — AI infrastructure leader with upcoming earnings catalyst",
-          "reason": "Strong AI infrastructure leadership, upcoming Q2 FY2027 earnings (Aug 26) provide near‑term catalyst; opportunity diversifies portfolio into hardware.",
+          "decision": "Review",
+          "title": "Prepare to buy NVIDIA — AI infrastructure leader ahead of earnings catalyst",
+          "reason": "Dominant AI compute position, strong Q1 beat and Q2 guidance, upcoming earnings (Aug 26) offer re‑rating potential; adds hardware diversification.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
           "supportingEvidence": [
             "Opportunity Finder ranks NVDA top opportunity with high confidence",
-            "Company Monitor confirms strong AI demand and earnings visibility"
+            "Company Monitor confirms strong AI leadership and earnings visibility"
           ],
           "opposingEvidence": [
-            "Sector Monitor notes semiconductors trend weakening",
-            "Valuation sensitivity and macro risks"
+            "High valuation and macro/sector rotation risk"
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
+          "blockedByEvent": true,
+          "blockingEvent": "Q2 FY2027 earnings release",
+          "blockingEventDate": "2026-08-26",
           "whatWouldChangeDecision": [
-            "Earnings miss or weak guidance",
-            "Macro deterioration or export restrictions"
+            "Earnings beat with raised guidance",
+            "Macro deterioration or export/geopolitical constraints"
           ],
           "missingEvidence": [
-            "Updated analyst revisions post‑earnings"
+            "Q2 earnings outcome and commentary",
+            "Macro data post‑earnings",
+            "Missing/stale: CompanyMonitor. Additional independent analyses required before a trade proposal can be issued."
           ],
-          "portfolioImpact": "Adds semiconductor exposure and diversification",
-          "accountConsiderations": "USD‑denominated; increases FX exposure",
+          "portfolioImpact": "Diversifies into semiconductor hardware; complements MSFT exposure",
+          "accountConsiderations": "USD‑denominated; increases AI infrastructure exposure",
           "sourceModules": [
             "OpportunityFinder",
             "CompanyMonitor"
           ],
-          "targetAllocationPercent": 8,
-          "maximumAllocationPercent": 12,
-          "sizingConfidence": "Medium",
-          "sizingReason": "High conviction but valuation‑sensitive; moderate allocation prudent",
-          "status": "Strengthened",
-          "readiness": "ReadyForReview",
-          "readinessReason": "High conviction but valuation‑sensitive; moderate allocation prudent",
-          "lastValidated": "2026-08-07T18:37:48.037Z"
+          "status": "Weakened",
+          "readiness": "WaitingForReevaluation",
+          "readinessReason": "Waiting for Q2 FY2027 earnings release (2026-08-26) — re-evaluate afterwards.",
+          "lastValidated": "2026-08-07T20:38:56.419Z"
         },
         {
           "rank": 3,
@@ -3312,38 +3314,38 @@
           "ticker": "AMAT",
           "decision": "Review",
           "title": "Prepare to buy Applied Materials — semiconductor equipment exposure ahead of earnings",
-          "reason": "AMAT offers diversification into semiconductor equipment; upcoming Q3 FY2026 earnings (Aug 13) provide catalyst.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
+          "reason": "Critical supplier to AI‑driven fab investments; earnings on August 13 provide timely catalyst and diversification from chipmakers.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
           "supportingEvidence": [
             "Opportunity Finder ranks AMAT second with high confidence",
-            "Portfolio Analyzer notes under‑exposure to semis and equipment"
+            "Portfolio Analyzer notes underexposure to semiconductor equipment"
           ],
           "opposingEvidence": [
-            "No Company Monitor data; cyclicality risk",
-            "Sector Monitor shows semis weakening trend"
+            "Cyclical demand risk if AI capex slows"
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
+          "blockedByEvent": true,
+          "blockingEvent": "Q3 fiscal 2026 earnings release",
+          "blockingEventDate": "2026-08-13",
           "whatWouldChangeDecision": [
-            "Earnings miss or weak guidance",
-            "Macro slowdown"
+            "Earnings beat and strong capex commentary",
+            "Signs of AI capex slowdown"
           ],
           "missingEvidence": [
-            "Company‑specific analysis and monitor data",
+            "Earnings results and guidance",
+            "Macro sentiment post‑earnings",
             "Missing/stale: CompanyMonitor. Additional independent analyses required before a trade proposal can be issued."
           ],
-          "portfolioImpact": "Diversifies into equipment segment",
-          "accountConsiderations": "USD‑denominated; FX exposure increases",
+          "portfolioImpact": "Adds hardware supply‑chain diversification",
+          "accountConsiderations": "USD‑denominated; complements NVDA and MSFT",
           "sourceModules": [
             "OpportunityFinder",
             "PortfolioAnalyzer"
           ],
-          "status": "Strengthened",
-          "readiness": "Informational",
-          "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
-          "lastValidated": "2026-08-07T18:37:48.037Z"
+          "status": "Weakened",
+          "readiness": "WaitingForReevaluation",
+          "readinessReason": "Waiting for Q3 fiscal 2026 earnings release (2026-08-13) — re-evaluate afterwards.",
+          "lastValidated": "2026-08-07T20:38:56.419Z"
         },
         {
           "rank": 4,
@@ -3352,26 +3354,28 @@
           "ticker": "MSFT",
           "decision": "Hold",
           "title": "Hold Microsoft — AI/cloud momentum and improved capex outlook intact",
-          "reason": "Microsoft’s Q4 FY26 beat, strong Azure/AI momentum, and effective capex reduction reinforce the investment case; no new negative developments.",
+          "reason": "Q4 FY26 beat, strong Azure/AI momentum, and effective capex reduction support fundamentals; macro uncertainty advises against adding now.",
           "supportingEvidence": [
-            "Company Monitor shows strengthened AI‑cloud thesis and improved capex outlook (investmentCaseStrength 87)",
-            "Portfolio Analyzer cites AI momentum and dividend support"
+            "Company Monitor shows strengthened AI‑cloud thesis and improved capex outlook",
+            "Portfolio Analyzer highlights robust fundamentals and capex clarity"
           ],
-          "opposingEvidence": [],
+          "opposingEvidence": [
+            "Macro volatility (jobs, inflation, Fed) could pressure multiples"
+          ],
           "confidence": "High",
           "urgency": "NoUrgency",
           "blockedByEvent": false,
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Material deterioration in AI/cloud growth",
-            "Capex guidance reversal"
+            "Significant macro deterioration or capex guidance reversal",
+            "Disappointing enterprise AI adoption metrics"
           ],
           "missingEvidence": [
-            "None"
+            "Next earnings date and guidance updates"
           ],
-          "portfolioImpact": "Maintains core growth exposure and income support",
-          "accountConsiderations": "USD‑denominated holding; FX exposure remains but unchanged",
+          "portfolioImpact": "Maintains core growth exposure",
+          "accountConsiderations": "USD‑denominated; aligns with base‑currency exposure",
           "sourceModules": [
             "CompanyMonitor",
             "PortfolioAnalyzer"
@@ -3379,7 +3383,7 @@
           "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "No trade action required for this position.",
-          "lastValidated": "2026-08-07T18:37:48.037Z"
+          "lastValidated": "2026-08-07T20:38:56.419Z"
         },
         {
           "rank": 5,
@@ -3387,27 +3391,31 @@
           "company": "Novo Nordisk A/S",
           "ticker": "NOVO B",
           "decision": "Hold",
-          "title": "Hold Novo Nordisk — EU approvals and pipeline momentum support growth",
-          "reason": "EU approval of Wegovy pill and pen, positive hemophilia data, and CEO reaffirmation of pipeline/M&A strategy strengthen thesis; investment case strength high (85).",
+          "title": "Hold Novo Nordisk — EU approvals, pipeline and legal defense support thesis",
+          "reason": "EU approval of Wegovy pill and injectable pen, upcoming Germany launch, positive hemophilia data, and lawsuit against Eli Lilly strengthen growth outlook.",
           "supportingEvidence": [
-            "Company Monitor shows strengthened GLP‑1 momentum and EU approvals",
-            "Market Alerts note CEO’s reaffirmation of pipeline and M&A focus"
+            "Company Monitor shows high conviction (85) and strengthened GLP‑1 momentum",
+            "Market Alerts note lawsuit vs Eli Lilly may protect competitive position"
           ],
-          "opposingEvidence": [],
+          "opposingEvidence": [
+            "Competitive and reimbursement risks remain",
+            "Macro/geopolitical volatility could impact sentiment"
+          ],
           "confidence": "High",
           "urgency": "NoUrgency",
           "blockedByEvent": false,
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Launch execution issues in EU",
-            "Competitive pressure or reimbursement setbacks"
+            "EU launch execution issues or negative pipeline developments",
+            "Adverse legal outcomes or competitive erosion"
           ],
           "missingEvidence": [
-            "Early EU uptake data"
+            "Post‑launch uptake data",
+            "Further pipeline or guidance updates"
           ],
-          "portfolioImpact": "Maintains large healthcare growth exposure",
-          "accountConsiderations": "DKK‑denominated holding; FX exposure limited",
+          "portfolioImpact": "Maintains healthcare growth exposure",
+          "accountConsiderations": "DKK‑denominated; supports geographic diversification",
           "sourceModules": [
             "CompanyMonitor",
             "MarketAlerts"
@@ -3415,27 +3423,34 @@
           "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "No trade action required for this position.",
-          "lastValidated": "2026-08-07T18:37:48.037Z"
+          "lastValidated": "2026-08-07T20:38:56.419Z"
         }
       ],
       "conflictsResolved": [
         {
-          "topic": "Semiconductor exposure",
-          "conflict": "Opportunity Finder recommends NVDA and AMAT, but Sector Monitor notes weakening semis trend",
-          "resolution": "Proceed with PrepareToBuy for NVDA and AMAT given strong catalysts and diversification benefits, while sizing conservatively."
+          "topic": "Semiconductor exposure timing",
+          "conflict": "Opportunity Finder suggests adding NVDA and AMAT; macro uncertainty advises caution",
+          "resolution": "Use PrepareToBuy with event‑blocking until earnings, not immediate deployment"
         },
         {
-          "topic": "Novo Nordisk outlook",
-          "conflict": "Portfolio Analyzer weakened urgency, but Company Monitor and Market Alerts reinforce strength",
-          "resolution": "Maintain Hold based on reinforced thesis and high conviction from multiple sources."
+          "topic": "Serve Robotics risk vs optionality",
+          "conflict": "Portfolio Analyzer notes optionality in healthcare vertical; Risk Analyzer flags high execution risk",
+          "resolution": "Maintain Review status until operational improvements or evidence of traction emerge"
         }
       ],
       "nextReviewTriggers": [
         {
+          "trigger": "Serve Robotics Q3 results or cash‑burn update",
+          "date": "",
+          "affectedDecisions": [
+            "Review Serve Robotics — elevated execution and cash‑burn risk persists"
+          ]
+        },
+        {
           "trigger": "NVIDIA Q2 FY2027 earnings release",
           "date": "2026-08-26",
           "affectedDecisions": [
-            "Prepare to buy NVIDIA — AI infrastructure leader with upcoming earnings catalyst"
+            "Prepare to buy NVIDIA — AI infrastructure leader ahead of earnings catalyst"
           ]
         },
         {
@@ -3444,25 +3459,104 @@
           "affectedDecisions": [
             "Prepare to buy Applied Materials — semiconductor equipment exposure ahead of earnings"
           ]
-        },
-        {
-          "trigger": "Serve Robotics Q3 results or cash‑burn update",
-          "date": "",
-          "affectedDecisions": [
-            "Review Serve Robotics — execution risk remains elevated"
-          ]
         }
       ],
-      "timestamp": "2026-08-07T18:37:48.037Z",
-      "analysisDuration": 11835
+      "timestamp": "2026-08-07T20:38:56.419Z",
+      "analysisDuration": 16301
     },
     "createdAt": "2026-08-02T09:52:12.533Z",
-    "updatedAt": "2026-08-07T18:37:59.880Z"
+    "updatedAt": "2026-08-07T20:39:12.732Z"
   },
   "trade-decision-engine-history": {
     "moduleName": "trade-decision-engine-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-07T20:38:56.419Z",
+          "overallDecisionPosture": "SelectivePreparation",
+          "decisionReadinessScore": 75,
+          "decisions": [
+            {
+              "subjectKey": "holding|serv",
+              "normalizedKey": "holding|serv|review",
+              "subjectType": "Holding",
+              "company": "Serve Robotics Inc",
+              "ticker": "SERV",
+              "decision": "Review",
+              "confidence": "High",
+              "urgency": "Immediate",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"High\",\"u\":\"Immediate\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|nvda",
+              "normalizedKey": "opportunity|nvda|review",
+              "subjectType": "Opportunity",
+              "company": "NVIDIA Corporation",
+              "ticker": "NVDA",
+              "decision": "Review",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 15,
+              "evidenceBand": "Weak",
+              "blockedByEvent": true,
+              "blockingEvent": "Q2 FY2027 earnings release",
+              "blockingEventDate": "2026-08-26",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Q2 FY2027 earnings release\",\"bed\":\"2026-08-26\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|amat",
+              "normalizedKey": "opportunity|amat|review",
+              "subjectType": "Opportunity",
+              "company": "Applied Materials Inc",
+              "ticker": "AMAT",
+              "decision": "Review",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 20,
+              "evidenceBand": "Weak",
+              "blockedByEvent": true,
+              "blockingEvent": "Q3 fiscal 2026 earnings release",
+              "blockingEventDate": "2026-08-13",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Q3 fiscal 2026 earnings release\",\"bed\":\"2026-08-13\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|msft",
+              "normalizedKey": "holding|msft|hold",
+              "subjectType": "Holding",
+              "company": "Microsoft Corporation",
+              "ticker": "MSFT",
+              "decision": "Hold",
+              "confidence": "High",
+              "urgency": "NoUrgency",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Hold\",\"c\":\"High\",\"u\":\"NoUrgency\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|novo b",
+              "normalizedKey": "holding|novo b|hold",
+              "subjectType": "Holding",
+              "company": "Novo Nordisk A/S",
+              "ticker": "NOVO B",
+              "decision": "Hold",
+              "confidence": "High",
+              "urgency": "NoUrgency",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Hold\",\"c\":\"High\",\"u\":\"NoUrgency\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            }
+          ]
+        },
         {
           "timestamp": "2026-08-07T18:37:48.037Z",
           "overallDecisionPosture": "SelectivePreparation",
@@ -5060,115 +5154,21 @@
               "urgency": "Weeks"
             }
           ]
-        },
-        {
-          "timestamp": "2026-08-02T19:16:34.257Z",
-          "overallDecisionPosture": "SelectivePreparation",
-          "decisionReadinessScore": 75,
-          "decisions": [
-            {
-              "normalizedKey": "holding|novo b|waitforevent",
-              "subjectType": "Holding",
-              "company": "Novo Nordisk A/S",
-              "ticker": "NOVO B",
-              "decision": "WaitForEvent",
-              "confidence": "High",
-              "urgency": "Immediate"
-            },
-            {
-              "normalizedKey": "holding|serv|waitforevent",
-              "subjectType": "Holding",
-              "company": "Serve Robotics Inc",
-              "ticker": "SERV",
-              "decision": "WaitForEvent",
-              "confidence": "Medium",
-              "urgency": "Immediate"
-            },
-            {
-              "normalizedKey": "opportunity|cat|preparetobuy",
-              "subjectType": "Opportunity",
-              "company": "Caterpillar Inc.",
-              "ticker": "CAT",
-              "decision": "PrepareToBuy",
-              "confidence": "Medium",
-              "urgency": "Days"
-            },
-            {
-              "normalizedKey": "opportunity|lly|preparetobuy",
-              "subjectType": "Opportunity",
-              "company": "Eli Lilly and Company",
-              "ticker": "LLY",
-              "decision": "PrepareToBuy",
-              "confidence": "Medium",
-              "urgency": "Days"
-            },
-            {
-              "normalizedKey": "holding|msft|hold",
-              "subjectType": "Holding",
-              "company": "Microsoft Corp",
-              "ticker": "MSFT",
-              "decision": "Hold",
-              "confidence": "High",
-              "urgency": "NoUrgency"
-            }
-          ]
         }
       ]
     },
     "createdAt": "2026-08-02T09:52:12.535Z",
-    "updatedAt": "2026-08-07T18:37:59.884Z"
+    "updatedAt": "2026-08-07T20:39:12.735Z"
   },
   "trade-review": {
     "moduleName": "trade-review",
     "result": {
-      "proposals": [
-        {
-          "id": "NVDA:PrepareToBuy",
-          "decisionId": "NVDA:PrepareToBuy",
-          "action": "BUY",
-          "ticker": "NVDA",
-          "company": "NVIDIA Corporation",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "estimatedValue": 0,
-          "currency": "DKK",
-          "targetAllocationPercent": 8,
-          "currentAllocationPercent": 0,
-          "resultingAllocationPercent": 0,
-          "availableCashAfterTrade": null,
-          "confidence": "Medium",
-          "urgency": "Weeks",
-          "shortReason": "High conviction but valuation‑sensitive; moderate allocation prudent",
-          "reasonScore": 53,
-          "status": "Waiting",
-          "decisionTitle": "Prepare to buy NVIDIA — AI infrastructure leader with upcoming earnings catalyst",
-          "decisionRank": 2,
-          "sourceModules": [
-            "OpportunityFinder",
-            "CompanyMonitor"
-          ],
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
-          "sizingUnavailableReason": "Market price unavailable",
-          "fxRate": 1,
-          "currentPositionValueBase": 0,
-          "sizingReason": "High conviction but valuation‑sensitive; moderate allocation prudent",
-          "sizingConfidence": "Medium",
-          "createdAt": "2026-08-07T18:38:00.026Z",
-          "approvedAt": null,
-          "rejectedAt": null,
-          "executedAt": null,
-          "tdeTimestamp": "2026-08-07T18:37:48.037Z",
-          "subjectType": "Opportunity",
-          "outcomeId": "Opportunity:NVDA:v2"
-        }
-      ],
-      "tdeTimestamp": "2026-08-07T18:37:48.037Z",
-      "generatedAt": "2026-08-07T20:38:01.558Z"
+      "proposals": [],
+      "tdeTimestamp": "2026-08-07T20:38:56.419Z",
+      "generatedAt": "2026-08-07T20:39:12.767Z"
     },
     "createdAt": "2026-08-02T11:20:05.680Z",
-    "updatedAt": "2026-08-07T20:38:01.559Z"
+    "updatedAt": "2026-08-07T20:39:12.767Z"
   },
   "company-monitor:SERV": {
     "moduleName": "company-monitor:SERV",

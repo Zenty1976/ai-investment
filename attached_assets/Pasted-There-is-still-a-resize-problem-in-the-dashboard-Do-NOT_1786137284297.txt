@@ -1,0 +1,72 @@
+There is still a resize problem in the dashboard. Do NOT make another speculative change to rowHeight, cols, compactType, margins, CSS, or default sizes yet.
+
+I inspected the current code.
+
+The dashboard uses react-grid-layout ^2.2.4.
+
+In DashboardGrid.tsx it currently has:
+
+cols={24}
+rowHeight={10}
+margin={[6, 2]}
+resizeHandles={["s", "se", "e"]}
+
+Therefore vertical resize snapping should already be approximately 12 pixels per grid unit (10px row + 2px margin).
+
+But this is NOT what happens in the browser. While dragging the bottom resize handle, the react-grid-layout placeholder/preview jumps by a very large vertical amount.
+
+So stop treating this as simply a rowHeight problem.
+
+I want you to diagnose the actual RGL resize calculation first.
+
+Temporarily add onResizeStart, onResize, and onResizeStop callbacks to the existing GridLayout and log:
+
+oldItem.h
+newItem.h
+newItem.y
+actual rendered pixel height of the tile
+mouse/pointer Y if available
+
+Then slowly drag the SOUTH resize handle by approximately 50 pixels.
+
+With rowHeight=10 and vertical margin=2, newItem.h should progress roughly one integer at a time:
+
+32 → 33 → 34 → 35 → 36
+
+It must NOT behave like:
+
+32 → 40
+
+or another large jump.
+
+Determine where that large jump is introduced.
+
+Specifically inspect the installed react-grid-layout 2.2.4 / react-resizable behavior and verify that the legacy <GridLayout> props currently used by DashboardGrid.tsx are actually being interpreted as intended by the installed version.
+
+Also inspect whether any CSS transform/scale on Dashboard, DashboardGrid, its parents, or browser/app zoom causes RGL's pointer delta to differ from the actual visual mouse movement. react-grid-layout resize calculations depend on pixel measurements, so a transformed/scaled parent must be accounted for correctly.
+
+IMPORTANT:
+
+Do not solve this by changing the default h values.
+
+Do not solve it by making rowHeight 1 or 2.
+
+Do not keep changing compactType.
+
+Do not replace the dashboard library yet.
+
+First establish whether newItem.h itself jumps during onResize.
+
+CASE A — newItem.h jumps by several units:
+The problem is inside the RGL resize/pixel-to-grid calculation. Find the incorrect scale, dimensions, API usage, or configuration and fix that.
+
+CASE B — newItem.h changes correctly one unit at a time but the visual placeholder jumps:
+The RGL calculation is correct and the problem is rendering/CSS/layout. Find the CSS/transform responsible instead of changing grid resolution.
+
+After identifying and fixing the cause, remove the temporary debug logging.
+
+Acceptance test:
+
+Start Automation at h=32. Slowly move its SOUTH resize handle upward/downward. The preview bottom edge must visibly move in approximately 12px increments, and onResize must report consecutive heights such as 32, 31, 30, 29 etc.
+
+Do not report this as fixed unless that exact test works.
