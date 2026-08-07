@@ -19,8 +19,9 @@ export function PortfolioManagerWidget() {
   const size = useTileSize(ref);
   const { data, isLoading } = useGetPortfolio();
 
+  // useGetPortfolio returns { result: PortfolioSnapshot, ... } — unwrap .result
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const portfolio = data as any;
+  const portfolio = (data as any)?.result as any;
   const accounts: any[] = portfolio?.accounts ?? [];
   const totalPositions = accounts.flatMap((a: any) => a.positions ?? []);
   const totalPL = accounts.reduce((s: number, a: any) => s + (a.unrealizedProfitLoss ?? 0), 0);

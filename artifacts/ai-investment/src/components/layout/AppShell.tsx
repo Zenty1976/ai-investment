@@ -17,7 +17,6 @@ import {
   Cpu,
   History,
   Settings,
-  Wifi,
   Users,
 } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -78,14 +77,6 @@ function LiveClock() {
 
 export function AppShell({ children }: AppShellProps) {
   const [location] = useLocation()
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-
-  // Expose a setter so child pages can update the last-updated time
-  useEffect(() => {
-    const handler = (e: CustomEvent<Date>) => setLastUpdated(e.detail)
-    window.addEventListener("market-updated", handler as EventListener)
-    return () => window.removeEventListener("market-updated", handler as EventListener)
-  }, [])
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -157,24 +148,6 @@ export function AppShell({ children }: AppShellProps) {
               </div>
               <div className="text-[10px] text-muted-foreground tracking-wide mt-0.5">
                 Real-time investment intelligence
-              </div>
-            </div>
-
-            {/* System status */}
-            <div className="hidden md:flex flex-col items-start gap-0.5 border-l border-border pl-4">
-              <div className="flex items-center gap-1.5">
-                <div className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </div>
-                <span className="text-[11px] font-medium text-emerald-400 tracking-wide">System status: Online</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <Wifi className="h-3 w-3" />
-                <span>
-                  Last update:{" "}
-                  {lastUpdated ? format(lastUpdated, "HH:mm:ss") : "--:--:--"}
-                </span>
               </div>
             </div>
 
