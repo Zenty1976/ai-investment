@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart2, Calendar, Newspaper, PieChart, Building2,
   Briefcase, TrendingUp, Crosshair, Scale, Bell,
-  Cpu, Activity,
+  Cpu, Activity, Users,
 } from "lucide-react";
 
 import { MarketMonitorWidget }     from "@/components/widgets/MarketMonitorWidget";
@@ -17,6 +17,7 @@ import { OpportunityFinderWidget }  from "@/components/widgets/OpportunityFinder
 import { CompanyMonitorWidget }     from "@/components/widgets/CompanyMonitorWidget";
 import { TradeDecisionWidget }      from "@/components/widgets/TradeDecisionWidget";
 import { AutomationWidget }         from "@/components/widgets/AutomationWidget";
+import { InvestorWatchWidget }      from "@/components/widgets/InvestorWatchWidget";
 
 export interface ModuleDef {
   id: string;
@@ -110,5 +111,12 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     icon: TrendingUp,
     route: "/decisions",
     Widget: TradeDecisionWidget,
+  },
+  {
+    id: "investor-watch",
+    label: "Investor Watch",
+    icon: Users,
+    route: "/investors",
+    Widget: InvestorWatchWidget,
   },
 ];

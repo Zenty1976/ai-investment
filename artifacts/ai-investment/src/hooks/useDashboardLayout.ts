@@ -2,8 +2,8 @@ import { useState, useCallback } from "react";
 import type { LayoutItem } from "react-grid-layout";
 
 // Bump version to clear any stale localStorage from previous layouts
-const STORAGE_KEY = "ai-dashboard-layout-v3";
-const MODULES_KEY = "ai-dashboard-modules-v3";
+const STORAGE_KEY = "ai-dashboard-layout-v4";
+const MODULES_KEY = "ai-dashboard-modules-v4";
 
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
@@ -19,15 +19,17 @@ const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "opportunity-finder":  { w: 6, h: 5 },
   "company-monitor":     { w: 6, h: 5 },
   "trade-decision":      { w: 6, h: 5 },
+  "investor-watch":      { w: 6, h: 4 },
 };
 
-/** All 12 modules active by default. */
+/** All 13 modules active by default. */
 export const DEFAULT_MODULES = [
   "automation", "portfolio-manager",
   "market-monitor", "event-monitor", "news-monitor",
   "sector-monitor", "market-alerts", "risk-analyzer",
   "portfolio-analyzer", "opportunity-finder",
   "company-monitor", "trade-decision",
+  "investor-watch",
 ];
 
 /**
@@ -52,6 +54,8 @@ export const DEFAULT_LAYOUT: LayoutItem[] = [
   // Row 17 — decisions
   { i: "company-monitor",    x: 0, y: 17, w: 6, h: 5, minW: 2, minH: 2 },
   { i: "trade-decision",     x: 6, y: 17, w: 6, h: 5, minW: 2, minH: 2 },
+  // Row 22 — informational
+  { i: "investor-watch",     x: 0, y: 22, w: 6, h: 4, minW: 2, minH: 2 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {

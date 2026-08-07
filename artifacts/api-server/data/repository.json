@@ -8852,5 +8852,989 @@
     },
     "createdAt": "2026-08-04T21:05:51.577Z",
     "updatedAt": "2026-08-04T21:05:51.577Z"
+  },
+  "investor-watch": {
+    "moduleName": "investor-watch",
+    "result": {
+      "michael-burry": {
+        "updateType": "FullAnalysis",
+        "headline": "Burry warns of AI/tech bubble, opens new shorts",
+        "shortSummary": "Michael Burry is issuing strong contrarian warnings about an AI‑driven tech bubble, urging derisking and opening new short positions in overextended names.",
+        "currentView": {
+          "overallTone": "Bearish",
+          "summary": "Burry’s recent commentary and trades reflect a deeply cautious, contrarian stance—he views the AI‑led tech rally as bubble‑like and nearing a major reversal. His tone is bearish with high conviction.",
+          "confidence": "High"
+        },
+        "keyThemes": [
+          {
+            "title": "AI/Tech Bubble Warning",
+            "stance": "Bearish",
+            "summary": "Burry likens current AI‑driven tech rally to the final months of the 1999‑2000 dot‑com bubble, warning of unsustainable valuations and systemic fragility."
+          },
+          {
+            "title": "Derisking Advice",
+            "stance": "Cautious",
+            "summary": "He urges investors to reduce exposure to parabolic tech stocks and ‘reject greed’, advocating raising cash to deploy later."
+          },
+          {
+            "title": "New Short Positions",
+            "stance": "Bearish",
+            "summary": "Burry has opened new short positions—including Tesla, Nvidia, SOXX, Applied Materials and Caterpillar—betting on a correction in overextended sectors."
+          },
+          {
+            "title": "‘Too Big to Save’ Thesis",
+            "stance": "Bearish",
+            "summary": "He argues the AI bubble is so large that government intervention may be insufficient or too costly to prevent a collapse."
+          }
+        ],
+        "latestDevelopments": [
+          {
+            "title": "AI bubble ‘too big to save’ warning",
+            "date": "2026‑01‑21",
+            "summary": "On X, Burry warned that the AI bubble is so large that government intervention cannot ultimately save it.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Yahoo Finance",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Substack: ‘last months of 1999‑2000 bubble’",
+            "date": "2026‑05‑08",
+            "summary": "In a Substack post, Burry compared the current market to the final phase of the dot‑com bubble, noting momentum‑driven gains.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Yahoo Finance",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Urges cutting tech exposure, holds leveraged short basket",
+            "date": "2026‑05‑11",
+            "summary": "He advised reducing tech stock exposure, rejecting greed, and noted he maintains a significant leveraged short position in depressed names.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Investing.com",
+            "sourceUrl": ""
+          },
+          {
+            "title": "New short positions disclosed (Tesla, Nvidia, SOXX, AMAT, CAT)",
+            "date": "2026‑06‑30",
+            "summary": "In his Substack ‘Trading Post’, Burry disclosed new short positions against Tesla, Nvidia, SOXX ETF, Applied Materials and Caterpillar.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Electrek",
+            "sourceUrl": ""
+          }
+        ],
+        "positioning": {
+          "summary": "Scion’s latest 13F (Q3 2025) shows limited holdings; more recent positioning is via Substack disclosures of new short trades.",
+          "filingDate": "2025‑11‑03",
+          "reportingPeriod": "Q3 2025",
+          "isDelayedData": true,
+          "notableChanges": [
+            {
+              "asset": "Tesla, Nvidia, SOXX, AMAT, Caterpillar",
+              "action": "New",
+              "summary": "Opened new short positions disclosed via Substack June 30, 2026."
+            }
+          ]
+        },
+        "sayVsDo": {
+          "statementsSummary": "Burry publicly warns of bubble dynamics in AI/tech and urges derisking.",
+          "positioningSummary": "He has acted on his views by opening new short positions in overextended tech and industrial names.",
+          "consistency": "Consistent",
+          "explanation": "His public warnings align with his actual trades—shorting names he deems overvalued."
+        },
+        "changeSincePrevious": {
+          "changed": false,
+          "severity": "None",
+          "summary": "First analysis"
+        },
+        "thingsToWatch": [
+          "Next 13F filing for updated long/short exposures",
+          "Any further Substack posts revealing positioning or macro views",
+          "Market reaction to semiconductor and AI‑related corrections"
+        ],
+        "lastCheckedAt": "2026-08-07T14:37:01.244Z",
+        "lastMaterialUpdateAt": "2026-08-07T14:37:01.244Z",
+        "person": {
+          "id": "michael-burry",
+          "name": "Michael Burry",
+          "organization": "Scion Asset Management",
+          "focusLabel": "Bobler / overreaktioner / contrarian"
+        },
+        "analysisDuration": 11600,
+        "_debug": {
+          "request": {
+            "model": "gpt-4o",
+            "max_output_tokens": 3000,
+            "temperature": 0.1,
+            "tools": [
+              {
+                "type": "web_search",
+                "search_context_size": "high"
+              }
+            ],
+            "tool_choice": "required",
+            "input": [
+              {
+                "role": "system",
+                "content": "You are an investment intelligence analyst specialising in tracking notable investors.\n\nYour task is to find and synthesise the most recent, verifiable information about what a specific investor currently thinks, says, or does. You are NOT writing a biography.\n\nFOCUS ON:\n- Recent opinions, interviews, public statements from the last 3-6 months\n- Investor letters or memos\n- Regulatory filings (13F, SEC filings)\n- Portfolio disclosures and major disclosed position changes\n- Macro and sector views\n- Bearish/bullish themes\n- Material changes since any previous analysis provided\n\nSOURCE DISCIPLINE — classify every important item by evidenceType:\n- Direct: official investor letter, memo, regulatory filing, direct interview, verified social-media statement, official fund communication\n- Filing: 13F or other regulatory filing (always note the filing date and reporting period; filings are delayed)\n- ReliableReporting: Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC when directly reporting the investor's statement\n- Interpretation: OpenAI infers the investor's likely view from filings, portfolio changes, or multiple pieces of evidence\n\nCRITICAL RULES:\n- Never present Interpretation as a direct quote or confirmed opinion\n- Never fabricate quotes, statistics, or positions\n- Always show filing dates and reporting periods — filings are delayed and may not represent the current portfolio\n- Do not assume a filing proves the investor's exact opinion\n- For NoMaterialChange: preserve the previous view summary, update lastCheckedAt, do not invent new information\n\nSAYS VS DOES:\nWhere relevant, explicitly separate what the investor says/thinks from what their disclosed positioning shows.\n\nOUTPUT FORMAT:\nReturn a single JSON object matching this exact structure. No markdown. No prose outside the JSON.\n\n{\n  \"updateType\": \"FullAnalysis|MaterialUpdate|NoMaterialChange\",\n  \"headline\": \"Very short description of the latest important point (≤15 words)\",\n  \"shortSummary\": \"1-2 sentences maximum\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish|Cautious|Bearish|Mixed|Unclear\",\n    \"summary\": \"2-3 sentence view summary\",\n    \"confidence\": \"High|Medium|Low\"\n  },\n  \"keyThemes\": [\n    { \"title\": \"...\", \"stance\": \"Bullish|Bearish|Cautious|Neutral|Unclear\", \"summary\": \"...\" }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"...\",\n      \"date\": \"YYYY-MM-DD or approximate month\",\n      \"summary\": \"...\",\n      \"evidenceType\": \"Direct|Filing|ReliableReporting|Interpretation\",\n      \"confidence\": \"High|Medium|Low\",\n      \"sourceName\": \"...\",\n      \"sourceUrl\": \"https://... or empty string\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"...\",\n    \"filingDate\": \"YYYY-MM-DD or empty string\",\n    \"reportingPeriod\": \"e.g. Q1 2025 or empty string\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      { \"asset\": \"...\", \"action\": \"Increased|Reduced|New|Exited|Unknown\", \"summary\": \"...\" }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"...\",\n    \"positioningSummary\": \"...\",\n    \"consistency\": \"Consistent|PartlyConsistent|Conflicting|InsufficientEvidence\",\n    \"explanation\": \"...\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": true,\n    \"severity\": \"None|Low|Medium|High\",\n    \"summary\": \"...\"\n  },\n  \"thingsToWatch\": [\"...\", \"...\"],\n  \"lastCheckedAt\": \"ISO timestamp\",\n  \"lastMaterialUpdateAt\": \"ISO timestamp\"\n}"
+              },
+              {
+                "role": "user",
+                "content": "UTC: 2026-08-07T14:37:01.244Z\n\nINVESTOR: Michael Burry (Scion Asset Management)\nFOCUS: Bobler / overreaktioner / contrarian\n\nANALYSIS PRIORITIES FOR THIS INVESTOR:\n- Scion Asset Management 13F filings\n- direct public statements and verified social-media posts\n- notable contrarian positions and valuation/bubble warnings\n- major portfolio changes: exits, new positions\n- Be especially cautious with sensational headlines claiming Burry 'predicted a crash' — verify the underlying primary evidence\n\nINSTRUCTIONS:\nPerform a full analysis of what Michael Burry currently thinks and does.\n\nSearch for: recent public statements, interviews, investor letters, regulatory filings,\nmajor disclosed portfolio changes, macro and sector views, bearish/bullish themes.\n\nThis is a first-time analysis — set updateType='FullAnalysis'.\nchangeSincePrevious.changed=false, severity='None', summary='First analysis'."
+              }
+            ]
+          },
+          "rawResponse": "{\"updateType\":\"FullAnalysis\",\"headline\":\"Burry warns of AI/tech bubble, opens new shorts\",\"shortSummary\":\"Michael Burry is issuing strong contrarian warnings about an AI‑driven tech bubble, urging derisking and opening new short positions in overextended names.\",\"currentView\":{\"overallTone\":\"Bearish\",\"summary\":\"Burry’s recent commentary and trades reflect a deeply cautious, contrarian stance—he views the AI‑led tech rally as bubble‑like and nearing a major reversal. His tone is bearish with high conviction.\",\"confidence\":\"High\"},\"keyThemes\":[{\"title\":\"AI/Tech Bubble Warning\",\"stance\":\"Bearish\",\"summary\":\"Burry likens current AI‑driven tech rally to the final months of the 1999‑2000 dot‑com bubble, warning of unsustainable valuations and systemic fragility.\"},{\"title\":\"Derisking Advice\",\"stance\":\"Cautious\",\"summary\":\"He urges investors to reduce exposure to parabolic tech stocks and ‘reject greed’, advocating raising cash to deploy later.\"},{\"title\":\"New Short Positions\",\"stance\":\"Bearish\",\"summary\":\"Burry has opened new short positions—including Tesla, Nvidia, SOXX, Applied Materials and Caterpillar—betting on a correction in overextended sectors.\"},{\"title\":\"‘Too Big to Save’ Thesis\",\"stance\":\"Bearish\",\"summary\":\"He argues the AI bubble is so large that government intervention may be insufficient or too costly to prevent a collapse.\"}],\"latestDevelopments\":[{\"title\":\"AI bubble ‘too big to save’ warning\",\"date\":\"2026‑01‑21\",\"summary\":\"On X, Burry warned that the AI bubble is so large that government intervention cannot ultimately save it.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Yahoo Finance\",\"sourceUrl\":\"\"},{\"title\":\"Substack: ‘last months of 1999‑2000 bubble’\",\"date\":\"2026‑05‑08\",\"summary\":\"In a Substack post, Burry compared the current market to the final phase of the dot‑com bubble, noting momentum‑driven gains.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Yahoo Finance\",\"sourceUrl\":\"\"},{\"title\":\"Urges cutting tech exposure, holds leveraged short basket\",\"date\":\"2026‑05‑11\",\"summary\":\"He advised reducing tech stock exposure, rejecting greed, and noted he maintains a significant leveraged short position in depressed names.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Investing.com\",\"sourceUrl\":\"\"},{\"title\":\"New short positions disclosed (Tesla, Nvidia, SOXX, AMAT, CAT)\",\"date\":\"2026‑06‑30\",\"summary\":\"In his Substack ‘Trading Post’, Burry disclosed new short positions against Tesla, Nvidia, SOXX ETF, Applied Materials and Caterpillar.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Electrek\",\"sourceUrl\":\"\"}],\"positioning\":{\"summary\":\"Scion’s latest 13F (Q3 2025) shows limited holdings; more recent positioning is via Substack disclosures of new short trades.\",\"filingDate\":\"2025‑11‑03\",\"reportingPeriod\":\"Q3 2025\",\"isDelayedData\":true,\"notableChanges\":[{\"asset\":\"Tesla, Nvidia, SOXX, AMAT, Caterpillar\",\"action\":\"New\",\"summary\":\"Opened new short positions disclosed via Substack June 30, 2026.\"}]},\"sayVsDo\":{\"statementsSummary\":\"Burry publicly warns of bubble dynamics in AI/tech and urges derisking.\",\"positioningSummary\":\"He has acted on his views by opening new short positions in overextended tech and industrial names.\",\"consistency\":\"Consistent\",\"explanation\":\"His public warnings align with his actual trades—shorting names he deems overvalued.\"},\"changeSincePrevious\":{\"changed\":false,\"severity\":\"None\",\"summary\":\"First analysis\"},\"thingsToWatch\":[\"Next 13F filing for updated long/short exposures\",\"Any further Substack posts revealing positioning or macro views\",\"Market reaction to semiconductor and AI‑related corrections\"],\"lastCheckedAt\":\"2026‑08‑07T14:37:01.244Z\",\"lastMaterialUpdateAt\":\"2026‑08‑07T14:37:01.244Z\"}",
+          "usage": {
+            "prompt_tokens": 18497,
+            "completion_tokens": 894,
+            "total_tokens": 19391
+          },
+          "calledAt": "2026-08-07T14:37:01.246Z",
+          "webSearchUsed": true
+        }
+      },
+      "stanley-druckenmiller": {
+        "updateType": "FullAnalysis",
+        "headline": "Druckenmiller sees late-cycle liquidity risks, cautious on asset bubbles",
+        "shortSummary": "Stanley Druckenmiller warns of late-cycle asset bubbles and liquidity tightening, favors contrarian conviction and copper exposure.",
+        "currentView": {
+          "overallTone": "Cautious",
+          "summary": "Druckenmiller expresses concern about narrative-driven asset bubbles in a late-cycle environment and emphasizes liquidity risks. He remains selective, favoring macro trades like copper and relying on conviction over contrarianism.",
+          "confidence": "High"
+        },
+        "keyThemes": [
+          {
+            "title": "Asset Bubble Risk",
+            "stance": "Cautious",
+            "summary": "Druckenmiller identifies narrative-driven bubbles as the most feared risk in 2026, suggesting markets may be in the 'eighth inning' of a cycle."
+          },
+          {
+            "title": "Liquidity Tightening",
+            "stance": "Cautious",
+            "summary": "He highlights liquidity accidents as a key macro risk, implying tightening conditions ahead."
+          },
+          {
+            "title": "Contrarian Conviction",
+            "stance": "Neutral",
+            "summary": "He downplays contrarianism unless backed by extreme conviction, favoring disciplined, conviction-based investing."
+          },
+          {
+            "title": "Copper as Macro Trade",
+            "stance": "Bullish",
+            "summary": "Druckenmiller views copper as a mainstream macro trade, signaling bullish exposure to supply-constrained industrial metals."
+          }
+        ],
+        "latestDevelopments": [
+          {
+            "title": "Morgan Stanley interview: bubble risk and cycle stage",
+            "date": "2026-01-30",
+            "summary": "Druckenmiller said narrative-driven bubbles are the biggest risk and that markets may be in the 'eighth inning' of a cycle.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Morgan Stanley Hard Lessons video",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Copper macro trade comment",
+            "date": "2026-04-04",
+            "summary": "He reportedly owns copper, calling it a mainstream macro trade.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "Medium",
+            "sourceName": "Reddit user citing Druckenmiller",
+            "sourceUrl": ""
+          }
+        ],
+        "positioning": {
+          "summary": "No public 13F holdings detail yet; Q1 2026 13F filed May 15, 2026, but holdings not analyzed here.",
+          "filingDate": "2026-05-15",
+          "reportingPeriod": "Q1 2026",
+          "isDelayedData": true,
+          "notableChanges": []
+        },
+        "sayVsDo": {
+          "statementsSummary": "He warns of bubble risk and liquidity tightening, and emphasizes conviction-based investing.",
+          "positioningSummary": "Public filings not yet analyzed; anecdotal copper exposure aligns with macro views.",
+          "consistency": "PartlyConsistent",
+          "explanation": "His verbal macro caution aligns with reported copper positioning, but full portfolio data is unavailable."
+        },
+        "changeSincePrevious": {
+          "changed": false,
+          "severity": "None",
+          "summary": "First analysis"
+        },
+        "thingsToWatch": [
+          "Duquesne Family Office Q2 2026 13F holdings when filed",
+          "Any direct interviews or letters from Druckenmiller on rates or liquidity",
+          "Macro shifts in copper or industrial metals exposure"
+        ],
+        "lastCheckedAt": "2026-08-07T14:37:12.851Z",
+        "lastMaterialUpdateAt": "2026-08-07T14:37:12.851Z",
+        "person": {
+          "id": "stanley-druckenmiller",
+          "name": "Stanley Druckenmiller",
+          "organization": "Duquesne Family Office",
+          "focusLabel": "Makro / likviditet / sektorrotation"
+        },
+        "analysisDuration": 9148,
+        "_debug": {
+          "request": {
+            "model": "gpt-4o",
+            "max_output_tokens": 3000,
+            "temperature": 0.1,
+            "tools": [
+              {
+                "type": "web_search",
+                "search_context_size": "high"
+              }
+            ],
+            "tool_choice": "required",
+            "input": [
+              {
+                "role": "system",
+                "content": "You are an investment intelligence analyst specialising in tracking notable investors.\n\nYour task is to find and synthesise the most recent, verifiable information about what a specific investor currently thinks, says, or does. You are NOT writing a biography.\n\nFOCUS ON:\n- Recent opinions, interviews, public statements from the last 3-6 months\n- Investor letters or memos\n- Regulatory filings (13F, SEC filings)\n- Portfolio disclosures and major disclosed position changes\n- Macro and sector views\n- Bearish/bullish themes\n- Material changes since any previous analysis provided\n\nSOURCE DISCIPLINE — classify every important item by evidenceType:\n- Direct: official investor letter, memo, regulatory filing, direct interview, verified social-media statement, official fund communication\n- Filing: 13F or other regulatory filing (always note the filing date and reporting period; filings are delayed)\n- ReliableReporting: Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC when directly reporting the investor's statement\n- Interpretation: OpenAI infers the investor's likely view from filings, portfolio changes, or multiple pieces of evidence\n\nCRITICAL RULES:\n- Never present Interpretation as a direct quote or confirmed opinion\n- Never fabricate quotes, statistics, or positions\n- Always show filing dates and reporting periods — filings are delayed and may not represent the current portfolio\n- Do not assume a filing proves the investor's exact opinion\n- For NoMaterialChange: preserve the previous view summary, update lastCheckedAt, do not invent new information\n\nSAYS VS DOES:\nWhere relevant, explicitly separate what the investor says/thinks from what their disclosed positioning shows.\n\nOUTPUT FORMAT:\nReturn a single JSON object matching this exact structure. No markdown. No prose outside the JSON.\n\n{\n  \"updateType\": \"FullAnalysis|MaterialUpdate|NoMaterialChange\",\n  \"headline\": \"Very short description of the latest important point (≤15 words)\",\n  \"shortSummary\": \"1-2 sentences maximum\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish|Cautious|Bearish|Mixed|Unclear\",\n    \"summary\": \"2-3 sentence view summary\",\n    \"confidence\": \"High|Medium|Low\"\n  },\n  \"keyThemes\": [\n    { \"title\": \"...\", \"stance\": \"Bullish|Bearish|Cautious|Neutral|Unclear\", \"summary\": \"...\" }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"...\",\n      \"date\": \"YYYY-MM-DD or approximate month\",\n      \"summary\": \"...\",\n      \"evidenceType\": \"Direct|Filing|ReliableReporting|Interpretation\",\n      \"confidence\": \"High|Medium|Low\",\n      \"sourceName\": \"...\",\n      \"sourceUrl\": \"https://... or empty string\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"...\",\n    \"filingDate\": \"YYYY-MM-DD or empty string\",\n    \"reportingPeriod\": \"e.g. Q1 2025 or empty string\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      { \"asset\": \"...\", \"action\": \"Increased|Reduced|New|Exited|Unknown\", \"summary\": \"...\" }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"...\",\n    \"positioningSummary\": \"...\",\n    \"consistency\": \"Consistent|PartlyConsistent|Conflicting|InsufficientEvidence\",\n    \"explanation\": \"...\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": true,\n    \"severity\": \"None|Low|Medium|High\",\n    \"summary\": \"...\"\n  },\n  \"thingsToWatch\": [\"...\", \"...\"],\n  \"lastCheckedAt\": \"ISO timestamp\",\n  \"lastMaterialUpdateAt\": \"ISO timestamp\"\n}"
+              },
+              {
+                "role": "user",
+                "content": "UTC: 2026-08-07T14:37:12.851Z\n\nINVESTOR: Stanley Druckenmiller (Duquesne Family Office)\nFOCUS: Makro / likviditet / sektorrotation\n\nANALYSIS PRIORITIES FOR THIS INVESTOR:\n- macro outlook: rates, liquidity, monetary policy\n- sector rotation and major disclosed equity themes\n- interviews and conference appearances\n- Duquesne Family Office filings\n\nINSTRUCTIONS:\nPerform a full analysis of what Stanley Druckenmiller currently thinks and does.\n\nSearch for: recent public statements, interviews, investor letters, regulatory filings,\nmajor disclosed portfolio changes, macro and sector views, bearish/bullish themes.\n\nThis is a first-time analysis — set updateType='FullAnalysis'.\nchangeSincePrevious.changed=false, severity='None', summary='First analysis'."
+              }
+            ]
+          },
+          "rawResponse": "{\n  \"updateType\": \"FullAnalysis\",\n  \"headline\": \"Druckenmiller sees late-cycle liquidity risks, cautious on asset bubbles\",\n  \"shortSummary\": \"Stanley Druckenmiller warns of late-cycle asset bubbles and liquidity tightening, favors contrarian conviction and copper exposure.\",\n  \"currentView\": {\n    \"overallTone\": \"Cautious\",\n    \"summary\": \"Druckenmiller expresses concern about narrative-driven asset bubbles in a late-cycle environment and emphasizes liquidity risks. He remains selective, favoring macro trades like copper and relying on conviction over contrarianism.\",\n    \"confidence\": \"High\"\n  },\n  \"keyThemes\": [\n    {\n      \"title\": \"Asset Bubble Risk\",\n      \"stance\": \"Cautious\",\n      \"summary\": \"Druckenmiller identifies narrative-driven bubbles as the most feared risk in 2026, suggesting markets may be in the 'eighth inning' of a cycle.\"\n    },\n    {\n      \"title\": \"Liquidity Tightening\",\n      \"stance\": \"Cautious\",\n      \"summary\": \"He highlights liquidity accidents as a key macro risk, implying tightening conditions ahead.\"\n    },\n    {\n      \"title\": \"Contrarian Conviction\",\n      \"stance\": \"Neutral\",\n      \"summary\": \"He downplays contrarianism unless backed by extreme conviction, favoring disciplined, conviction-based investing.\"\n    },\n    {\n      \"title\": \"Copper as Macro Trade\",\n      \"stance\": \"Bullish\",\n      \"summary\": \"Druckenmiller views copper as a mainstream macro trade, signaling bullish exposure to supply-constrained industrial metals.\"\n    }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"Morgan Stanley interview: bubble risk and cycle stage\",\n      \"date\": \"2026-01-30\",\n      \"summary\": \"Druckenmiller said narrative-driven bubbles are the biggest risk and that markets may be in the 'eighth inning' of a cycle.\",\n      \"evidenceType\": \"Direct\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"Morgan Stanley Hard Lessons video\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Copper macro trade comment\",\n      \"date\": \"2026-04-04\",\n      \"summary\": \"He reportedly owns copper, calling it a mainstream macro trade.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"Medium\",\n      \"sourceName\": \"Reddit user citing Druckenmiller\",\n      \"sourceUrl\": \"\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"No public 13F holdings detail yet; Q1 2026 13F filed May 15, 2026, but holdings not analyzed here.\",\n    \"filingDate\": \"2026-05-15\",\n    \"reportingPeriod\": \"Q1 2026\",\n    \"isDelayedData\": true,\n    \"notableChanges\": []\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"He warns of bubble risk and liquidity tightening, and emphasizes conviction-based investing.\",\n    \"positioningSummary\": \"Public filings not yet analyzed; anecdotal copper exposure aligns with macro views.\",\n    \"consistency\": \"PartlyConsistent\",\n    \"explanation\": \"His verbal macro caution aligns with reported copper positioning, but full portfolio data is unavailable.\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": false,\n    \"severity\": \"None\",\n    \"summary\": \"First analysis\"\n  },\n  \"thingsToWatch\": [\n    \"Duquesne Family Office Q2 2026 13F holdings when filed\",\n    \"Any direct interviews or letters from Druckenmiller on rates or liquidity\",\n    \"Macro shifts in copper or industrial metals exposure\"\n  ],\n  \"lastCheckedAt\": \"2026-08-07T14:37:12.851Z\",\n  \"lastMaterialUpdateAt\": \"2026-08-07T14:37:12.851Z\"\n}",
+          "usage": {
+            "prompt_tokens": 33314,
+            "completion_tokens": 844,
+            "total_tokens": 34158
+          },
+          "calledAt": "2026-08-07T14:37:12.853Z",
+          "webSearchUsed": true
+        }
+      },
+      "howard-marks": {
+        "updateType": "FullAnalysis",
+        "headline": "Marks warns of private credit excess and mispricing amid AI-driven sentiment swings",
+        "shortSummary": "Howard Marks cautions that private credit standards have weakened amid a gold‑rush mentality, while market psychology—especially around AI—is driving mispricings in credit and software sectors.",
+        "currentView": {
+          "overallTone": "Cautious",
+          "summary": "Marks expresses caution on private credit due to rapid capital inflows and weakened underwriting, and highlights mispricing driven by sentiment, particularly in AI‑exposed sectors. He emphasizes disciplined risk/return thinking and cycle awareness.",
+          "confidence": "High"
+        },
+        "keyThemes": [
+          {
+            "title": "Private Credit Standards",
+            "stance": "Bearish",
+            "summary": "Marks warns that direct lending managers accepted too much capital too quickly, lowering standards and setting the stage for a correction."
+          },
+          {
+            "title": "Market Psychology & Mispricing",
+            "stance": "Cautious",
+            "summary": "He emphasizes that sentiment, not fundamentals, often drives price swings—especially in software and AI sectors—leading to mispricings."
+          },
+          {
+            "title": "Cycle Awareness & Bargain Hunting",
+            "stance": "Neutral",
+            "summary": "Marks reiterates the importance of buying assets at unfair prices from sellers making mistakes, reflecting cycle‑aware, contrarian discipline."
+          }
+        ],
+        "latestDevelopments": [
+          {
+            "title": "‘What’s Going on in Private Credit?’ memo",
+            "date": "2026‑04‑09",
+            "summary": "Marks outlines how direct lending surged, warns that managers accepted too much money too fast with low standards, creating correction risk.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Oaktree memo",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Benzinga report on private credit caution",
+            "date": "2026‑04‑10",
+            "summary": "Marks said some direct lending managers applied standards that were too low, setting the scene for a correction; Oaktree’s exposure to software credit is very small.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "High",
+            "sourceName": "Benzinga",
+            "sourceUrl": ""
+          },
+          {
+            "title": "‘What’s Going on in Private Credit?’ memo – software/AI sentiment risk",
+            "date": "2026‑04‑09",
+            "summary": "Marks notes market concern that software companies face disruption from AI; pressure is sentiment‑driven rather than credit deterioration.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Oaktree memo",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Oaktree Conference reflections (podcast/LinkedIn)",
+            "date": "2026‑03‑24",
+            "summary": "Marks emphasizes buying assets at unfair prices from mistaken sellers, avoiding popular assets likely priced too high.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Oaktree podcast/LinkedIn",
+            "sourceUrl": ""
+          }
+        ],
+        "positioning": {
+          "summary": "No recent regulatory filings or 13F data available; analysis based on memos and commentary.",
+          "filingDate": "",
+          "reportingPeriod": "",
+          "isDelayedData": true,
+          "notableChanges": []
+        },
+        "sayVsDo": {
+          "statementsSummary": "Marks verbally cautions about private credit excess, AI‑driven sentiment risk, and mispricing opportunities.",
+          "positioningSummary": "No new portfolio data; his statements reflect caution and disciplined approach, but actual positioning unknown.",
+          "consistency": "InsufficientEvidence",
+          "explanation": "Without recent filings, we cannot confirm if his portfolio actions align with his cautionary statements."
+        },
+        "changeSincePrevious": {
+          "changed": false,
+          "severity": "None",
+          "summary": "First analysis"
+        },
+        "thingsToWatch": [
+          "Oaktree’s next memo on credit conditions or AI valuation risks",
+          "13F or other filings revealing shifts in credit exposure or software‑related holdings"
+        ],
+        "lastCheckedAt": "2026-08-07T14:37:22.020Z",
+        "lastMaterialUpdateAt": "2026-08-07T14:37:22.020Z",
+        "person": {
+          "id": "howard-marks",
+          "name": "Howard Marks",
+          "organization": "Oaktree Capital Management",
+          "focusLabel": "Risiko / markedspsykologi / kredit"
+        },
+        "analysisDuration": 10527,
+        "_debug": {
+          "request": {
+            "model": "gpt-4o",
+            "max_output_tokens": 3000,
+            "temperature": 0.1,
+            "tools": [
+              {
+                "type": "web_search",
+                "search_context_size": "high"
+              }
+            ],
+            "tool_choice": "required",
+            "input": [
+              {
+                "role": "system",
+                "content": "You are an investment intelligence analyst specialising in tracking notable investors.\n\nYour task is to find and synthesise the most recent, verifiable information about what a specific investor currently thinks, says, or does. You are NOT writing a biography.\n\nFOCUS ON:\n- Recent opinions, interviews, public statements from the last 3-6 months\n- Investor letters or memos\n- Regulatory filings (13F, SEC filings)\n- Portfolio disclosures and major disclosed position changes\n- Macro and sector views\n- Bearish/bullish themes\n- Material changes since any previous analysis provided\n\nSOURCE DISCIPLINE — classify every important item by evidenceType:\n- Direct: official investor letter, memo, regulatory filing, direct interview, verified social-media statement, official fund communication\n- Filing: 13F or other regulatory filing (always note the filing date and reporting period; filings are delayed)\n- ReliableReporting: Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC when directly reporting the investor's statement\n- Interpretation: OpenAI infers the investor's likely view from filings, portfolio changes, or multiple pieces of evidence\n\nCRITICAL RULES:\n- Never present Interpretation as a direct quote or confirmed opinion\n- Never fabricate quotes, statistics, or positions\n- Always show filing dates and reporting periods — filings are delayed and may not represent the current portfolio\n- Do not assume a filing proves the investor's exact opinion\n- For NoMaterialChange: preserve the previous view summary, update lastCheckedAt, do not invent new information\n\nSAYS VS DOES:\nWhere relevant, explicitly separate what the investor says/thinks from what their disclosed positioning shows.\n\nOUTPUT FORMAT:\nReturn a single JSON object matching this exact structure. No markdown. No prose outside the JSON.\n\n{\n  \"updateType\": \"FullAnalysis|MaterialUpdate|NoMaterialChange\",\n  \"headline\": \"Very short description of the latest important point (≤15 words)\",\n  \"shortSummary\": \"1-2 sentences maximum\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish|Cautious|Bearish|Mixed|Unclear\",\n    \"summary\": \"2-3 sentence view summary\",\n    \"confidence\": \"High|Medium|Low\"\n  },\n  \"keyThemes\": [\n    { \"title\": \"...\", \"stance\": \"Bullish|Bearish|Cautious|Neutral|Unclear\", \"summary\": \"...\" }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"...\",\n      \"date\": \"YYYY-MM-DD or approximate month\",\n      \"summary\": \"...\",\n      \"evidenceType\": \"Direct|Filing|ReliableReporting|Interpretation\",\n      \"confidence\": \"High|Medium|Low\",\n      \"sourceName\": \"...\",\n      \"sourceUrl\": \"https://... or empty string\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"...\",\n    \"filingDate\": \"YYYY-MM-DD or empty string\",\n    \"reportingPeriod\": \"e.g. Q1 2025 or empty string\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      { \"asset\": \"...\", \"action\": \"Increased|Reduced|New|Exited|Unknown\", \"summary\": \"...\" }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"...\",\n    \"positioningSummary\": \"...\",\n    \"consistency\": \"Consistent|PartlyConsistent|Conflicting|InsufficientEvidence\",\n    \"explanation\": \"...\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": true,\n    \"severity\": \"None|Low|Medium|High\",\n    \"summary\": \"...\"\n  },\n  \"thingsToWatch\": [\"...\", \"...\"],\n  \"lastCheckedAt\": \"ISO timestamp\",\n  \"lastMaterialUpdateAt\": \"ISO timestamp\"\n}"
+              },
+              {
+                "role": "user",
+                "content": "UTC: 2026-08-07T14:37:22.020Z\n\nINVESTOR: Howard Marks (Oaktree Capital Management)\nFOCUS: Risiko / markedspsykologi / kredit\n\nANALYSIS PRIORITIES FOR THIS INVESTOR:\n- official Oaktree Capital memos — highest evidence priority\n- credit conditions and risk appetite\n- valuations and market psychology\n- cycle positioning\n\nINSTRUCTIONS:\nPerform a full analysis of what Howard Marks currently thinks and does.\n\nSearch for: recent public statements, interviews, investor letters, regulatory filings,\nmajor disclosed portfolio changes, macro and sector views, bearish/bullish themes.\n\nThis is a first-time analysis — set updateType='FullAnalysis'.\nchangeSincePrevious.changed=false, severity='None', summary='First analysis'."
+              }
+            ]
+          },
+          "rawResponse": "{\"updateType\":\"FullAnalysis\",\"headline\":\"Marks warns of private credit excess and mispricing amid AI-driven sentiment swings\",\"shortSummary\":\"Howard Marks cautions that private credit standards have weakened amid a gold‑rush mentality, while market psychology—especially around AI—is driving mispricings in credit and software sectors.\",\"currentView\":{\"overallTone\":\"Cautious\",\"summary\":\"Marks expresses caution on private credit due to rapid capital inflows and weakened underwriting, and highlights mispricing driven by sentiment, particularly in AI‑exposed sectors. He emphasizes disciplined risk/return thinking and cycle awareness.\",\"confidence\":\"High\"},\"keyThemes\":[{\"title\":\"Private Credit Standards\",\"stance\":\"Bearish\",\"summary\":\"Marks warns that direct lending managers accepted too much capital too quickly, lowering standards and setting the stage for a correction.\"},{\"title\":\"Market Psychology & Mispricing\",\"stance\":\"Cautious\",\"summary\":\"He emphasizes that sentiment, not fundamentals, often drives price swings—especially in software and AI sectors—leading to mispricings.\"},{\"title\":\"Cycle Awareness & Bargain Hunting\",\"stance\":\"Neutral\",\"summary\":\"Marks reiterates the importance of buying assets at unfair prices from sellers making mistakes, reflecting cycle‑aware, contrarian discipline.\"}],\"latestDevelopments\":[{\"title\":\"‘What’s Going on in Private Credit?’ memo\",\"date\":\"2026‑04‑09\",\"summary\":\"Marks outlines how direct lending surged, warns that managers accepted too much money too fast with low standards, creating correction risk.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Oaktree memo\",\"sourceUrl\":\"\"},{\"title\":\"Benzinga report on private credit caution\",\"date\":\"2026‑04‑10\",\"summary\":\"Marks said some direct lending managers applied standards that were too low, setting the scene for a correction; Oaktree’s exposure to software credit is very small.\",\"evidenceType\":\"ReliableReporting\",\"confidence\":\"High\",\"sourceName\":\"Benzinga\",\"sourceUrl\":\"\"},{\"title\":\"‘What’s Going on in Private Credit?’ memo – software/AI sentiment risk\",\"date\":\"2026‑04‑09\",\"summary\":\"Marks notes market concern that software companies face disruption from AI; pressure is sentiment‑driven rather than credit deterioration.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Oaktree memo\",\"sourceUrl\":\"\"},{\"title\":\"Oaktree Conference reflections (podcast/LinkedIn)\",\"date\":\"2026‑03‑24\",\"summary\":\"Marks emphasizes buying assets at unfair prices from mistaken sellers, avoiding popular assets likely priced too high.\",\"evidenceType\":\"Direct\",\"confidence\":\"High\",\"sourceName\":\"Oaktree podcast/LinkedIn\",\"sourceUrl\":\"\"}],\"positioning\":{\"summary\":\"No recent regulatory filings or 13F data available; analysis based on memos and commentary.\",\"filingDate\":\"\",\"reportingPeriod\":\"\",\"isDelayedData\":true,\"notableChanges\":[]},\"sayVsDo\":{\"statementsSummary\":\"Marks verbally cautions about private credit excess, AI‑driven sentiment risk, and mispricing opportunities.\",\"positioningSummary\":\"No new portfolio data; his statements reflect caution and disciplined approach, but actual positioning unknown.\",\"consistency\":\"InsufficientEvidence\",\"explanation\":\"Without recent filings, we cannot confirm if his portfolio actions align with his cautionary statements.\"},\"changeSincePrevious\":{\"changed\":false,\"severity\":\"None\",\"summary\":\"First analysis\"},\"thingsToWatch\":[\"Oaktree’s next memo on credit conditions or AI valuation risks\",\"13F or other filings revealing shifts in credit exposure or software‑related holdings\"],\"lastCheckedAt\":\"2026‑08‑07T14:37:22.020Z\",\"lastMaterialUpdateAt\":\"2026‑08‑07T14:37:22.020Z\"}",
+          "usage": {
+            "prompt_tokens": 18162,
+            "completion_tokens": 782,
+            "total_tokens": 18944
+          },
+          "calledAt": "2026-08-07T14:37:22.034Z",
+          "webSearchUsed": true
+        }
+      },
+      "warren-buffett": {
+        "updateType": "FullAnalysis",
+        "headline": "Buffett remains patient amid stretched valuations, record cash, and portfolio reshuffle",
+        "shortSummary": "Warren Buffett continues to emphasize valuation discipline, holding a record cash pile and overseeing a portfolio reshuffle under Greg Abel’s leadership.",
+        "currentView": {
+          "overallTone": "Cautious",
+          "summary": "Buffett remains cautious on deploying capital due to elevated market valuations, preferring to wait for compelling opportunities. He continues to emphasize understanding businesses and valuation discipline.",
+          "confidence": "High"
+        },
+        "keyThemes": [
+          {
+            "title": "Valuation Discipline",
+            "stance": "Cautious",
+            "summary": "Buffett repeatedly notes that market valuations are too high to justify deploying Berkshire’s cash, citing the Buffett indicator at record levels."
+          },
+          {
+            "title": "Record Cash Hoard",
+            "stance": "Neutral",
+            "summary": "Berkshire holds nearly $397 billion in cash and short-term Treasuries, the largest in its history, reflecting Buffett’s preference for patience."
+          },
+          {
+            "title": "Portfolio Reshuffle under Abel",
+            "stance": "Neutral",
+            "summary": "Greg Abel has overseen significant portfolio changes, including large sales of legacy holdings and major purchases in Alphabet and Delta Air Lines."
+          },
+          {
+            "title": "Succession and Capital Allocation Continuity",
+            "stance": "Neutral",
+            "summary": "Buffett affirms confidence in Greg Abel’s stewardship, noting he is following the same disciplined capital allocation framework."
+          }
+        ],
+        "latestDevelopments": [
+          {
+            "title": "Buffett says market pullback wasn’t enough to deploy cash",
+            "date": "2026-06-08",
+            "summary": "Buffett stated that even a recent ~9% market pullback did not present sufficient value to deploy Berkshire’s cash pile.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "High",
+            "sourceName": "The Motley Fool",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Record cash pile and modest buybacks under Abel",
+            "date": "2026-05-03",
+            "summary": "Berkshire ended Q1 2026 with $397.4 billion in cash and T-bills; Abel authorized a small $234 million buyback.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "High",
+            "sourceName": "Forbes",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Buffett: fewer businesses understood, valuations ‘silly’",
+            "date": "2026-05-04",
+            "summary": "Buffett told CNBC that it’s harder to find businesses he understands and that many prices look ‘very silly.’",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "CNBC",
+            "sourceUrl": ""
+          },
+          {
+            "title": "13F shows major sales and new purchases",
+            "date": "2026-05-15",
+            "summary": "Berkshire’s Q1 2026 13F shows $24 billion in sales and $16 billion in purchases, including large sales of Chevron, Visa, Mastercard, and purchases of Alphabet and Delta.",
+            "evidenceType": "Filing",
+            "confidence": "High",
+            "sourceName": "Morningstar analysis of 13F",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Buffett converts shares for charitable donations",
+            "date": "2026-07-14",
+            "summary": "Buffett converted 8,000 Class A shares into 12 million Class B shares to donate to four foundations, reaffirming his plan to dispose of his shares by end of 2034.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "Business Wire",
+            "sourceUrl": ""
+          }
+        ],
+        "positioning": {
+          "summary": "As of Q1 2026, Berkshire holds a record $397.4 billion in cash and T-bills, with modest buybacks and significant portfolio rebalancing.",
+          "filingDate": "2026-05-15",
+          "reportingPeriod": "Q1 2026",
+          "isDelayedData": true,
+          "notableChanges": [
+            {
+              "asset": "Chevron, Visa, Mastercard, Constellation Brands, UnitedHealth, Domino’s, Aon",
+              "action": "Reduced",
+              "summary": "Large sales totaling approximately $24 billion."
+            },
+            {
+              "asset": "Alphabet (Class A & C), Delta Air Lines",
+              "action": "New/Increased",
+              "summary": "Purchases of ~$12 billion in Alphabet and ~$2.7 billion in Delta."
+            },
+            {
+              "asset": "Share repurchases",
+              "action": "New",
+              "summary": "Modest buyback of $234 million in Q1."
+            }
+          ]
+        },
+        "sayVsDo": {
+          "statementsSummary": "Buffett emphasizes valuation discipline, noting few opportunities and that many prices are ‘silly’; he remains cautious despite market pullbacks.",
+          "positioningSummary": "Berkshire holds record cash, has trimmed many holdings, and made selective large purchases in Alphabet and Delta, with minimal buybacks.",
+          "consistency": "Consistent",
+          "explanation": "Buffett’s words about high valuations and caution align with the large cash position and selective deployment of capital."
+        },
+        "changeSincePrevious": {
+          "changed": false,
+          "severity": "None",
+          "summary": "First analysis"
+        },
+        "thingsToWatch": [
+          "Q2 2026 13F and 10-Q for updated portfolio and cash deployment",
+          "Any further public comments from Buffett or Abel on valuation or capital allocation",
+          "Progress on Buffett’s share donation plan and its impact on share count"
+        ],
+        "lastCheckedAt": "2026-08-07T14:37:32.575Z",
+        "lastMaterialUpdateAt": "2026-08-07T14:37:32.575Z",
+        "person": {
+          "id": "warren-buffett",
+          "name": "Warren Buffett",
+          "organization": "Berkshire Hathaway",
+          "focusLabel": "Kvalitet / valuation / kapitalallokering / cash"
+        },
+        "analysisDuration": 14202,
+        "_debug": {
+          "request": {
+            "model": "gpt-4o",
+            "max_output_tokens": 3000,
+            "temperature": 0.1,
+            "tools": [
+              {
+                "type": "web_search",
+                "search_context_size": "high"
+              }
+            ],
+            "tool_choice": "required",
+            "input": [
+              {
+                "role": "system",
+                "content": "You are an investment intelligence analyst specialising in tracking notable investors.\n\nYour task is to find and synthesise the most recent, verifiable information about what a specific investor currently thinks, says, or does. You are NOT writing a biography.\n\nFOCUS ON:\n- Recent opinions, interviews, public statements from the last 3-6 months\n- Investor letters or memos\n- Regulatory filings (13F, SEC filings)\n- Portfolio disclosures and major disclosed position changes\n- Macro and sector views\n- Bearish/bullish themes\n- Material changes since any previous analysis provided\n\nSOURCE DISCIPLINE — classify every important item by evidenceType:\n- Direct: official investor letter, memo, regulatory filing, direct interview, verified social-media statement, official fund communication\n- Filing: 13F or other regulatory filing (always note the filing date and reporting period; filings are delayed)\n- ReliableReporting: Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC when directly reporting the investor's statement\n- Interpretation: OpenAI infers the investor's likely view from filings, portfolio changes, or multiple pieces of evidence\n\nCRITICAL RULES:\n- Never present Interpretation as a direct quote or confirmed opinion\n- Never fabricate quotes, statistics, or positions\n- Always show filing dates and reporting periods — filings are delayed and may not represent the current portfolio\n- Do not assume a filing proves the investor's exact opinion\n- For NoMaterialChange: preserve the previous view summary, update lastCheckedAt, do not invent new information\n\nSAYS VS DOES:\nWhere relevant, explicitly separate what the investor says/thinks from what their disclosed positioning shows.\n\nOUTPUT FORMAT:\nReturn a single JSON object matching this exact structure. No markdown. No prose outside the JSON.\n\n{\n  \"updateType\": \"FullAnalysis|MaterialUpdate|NoMaterialChange\",\n  \"headline\": \"Very short description of the latest important point (≤15 words)\",\n  \"shortSummary\": \"1-2 sentences maximum\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish|Cautious|Bearish|Mixed|Unclear\",\n    \"summary\": \"2-3 sentence view summary\",\n    \"confidence\": \"High|Medium|Low\"\n  },\n  \"keyThemes\": [\n    { \"title\": \"...\", \"stance\": \"Bullish|Bearish|Cautious|Neutral|Unclear\", \"summary\": \"...\" }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"...\",\n      \"date\": \"YYYY-MM-DD or approximate month\",\n      \"summary\": \"...\",\n      \"evidenceType\": \"Direct|Filing|ReliableReporting|Interpretation\",\n      \"confidence\": \"High|Medium|Low\",\n      \"sourceName\": \"...\",\n      \"sourceUrl\": \"https://... or empty string\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"...\",\n    \"filingDate\": \"YYYY-MM-DD or empty string\",\n    \"reportingPeriod\": \"e.g. Q1 2025 or empty string\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      { \"asset\": \"...\", \"action\": \"Increased|Reduced|New|Exited|Unknown\", \"summary\": \"...\" }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"...\",\n    \"positioningSummary\": \"...\",\n    \"consistency\": \"Consistent|PartlyConsistent|Conflicting|InsufficientEvidence\",\n    \"explanation\": \"...\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": true,\n    \"severity\": \"None|Low|Medium|High\",\n    \"summary\": \"...\"\n  },\n  \"thingsToWatch\": [\"...\", \"...\"],\n  \"lastCheckedAt\": \"ISO timestamp\",\n  \"lastMaterialUpdateAt\": \"ISO timestamp\"\n}"
+              },
+              {
+                "role": "user",
+                "content": "UTC: 2026-08-07T14:37:32.575Z\n\nINVESTOR: Warren Buffett (Berkshire Hathaway)\nFOCUS: Kvalitet / valuation / kapitalallokering / cash\n\nANALYSIS PRIORITIES FOR THIS INVESTOR:\n- Berkshire Hathaway 13F and SEC filings\n- annual and quarterly reports and shareholder letters\n- major purchases, sales, cash levels, and buybacks\n- major public comments from Buffett or Munger successors\n- Do NOT invent a 'Buffett view' from unrelated market commentary\n\nINSTRUCTIONS:\nPerform a full analysis of what Warren Buffett currently thinks and does.\n\nSearch for: recent public statements, interviews, investor letters, regulatory filings,\nmajor disclosed portfolio changes, macro and sector views, bearish/bullish themes.\n\nThis is a first-time analysis — set updateType='FullAnalysis'.\nchangeSincePrevious.changed=false, severity='None', summary='First analysis'."
+              }
+            ]
+          },
+          "rawResponse": "{\n  \"updateType\": \"FullAnalysis\",\n  \"headline\": \"Buffett remains patient amid stretched valuations, record cash, and portfolio reshuffle\",\n  \"shortSummary\": \"Warren Buffett continues to emphasize valuation discipline, holding a record cash pile and overseeing a portfolio reshuffle under Greg Abel’s leadership.\",\n  \"currentView\": {\n    \"overallTone\": \"Cautious\",\n    \"summary\": \"Buffett remains cautious on deploying capital due to elevated market valuations, preferring to wait for compelling opportunities. He continues to emphasize understanding businesses and valuation discipline.\",\n    \"confidence\": \"High\"\n  },\n  \"keyThemes\": [\n    {\n      \"title\": \"Valuation Discipline\",\n      \"stance\": \"Cautious\",\n      \"summary\": \"Buffett repeatedly notes that market valuations are too high to justify deploying Berkshire’s cash, citing the Buffett indicator at record levels.\"\n    },\n    {\n      \"title\": \"Record Cash Hoard\",\n      \"stance\": \"Neutral\",\n      \"summary\": \"Berkshire holds nearly $397 billion in cash and short-term Treasuries, the largest in its history, reflecting Buffett’s preference for patience.\"\n    },\n    {\n      \"title\": \"Portfolio Reshuffle under Abel\",\n      \"stance\": \"Neutral\",\n      \"summary\": \"Greg Abel has overseen significant portfolio changes, including large sales of legacy holdings and major purchases in Alphabet and Delta Air Lines.\"\n    },\n    {\n      \"title\": \"Succession and Capital Allocation Continuity\",\n      \"stance\": \"Neutral\",\n      \"summary\": \"Buffett affirms confidence in Greg Abel’s stewardship, noting he is following the same disciplined capital allocation framework.\"\n    }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"Buffett says market pullback wasn’t enough to deploy cash\",\n      \"date\": \"2026-06-08\",\n      \"summary\": \"Buffett stated that even a recent ~9% market pullback did not present sufficient value to deploy Berkshire’s cash pile.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"The Motley Fool\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Record cash pile and modest buybacks under Abel\",\n      \"date\": \"2026-05-03\",\n      \"summary\": \"Berkshire ended Q1 2026 with $397.4 billion in cash and T-bills; Abel authorized a small $234 million buyback.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"Forbes\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Buffett: fewer businesses understood, valuations ‘silly’\",\n      \"date\": \"2026-05-04\",\n      \"summary\": \"Buffett told CNBC that it’s harder to find businesses he understands and that many prices look ‘very silly.’\",\n      \"evidenceType\": \"Direct\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"CNBC\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"13F shows major sales and new purchases\",\n      \"date\": \"2026-05-15\",\n      \"summary\": \"Berkshire’s Q1 2026 13F shows $24 billion in sales and $16 billion in purchases, including large sales of Chevron, Visa, Mastercard, and purchases of Alphabet and Delta.\",\n      \"evidenceType\": \"Filing\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"Morningstar analysis of 13F\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Buffett converts shares for charitable donations\",\n      \"date\": \"2026-07-14\",\n      \"summary\": \"Buffett converted 8,000 Class A shares into 12 million Class B shares to donate to four foundations, reaffirming his plan to dispose of his shares by end of 2034.\",\n      \"evidenceType\": \"Direct\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"Business Wire\",\n      \"sourceUrl\": \"\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"As of Q1 2026, Berkshire holds a record $397.4 billion in cash and T-bills, with modest buybacks and significant portfolio rebalancing.\",\n    \"filingDate\": \"2026-05-15\",\n    \"reportingPeriod\": \"Q1 2026\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      {\n        \"asset\": \"Chevron, Visa, Mastercard, Constellation Brands, UnitedHealth, Domino’s, Aon\",\n        \"action\": \"Reduced\",\n        \"summary\": \"Large sales totaling approximately $24 billion.\"\n      },\n      {\n        \"asset\": \"Alphabet (Class A & C), Delta Air Lines\",\n        \"action\": \"New/Increased\",\n        \"summary\": \"Purchases of ~$12 billion in Alphabet and ~$2.7 billion in Delta.\"\n      },\n      {\n        \"asset\": \"Share repurchases\",\n        \"action\": \"New\",\n        \"summary\": \"Modest buyback of $234 million in Q1.\"\n      }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"Buffett emphasizes valuation discipline, noting few opportunities and that many prices are ‘silly’; he remains cautious despite market pullbacks.\",\n    \"positioningSummary\": \"Berkshire holds record cash, has trimmed many holdings, and made selective large purchases in Alphabet and Delta, with minimal buybacks.\",\n    \"consistency\": \"Consistent\",\n    \"explanation\": \"Buffett’s words about high valuations and caution align with the large cash position and selective deployment of capital.\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": false,\n    \"severity\": \"None\",\n    \"summary\": \"First analysis\"\n  },\n  \"thingsToWatch\": [\n    \"Q2 2026 13F and 10-Q for updated portfolio and cash deployment\",\n    \"Any further public comments from Buffett or Abel on valuation or capital allocation\",\n    \"Progress on Buffett’s share donation plan and its impact on share count\"\n  ],\n  \"lastCheckedAt\": \"2026-08-07T14:37:32.575Z\",\n  \"lastMaterialUpdateAt\": \"2026-08-07T14:37:32.575Z\"\n}",
+          "usage": {
+            "prompt_tokens": 18397,
+            "completion_tokens": 1374,
+            "total_tokens": 19771
+          },
+          "calledAt": "2026-08-07T14:37:32.576Z",
+          "webSearchUsed": true
+        }
+      },
+      "bill-ackman": {
+        "updateType": "FullAnalysis",
+        "headline": "Ackman shifts to permanent-capital, builds Microsoft stake, exits Universal bid",
+        "shortSummary": "Bill Ackman is pivoting toward long-term, concentrated holdings via permanent-capital vehicles, notably building a large Microsoft position, launching Pershing Square USA, and exiting his Universal Music bid.",
+        "currentView": {
+          "overallTone": "Bullish",
+          "summary": "Ackman is bullish on high-quality, durable growth companies trading at discounts, especially in large-cap tech, and is executing a permanent-capital strategy modeled on Berkshire Hathaway. He sees current markets as attractive entry points.",
+          "confidence": "High"
+        },
+        "keyThemes": [
+          {
+            "title": "Permanent-capital strategy",
+            "stance": "Bullish",
+            "summary": "Ackman is shifting from activist campaigns to long-term ownership via closed-end funds and permanent capital, aiming to compound quality businesses over time."
+          },
+          {
+            "title": "Concentrated tech bets",
+            "stance": "Bullish",
+            "summary": "He has built a $2.1 billion stake in Microsoft, exited Alphabet, and is doubling down on mega-cap tech like Amazon and Meta."
+          },
+          {
+            "title": "Closed-end fund launch",
+            "stance": "Neutral",
+            "summary": "Pershing Square USA (PSUS) IPO launched in April 2026, trading at a discount to NAV; Ackman teased four new stock bets to be disclosed in Q2 report."
+          },
+          {
+            "title": "Universal Music bid and exit",
+            "stance": "Neutral",
+            "summary": "Ackman made a $64 billion takeover offer for Universal Music Group, which was rejected; he subsequently sold his entire stake."
+          },
+          {
+            "title": "Macro outlook",
+            "stance": "Bullish",
+            "summary": "He sees no imminent market crash, remains enthusiastic about AI, Israel, and the U.S. pro-business environment."
+          }
+        ],
+        "latestDevelopments": [
+          {
+            "title": "Built $2.1 billion Microsoft stake",
+            "date": "2026-05-15",
+            "summary": "Pershing Square built a large position in Microsoft, citing undervaluation of its 365 suite and Azure franchise.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "High",
+            "sourceName": "Bloomberg",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Teased four new stock bets in PSUS",
+            "date": "2026-06-15",
+            "summary": "Ackman said he made four new investments for his funds, including Pershing Square USA, to be disclosed in Q2 report.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "Medium",
+            "sourceName": "Reuters",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Shift to permanent-capital model",
+            "date": "2026-06",
+            "summary": "Ackman described moving from activist campaigns to long-term permanent-capital holdings, modeling a 'Berkshire Hathaway 2'.",
+            "evidenceType": "Direct",
+            "confidence": "High",
+            "sourceName": "All‑In Podcast / Dealroom summary",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Universal Music bid and exit",
+            "date": "2026-04 to 2026-06",
+            "summary": "Ackman made a $64 billion takeover offer for Universal Music Group in April, which was rejected; he then sold his entire stake in June.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "High",
+            "sourceName": "AP News & El País",
+            "sourceUrl": ""
+          },
+          {
+            "title": "No market crash, bullish on Israel",
+            "date": "2026-07-19",
+            "summary": "Ackman said he doesn’t foresee a market crash and remains enthusiastic about Israel’s economic and military positioning.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "Medium",
+            "sourceName": "Globes",
+            "sourceUrl": ""
+          }
+        ],
+        "positioning": {
+          "summary": "Portfolio is highly concentrated in large-cap tech, notably Microsoft; PSUS launched; Universal stake exited.",
+          "filingDate": "",
+          "reportingPeriod": "",
+          "isDelayedData": true,
+          "notableChanges": [
+            {
+              "asset": "Microsoft",
+              "action": "New",
+              "summary": "Built a $2.1 billion stake, making it a core holding."
+            },
+            {
+              "asset": "Alphabet (Google)",
+              "action": "Exited",
+              "summary": "Sold entire position to redeploy into Microsoft."
+            },
+            {
+              "asset": "Universal Music Group",
+              "action": "Exited",
+              "summary": "Sold entire stake after takeover bid was rejected."
+            }
+          ]
+        },
+        "sayVsDo": {
+          "statementsSummary": "Ackman publicly advocates for long-term, permanent-capital investing in quality companies, sees markets as attractive, and remains bullish on tech and Israel.",
+          "positioningSummary": "He has acted by building a large Microsoft position, exiting Alphabet and Universal, and launching a closed-end fund to hold concentrated positions.",
+          "consistency": "Consistent",
+          "explanation": "His actions—new stakes in tech, fund launch, exits—align with his stated shift to permanent-capital, concentrated, quality investing."
+        },
+        "changeSincePrevious": {
+          "changed": false,
+          "severity": "None",
+          "summary": "First analysis"
+        },
+        "thingsToWatch": [
+          "Q2 2026 investor report for PSUS to identify the four new stock bets",
+          "August 13, 2026 Q2 results and commentary",
+          "Any further activist campaigns or board engagements"
+        ],
+        "lastCheckedAt": "2026-08-07T14:37:46.786Z",
+        "lastMaterialUpdateAt": "2026-08-07T14:37:46.786Z",
+        "person": {
+          "id": "bill-ackman",
+          "name": "Bill Ackman",
+          "organization": "Pershing Square Capital Management",
+          "focusLabel": "Koncentrerede aktiecases / aktivistinvestering"
+        },
+        "analysisDuration": 9745,
+        "_debug": {
+          "request": {
+            "model": "gpt-4o",
+            "max_output_tokens": 3000,
+            "temperature": 0.1,
+            "tools": [
+              {
+                "type": "web_search",
+                "search_context_size": "high"
+              }
+            ],
+            "tool_choice": "required",
+            "input": [
+              {
+                "role": "system",
+                "content": "You are an investment intelligence analyst specialising in tracking notable investors.\n\nYour task is to find and synthesise the most recent, verifiable information about what a specific investor currently thinks, says, or does. You are NOT writing a biography.\n\nFOCUS ON:\n- Recent opinions, interviews, public statements from the last 3-6 months\n- Investor letters or memos\n- Regulatory filings (13F, SEC filings)\n- Portfolio disclosures and major disclosed position changes\n- Macro and sector views\n- Bearish/bullish themes\n- Material changes since any previous analysis provided\n\nSOURCE DISCIPLINE — classify every important item by evidenceType:\n- Direct: official investor letter, memo, regulatory filing, direct interview, verified social-media statement, official fund communication\n- Filing: 13F or other regulatory filing (always note the filing date and reporting period; filings are delayed)\n- ReliableReporting: Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC when directly reporting the investor's statement\n- Interpretation: OpenAI infers the investor's likely view from filings, portfolio changes, or multiple pieces of evidence\n\nCRITICAL RULES:\n- Never present Interpretation as a direct quote or confirmed opinion\n- Never fabricate quotes, statistics, or positions\n- Always show filing dates and reporting periods — filings are delayed and may not represent the current portfolio\n- Do not assume a filing proves the investor's exact opinion\n- For NoMaterialChange: preserve the previous view summary, update lastCheckedAt, do not invent new information\n\nSAYS VS DOES:\nWhere relevant, explicitly separate what the investor says/thinks from what their disclosed positioning shows.\n\nOUTPUT FORMAT:\nReturn a single JSON object matching this exact structure. No markdown. No prose outside the JSON.\n\n{\n  \"updateType\": \"FullAnalysis|MaterialUpdate|NoMaterialChange\",\n  \"headline\": \"Very short description of the latest important point (≤15 words)\",\n  \"shortSummary\": \"1-2 sentences maximum\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish|Cautious|Bearish|Mixed|Unclear\",\n    \"summary\": \"2-3 sentence view summary\",\n    \"confidence\": \"High|Medium|Low\"\n  },\n  \"keyThemes\": [\n    { \"title\": \"...\", \"stance\": \"Bullish|Bearish|Cautious|Neutral|Unclear\", \"summary\": \"...\" }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"...\",\n      \"date\": \"YYYY-MM-DD or approximate month\",\n      \"summary\": \"...\",\n      \"evidenceType\": \"Direct|Filing|ReliableReporting|Interpretation\",\n      \"confidence\": \"High|Medium|Low\",\n      \"sourceName\": \"...\",\n      \"sourceUrl\": \"https://... or empty string\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"...\",\n    \"filingDate\": \"YYYY-MM-DD or empty string\",\n    \"reportingPeriod\": \"e.g. Q1 2025 or empty string\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      { \"asset\": \"...\", \"action\": \"Increased|Reduced|New|Exited|Unknown\", \"summary\": \"...\" }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"...\",\n    \"positioningSummary\": \"...\",\n    \"consistency\": \"Consistent|PartlyConsistent|Conflicting|InsufficientEvidence\",\n    \"explanation\": \"...\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": true,\n    \"severity\": \"None|Low|Medium|High\",\n    \"summary\": \"...\"\n  },\n  \"thingsToWatch\": [\"...\", \"...\"],\n  \"lastCheckedAt\": \"ISO timestamp\",\n  \"lastMaterialUpdateAt\": \"ISO timestamp\"\n}"
+              },
+              {
+                "role": "user",
+                "content": "UTC: 2026-08-07T14:37:46.786Z\n\nINVESTOR: Bill Ackman (Pershing Square Capital Management)\nFOCUS: Koncentrerede aktiecases / aktivistinvestering\n\nANALYSIS PRIORITIES FOR THIS INVESTOR:\n- Pershing Square investor communications and filings\n- direct public statements and social media\n- major concentrated holdings and activist theses\n- macro statements and material position changes\n\nINSTRUCTIONS:\nPerform a full analysis of what Bill Ackman currently thinks and does.\n\nSearch for: recent public statements, interviews, investor letters, regulatory filings,\nmajor disclosed portfolio changes, macro and sector views, bearish/bullish themes.\n\nThis is a first-time analysis — set updateType='FullAnalysis'.\nchangeSincePrevious.changed=false, severity='None', summary='First analysis'."
+              }
+            ]
+          },
+          "rawResponse": "{\n  \"updateType\": \"FullAnalysis\",\n  \"headline\": \"Ackman shifts to permanent-capital, builds Microsoft stake, exits Universal bid\",\n  \"shortSummary\": \"Bill Ackman is pivoting toward long-term, concentrated holdings via permanent-capital vehicles, notably building a large Microsoft position, launching Pershing Square USA, and exiting his Universal Music bid.\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish\",\n    \"summary\": \"Ackman is bullish on high-quality, durable growth companies trading at discounts, especially in large-cap tech, and is executing a permanent-capital strategy modeled on Berkshire Hathaway. He sees current markets as attractive entry points.\",\n    \"confidence\": \"High\"\n  },\n  \"keyThemes\": [\n    {\n      \"title\": \"Permanent-capital strategy\",\n      \"stance\": \"Bullish\",\n      \"summary\": \"Ackman is shifting from activist campaigns to long-term ownership via closed-end funds and permanent capital, aiming to compound quality businesses over time.\"\n    },\n    {\n      \"title\": \"Concentrated tech bets\",\n      \"stance\": \"Bullish\",\n      \"summary\": \"He has built a $2.1 billion stake in Microsoft, exited Alphabet, and is doubling down on mega-cap tech like Amazon and Meta.\"\n    },\n    {\n      \"title\": \"Closed-end fund launch\",\n      \"stance\": \"Neutral\",\n      \"summary\": \"Pershing Square USA (PSUS) IPO launched in April 2026, trading at a discount to NAV; Ackman teased four new stock bets to be disclosed in Q2 report.\"\n    },\n    {\n      \"title\": \"Universal Music bid and exit\",\n      \"stance\": \"Neutral\",\n      \"summary\": \"Ackman made a $64 billion takeover offer for Universal Music Group, which was rejected; he subsequently sold his entire stake.\"\n    },\n    {\n      \"title\": \"Macro outlook\",\n      \"stance\": \"Bullish\",\n      \"summary\": \"He sees no imminent market crash, remains enthusiastic about AI, Israel, and the U.S. pro-business environment.\"\n    }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"Built $2.1 billion Microsoft stake\",\n      \"date\": \"2026-05-15\",\n      \"summary\": \"Pershing Square built a large position in Microsoft, citing undervaluation of its 365 suite and Azure franchise.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"Bloomberg\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Teased four new stock bets in PSUS\",\n      \"date\": \"2026-06-15\",\n      \"summary\": \"Ackman said he made four new investments for his funds, including Pershing Square USA, to be disclosed in Q2 report.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"Medium\",\n      \"sourceName\": \"Reuters\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Shift to permanent-capital model\",\n      \"date\": \"2026-06\",\n      \"summary\": \"Ackman described moving from activist campaigns to long-term permanent-capital holdings, modeling a 'Berkshire Hathaway 2'.\",\n      \"evidenceType\": \"Direct\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"All‑In Podcast / Dealroom summary\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"Universal Music bid and exit\",\n      \"date\": \"2026-04 to 2026-06\",\n      \"summary\": \"Ackman made a $64 billion takeover offer for Universal Music Group in April, which was rejected; he then sold his entire stake in June.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"High\",\n      \"sourceName\": \"AP News & El País\",\n      \"sourceUrl\": \"\"\n    },\n    {\n      \"title\": \"No market crash, bullish on Israel\",\n      \"date\": \"2026-07-19\",\n      \"summary\": \"Ackman said he doesn’t foresee a market crash and remains enthusiastic about Israel’s economic and military positioning.\",\n      \"evidenceType\": \"ReliableReporting\",\n      \"confidence\": \"Medium\",\n      \"sourceName\": \"Globes\",\n      \"sourceUrl\": \"\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"Portfolio is highly concentrated in large-cap tech, notably Microsoft; PSUS launched; Universal stake exited.\",\n    \"filingDate\": \"\",\n    \"reportingPeriod\": \"\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      {\n        \"asset\": \"Microsoft\",\n        \"action\": \"New\",\n        \"summary\": \"Built a $2.1 billion stake, making it a core holding.\"\n      },\n      {\n        \"asset\": \"Alphabet (Google)\",\n        \"action\": \"Exited\",\n        \"summary\": \"Sold entire position to redeploy into Microsoft.\"\n      },\n      {\n        \"asset\": \"Universal Music Group\",\n        \"action\": \"Exited\",\n        \"summary\": \"Sold entire stake after takeover bid was rejected.\"\n      }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"Ackman publicly advocates for long-term, permanent-capital investing in quality companies, sees markets as attractive, and remains bullish on tech and Israel.\",\n    \"positioningSummary\": \"He has acted by building a large Microsoft position, exiting Alphabet and Universal, and launching a closed-end fund to hold concentrated positions.\",\n    \"consistency\": \"Consistent\",\n    \"explanation\": \"His actions—new stakes in tech, fund launch, exits—align with his stated shift to permanent-capital, concentrated, quality investing.\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": false,\n    \"severity\": \"None\",\n    \"summary\": \"First analysis\"\n  },\n  \"thingsToWatch\": [\n    \"Q2 2026 investor report for PSUS to identify the four new stock bets\",\n    \"August 13, 2026 Q2 results and commentary\",\n    \"Any further activist campaigns or board engagements\"\n  ],\n  \"lastCheckedAt\": \"2026-08-07T14:37:46.786Z\",\n  \"lastMaterialUpdateAt\": \"2026-08-07T14:37:46.786Z\"\n}",
+          "usage": {
+            "prompt_tokens": 18323,
+            "completion_tokens": 1349,
+            "total_tokens": 19672
+          },
+          "calledAt": "2026-08-07T14:37:46.788Z",
+          "webSearchUsed": true
+        }
+      },
+      "david-tepper": {
+        "updateType": "FullAnalysis",
+        "headline": "Tepper doubles down on AI‑linked tech, cautious macro tone persists",
+        "shortSummary": "David Tepper’s Appaloosa is heavily concentrated in AI‑infrastructure beneficiaries like Amazon and Micron, delivering strong H1 returns, while he signals macro caution.",
+        "currentView": {
+          "overallTone": "Mixed",
+          "summary": "Tepper remains opportunistic and bullish on AI‑related tech exposures, particularly memory chips and cloud infrastructure, yet retains a cautious macro overlay amid uncertain markets.",
+          "confidence": "High"
+        },
+        "keyThemes": [
+          {
+            "title": "AI‑infrastructure and memory‑chip exposure",
+            "stance": "Bullish",
+            "summary": "Appaloosa has significantly increased positions in Micron and Amazon, riding AI‑driven memory demand and cloud infrastructure growth."
+          },
+          {
+            "title": "Portfolio concentration and China‑to‑US rotation",
+            "stance": "Neutral",
+            "summary": "Holdings have narrowed sharply, shifting from China‑centric names like Alibaba toward US tech and cyclicals."
+          },
+          {
+            "title": "Macro caution despite strong performance",
+            "stance": "Cautious",
+            "summary": "Despite a 32% gross return in H1, Tepper signals nervousness about broader market conditions."
+          }
+        ],
+        "latestDevelopments": [
+          {
+            "title": "Appaloosa delivers 32% gross return in H1 2026",
+            "date": "2026‑07‑06",
+            "summary": "Bloomberg reports Appaloosa gained 32% gross in H1, driven entirely by Q2 performance, led by memory‑chip winners like Micron, Samsung, SK Hynix, Kioxia, Sandisk.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "High",
+            "sourceName": "Bloomberg via Investing.com",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Q1 2026 13F: Amazon doubles to 15.2%, Micron deepens, new SNDK position",
+            "date": "2026‑05‑15",
+            "summary": "13F shows Amazon stake up ~98% to ~15.2% of portfolio, Micron increased, Uber up, new SanDisk position, exits in AAL, OC, MHK, IQV.",
+            "evidenceType": "Filing",
+            "confidence": "High",
+            "sourceName": "SEC 13F via Seeking Alpha/Inteliview",
+            "sourceUrl": ""
+          },
+          {
+            "title": "Tepper expresses market nervousness",
+            "date": "2026‑01‑19",
+            "summary": "At SALT conference, Tepper said “It’s nervous time,” advising caution amid challenging markets.",
+            "evidenceType": "ReliableReporting",
+            "confidence": "Medium",
+            "sourceName": "Institutional Investor",
+            "sourceUrl": ""
+          }
+        ],
+        "positioning": {
+          "summary": "Highly concentrated US‑tech and AI‑infrastructure portfolio, with top holdings Amazon (~15%), Micron (~9–10%), Uber (~7.7%), new SanDisk position; exited several non‑core names.",
+          "filingDate": "2026‑05‑15",
+          "reportingPeriod": "Q1 2026",
+          "isDelayedData": true,
+          "notableChanges": [
+            {
+              "asset": "Amazon",
+              "action": "Increased",
+              "summary": "Stake nearly doubled to ~15.2% of portfolio (~4.3M shares)."
+            },
+            {
+              "asset": "Micron",
+              "action": "Increased",
+              "summary": "Deepened exposure to memory‑chip leader tied to AI demand."
+            },
+            {
+              "asset": "Uber",
+              "action": "Increased",
+              "summary": "Position surged ~242% to ~7.7% of portfolio."
+            },
+            {
+              "asset": "SanDisk (SNDK)",
+              "action": "New",
+              "summary": "Opened new position."
+            },
+            {
+              "asset": "Alibaba, AAL, OC, MHK, IQV",
+              "action": "Exited/Reduced",
+              "summary": "Trimmed or exited several China and non‑core holdings."
+            }
+          ]
+        },
+        "sayVsDo": {
+          "statementsSummary": "Tepper publicly cautioned that markets are ‘nervous’ and not a time to be aggressive.",
+          "positioningSummary": "He has aggressively increased exposure to AI‑linked tech names, concentrating the portfolio in high‑conviction bets.",
+          "consistency": "PartlyConsistent",
+          "explanation": "While his positioning shows bullish conviction in AI‑infrastructure, his public tone remains cautious, suggesting a hedged opportunistic stance."
+        },
+        "changeSincePrevious": {
+          "changed": false,
+          "severity": "None",
+          "summary": "First analysis"
+        },
+        "thingsToWatch": [
+          "Q2 2026 13F filing for updated positioning",
+          "Any further public commentary on macro risks or AI cycle sustainability",
+          "Performance and positioning shifts in memory‑chip and cloud infrastructure names"
+        ],
+        "lastCheckedAt": "2026-08-07T14:37:56.550Z",
+        "lastMaterialUpdateAt": "2026-08-07T14:37:56.550Z",
+        "person": {
+          "id": "david-tepper",
+          "name": "David Tepper",
+          "organization": "Appaloosa Management",
+          "focusLabel": "Makro / opportunistiske investeringer / contrarian"
+        },
+        "analysisDuration": 10057,
+        "_debug": {
+          "request": {
+            "model": "gpt-4o",
+            "max_output_tokens": 3000,
+            "temperature": 0.1,
+            "tools": [
+              {
+                "type": "web_search",
+                "search_context_size": "high"
+              }
+            ],
+            "tool_choice": "required",
+            "input": [
+              {
+                "role": "system",
+                "content": "You are an investment intelligence analyst specialising in tracking notable investors.\n\nYour task is to find and synthesise the most recent, verifiable information about what a specific investor currently thinks, says, or does. You are NOT writing a biography.\n\nFOCUS ON:\n- Recent opinions, interviews, public statements from the last 3-6 months\n- Investor letters or memos\n- Regulatory filings (13F, SEC filings)\n- Portfolio disclosures and major disclosed position changes\n- Macro and sector views\n- Bearish/bullish themes\n- Material changes since any previous analysis provided\n\nSOURCE DISCIPLINE — classify every important item by evidenceType:\n- Direct: official investor letter, memo, regulatory filing, direct interview, verified social-media statement, official fund communication\n- Filing: 13F or other regulatory filing (always note the filing date and reporting period; filings are delayed)\n- ReliableReporting: Reuters, Bloomberg, Financial Times, Wall Street Journal, CNBC when directly reporting the investor's statement\n- Interpretation: OpenAI infers the investor's likely view from filings, portfolio changes, or multiple pieces of evidence\n\nCRITICAL RULES:\n- Never present Interpretation as a direct quote or confirmed opinion\n- Never fabricate quotes, statistics, or positions\n- Always show filing dates and reporting periods — filings are delayed and may not represent the current portfolio\n- Do not assume a filing proves the investor's exact opinion\n- For NoMaterialChange: preserve the previous view summary, update lastCheckedAt, do not invent new information\n\nSAYS VS DOES:\nWhere relevant, explicitly separate what the investor says/thinks from what their disclosed positioning shows.\n\nOUTPUT FORMAT:\nReturn a single JSON object matching this exact structure. No markdown. No prose outside the JSON.\n\n{\n  \"updateType\": \"FullAnalysis|MaterialUpdate|NoMaterialChange\",\n  \"headline\": \"Very short description of the latest important point (≤15 words)\",\n  \"shortSummary\": \"1-2 sentences maximum\",\n  \"currentView\": {\n    \"overallTone\": \"Bullish|Cautious|Bearish|Mixed|Unclear\",\n    \"summary\": \"2-3 sentence view summary\",\n    \"confidence\": \"High|Medium|Low\"\n  },\n  \"keyThemes\": [\n    { \"title\": \"...\", \"stance\": \"Bullish|Bearish|Cautious|Neutral|Unclear\", \"summary\": \"...\" }\n  ],\n  \"latestDevelopments\": [\n    {\n      \"title\": \"...\",\n      \"date\": \"YYYY-MM-DD or approximate month\",\n      \"summary\": \"...\",\n      \"evidenceType\": \"Direct|Filing|ReliableReporting|Interpretation\",\n      \"confidence\": \"High|Medium|Low\",\n      \"sourceName\": \"...\",\n      \"sourceUrl\": \"https://... or empty string\"\n    }\n  ],\n  \"positioning\": {\n    \"summary\": \"...\",\n    \"filingDate\": \"YYYY-MM-DD or empty string\",\n    \"reportingPeriod\": \"e.g. Q1 2025 or empty string\",\n    \"isDelayedData\": true,\n    \"notableChanges\": [\n      { \"asset\": \"...\", \"action\": \"Increased|Reduced|New|Exited|Unknown\", \"summary\": \"...\" }\n    ]\n  },\n  \"sayVsDo\": {\n    \"statementsSummary\": \"...\",\n    \"positioningSummary\": \"...\",\n    \"consistency\": \"Consistent|PartlyConsistent|Conflicting|InsufficientEvidence\",\n    \"explanation\": \"...\"\n  },\n  \"changeSincePrevious\": {\n    \"changed\": true,\n    \"severity\": \"None|Low|Medium|High\",\n    \"summary\": \"...\"\n  },\n  \"thingsToWatch\": [\"...\", \"...\"],\n  \"lastCheckedAt\": \"ISO timestamp\",\n  \"lastMaterialUpdateAt\": \"ISO timestamp\"\n}"
+              },
+              {
+                "role": "user",
+                "content": "UTC: 2026-08-07T14:37:56.550Z\n\nINVESTOR: David Tepper (Appaloosa Management)\nFOCUS: Makro / opportunistiske investeringer / contrarian\n\nANALYSIS PRIORITIES FOR THIS INVESTOR:\n- major interviews and public appearances\n- Appaloosa Management 13F filings\n- macro positioning and opportunistic/contrarian themes\n- major equity exposure changes\n\nINSTRUCTIONS:\nPerform a full analysis of what David Tepper currently thinks and does.\n\nSearch for: recent public statements, interviews, investor letters, regulatory filings,\nmajor disclosed portfolio changes, macro and sector views, bearish/bullish themes.\n\nThis is a first-time analysis — set updateType='FullAnalysis'.\nchangeSincePrevious.changed=false, severity='None', summary='First analysis'."
+              }
+            ]
+          },
+          "rawResponse": "{\"updateType\":\"FullAnalysis\",\"headline\":\"Tepper doubles down on AI‑linked tech, cautious macro tone persists\",\"shortSummary\":\"David Tepper’s Appaloosa is heavily concentrated in AI‑infrastructure beneficiaries like Amazon and Micron, delivering strong H1 returns, while he signals macro caution.\",\"currentView\":{\"overallTone\":\"Mixed\",\"summary\":\"Tepper remains opportunistic and bullish on AI‑related tech exposures, particularly memory chips and cloud infrastructure, yet retains a cautious macro overlay amid uncertain markets.\",\"confidence\":\"High\"},\"keyThemes\":[{\"title\":\"AI‑infrastructure and memory‑chip exposure\",\"stance\":\"Bullish\",\"summary\":\"Appaloosa has significantly increased positions in Micron and Amazon, riding AI‑driven memory demand and cloud infrastructure growth.\"},{\"title\":\"Portfolio concentration and China‑to‑US rotation\",\"stance\":\"Neutral\",\"summary\":\"Holdings have narrowed sharply, shifting from China‑centric names like Alibaba toward US tech and cyclicals.\"},{\"title\":\"Macro caution despite strong performance\",\"stance\":\"Cautious\",\"summary\":\"Despite a 32% gross return in H1, Tepper signals nervousness about broader market conditions.\"}],\"latestDevelopments\":[{\"title\":\"Appaloosa delivers 32% gross return in H1 2026\",\"date\":\"2026‑07‑06\",\"summary\":\"Bloomberg reports Appaloosa gained 32% gross in H1, driven entirely by Q2 performance, led by memory‑chip winners like Micron, Samsung, SK Hynix, Kioxia, Sandisk.\",\"evidenceType\":\"ReliableReporting\",\"confidence\":\"High\",\"sourceName\":\"Bloomberg via Investing.com\",\"sourceUrl\":\"\"},{\"title\":\"Q1 2026 13F: Amazon doubles to 15.2%, Micron deepens, new SNDK position\",\"date\":\"2026‑05‑15\",\"summary\":\"13F shows Amazon stake up ~98% to ~15.2% of portfolio, Micron increased, Uber up, new SanDisk position, exits in AAL, OC, MHK, IQV.\",\"evidenceType\":\"Filing\",\"confidence\":\"High\",\"sourceName\":\"SEC 13F via Seeking Alpha/Inteliview\",\"sourceUrl\":\"\"},{\"title\":\"Tepper expresses market nervousness\",\"date\":\"2026‑01‑19\",\"summary\":\"At SALT conference, Tepper said “It’s nervous time,” advising caution amid challenging markets.\",\"evidenceType\":\"ReliableReporting\",\"confidence\":\"Medium\",\"sourceName\":\"Institutional Investor\",\"sourceUrl\":\"\"}],\"positioning\":{\"summary\":\"Highly concentrated US‑tech and AI‑infrastructure portfolio, with top holdings Amazon (~15%), Micron (~9–10%), Uber (~7.7%), new SanDisk position; exited several non‑core names.\",\"filingDate\":\"2026‑05‑15\",\"reportingPeriod\":\"Q1 2026\",\"isDelayedData\":true,\"notableChanges\":[{\"asset\":\"Amazon\",\"action\":\"Increased\",\"summary\":\"Stake nearly doubled to ~15.2% of portfolio (~4.3M shares).\"},{\"asset\":\"Micron\",\"action\":\"Increased\",\"summary\":\"Deepened exposure to memory‑chip leader tied to AI demand.\"},{\"asset\":\"Uber\",\"action\":\"Increased\",\"summary\":\"Position surged ~242% to ~7.7% of portfolio.\"},{\"asset\":\"SanDisk (SNDK)\",\"action\":\"New\",\"summary\":\"Opened new position.\"},{\"asset\":\"Alibaba, AAL, OC, MHK, IQV\",\"action\":\"Exited/Reduced\",\"summary\":\"Trimmed or exited several China and non‑core holdings.\"}]},\"sayVsDo\":{\"statementsSummary\":\"Tepper publicly cautioned that markets are ‘nervous’ and not a time to be aggressive.\",\"positioningSummary\":\"He has aggressively increased exposure to AI‑linked tech names, concentrating the portfolio in high‑conviction bets.\",\"consistency\":\"PartlyConsistent\",\"explanation\":\"While his positioning shows bullish conviction in AI‑infrastructure, his public tone remains cautious, suggesting a hedged opportunistic stance.\"},\"changeSincePrevious\":{\"changed\":false,\"severity\":\"None\",\"summary\":\"First analysis\"},\"thingsToWatch\":[\"Q2 2026 13F filing for updated positioning\",\"Any further public commentary on macro risks or AI cycle sustainability\",\"Performance and positioning shifts in memory‑chip and cloud infrastructure names\"],\"lastCheckedAt\":\"2026‑08‑07T14:37:56.550Z\",\"lastMaterialUpdateAt\":\"2026‑08‑07T14:37:56.550Z\"}",
+          "usage": {
+            "prompt_tokens": 18191,
+            "completion_tokens": 953,
+            "total_tokens": 19144
+          },
+          "calledAt": "2026-08-07T14:37:56.551Z",
+          "webSearchUsed": true
+        }
+      }
+    },
+    "createdAt": "2026-08-07T14:37:12.844Z",
+    "updatedAt": "2026-08-07T14:38:06.607Z"
+  },
+  "investor-watch-history": {
+    "moduleName": "investor-watch-history",
+    "result": {
+      "michael-burry": [
+        {
+          "timestamp": "2026-08-07T14:37:01.244Z",
+          "investorId": "michael-burry",
+          "updateType": "FullAnalysis",
+          "overallTone": "Bearish",
+          "headline": "Burry warns of AI/tech bubble, opens new shorts",
+          "changeSeverity": "None",
+          "keyThemeTitles": [
+            "AI/Tech Bubble Warning",
+            "Derisking Advice",
+            "New Short Positions",
+            "‘Too Big to Save’ Thesis"
+          ],
+          "notablePositioningChanges": [
+            "New Tesla, Nvidia, SOXX, AMAT, Caterpillar"
+          ]
+        }
+      ],
+      "stanley-druckenmiller": [
+        {
+          "timestamp": "2026-08-07T14:37:12.851Z",
+          "investorId": "stanley-druckenmiller",
+          "updateType": "FullAnalysis",
+          "overallTone": "Cautious",
+          "headline": "Druckenmiller sees late-cycle liquidity risks, cautious on asset bubbles",
+          "changeSeverity": "None",
+          "keyThemeTitles": [
+            "Asset Bubble Risk",
+            "Liquidity Tightening",
+            "Contrarian Conviction",
+            "Copper as Macro Trade"
+          ],
+          "notablePositioningChanges": []
+        }
+      ],
+      "howard-marks": [
+        {
+          "timestamp": "2026-08-07T14:37:22.020Z",
+          "investorId": "howard-marks",
+          "updateType": "FullAnalysis",
+          "overallTone": "Cautious",
+          "headline": "Marks warns of private credit excess and mispricing amid AI-driven sentiment swings",
+          "changeSeverity": "None",
+          "keyThemeTitles": [
+            "Private Credit Standards",
+            "Market Psychology & Mispricing",
+            "Cycle Awareness & Bargain Hunting"
+          ],
+          "notablePositioningChanges": []
+        }
+      ],
+      "warren-buffett": [
+        {
+          "timestamp": "2026-08-07T14:37:32.575Z",
+          "investorId": "warren-buffett",
+          "updateType": "FullAnalysis",
+          "overallTone": "Cautious",
+          "headline": "Buffett remains patient amid stretched valuations, record cash, and portfolio reshuffle",
+          "changeSeverity": "None",
+          "keyThemeTitles": [
+            "Valuation Discipline",
+            "Record Cash Hoard",
+            "Portfolio Reshuffle under Abel",
+            "Succession and Capital Allocation Continuity"
+          ],
+          "notablePositioningChanges": [
+            "Reduced Chevron, Visa, Mastercard, Constellation Brands, UnitedHealth, Domino’s, Aon",
+            "New/Increased Alphabet (Class A & C), Delta Air Lines",
+            "New Share repurchases"
+          ]
+        }
+      ],
+      "bill-ackman": [
+        {
+          "timestamp": "2026-08-07T14:37:46.786Z",
+          "investorId": "bill-ackman",
+          "updateType": "FullAnalysis",
+          "overallTone": "Bullish",
+          "headline": "Ackman shifts to permanent-capital, builds Microsoft stake, exits Universal bid",
+          "changeSeverity": "None",
+          "keyThemeTitles": [
+            "Permanent-capital strategy",
+            "Concentrated tech bets",
+            "Closed-end fund launch",
+            "Universal Music bid and exit",
+            "Macro outlook"
+          ],
+          "notablePositioningChanges": [
+            "New Microsoft",
+            "Exited Alphabet (Google)",
+            "Exited Universal Music Group"
+          ]
+        }
+      ],
+      "david-tepper": [
+        {
+          "timestamp": "2026-08-07T14:37:56.550Z",
+          "investorId": "david-tepper",
+          "updateType": "FullAnalysis",
+          "overallTone": "Mixed",
+          "headline": "Tepper doubles down on AI‑linked tech, cautious macro tone persists",
+          "changeSeverity": "None",
+          "keyThemeTitles": [
+            "AI‑infrastructure and memory‑chip exposure",
+            "Portfolio concentration and China‑to‑US rotation",
+            "Macro caution despite strong performance"
+          ],
+          "notablePositioningChanges": [
+            "Increased Amazon",
+            "Increased Micron",
+            "Increased Uber",
+            "New SanDisk (SNDK)",
+            "Exited/Reduced Alibaba, AAL, OC, MHK, IQV"
+          ]
+        }
+      ]
+    },
+    "createdAt": "2026-08-07T14:37:12.847Z",
+    "updatedAt": "2026-08-07T14:38:06.613Z"
   }
 }

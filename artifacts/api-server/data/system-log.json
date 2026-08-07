@@ -1,89 +1,5 @@
 [
   {
-    "id": "57b0cb79-9bea-42be-bf3e-eca7ab24a00f",
-    "timestamp": "2026-08-04T19:59:43.030Z",
-    "module": "Portfolio Manager",
-    "level": "warning",
-    "message": "Portfolio update is using mock Saxo data"
-  },
-  {
-    "id": "275289dd-57d3-4c3f-b140-1f1f62f203e2",
-    "timestamp": "2026-08-04T19:59:43.034Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "608dd856-83b6-4a4f-aaa1-53c4eb26f6aa",
-    "timestamp": "2026-08-04T19:59:43.038Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "c06c0bb7-68da-40b3-9191-9afa23ea1ef7",
-    "timestamp": "2026-08-04T19:59:43.043Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (30ms, change: None)"
-  },
-  {
-    "id": "787f5908-cfee-4b4c-9b84-23e3b5ee62ba",
-    "timestamp": "2026-08-04T19:59:43.519Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "0f15e4df-accf-40da-85e4-7a0463fe7b46",
-    "timestamp": "2026-08-04T19:59:43.522Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "e845a6a1-35d5-49e8-9130-23e8ee45c671",
-    "timestamp": "2026-08-04T19:59:43.525Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "8309703d-3588-4c6c-9feb-57e8a496968c",
-    "timestamp": "2026-08-04T19:59:44.727Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
-  },
-  {
-    "id": "910ecc72-f065-4289-bd52-2569ab253fd2",
-    "timestamp": "2026-08-04T19:59:48.725Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed: 3 market-moving stories found"
-  },
-  {
-    "id": "a87adb81-a956-4613-a16c-cd8dbe5ee8c6",
-    "timestamp": "2026-08-04T19:59:48.727Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via RunAllNow (5211ms, change: Medium)"
-  },
-  {
-    "id": "3671d7fb-457a-486a-96c5-292a24fa0c9e",
-    "timestamp": "2026-08-04T19:59:50.708Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
-    "id": "511d2d89-1545-4560-8fae-2769ce895a8c",
-    "timestamp": "2026-08-04T19:59:50.711Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via RunAllNow (7195ms, change: Medium)"
-  },
-  {
     "id": "2f3cfb8a-fd7e-4c4b-8471-ef22f8936ed8",
     "timestamp": "2026-08-04T20:00:00.083Z",
     "module": "Event Monitor",
@@ -3498,5 +3414,89 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Full cycle completed in 139s"
+  },
+  {
+    "id": "d757787f-2df6-4e24-b630-65068c1b94de",
+    "timestamp": "2026-08-07T14:37:01.244Z",
+    "module": "Investor Watch",
+    "level": "user",
+    "message": "User manually started analysis for Michael Burry"
+  },
+  {
+    "id": "13b92ae2-ac1b-4a75-8bee-8c323550d2c8",
+    "timestamp": "2026-08-07T14:37:12.850Z",
+    "module": "Investor Watch",
+    "level": "info",
+    "message": "Michael Burry — new material view detected. (None change)"
+  },
+  {
+    "id": "0f5c8806-6806-496b-808e-f4bb7d7a4e4d",
+    "timestamp": "2026-08-07T14:37:12.851Z",
+    "module": "Investor Watch",
+    "level": "user",
+    "message": "User manually started analysis for Stanley Druckenmiller"
+  },
+  {
+    "id": "f19d1d00-9694-46c8-a86f-c154d2361bca",
+    "timestamp": "2026-08-07T14:37:22.019Z",
+    "module": "Investor Watch",
+    "level": "info",
+    "message": "Stanley Druckenmiller — new material view detected. (None change)"
+  },
+  {
+    "id": "ae733417-4642-48db-bc5d-981817a920dc",
+    "timestamp": "2026-08-07T14:37:22.020Z",
+    "module": "Investor Watch",
+    "level": "user",
+    "message": "User manually started analysis for Howard Marks"
+  },
+  {
+    "id": "0315e466-1e98-4812-862e-5b47d663c2af",
+    "timestamp": "2026-08-07T14:37:32.574Z",
+    "module": "Investor Watch",
+    "level": "info",
+    "message": "Howard Marks — new material view detected. (None change)"
+  },
+  {
+    "id": "e1fa73c0-1fbf-4184-a2d0-08c2d60cd755",
+    "timestamp": "2026-08-07T14:37:32.575Z",
+    "module": "Investor Watch",
+    "level": "user",
+    "message": "User manually started analysis for Warren Buffett"
+  },
+  {
+    "id": "678e522b-4c63-4c50-a4ad-27d35d385039",
+    "timestamp": "2026-08-07T14:37:46.785Z",
+    "module": "Investor Watch",
+    "level": "info",
+    "message": "Warren Buffett — new material view detected. (None change)"
+  },
+  {
+    "id": "2fe1a957-d8fb-4f99-a5ff-892fdcd10796",
+    "timestamp": "2026-08-07T14:37:46.786Z",
+    "module": "Investor Watch",
+    "level": "user",
+    "message": "User manually started analysis for Bill Ackman"
+  },
+  {
+    "id": "52efa486-40f9-4a23-b650-33e058d1a951",
+    "timestamp": "2026-08-07T14:37:56.543Z",
+    "module": "Investor Watch",
+    "level": "info",
+    "message": "Bill Ackman — new material view detected. (None change)"
+  },
+  {
+    "id": "332268b6-3393-44cd-acc8-1426eff3777f",
+    "timestamp": "2026-08-07T14:37:56.550Z",
+    "module": "Investor Watch",
+    "level": "user",
+    "message": "User manually started analysis for David Tepper"
+  },
+  {
+    "id": "65c26c16-3369-42a5-a509-355aa00112ef",
+    "timestamp": "2026-08-07T14:38:06.618Z",
+    "module": "Investor Watch",
+    "level": "info",
+    "message": "David Tepper — new material view detected. (None change)"
   }
 ]
