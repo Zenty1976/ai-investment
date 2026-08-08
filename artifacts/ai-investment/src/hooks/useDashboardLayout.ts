@@ -5,9 +5,9 @@ import type { LayoutItem } from "react-grid-layout";
 // margin[1]=0 means element height = h*12 exactly, so snap formula has
 // zero accumulated error at any tile size (each step is always ~6 px drag).
 // w values are 2× the original 12-col values; h values give 12px per row.
-const STORAGE_KEY_BASE = "ai-dashboard-layout-v10";
-const MODULES_KEY_BASE = "ai-dashboard-modules-v10";
-export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v10";
+const STORAGE_KEY_BASE = "ai-dashboard-layout-v11";
+const MODULES_KEY_BASE = "ai-dashboard-modules-v11";
+export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v11";
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "automation":          { w: 12, h: 32 },
@@ -18,10 +18,10 @@ const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "sector-monitor":      { w:  8, h: 32 },
   "market-alerts":       { w:  8, h: 32 },
   "risk-analyzer":       { w:  8, h: 32 },
-  "portfolio-analyzer":  { w: 12, h: 40 },
-  "opportunity-finder":  { w: 12, h: 40 },
-  "company-monitor":     { w: 12, h: 40 },
-  "trade-decision":      { w: 12, h: 40 },
+  "portfolio-analyzer":  { w: 12, h: 32 },
+  "opportunity-finder":  { w: 12, h: 32 },
+  "company-monitor":     { w: 12, h: 32 },
+  "trade-decision":      { w: 12, h: 32 },
   "investor-watch":      { w: 12, h: 32 },
 };
 
@@ -53,13 +53,13 @@ export const DEFAULT_LAYOUT: LayoutItem[] = [
   { i: "market-alerts",      x:  8, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
   { i: "risk-analyzer",      x: 16, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
   // Row 96 — deep analysis
-  { i: "portfolio-analyzer", x:  0, y:  96, w: 12, h: 40, minW: 2, minH: 2 },
-  { i: "opportunity-finder", x: 12, y:  96, w: 12, h: 40, minW: 2, minH: 2 },
-  // Row 136 — decisions
-  { i: "company-monitor",    x:  0, y: 136, w: 12, h: 40, minW: 2, minH: 2 },
-  { i: "trade-decision",     x: 12, y: 136, w: 12, h: 40, minW: 2, minH: 2 },
-  // Row 176 — informational
-  { i: "investor-watch",     x:  0, y: 176, w: 12, h: 32, minW: 2, minH: 2 },
+  { i: "portfolio-analyzer", x:  0, y:  96, w: 12, h: 32, minW: 2, minH: 2 },
+  { i: "opportunity-finder", x: 12, y:  96, w: 12, h: 32, minW: 2, minH: 2 },
+  // Row 128 — decisions
+  { i: "company-monitor",    x:  0, y: 128, w: 12, h: 32, minW: 2, minH: 2 },
+  { i: "trade-decision",     x: 12, y: 128, w: 12, h: 32, minW: 2, minH: 2 },
+  // Row 160 — informational
+  { i: "investor-watch",     x:  0, y: 160, w: 12, h: 32, minW: 2, minH: 2 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {

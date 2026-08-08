@@ -2720,44 +2720,95 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "Medium",
-      "executiveSummary": "Since the last analysis 8.8 hours ago, there are no new developments affecting Microsoft or Serve Robotics. However, a recent legal escalation by Novo Nordisk against Eli Lilly over misleading advertising has emerged and warrants attention.",
-      "headline": "Novo Nordisk escalates legal battle with Eli Lilly over advertising claims",
+      "executiveSummary": "Two developments since the last check warrant attention: OpenAI’s pause of its Astra model due to cybersecurity concerns, and renewed memory‑chip sector weakness amid supply constraints and investor caution. Both have implications for AI‑related exposure and tech sentiment.",
+      "headline": "OpenAI delays Astra model; memory‑chip sell‑off deepens amid supply tightness",
       "alerts": [
         {
-          "title": "Novo Nordisk sues Eli Lilly for misleading advertising",
-          "category": "Company",
+          "title": "OpenAI pauses Astra model release over cybersecurity concerns",
+          "category": "Sector",
           "importance": "Medium",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "NOVO B"
+            "MSFT"
           ],
-          "summary": "Novo Nordisk has filed a lawsuit in the U.S. accusing Eli Lilly of running misleading advertising campaigns that compare Lilly’s Zepbound/Mounjaro to lower-dose Wegovy, omitting Novo’s higher‑dose data.",
-          "whyItMatters": "This legal move intensifies competitive dynamics in the GLP‑1 obesity drug market, potentially influencing market share, brand perception, and pricing dynamics for Wegovy.",
+          "summary": "OpenAI has paused internal development and release of its upcoming Astra model after internal evaluations flagged potential “critical” cyber capabilities, prompting expanded safety testing.",
+          "whyItMatters": "Slows AI innovation momentum and may weigh on AI‑related sentiment and valuations, including Microsoft’s AI exposure.",
+          "recommendedAttention": "Watch",
+          "sourceType": "NewsMonitor",
+          "status": "New"
+        },
+        {
+          "title": "Memory‑chip sector sell‑off intensifies amid supply tightness",
+          "category": "Sector",
+          "importance": "Medium",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [
+            "MSFT"
+          ],
+          "summary": "Memory‑chip stocks are plunging despite strong earnings, as investors question sustainability of AI‑driven demand; DRAM supply remains constrained into 2027, per Apacer CEO.",
+          "whyItMatters": "Heightens volatility in AI infrastructure supply chain, potentially impacting tech capex and cloud/AI growth outlook tied to Microsoft.",
           "recommendedAttention": "Monitor",
-          "sourceType": "Web",
+          "sourceType": "NewsMonitor",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Court filings and any regulatory response to the lawsuit",
-        "Market share trends for Wegovy vs Zepbound in U.S. and EU",
-        "Potential investor sentiment shifts around Novo Nordisk’s competitive positioning"
+        "Further updates on Astra model release timeline and OpenAI safety review",
+        "Memory‑chip pricing trends and supply forecasts into 2027"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-08T06:28:27.521Z",
-      "analysisDuration": 6307,
-      "lastCheckedAt": "2026-08-08T06:28:27.521Z",
-      "lastMeaningfulUpdateAt": "2026-08-08T06:28:27.521Z",
+      "timestamp": "2026-08-08T06:43:52.543Z",
+      "analysisDuration": 4723,
+      "lastCheckedAt": "2026-08-08T06:43:52.543Z",
+      "lastMeaningfulUpdateAt": "2026-08-08T06:43:52.543Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-08T06:28:33.834Z"
+    "updatedAt": "2026-08-08T06:43:57.266Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-08T06:43:52.543Z",
+          "overallAlertLevel": "Medium",
+          "headline": "OpenAI delays Astra model; memory‑chip sell‑off deepens amid supply tightness",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "OpenAI pauses Astra model release over cybersecurity concerns",
+              "category": "Sector",
+              "importance": "Medium",
+              "summary": "OpenAI has paused internal development and release of its upcoming Astra model after internal evaluations flagged potential “critical” cyber capabilities, prompting expanded safety testing.",
+              "normalizedKey": "openai pauses astra model release over cybersecurity concerns|sector"
+            },
+            {
+              "title": "Memory‑chip sector sell‑off intensifies amid supply tightness",
+              "category": "Sector",
+              "importance": "Medium",
+              "summary": "Memory‑chip stocks are plunging despite strong earnings, as investors question sustainability of AI‑driven demand; DRAM supply remains constrained into 2027, per Apacer CEO.",
+              "normalizedKey": "memory‑chip sector sell‑off intensifies amid supply tightness|sector"
+            }
+          ],
+          "newsIds": [
+            "openai-pauses-astra-model-2026-08-07",
+            "memory-chip-selloff-2026-08-06",
+            "tech-investment‑no‑longer‑excites‑markets-2026-08-06",
+            "spacex-earnings‑and‑ai‑capex‑spook‑markets-2026-08-05",
+            "ecb‑holds‑rates‑amid‑energy‑shock‑uncertainty-2026-07-23",
+            "oil‑supply‑recovery‑eases‑prices‑2026‑07"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (July)",
+            "FOMC Minutes (July 28–29 meeting)",
+            "U.S. Producer Price Index (July)",
+            "U.S. Retail Sales (July)"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-08T06:28:27.521Z",
           "overallAlertLevel": "Medium",
@@ -3291,38 +3342,11 @@
             "Australia RBA Monetary Policy Decision"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-02T20:18:25.227Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk ZEUS Phase 3 trial fails to show MACE benefit",
-          "alertCount": 1,
-          "alerts": [
-            {
-              "title": "Novo Nordisk ZEUS Phase 3 trial fails to deliver MACE benefit",
-              "category": "Company",
-              "importance": "High",
-              "summary": "Novo Nordisk announced that its ZEUS Phase 3 trial of ziltivekimab in patients with ASCVD, CKD and inflammation met biological endpoints but did not reduce major adverse cardiovascular events (MACE).",
-              "normalizedKey": "novo nordisk zeus phase 3 trial fails to deliver mace benefit|company"
-            }
-          ],
-          "newsIds": [
-            "middle-east-energy-shock-2026-08-02",
-            "ai-sector-risk-repricing-2026-08-02",
-            "private-credit-vulnerability-2026-08-02"
-          ],
-          "eventTitles": [
-            "U.S. Nonfarm Payrolls (July)",
-            "U.S. Consumer Price Index (July)",
-            "Reserve Bank of Australia Monetary Policy Decision",
-            "U.S. Producer Price Index (July)"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-08T06:28:33.844Z"
+    "updatedAt": "2026-08-08T06:43:57.272Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
