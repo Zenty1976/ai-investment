@@ -190,8 +190,8 @@ export function DashboardGrid() {
           <GridLayout
             layout={effectiveLayout}
             width={gridWidth}
-            cols={4}
-            rowHeight={200}
+            cols={12}
+            rowHeight={100}
             margin={[8, 8]}
             containerPadding={[0, 0]}
             compactType={null}
