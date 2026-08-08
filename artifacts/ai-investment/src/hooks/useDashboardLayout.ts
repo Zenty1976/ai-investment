@@ -5,9 +5,9 @@ import type { LayoutItem } from "react-grid-layout";
 // margin[1]=0 means element height = h*12 exactly, so snap formula has
 // zero accumulated error at any tile size (each step is always ~6 px drag).
 // w values are 2× the original 12-col values; h values give 12px per row.
-const STORAGE_KEY_BASE = "ai-dashboard-layout-v11";
-const MODULES_KEY_BASE = "ai-dashboard-modules-v11";
-export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v11";
+const STORAGE_KEY_BASE = "ai-dashboard-layout-v12";
+const MODULES_KEY_BASE = "ai-dashboard-modules-v12";
+export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v12";
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "automation":          { w: 12, h: 32 },
