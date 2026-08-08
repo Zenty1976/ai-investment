@@ -773,6 +773,34 @@ export function useResetCompanyMonitorData(options?: {
   });
 }
 
+// ── Market Monitor History ────────────────────────────────────────────────────
+
+export interface MarketMonitorHistoryEntry {
+  timestamp: string;
+  sentiment: "Positive" | "Neutral" | "Negative";
+  riskLevel: "Low" | "Moderate" | "High";
+  score: number; // Positive=1, Neutral=0, Negative=-1
+}
+
+export function useGetMarketMonitorHistory() {
+  return useQuery({
+    queryKey: ["market-monitor-history"],
+    queryFn: async () => {
+      try {
+        return await customFetch<{ result: { entries: MarketMonitorHistoryEntry[] } } | null>(
+          "/api/repository/market-monitor-history"
+        );
+      } catch (err: unknown) {
+        // Repository returns 404 when no history exists yet — treat as empty
+        if (err && typeof err === "object" && "status" in err && (err as { status: number }).status === 404) {
+          return null;
+        }
+        throw err;
+      }
+    },
+  });
+}
+
 // ── System Log ───────────────────────────────────────────────────────────────
 
 export type SystemLogLevel = "user" | "info" | "warning" | "error" | "internal";

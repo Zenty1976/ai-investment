@@ -2,51 +2,63 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices are mixed: US markets modestly higher, Asian markets lower; volatility easing. Central banks largely on hold amid geopolitical and inflation uncertainty.",
+      "summary": "Global equity indices rose modestly, led by U.S. markets, while volatility remained subdued amid central banks holding rates steady and easing inflation pressures.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "US equities supported by resilient consumer spending and AI investment, underpinning earnings growth",
-        "Volatility (VIX) declining, indicating reduced short‑term investor fear"
+        "U.S. equities supported by resilient consumer demand and AI investment, boosting market confidence",
+        "Central banks in U.S., Europe, Canada and U.K. held rates steady, reducing near‑term policy uncertainty"
       ],
       "negativeFactors": [
-        "Geopolitical tensions in the Middle East continue to pressure energy markets and inflation outlooks",
-        "Central banks offering limited forward guidance, increasing uncertainty around policy direction"
+        "Geopolitical tensions and energy price volatility continue to pose inflation and growth risks"
       ],
       "strongSectors": [
-        "Healthcare",
-        "Financials"
+        "Technology (notably semiconductors and software)"
       ],
       "weakSectors": [
-        "Technology",
-        "Energy"
+        "Memory chip sector under pressure"
       ],
       "keyRisks": [
-        "Escalation of Middle East conflict disrupting energy supply and inflation",
-        "Uncertainty in central bank communication increasing market volatility"
+        "Middle East conflict disrupting energy markets",
+        "Potential resurgence in inflation prompting central bank tightening"
       ],
       "sources": [
         {
-          "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
+          "title": "How major US stock indexes fared Friday 8/7/2026",
           "url": "",
-          "published": "2026-07-29"
+          "published": "2026-08-07"
         },
         {
-          "title": "Federal Reserve leaves interest rate unchanged with dissents",
-          "url": "",
-          "published": "2026-07-28"
-        },
-        {
-          "title": "ECB keeps rates unchanged amid energy shock uncertainty",
+          "title": "August 2026 - in a nutshell | LGT",
           "url": "",
           "published": "2026-07-23"
+        },
+        {
+          "title": "Europe's central bank holds rates steady amid swings in oil prices",
+          "url": "",
+          "published": "2026-07-23"
+        },
+        {
+          "title": "Bank of Canada maintains the policy rate at 2¼%",
+          "url": "",
+          "published": "2026-07-15"
+        },
+        {
+          "title": "Bank Rate held at 3.75% and inflation at 2.6%",
+          "url": "",
+          "published": "2026-07-30"
+        },
+        {
+          "title": "Market Heatmap Snapshot – Friday, August 7, 2026",
+          "url": "",
+          "published": "2026-08-07"
         }
       ],
-      "timestamp": "2026-08-08T06:28:27.502Z",
-      "analysisDuration": 6903
+      "timestamp": "2026-08-08T06:58:52.621Z",
+      "analysisDuration": 7322
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-08T06:28:34.406Z"
+    "updatedAt": "2026-08-08T06:58:59.943Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -155,116 +167,88 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "AI sector volatility dominates markets as memory chip sell‑off and OpenAI’s model pause inject caution, while central banks remain steady and energy prices ease amid supply recovery.",
-      "overallMarketImpact": "Markets are cautiously optimistic, buoyed by AI leadership but tempered by tech volatility and easing energy pressures.",
+      "executiveSummary": "Geopolitical tensions in the Middle East continue to drive oil volatility and inflation concerns, while central banks remain cautious amid energy shocks. ECB holds rates, markets brace for upcoming U.S. CPI data.",
+      "overallMarketImpact": "Cautious to slightly risk‑off tone, with energy and inflation risks weighing on sentiment.",
       "topStory": {
-        "title": "Memory chip sell‑off rattles tech sector",
-        "summary": "Memory chip stocks plunge amid “sell‑the‑news” reckoning, dragging broader tech indices.",
+        "title": "Middle East tensions fuel oil volatility",
+        "summary": "Renewed conflict around Strait of Hormuz keeps oil prices volatile, stoking inflation and complicating central bank outlooks.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "openai-pauses-astra-model-2026-08-07",
-          "title": "OpenAI pauses “Astra” model development",
-          "summary": "OpenAI halts next‑gen “Astra” model over cybersecurity concerns, raising AI deployment caution.",
-          "category": "AI",
-          "importance": "High",
-          "affectedMarkets": [
-            "AI",
-            "Technology"
-          ],
-          "whyItMatters": "Slows AI innovation momentum and raises regulatory and security concerns across the sector.",
-          "marketImpact": "Negative for AI stocks",
-          "confidence": 0.8,
-          "source": "Reddit (EverHint)",
-          "publishedAt": "2026-08-07T00:00:00Z"
-        },
-        {
-          "id": "memory-chip-selloff-2026-08-06",
-          "title": "Memory chip sector sell‑off",
-          "summary": "Memory chip stocks fall sharply—WDC down ~13%, SNDK ~9%, SK Hynix ~6.3%—triggering tech weakness.",
-          "category": "Equities",
-          "importance": "High",
-          "affectedMarkets": [
-            "Semiconductors",
-            "Technology"
-          ],
-          "whyItMatters": "Memory chips are critical for AI infrastructure; sharp declines signal investor caution on tech capex.",
-          "marketImpact": "Negative for semiconductor and AI‑related equities",
-          "confidence": 0.85,
-          "source": "Reddit (EverHint)",
-          "publishedAt": "2026-08-06T00:00:00Z"
-        },
-        {
-          "id": "tech-investment‑no‑longer‑excites‑markets-2026-08-06",
-          "title": "US tech investment no longer excites markets",
-          "summary": "Despite record investments, tech stocks slide—Alphabet loses 7% after raising 2026 investment outlook.",
-          "category": "Equities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Technology",
-            "Equities"
-          ],
-          "whyItMatters": "Signals investor fatigue with high tech spending despite growth ambitions.",
-          "marketImpact": "Negative for tech equities",
-          "confidence": 0.8,
-          "source": "Le Monde",
-          "publishedAt": "2026-08-06T00:00:00Z"
-        },
-        {
-          "id": "spacex-earnings‑and‑ai‑capex‑spook‑markets-2026-08-05",
-          "title": "SpaceX earnings and AI capex spook markets",
-          "summary": "SpaceX Q2 revenue nearly doubled to $7.8B, but heavy AI infrastructure spending rattles investors.",
-          "category": "Technology",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Aerospace",
-            "AI Infrastructure"
-          ],
-          "whyItMatters": "Highlights tension between revenue growth and investor concern over AI spending levels.",
-          "marketImpact": "Mixed—positive for SpaceX revenue, negative for AI capex sentiment",
-          "confidence": 0.75,
-          "source": "Reddit (EverHint)",
-          "publishedAt": "2026-08-05T00:00:00Z"
-        },
-        {
-          "id": "ecb‑holds‑rates‑amid‑energy‑shock‑uncertainty-2026-07-23",
-          "title": "ECB holds rates amid energy shock uncertainty",
-          "summary": "ECB keeps interest rates steady, citing volatile energy prices and uncertain inflation outlook.",
-          "category": "Rates",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Bonds",
-            "Eurozone Rates"
-          ],
-          "whyItMatters": "Maintains policy stability amid energy‑driven inflation risks.",
-          "marketImpact": "Neutral for euro‑area bonds",
-          "confidence": 0.7,
-          "source": "ECB",
-          "publishedAt": "2026-07-23T00:00:00Z"
-        },
-        {
-          "id": "oil‑supply‑recovery‑eases‑prices‑2026‑07",
-          "title": "Oil supply recovery eases prices",
-          "summary": "Middle East supply recovery outpaces expectations, easing energy price pressures.",
+          "id": "middle-east-oil-volatility-2026-08-08",
+          "title": "Middle East tensions fuel oil volatility",
+          "summary": "Renewed conflict near Strait of Hormuz keeps oil prices volatile, raising inflation and policy uncertainty.",
           "category": "Energy",
-          "importance": "Medium",
+          "importance": "High",
           "affectedMarkets": [
             "Oil",
-            "Commodities"
+            "Inflation",
+            "Central banks"
           ],
-          "whyItMatters": "Reduces inflation and energy cost risks for markets.",
-          "marketImpact": "Negative for oil prices, positive for inflation outlook",
+          "whyItMatters": "Energy supply risks elevate inflation and complicate monetary policy globally.",
+          "marketImpact": "Positive for oil prices; negative for inflation outlook",
+          "confidence": 0.9,
+          "source": "Amundi Research Center",
+          "publishedAt": "2026-07-28"
+        },
+        {
+          "id": "ecb-holds-rates-amid-energy-shock-2026-07-23",
+          "title": "ECB holds rates amid energy shock",
+          "summary": "ECB keeps interest rates unchanged, citing volatile energy prices and uncertain inflation trajectory.",
+          "category": "Rates",
+          "importance": "High",
+          "affectedMarkets": [
+            "Euro bonds",
+            "Euro FX",
+            "European equities"
+          ],
+          "whyItMatters": "ECB’s cautious stance signals limited policy flexibility amid energy‑driven inflation risks.",
+          "marketImpact": "Neutral to negative for European bonds",
+          "confidence": 0.85,
+          "source": "ECB",
+          "publishedAt": "2026-07-23"
+        },
+        {
+          "id": "amundi-market-rotation-out-of-tech-2026-07-28",
+          "title": "Market rotation toward defensives",
+          "summary": "Amundi notes equity flows shifting from crowded trades into defensives, financials and industrials.",
+          "category": "Equities",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Equities",
+            "Financials",
+            "Industrials"
+          ],
+          "whyItMatters": "Rotation reflects investor caution amid inflation and geopolitical risks.",
+          "marketImpact": "Positive for defensives and financials",
           "confidence": 0.75,
-          "source": "Axios",
-          "publishedAt": "2026-07-??T00:00:00Z"
+          "source": "Amundi Research Center",
+          "publishedAt": "2026-07-28"
+        },
+        {
+          "id": "commodity-price-shocks-2026-04",
+          "title": "Commodity prices projected to rise sharply",
+          "summary": "World Bank forecasts 2026 commodity prices up ~16%, energy up ~24%, with oil averaging $86/barrel.",
+          "category": "Commodities",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Energy",
+            "Metals",
+            "Agriculture"
+          ],
+          "whyItMatters": "Broad‑based commodity inflation pressures persist, supporting prices across sectors.",
+          "marketImpact": "Positive for commodities broadly",
+          "confidence": 0.8,
+          "source": "World Bank",
+          "publishedAt": "2026-04-01"
         }
       ],
-      "timestamp": "2026-08-08T06:28:27.506Z",
-      "analysisDuration": 8360
+      "timestamp": "2026-08-08T06:58:52.623Z",
+      "analysisDuration": 7115
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-08T06:28:35.866Z"
+    "updatedAt": "2026-08-08T06:58:59.738Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2720,58 +2704,95 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "Medium",
-      "executiveSummary": "Two developments since the last check warrant attention: OpenAI’s pause of its Astra model due to cybersecurity concerns, and renewed memory‑chip sector weakness amid supply constraints and investor caution. Both have implications for AI‑related exposure and tech sentiment.",
-      "headline": "OpenAI delays Astra model; memory‑chip sell‑off deepens amid supply tightness",
+      "executiveSummary": "Since the last analysis 0.3 hours ago, two meaningful developments have emerged: Novo Nordisk has shifted its U.S. media account to Omnicom starting Q4 2026, and crude oil prices remain elevated amid renewed U.S.–Iran tensions. Both warrant attention ahead of upcoming macro data and earnings.",
+      "headline": "Novo Nordisk media account shift and sustained oil volatility amid Middle East tensions",
       "alerts": [
         {
-          "title": "OpenAI pauses Astra model release over cybersecurity concerns",
-          "category": "Sector",
+          "title": "Novo Nordisk shifts U.S. media account to Omnicom",
+          "category": "Company",
           "importance": "Medium",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "MSFT"
+            "NOVO B"
           ],
-          "summary": "OpenAI has paused internal development and release of its upcoming Astra model after internal evaluations flagged potential “critical” cyber capabilities, prompting expanded safety testing.",
-          "whyItMatters": "Slows AI innovation momentum and may weigh on AI‑related sentiment and valuations, including Microsoft’s AI exposure.",
-          "recommendedAttention": "Watch",
-          "sourceType": "NewsMonitor",
+          "summary": "Novo Nordisk has officially selected Omnicom as its agency‑of‑record for U.S. media buying beginning in Q4 2026, replacing WPP’s Wavemaker. The account is estimated at over $600 million annually.",
+          "whyItMatters": "This signals a strategic shift in marketing execution and could impact brand positioning and promotional effectiveness for Wegovy® and other products in the U.S. market.",
+          "recommendedAttention": "Review",
+          "sourceType": "Web",
           "status": "New"
         },
         {
-          "title": "Memory‑chip sector sell‑off intensifies amid supply tightness",
-          "category": "Sector",
+          "title": "Oil prices remain elevated amid renewed U.S.–Iran tensions",
+          "category": "Macro",
           "importance": "Medium",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "MSFT"
+            "MSFT",
+            "NOVO B"
           ],
-          "summary": "Memory‑chip stocks are plunging despite strong earnings, as investors question sustainability of AI‑driven demand; DRAM supply remains constrained into 2027, per Apacer CEO.",
-          "whyItMatters": "Heightens volatility in AI infrastructure supply chain, potentially impacting tech capex and cloud/AI growth outlook tied to Microsoft.",
+          "summary": "WTI crude is holding above $72 per barrel, near a two‑week high, supported by fresh U.S.–Iran tensions and supply disruption concerns, despite Saudi Arabia’s price cut to Asia.",
+          "whyItMatters": "Sustained oil volatility may feed into inflationary pressures, influence central bank policy expectations, and affect cost structures and consumer sentiment relevant to portfolio holdings.",
           "recommendedAttention": "Monitor",
-          "sourceType": "NewsMonitor",
+          "sourceType": "Web",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Further updates on Astra model release timeline and OpenAI safety review",
-        "Memory‑chip pricing trends and supply forecasts into 2027"
+        "Upcoming U.S. CPI data (August 12) for inflation and Fed policy implications",
+        "Novo Nordisk’s Q2 earnings reaction and pipeline commentary",
+        "Oil price trajectory amid Middle East developments"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-08T06:43:52.543Z",
-      "analysisDuration": 4723,
-      "lastCheckedAt": "2026-08-08T06:43:52.543Z",
-      "lastMeaningfulUpdateAt": "2026-08-08T06:43:52.543Z",
+      "timestamp": "2026-08-08T06:59:22.462Z",
+      "analysisDuration": 4198,
+      "lastCheckedAt": "2026-08-08T06:59:22.462Z",
+      "lastMeaningfulUpdateAt": "2026-08-08T06:59:22.462Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-08T06:43:57.266Z"
+    "updatedAt": "2026-08-08T06:59:26.660Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-08T06:59:22.462Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Novo Nordisk media account shift and sustained oil volatility amid Middle East tensions",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Novo Nordisk shifts U.S. media account to Omnicom",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Novo Nordisk has officially selected Omnicom as its agency‑of‑record for U.S. media buying beginning in Q4 2026, replacing WPP’s Wavemaker. The account is estimated at over $600 million annually.",
+              "normalizedKey": "novo nordisk shifts u.s. media account to omnicom|company"
+            },
+            {
+              "title": "Oil prices remain elevated amid renewed U.S.–Iran tensions",
+              "category": "Macro",
+              "importance": "Medium",
+              "summary": "WTI crude is holding above $72 per barrel, near a two‑week high, supported by fresh U.S.–Iran tensions and supply disruption concerns, despite Saudi Arabia’s price cut to Asia.",
+              "normalizedKey": "oil prices remain elevated amid renewed u.s.–iran tensions|macro"
+            }
+          ],
+          "newsIds": [
+            "middle-east-oil-volatility-2026-08-08",
+            "ecb-holds-rates-amid-energy-shock-2026-07-23",
+            "amundi-market-rotation-out-of-tech-2026-07-28",
+            "commodity-price-shocks-2026-04"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (July)",
+            "FOMC Minutes (July 28–29 meeting)",
+            "U.S. Producer Price Index (July)",
+            "U.S. Retail Sales (July)"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-08T06:43:52.543Z",
           "overallAlertLevel": "Medium",
@@ -3308,45 +3329,11 @@
             "U.S. Producer Price Index (PPI) for July 2026"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-04T19:17:44.099Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Brazil hikes Selic to 9.00%; AI hyperscaler debt issuance accelerates",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "Brazil Copom raises Selic rate to 9.00%",
-              "category": "Macro",
-              "importance": "Medium",
-              "summary": "Brazil’s central bank (Copom) raised its benchmark Selic rate to 9.00% at its August meeting, continuing its tightening cycle to combat inflation.",
-              "normalizedKey": "brazil copom raises selic rate to 9.00%|macro"
-            },
-            {
-              "title": "AI hyperscaler debt issuance surges, straining IG credit markets",
-              "category": "Macro",
-              "importance": "High",
-              "summary": "AI hyperscalers (e.g., Microsoft, Amazon, Alphabet, Meta) are issuing unprecedented volumes of investment‑grade debt—projected to reach ~$570 billion in 2026—raising concerns about credit market concentration and financing conditions.",
-              "normalizedKey": "ai hyperscaler debt issuance surges, straining ig credit markets|macro"
-            }
-          ],
-          "newsIds": [
-            "tech-selloff-oil-yields-2026-08-04",
-            "ai-hyperscaler-debt-surge-2026-08-04",
-            "middle-east-oil‑price‑volatility-2026-08-04"
-          ],
-          "eventTitles": [
-            "Brazil Copom Monetary Policy Meeting (Day 1)",
-            "Brazil Copom Monetary Policy Meeting (Day 2)",
-            "U.S. Employment Situation (July)",
-            "Australia RBA Monetary Policy Decision"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-08T06:43:57.272Z"
+    "updatedAt": "2026-08-08T06:59:26.664Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",

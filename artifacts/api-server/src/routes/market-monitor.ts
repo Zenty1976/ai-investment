@@ -14,6 +14,14 @@ import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../l
 import { analysisRepository } from "../lib/analysis-repository";
 import { systemLog } from "../lib/system-log.js";
 
+// ── History entry type (server-local) ─────────────────────────────────────────
+interface MarketMonitorHistoryEntry {
+  timestamp: string;
+  sentiment: "Positive" | "Neutral" | "Negative";
+  riskLevel: "Low" | "Moderate" | "High";
+  score: number; // Positive=1, Neutral=0, Negative=-1
+}
+
 const router: IRouter = Router();
 
 // ---------------------------------------------------------------------------
@@ -115,6 +123,25 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
 
     if (parsed.success) {
       analysisRepository.save("market-monitor", parsed.data);
+
+      // ── Append compact history snapshot ─────────────────────────────────
+      const sentimentScore =
+        parsed.data.marketSentiment === "Positive" ? 1
+        : parsed.data.marketSentiment === "Negative" ? -1
+        : 0;
+      const MAX_HISTORY = 1000;
+      const existingHistory = analysisRepository.get<{ entries: MarketMonitorHistoryEntry[] }>("market-monitor-history");
+      const existingEntries: MarketMonitorHistoryEntry[] = existingHistory?.result?.entries ?? [];
+      const newEntry: MarketMonitorHistoryEntry = {
+        timestamp: nowIso,
+        sentiment: parsed.data.marketSentiment,
+        riskLevel: parsed.data.riskLevel,
+        score: sentimentScore,
+      };
+      analysisRepository.save("market-monitor-history", {
+        entries: [newEntry, ...existingEntries].slice(0, MAX_HISTORY),
+      });
+
       systemLog.logInfo("Market Monitor", `Market analysis completed: ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk`);
       res.json({ ...parsed.data, _debug: debug });
       return;

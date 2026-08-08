@@ -1,89 +1,5 @@
 [
   {
-    "id": "ac19866e-2245-4bb1-b5cb-ac9c9bc5d7cb",
-    "timestamp": "2026-08-04T21:06:05.898Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Risk analysis completed"
-  },
-  {
-    "id": "34229a6b-e077-4fbe-9555-6a30c15f1631",
-    "timestamp": "2026-08-04T21:06:05.899Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk score: 62 ▲ 4 (was 58)"
-  },
-  {
-    "id": "cfee2805-faf8-4e71-8146-afefe598b767",
-    "timestamp": "2026-08-04T21:06:05.902Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Highest portfolio risk: Serve Robotics execution or earnings miss [Company, High severity]"
-  },
-  {
-    "id": "35c3b29a-283f-4ac4-8c90-d9c1195e93da",
-    "timestamp": "2026-08-04T21:06:05.908Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Serve Robotics execution or earnings miss"
-  },
-  {
-    "id": "7296f0dd-8704-45d7-8569-db1a169bf877",
-    "timestamp": "2026-08-04T21:06:05.911Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Middle East geopolitical/energy shock"
-  },
-  {
-    "id": "1c87944d-5d6d-4215-9adf-899ed4a4e667",
-    "timestamp": "2026-08-04T21:06:05.917Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Clustered near‑term events (Serve Q2 earnings, Novo H1 results, U.S. macro data)"
-  },
-  {
-    "id": "060feee0-20a5-43bb-a817-8d5d756b02d5",
-    "timestamp": "2026-08-04T21:06:05.920Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Fed policy shift amid sticky inflation"
-  },
-  {
-    "id": "9d7f7205-7624-492a-807f-530cfec86bde",
-    "timestamp": "2026-08-04T21:06:05.922Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Currency volatility (DKK/USD)"
-  },
-  {
-    "id": "170f8c9b-90af-4cec-81c0-7bca85d01915",
-    "timestamp": "2026-08-04T21:06:05.925Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Middle East energy escalation"
-  },
-  {
-    "id": "35da99d4-6f6c-4b00-a8df-b3ee64a02a6c",
-    "timestamp": "2026-08-04T21:06:05.998Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: U.S. macro data surprises (e.g., NFP, CPI)"
-  },
-  {
-    "id": "ed0e57b4-fbfd-4216-b652-cb63cd12c01b",
-    "timestamp": "2026-08-04T21:06:06.002Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Serve Robotics Q2 earnings miss"
-  },
-  {
-    "id": "6a7e1b94-b15d-42fc-a8d0-eed734823d42",
-    "timestamp": "2026-08-04T21:06:06.005Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Novo Nordisk ZEUS impairment reaction"
-  },
-  {
     "id": "c84231dd-9e1a-4cfd-9647-6118a29dbfe1",
     "timestamp": "2026-08-04T21:06:06.007Z",
     "module": "Risk Analyzer",
@@ -3498,5 +3414,89 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "market-alerts completed via Scheduled (5118ms, change: High)"
+  },
+  {
+    "id": "90c6ad67-2bd1-4f2a-8992-96834a49a3fe",
+    "timestamp": "2026-08-08T06:58:52.619Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "0b391d8a-2f4e-484f-8bcb-18daac3fdeba",
+    "timestamp": "2026-08-08T06:58:52.623Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "ef620883-6cc0-49d8-ac43-33a4615b4750",
+    "timestamp": "2026-08-08T06:58:59.745Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 4 market-moving stories found"
+  },
+  {
+    "id": "29ede22d-d88e-4ae0-8d88-2bb68ad2575a",
+    "timestamp": "2026-08-08T06:58:59.748Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (7140ms, change: Medium)"
+  },
+  {
+    "id": "a96e45f5-3a9e-43d6-9b6d-071a0c54c8f4",
+    "timestamp": "2026-08-08T06:58:59.947Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "fb1ad2a7-c2d9-426b-8b7d-4b19f57946a3",
+    "timestamp": "2026-08-08T06:58:59.949Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (7492ms, change: Medium)"
+  },
+  {
+    "id": "81f07e2c-19ca-424e-b3ba-36f25ec31c7d",
+    "timestamp": "2026-08-08T06:59:22.461Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "1a603372-067e-4678-a79d-5266733e27a8",
+    "timestamp": "2026-08-08T06:59:26.920Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "ef648b4f-fbde-4ff4-8091-8830b38d7ecf",
+    "timestamp": "2026-08-08T06:59:26.921Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): Novo Nordisk shifts U.S. media account to Omnicom; Oil prices remain elevated amid renewed U.S.–Iran tensions"
+  },
+  {
+    "id": "30b2b362-94d6-4024-9172-af20dd43416c",
+    "timestamp": "2026-08-08T06:59:26.924Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: OpenAI pauses Astra model release over cybersecurity concerns; Memory‑chip sector sell‑off intensifies amid supply tightness"
+  },
+  {
+    "id": "ab4450e2-4bd2-4936-ab88-106b627b67ba",
+    "timestamp": "2026-08-08T06:59:26.926Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Novo Nordisk shifts U.S. media account to Omnicom [Company]"
+  },
+  {
+    "id": "55f8c6c2-4b39-47ec-9666-e4705bf572ce",
+    "timestamp": "2026-08-08T06:59:26.930Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (4471ms, change: High)"
   }
 ]
