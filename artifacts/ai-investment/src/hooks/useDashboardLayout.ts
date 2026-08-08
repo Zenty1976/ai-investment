@@ -1,28 +1,26 @@
 import { useState, useCallback, useEffect } from "react";
 import type { LayoutItem } from "react-grid-layout";
 
-// Grid: cols=24, rowHeight=12px, margin=[6,0].
-// margin[1]=0 means element height = h*12 exactly, so snap formula has
-// zero accumulated error at any tile size (each step is always ~6 px drag).
-// w values are 2× the original 12-col values; h values give 12px per row.
+// Grid: cols=4, rowHeight=200px, margin=[8,8].
+// w=2, h=2 → ~600×408px per tile (2 tiles per row).
 const STORAGE_KEY_BASE = "ai-dashboard-layout-v12";
 const MODULES_KEY_BASE = "ai-dashboard-modules-v12";
 export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v12";
 /** Default tile sizes when a module is first added. */
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
-  "automation":          { w: 12, h: 32 },
-  "portfolio-manager":   { w: 12, h: 32 },
-  "market-monitor":      { w:  8, h: 32 },
-  "event-monitor":       { w:  8, h: 32 },
-  "news-monitor":        { w:  8, h: 32 },
-  "sector-monitor":      { w:  8, h: 32 },
-  "market-alerts":       { w:  8, h: 32 },
-  "risk-analyzer":       { w:  8, h: 32 },
-  "portfolio-analyzer":  { w: 12, h: 32 },
-  "opportunity-finder":  { w: 12, h: 32 },
-  "company-monitor":     { w: 12, h: 32 },
-  "trade-decision":      { w: 12, h: 32 },
-  "investor-watch":      { w: 12, h: 32 },
+  "automation":          { w: 2, h: 2 },
+  "portfolio-manager":   { w: 2, h: 2 },
+  "market-monitor":      { w: 2, h: 2 },
+  "event-monitor":       { w: 2, h: 2 },
+  "news-monitor":        { w: 2, h: 2 },
+  "sector-monitor":      { w: 2, h: 2 },
+  "market-alerts":       { w: 2, h: 2 },
+  "risk-analyzer":       { w: 2, h: 2 },
+  "portfolio-analyzer":  { w: 2, h: 2 },
+  "opportunity-finder":  { w: 2, h: 2 },
+  "company-monitor":     { w: 2, h: 2 },
+  "trade-decision":      { w: 2, h: 2 },
+  "investor-watch":      { w: 2, h: 2 },
 };
 
 /** Layout 1 default: all 13 modules. Layouts 2 & 3 start empty. */
@@ -36,30 +34,23 @@ export const DEFAULT_MODULES = [
 ];
 
 /**
- * Default 24-column layout, rowHeight=10px.
- * 10px × h:32 = 320px tile — same visual size as the original.
- * Each resize step is now 10px tall × ~56px wide.
+ * Default 4-column layout, rowHeight=200px, margin=[8,8].
+ * w=2, h=2 → ~600×408px per tile. Two tiles per row.
  */
 export const DEFAULT_LAYOUT: LayoutItem[] = [
-  // Row 0 — overview panels
-  { i: "automation",         x:  0, y:   0, w: 12, h: 32, minW: 2, minH: 2 },
-  { i: "portfolio-manager",  x: 12, y:   0, w: 12, h: 32, minW: 2, minH: 2 },
-  // Row 32 — market intelligence
-  { i: "market-monitor",     x:  0, y:  32, w:  8, h: 32, minW: 2, minH: 2 },
-  { i: "event-monitor",      x:  8, y:  32, w:  8, h: 32, minW: 2, minH: 2 },
-  { i: "news-monitor",       x: 16, y:  32, w:  8, h: 32, minW: 2, minH: 2 },
-  // Row 64 — sector & risk
-  { i: "sector-monitor",     x:  0, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
-  { i: "market-alerts",      x:  8, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
-  { i: "risk-analyzer",      x: 16, y:  64, w:  8, h: 32, minW: 2, minH: 2 },
-  // Row 96 — deep analysis
-  { i: "portfolio-analyzer", x:  0, y:  96, w: 12, h: 32, minW: 2, minH: 2 },
-  { i: "opportunity-finder", x: 12, y:  96, w: 12, h: 32, minW: 2, minH: 2 },
-  // Row 128 — decisions
-  { i: "company-monitor",    x:  0, y: 128, w: 12, h: 32, minW: 2, minH: 2 },
-  { i: "trade-decision",     x: 12, y: 128, w: 12, h: 32, minW: 2, minH: 2 },
-  // Row 160 — informational
-  { i: "investor-watch",     x:  0, y: 160, w: 12, h: 32, minW: 2, minH: 2 },
+  { i: "automation",         x: 0, y:  0, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "portfolio-manager",  x: 2, y:  0, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "market-monitor",     x: 0, y:  2, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "event-monitor",      x: 2, y:  2, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "news-monitor",       x: 0, y:  4, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "sector-monitor",     x: 2, y:  4, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "market-alerts",      x: 0, y:  6, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "risk-analyzer",      x: 2, y:  6, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "portfolio-analyzer", x: 0, y:  8, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "opportunity-finder", x: 2, y:  8, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "company-monitor",    x: 0, y: 10, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "trade-decision",     x: 2, y: 10, w: 2, h: 2, minW: 1, minH: 1 },
+  { i: "investor-watch",     x: 0, y: 12, w: 2, h: 2, minW: 1, minH: 1 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -78,8 +69,9 @@ function readStorage<T>(key: string, fallback: T): T {
  */
 function isValidLayout(layout: LayoutItem[]): boolean {
   if (!Array.isArray(layout) || layout.length === 0) return false;
+  // 4-col grid: valid tiles have w between 1 and 4
   const maxW = Math.max(...layout.map(l => l.w));
-  return maxW >= 8; // 24-col grid: smallest tile is w:8 (1/3 width)
+  return maxW >= 1 && maxW <= 4;
 }
 
 export type LayoutId = 1 | 2 | 3;
