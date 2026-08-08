@@ -58,7 +58,7 @@ export function TileShell({ label, icon: Icon, route, editMode, onRemove, childr
       </div>
 
       {/* Title row — always visible */}
-      <div className="flex items-center gap-2 px-3 pt-2 pb-1 shrink-0 min-w-0">
+      <div className="flex items-center gap-2 px-3 pt-1.5 pb-0.5 shrink-0 min-w-0">
         <Icon className="h-4 w-4 text-muted-foreground/60 shrink-0" />
         <span className="text-base text-foreground leading-tight truncate">
           {label}
