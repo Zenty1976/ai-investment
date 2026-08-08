@@ -14,45 +14,51 @@ interface TileShellProps {
 /**
  * Chrome wrapper for every dashboard tile.
  *
- * - In edit mode: shows drag handle (.drag-handle) and × remove button.
- * - Always: module icon, name, and → navigate link.
+ * - Edit bar (drag handle + × remove): only visible in edit mode, ultra-compact.
+ * - Title row: icon + large bold label + navigate link, always visible.
  * - Content slot fills remaining height with overflow hidden.
  */
 export function TileShell({ label, icon: Icon, route, editMode, onRemove, children }: TileShellProps) {
   return (
     <div className="h-full w-full flex flex-col rounded-lg border border-border bg-card overflow-hidden select-none">
-      {/* Header bar */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-border/60 bg-card shrink-0" style={{ minHeight: 28 }}>
-        {editMode && (
+
+      {/* Edit-mode bar — drag handle + remove only, ultra thin */}
+      {editMode && (
+        <div className="flex items-center justify-between px-2 border-b border-border/40 bg-card shrink-0" style={{ height: 22 }}>
           <div
-            className="drag-handle cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground/80 transition-colors"
+            className="drag-handle cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors flex items-center gap-1"
             title="Drag to move"
           >
-            <GripVertical className="h-3.5 w-3.5" />
+            <GripVertical className="h-3 w-3" />
+            <span className="text-[9px] text-muted-foreground/30 uppercase tracking-widest leading-none">drag</span>
           </div>
-        )}
-        <Icon className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-        <span className="text-[11px] font-medium text-foreground/80 truncate flex-1 leading-none">
-          {label}
-        </span>
-        <Link
-          href={route}
-          className="text-muted-foreground/40 hover:text-foreground/70 transition-colors shrink-0"
-          title={`Open ${label}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ExternalLink className="h-2.5 w-2.5" />
-        </Link>
-        {editMode && (
           <button
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="text-muted-foreground/30 hover:text-red-400/80 transition-colors shrink-0 ml-0.5"
+            className="text-muted-foreground/30 hover:text-red-400/80 transition-colors"
             title={`Remove ${label}`}
           >
-            <X className="h-2.5 w-2.5" />
+            <X className="h-3 w-3" />
           </button>
-        )}
+        </div>
+      )}
+
+      {/* Title row — always visible, prominent */}
+      <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+          <span className="text-base font-semibold text-foreground leading-tight truncate">
+            {label}
+          </span>
+        </div>
+        <Link
+          href={route}
+          className="text-muted-foreground/30 hover:text-foreground/60 transition-colors shrink-0 ml-2"
+          title={`Open ${label}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </Link>
       </div>
 
       {/* Widget content — fills remaining height */}
