@@ -268,7 +268,7 @@ export function CompanyMonitorWidget() {
                         <div className="flex items-center gap-1.5">
                           <CompanyLogo ticker={c.ticker} size={28} />
                           {c.rating && (
-                            <span className={`text-[8px] font-semibold px-1 py-0.5 rounded border leading-none ${ratingBadgeStyle(c.rating)}`}>
+                            <span className={`text-[11px] font-semibold px-1.5 py-1 rounded border leading-none ${ratingBadgeStyle(c.rating)}`}>
                               {c.rating}
                             </span>
                           )}
@@ -276,7 +276,7 @@ export function CompanyMonitorWidget() {
 
                         {/* Row 3: Score circle centered */}
                         <div className="flex justify-center">
-                          <ScoreCircle score={c.strength} size={38} />
+                          <ScoreCircle score={c.strength} size={46} />
                         </div>
                       </div>
                     ))}
