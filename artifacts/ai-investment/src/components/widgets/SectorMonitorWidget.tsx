@@ -30,6 +30,27 @@ export function SectorMonitorWidget() {
     return "→";
   }
 
+  // Sector → emoji icon
+  function sectorIcon(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes("health"))                             return "🏥";
+    if (n.includes("tech") || n.includes("software") || n.includes("semi")) return "💻";
+    if (n.includes("financ") || n.includes("bank") || n.includes("insur")) return "🏦";
+    if (n.includes("energy") || n.includes("oil") || n.includes("gas"))     return "⚡";
+    if (n.includes("industri") || n.includes("manufactur"))                  return "🏭";
+    if (n.includes("material") || n.includes("mining") || n.includes("metal")) return "⛏️";
+    if (n.includes("consumer") && n.includes("cycl"))    return "🛍️";
+    if (n.includes("consumer") && n.includes("def"))     return "🛒";
+    if (n.includes("real estate") || n.includes("reit")) return "🏠";
+    if (n.includes("util"))                              return "💡";
+    if (n.includes("communic") || n.includes("telecom") || n.includes("media")) return "📡";
+    if (n.includes("transport") || n.includes("logistics")) return "🚢";
+    if (n.includes("auto"))                              return "🚗";
+    if (n.includes("pharma") || n.includes("biotech"))   return "💊";
+    if (n.includes("aerospace") || n.includes("defense")) return "✈️";
+    return "📊"; // fallback
+  }
+
   // Bar width + colour based on rating string
   function barStyle(rating: string): { width: string; color: string } {
     const r = rating.toLowerCase();
@@ -110,7 +131,8 @@ export function SectorMonitorWidget() {
                     const label = (s.rating ?? "").replace("Moderately ", "Mod. ");
                     return (
                       <div key={`bar-${s.name}-${i}`} className="flex items-center gap-2 min-w-0">
-                        <span className="text-[10px] text-foreground/80 w-24 shrink-0 whitespace-nowrap overflow-hidden text-ellipsis">{s.name}</span>
+                        <span className="text-[11px] shrink-0 leading-none">{sectorIcon(s.name)}</span>
+                        <span className="text-[11px] font-medium text-foreground w-24 shrink-0 whitespace-nowrap overflow-hidden text-ellipsis">{s.name}</span>
                         <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden min-w-0">
                           <div
                             className="h-full rounded-full"
