@@ -1,124 +1,5 @@
 [
   {
-    "id": "f3ee71ac-6b56-4fce-a59e-66415e6e84e2",
-    "timestamp": "2026-08-07T17:07:28.289Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via Scheduled (6863ms, change: Medium)"
-  },
-  {
-    "id": "79816fac-7678-432b-be00-9e3bbd1f3dd2",
-    "timestamp": "2026-08-07T17:07:51.444Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "6c4d7786-2412-456e-a456-a932226a2557",
-    "timestamp": "2026-08-07T17:07:58.606Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "6c2133af-4403-4fda-8275-7673d912cad1",
-    "timestamp": "2026-08-07T17:07:58.607Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 new alert(s): Novo Nordisk shifts U.S. media account to Omnicom; Microsoft signals Xbox 360 backward‑compatibility for 2027–28"
-  },
-  {
-    "id": "d8208863-0802-4fe2-a96c-a945566e6603",
-    "timestamp": "2026-08-07T17:07:58.609Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 alert(s) resolved: U.S. unexpectedly lost 23,000 jobs in July"
-  },
-  {
-    "id": "a80bda3a-7bb6-40a7-83a8-fa54d95d5f15",
-    "timestamp": "2026-08-07T17:07:58.610Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Novo Nordisk shifts U.S. media account to Omnicom [Company]"
-  },
-  {
-    "id": "0012c85a-1080-4cd2-b4c2-7c729a0b5b02",
-    "timestamp": "2026-08-07T17:07:58.614Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Scheduled (7172ms, change: High)"
-  },
-  {
-    "id": "00c8e322-3d2e-4814-b0c4-1ff3539e3c8f",
-    "timestamp": "2026-08-07T17:59:47.399Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "63874a12-1dac-4b70-9057-a2396c0fda92",
-    "timestamp": "2026-08-07T17:59:52.438Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "423c4eb1-766e-4306-9705-0381776c6f81",
-    "timestamp": "2026-08-07T17:59:52.439Z",
-    "module": "Portfolio Manager",
-    "level": "warning",
-    "message": "Portfolio update is using mock Saxo data"
-  },
-  {
-    "id": "8b4fb80e-e1ae-4d58-a47a-933609950949",
-    "timestamp": "2026-08-07T17:59:52.449Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "4ce1c1de-9fd2-4241-81d8-e5a3176e7d1c",
-    "timestamp": "2026-08-07T17:59:52.453Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "9f76354b-b45c-440c-901d-f9851b635108",
-    "timestamp": "2026-08-07T17:59:52.481Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via Scheduled (80ms, change: None)"
-  },
-  {
-    "id": "c12d84d4-bed1-40d7-a4dc-4500f9643197",
-    "timestamp": "2026-08-07T17:59:52.482Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts waiting for fresh: market-monitor, news-monitor"
-  },
-  {
-    "id": "77c879b4-af25-4ded-b956-0897f27eea65",
-    "timestamp": "2026-08-07T17:59:52.484Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "5fe35207-6d54-4023-9896-8523c53b3202",
-    "timestamp": "2026-08-07T17:59:52.486Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "2ba0bc27-48fb-4cbd-abfe-df9c7f609d6c",
-    "timestamp": "2026-08-07T17:59:52.488Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
     "id": "389005b9-5d4c-4b8c-a039-619b87acd4e7",
     "timestamp": "2026-08-07T17:59:52.490Z",
     "module": "AutomationOrchestrator",
@@ -3498,5 +3379,124 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "market-alerts completed via Scheduled (4109ms, change: Medium)"
+  },
+  {
+    "id": "bb131bd7-a9c1-4db4-8634-3ff1587620fa",
+    "timestamp": "2026-08-09T07:51:20.272Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "21b44a8a-ee04-41fa-97a7-66faa133bedf",
+    "timestamp": "2026-08-09T07:51:20.274Z",
+    "module": "Portfolio Manager",
+    "level": "warning",
+    "message": "Portfolio update is using mock Saxo data"
+  },
+  {
+    "id": "54fc299e-2157-4332-a968-a9000d52ea58",
+    "timestamp": "2026-08-09T07:51:20.281Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
+  },
+  {
+    "id": "131a58ba-31d5-4f7a-b5bb-64ffd3553625",
+    "timestamp": "2026-08-09T07:51:20.288Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Mock portfolio snapshot stored"
+  },
+  {
+    "id": "8173ea90-d509-499c-a8e3-9998296e1226",
+    "timestamp": "2026-08-09T07:51:20.295Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via Scheduled (106ms, change: None)"
+  },
+  {
+    "id": "b3fa4afb-edfb-4147-82ea-a1e78f8c9591",
+    "timestamp": "2026-08-09T07:51:20.295Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts downstream skipped — upstream change was None"
+  },
+  {
+    "id": "6d33d0e3-a574-44ac-9027-eb4718ef07e4",
+    "timestamp": "2026-08-09T07:51:20.297Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "9ba3a576-7eaf-4a33-8a3c-0e532d3b5459",
+    "timestamp": "2026-08-09T07:51:20.299Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "f3bc51f9-9d53-450b-a214-ac48539408a9",
+    "timestamp": "2026-08-09T07:51:20.301Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "99d9e094-fe85-4b0f-b089-25d8d7f3fec7",
+    "timestamp": "2026-08-09T07:51:20.302Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine downstream skipped — upstream change was None"
+  },
+  {
+    "id": "1c868837-2565-4ebf-ad9b-261c4fb87da5",
+    "timestamp": "2026-08-09T07:51:22.919Z",
+    "module": "Portfolio Manager v2",
+    "level": "error",
+    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
+  },
+  {
+    "id": "9ab35853-b16a-484c-8577-68f0cd754f2c",
+    "timestamp": "2026-08-09T07:51:50.201Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "24269e50-9c50-4e26-b32d-dfc7d4221c2c",
+    "timestamp": "2026-08-09T07:51:50.203Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "0b26653b-a5e4-4ff8-8951-c37f1a5a80c7",
+    "timestamp": "2026-08-09T07:51:54.820Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "b2d0ca48-da32-4ad6-9226-6e75c6a87213",
+    "timestamp": "2026-08-09T07:51:54.822Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (4634ms, change: Medium)"
+  },
+  {
+    "id": "474cf7ad-5502-4b78-96e3-cc79890b98e8",
+    "timestamp": "2026-08-09T07:51:56.534Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 5 market-moving stories found"
+  },
+  {
+    "id": "5b5a4e7e-4751-458c-ad68-ece5565b1752",
+    "timestamp": "2026-08-09T07:51:56.537Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (6346ms, change: Medium)"
   }
 ]

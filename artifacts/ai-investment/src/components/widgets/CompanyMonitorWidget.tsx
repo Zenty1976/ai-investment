@@ -253,22 +253,22 @@ export function CompanyMonitorWidget() {
               {/* ── Card view ── */}
               {viewMode === "card" && (
                 <div className="flex-1 overflow-y-auto min-h-0">
-                  <div className="grid grid-cols-4 gap-1 pb-1">
+                  <div className="grid grid-cols-8 gap-1 pb-1">
                     {companies.map(c => (
                       <div
                         key={c.ticker}
-                        className="rounded-lg border border-border/50 bg-card/40 px-1.5 py-1.5 flex flex-col gap-1"
+                        className="rounded-lg border border-border/50 bg-card/40 px-1 py-1 flex flex-col gap-0.5"
                       >
                         {/* Row 1: Ticker name */}
-                        <span className="text-[10px] font-bold text-foreground leading-none truncate">
+                        <span className="text-[9px] font-bold text-foreground leading-none truncate">
                           {c.ticker}
                         </span>
 
-                        {/* Row 2: Logo left, rating badge right — both hugging each other */}
-                        <div className="flex items-center gap-1.5">
-                          <CompanyLogo ticker={c.ticker} size={28} />
+                        {/* Row 2: Logo left, rating badge right */}
+                        <div className="flex items-center gap-1">
+                          <CompanyLogo ticker={c.ticker} size={20} />
                           {c.rating && (
-                            <span className={`text-[8px] font-semibold px-1 py-0.5 rounded border leading-none ${ratingBadgeStyle(c.rating)}`}>
+                            <span className={`text-[7px] font-semibold px-0.5 py-0.5 rounded border leading-none ${ratingBadgeStyle(c.rating)}`}>
                               {c.rating}
                             </span>
                           )}
@@ -276,7 +276,7 @@ export function CompanyMonitorWidget() {
 
                         {/* Row 3: Score circle centered */}
                         <div className="flex justify-center">
-                          <ScoreCircle score={c.strength} size={36} />
+                          <ScoreCircle score={c.strength} size={30} />
                         </div>
                       </div>
                     ))}

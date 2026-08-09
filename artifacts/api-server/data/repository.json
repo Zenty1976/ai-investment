@@ -2,16 +2,16 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices mostly rose, led by U.S. markets; volatility eased. Central banks held rates amid inflation concerns and geopolitical risks. Sentiment improved but remains cautious.",
+      "summary": "Global equity indices rose in the U.S. and Europe, while Japan’s Nikkei declined; volatility eased. Central banks held rates steady amid inflation and geopolitical uncertainty.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. equities advanced, with S&P 500 and Dow Jones up, easing volatility pressure",
-        "European indices gained modestly, supported by stable central bank policy"
+        "U.S. and European equities advanced, supporting investor confidence",
+        "Volatility (VIX) declined, indicating reduced near-term uncertainty"
       ],
       "negativeFactors": [
-        "Japanese markets declined, reflecting regional weakness",
-        "Geopolitical tensions and energy price volatility continue to pose inflation risks"
+        "Nikkei 225 fell, reflecting regional weakness",
+        "Ongoing Middle East conflict continues to pressure energy markets and inflation outlook"
       ],
       "strongSectors": [
         "Healthcare",
@@ -22,41 +22,41 @@
         "Energy"
       ],
       "keyRisks": [
-        "Middle East conflict sustaining energy price volatility",
-        "Uncertainty around future central bank guidance, especially from the Fed"
+        "Geopolitical tensions in the Middle East",
+        "Uncertainty around central bank communication and future policy"
       ],
       "sources": [
         {
           "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
-          "url": "",
+          "url": "source",
           "published": "2026-07-29"
         },
         {
-          "title": "Markets data - stock market, bond, equity, commodity prices - FT.com",
-          "url": "",
-          "published": "2026-07-24"
+          "title": "Markets: World Indexes, Futures, Bonds, Currencies, Stocks & ETFs - Yahoo Finance",
+          "url": "source",
+          "published": ""
         },
         {
           "title": "Fed leaves interest rate unchanged but with 3 dissents as Warsh praises 'good family fight'",
-          "url": "",
+          "url": "source",
           "published": "2026-07-28"
         },
         {
-          "title": "Bank Rate maintained at 3.75% - June 2026 Monetary Policy Summary and Minutes | Bank of England",
-          "url": "",
-          "published": "2026-06-18"
+          "title": "Monetary Policy Summary – Bank of England holds Bank Rate at 3.75%, inflation at 2.6%",
+          "url": "source",
+          "published": "2026-07-30"
         },
         {
-          "title": "Monetary policy decisions | ECB",
-          "url": "",
+          "title": "Monetary policy decisions – ECB holds rates unchanged at 2.25%–2.65%",
+          "url": "source",
           "published": "2026-07-23"
         }
       ],
-      "timestamp": "2026-08-09T07:21:20.083Z",
-      "analysisDuration": 4908
+      "timestamp": "2026-08-09T07:51:50.202Z",
+      "analysisDuration": 4443
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-09T07:21:24.991Z"
+    "updatedAt": "2026-08-09T07:51:54.645Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -131,71 +131,100 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Middle East conflict continues to drive oil volatility and inflation concerns, while the ECB holds rates amid energy shock uncertainty. Bank of Korea raises rates on persistent inflation and global risks.",
-      "overallMarketImpact": "Cautious tone across markets, with energy-driven inflation fears weighing on bonds and supporting oil and FX volatility.",
+      "executiveSummary": "Middle East energy tensions continue to pressure commodity markets, while AI sector developments—particularly OpenAI’s pause on its ‘Astra’ model—are prompting investor caution amid heavy tech spending.",
+      "overallMarketImpact": "Markets are navigating mixed signals: energy-driven inflation risks weigh on macro sentiment, while AI sector uncertainty tempers tech enthusiasm.",
       "topStory": {
-        "title": "Middle East conflict fuels oil shock",
-        "summary": "Ongoing Iran war and Strait of Hormuz disruptions are triggering record oil supply shocks and elevated commodity prices.",
+        "title": "OpenAI pauses ‘Astra’ model development",
+        "summary": "OpenAI halts development of its next‑gen ‘Astra’ AI model over cybersecurity concerns, raising sector‑wide deployment and regulatory questions.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "ecb-holds-rates-amid-energy-shock-2026-08-09",
-          "title": "ECB holds rates amid energy shock",
-          "summary": "ECB holds rates, citing energy shock uncertainty and removing balanced risk language from guidance.",
-          "category": "Rates",
+          "id": "openai-astr a-pause-2026-08-07",
+          "title": "OpenAI pauses ‘Astra’ model development",
+          "summary": "OpenAI halts development of its next‑gen ‘Astra’ model citing cybersecurity risks.",
+          "category": "AI",
           "importance": "High",
           "affectedMarkets": [
-            "Euro bonds",
-            "Euro FX",
-            "Rates"
+            "Technology",
+            "AI"
           ],
-          "whyItMatters": "Signals caution in policy amid volatile energy-driven inflation risks.",
-          "marketImpact": "Neutral to cautious for euro bonds; supportive of euro volatility",
-          "confidence": 0.85,
-          "source": "ECB",
-          "publishedAt": "2026-07-23"
+          "whyItMatters": "Raises concerns about AI deployment timelines and regulatory scrutiny across the sector.",
+          "marketImpact": "Negative for AI stocks",
+          "confidence": 0.8,
+          "source": "Reddit/EverHint",
+          "publishedAt": "2026-08-07"
         },
         {
-          "id": "middle-east-oil-shock-2026-08-09",
-          "title": "Middle East conflict fuels oil shock",
-          "summary": "Iran war and Strait of Hormuz disruptions cause largest oil supply shock ever, pushing commodity prices sharply higher.",
+          "id": "energy-price-volatility-middle-east-2026-07-17",
+          "title": "Commodity prices swing amid US‑Iran attacks",
+          "summary": "Renewed US‑Iran attacks disrupt shipping, pushing oil up ~12 %, LNG ~21 %, jet fuel ~6.7 %.",
           "category": "Commodities",
           "importance": "High",
           "affectedMarkets": [
-            "Oil",
-            "Inflation",
-            "Energy"
+            "Energy",
+            "Inflation"
           ],
-          "whyItMatters": "Energy supply disruptions elevate inflation risks and complicate central bank policy globally.",
-          "marketImpact": "Positive for oil; negative for bonds; inflationary pressure",
-          "confidence": 0.9,
-          "source": "World Bank",
-          "publishedAt": "2026-04-28"
+          "whyItMatters": "Heightens inflation risks and complicates central bank policy outlooks.",
+          "marketImpact": "Positive for oil, negative for inflation‑sensitive assets",
+          "confidence": 0.85,
+          "source": "AA",
+          "publishedAt": "2026-07-17"
         },
         {
-          "id": "bank-of-korea-rate-hike-2026-07-16",
-          "title": "Bank of Korea raises rates 25bps",
-          "summary": "BOK raises key rate to 2.75%, citing elevated inflation and global risks including Middle East conflict.",
-          "category": "Rates",
+          "id": "us-tech-investment-outlook-2026-08-06",
+          "title": "US tech investments no longer excite markets",
+          "summary": "SpaceX and Alphabet AI growth impressive but losses persist; Alphabet stock down 7 % after raising investment outlook.",
+          "category": "Equities",
           "importance": "Medium",
           "affectedMarkets": [
-            "Asian bonds",
-            "FX",
-            "Rates"
+            "Technology",
+            "Equities"
           ],
-          "whyItMatters": "Highlights regional central bank tightening amid global inflation pressures.",
-          "marketImpact": "Negative for Korean bonds; supportive of won",
+          "whyItMatters": "Investor enthusiasm dampened despite AI growth, signaling valuation concerns.",
+          "marketImpact": "Negative for tech equities",
+          "confidence": 0.75,
+          "source": "Le Monde",
+          "publishedAt": "2026-08-06"
+        },
+        {
+          "id": "tech-spending-surges-2026-07-27",
+          "title": "Tech sector pours $1T into AI infrastructure",
+          "summary": "Tech companies’ AI infrastructure spending hits ~$1 trillion, up 34.7 % in 2026.",
+          "category": "Technology",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Technology",
+            "AI"
+          ],
+          "whyItMatters": "Historic infrastructure build‑out supports long‑term AI growth but raises cost pressures.",
+          "marketImpact": "Mixed for tech stocks",
+          "confidence": 0.75,
+          "source": "The Register",
+          "publishedAt": "2026-07-27"
+        },
+        {
+          "id": "world-bank-energy-price-forecast-2026-04-28",
+          "title": "World Bank sees 24 % energy price surge in 2026",
+          "summary": "Energy prices projected to rise 24 % this year, largest surge since 2022.",
+          "category": "Commodities",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Energy",
+            "Macro"
+          ],
+          "whyItMatters": "Signals sustained inflation pressure and growth headwinds globally.",
+          "marketImpact": "Positive for energy, negative for bonds",
           "confidence": 0.8,
-          "source": "Yonhap",
-          "publishedAt": "2026-07-16"
+          "source": "World Bank",
+          "publishedAt": "2026-04-28"
         }
       ],
-      "timestamp": "2026-08-09T07:21:20.089Z",
-      "analysisDuration": 6871
+      "timestamp": "2026-08-09T07:51:50.204Z",
+      "analysisDuration": 6326
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-09T07:21:26.960Z"
+    "updatedAt": "2026-08-09T07:51:56.530Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -428,7 +457,7 @@
   "portfolio-manager": {
     "moduleName": "portfolio-manager",
     "result": {
-      "updatedAt": "2026-08-09T06:50:55.051Z",
+      "updatedAt": "2026-08-09T07:51:20.280Z",
       "environment": "sim",
       "baseCurrency": "DKK",
       "totalValue": 637800,
@@ -520,7 +549,7 @@
       "isMockData": true
     },
     "createdAt": "2026-08-01T15:14:57.937Z",
-    "updatedAt": "2026-08-09T06:50:55.067Z"
+    "updatedAt": "2026-08-09T07:51:20.282Z"
   },
   "portfolio-analyzer": {
     "moduleName": "portfolio-analyzer",
@@ -11353,6 +11382,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-09T07:51:50.202Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-09T07:21:20.083Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -11373,7 +11408,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-09T07:21:25.000Z"
+    "updatedAt": "2026-08-09T07:51:54.652Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
