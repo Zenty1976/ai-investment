@@ -837,6 +837,47 @@ export function useClearSystemLog(options?: {
 
 // ── Automation Orchestrator ───────────────────────────────────────────────────
 
+// ── Command Brief ─────────────────────────────────────────────────────────────
+
+export type CommandBriefOverallStatus = "normal" | "attention" | "action";
+export type CommandBriefActionStatusCode = "none" | "monitor" | "review" | "trade_ready";
+export type CommandBriefItemCategory =
+  | "system" | "portfolio" | "risk" | "market" | "stock"
+  | "event" | "opportunity" | "action";
+export type CommandBriefItemSeverity = "positive" | "neutral" | "watch" | "warning" | "critical";
+
+export interface CommandBriefItem {
+  category: CommandBriefItemCategory;
+  severity: CommandBriefItemSeverity;
+  symbol?: string;
+  text: string;
+}
+
+export interface CommandBriefAnalysis {
+  overallStatus: CommandBriefOverallStatus;
+  headline: string;
+  items: CommandBriefItem[];
+  actionStatus: {
+    status: CommandBriefActionStatusCode;
+    text: string;
+  };
+  generatedAt: string;
+  analysisDuration?: number;
+  _debug?: Record<string, unknown>;
+}
+
+export function useRunCommandBrief(options?: {
+  mutation?: Parameters<typeof useMutation>[0];
+}) {
+  return useMutation({
+    mutationFn: () =>
+      customFetch<CommandBriefAnalysis>("/api/command-brief/analyze", { method: "POST" }),
+    ...(options?.mutation ?? {}),
+  });
+}
+
+// ── Automation ────────────────────────────────────────────────────────────────
+
 export type AutomationMode = "Manual" | "SemiAutomatic" | "FullAutomatic";
 
 export type ModuleFreshness =
@@ -846,7 +887,8 @@ export type ModuleFreshness =
 export type OrchestratorModuleId =
   | "portfolio-manager" | "market-monitor" | "news-monitor" | "event-monitor"
   | "sector-monitor" | "company-monitor" | "market-alerts" | "risk-analyzer"
-  | "portfolio-analyzer" | "opportunity-finder" | "trade-decision-engine" | "trade-review";
+  | "portfolio-analyzer" | "opportunity-finder" | "trade-decision-engine" | "trade-review"
+  | "investor-watch" | "command-brief";
 
 export interface OrchestratorModuleSettings {
   enabled: boolean;

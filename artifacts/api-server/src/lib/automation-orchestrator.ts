@@ -48,7 +48,7 @@ export type ModuleId =
   | "portfolio-manager" | "market-monitor" | "news-monitor" | "event-monitor"
   | "sector-monitor"   | "company-monitor" | "market-alerts" | "risk-analyzer"
   | "portfolio-analyzer" | "opportunity-finder" | "trade-decision-engine" | "trade-review"
-  | "investor-watch";
+  | "investor-watch" | "command-brief";
 
 export type AutomationMode = "Manual" | "SemiAutomatic" | "FullAutomatic";
 
@@ -381,6 +381,25 @@ const MODULE_DEFAULTS: ModuleDefaults[] = [
     supportsAutomaticRun: true,
     marketHoursOnly: false,
   },
+  {
+    // Command Brief runs LAST — it summarises every other module's latest output
+    // into a compact executive snapshot. It must never make the full cycle fail.
+    moduleId: "command-brief",
+    displayName: "Command Brief",
+    scheduleType: "after",
+    defaultIntervalMinutes: 120,
+    minimumIntervalMinutes: 30,
+    maximumIntervalMinutes: 720,
+    staleAfterMinutes: 60,         // brief is stale when trade-review (60 min) is stale
+    dependencies: [
+      "market-alerts", "trade-decision-engine", "trade-review",
+      "portfolio-manager", "portfolio-analyzer", "risk-analyzer", "event-monitor",
+    ],
+    runAfter: ["trade-review"],    // automatically triggered when trade-review completes
+    priority: 95,                  // highest priority = executes after all other modules
+    supportsAutomaticRun: true,
+    marketHoursOnly: false,
+  },
 ];
 
 // ── Module HTTP endpoints ─────────────────────────────────────────────────────
@@ -401,6 +420,7 @@ const MODULE_ENDPOINTS: Record<ModuleId, { method: "POST" | "GET"; path: string 
   "trade-review":         { method: "POST", path: "/api/trade-review/generate" },
   // Investor Watch is informational only — no downstream pipeline connections.
   "investor-watch":       { method: "POST", path: "/api/investor-watch/analyze" },
+  "command-brief":        { method: "POST", path: "/api/command-brief/analyze" },
 };
 
 const MAX_JOBS = 100;
@@ -1312,6 +1332,18 @@ class AutomationOrchestratorService {
       // Stage 10: Trade Review
       await this._runStage(["trade-review"], corrId, "RunAllNow");
       completeStage("trade-review");
+
+      // Stage 11: Command Brief — summarises all preceding module outputs.
+      // Isolated: a failure here must NOT abort the full cycle.
+      try {
+        await this._runStage(["command-brief"], corrId, "RunAllNow");
+        completeStage("command-brief");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        systemLog.logWarning(MODULE_NAME,
+          `Full cycle: Command Brief failed — continuing (${msg})`
+        );
+      }
 
       const nowIso = new Date().toISOString();
       this.lastFullCycleAt = nowIso;

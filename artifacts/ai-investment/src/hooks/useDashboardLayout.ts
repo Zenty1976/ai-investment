@@ -22,16 +22,17 @@ const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "trade-decision":      { w: 6, h: 4 },
   "investor-watch":      { w: 6, h: 4 },
   "trade-review":        { w: 6, h: 4 },
+  "command-brief":       { w: 6, h: 4 },
 };
 
-/** Layout 1 default: all 13 modules. Layouts 2 & 3 start empty. */
+/** Layout 1 default: all modules. Layouts 2 & 3 start empty. */
 export const DEFAULT_MODULES = [
   "automation", "portfolio-manager",
   "market-monitor", "event-monitor", "news-monitor",
   "sector-monitor", "market-alerts", "risk-analyzer",
   "portfolio-analyzer", "opportunity-finder",
   "company-monitor", "trade-decision",
-  "investor-watch",
+  "investor-watch", "command-brief",
 ];
 
 /**
@@ -52,6 +53,7 @@ export const DEFAULT_LAYOUT: LayoutItem[] = [
   { i: "company-monitor",    x: 0, y: 20, w: 6, h: 4, minW: 1, minH: 1 },
   { i: "trade-decision",     x: 6, y: 20, w: 6, h: 4, minW: 1, minH: 1 },
   { i: "investor-watch",     x: 0, y: 24, w: 6, h: 4, minW: 1, minH: 1 },
+  { i: "command-brief",      x: 6, y: 24, w: 6, h: 4, minW: 1, minH: 1 },
 ];
 
 function readStorage<T>(key: string, fallback: T): T {

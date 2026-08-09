@@ -324,6 +324,31 @@ export const RunTradeDecisionEngineResponse = zod.object({
     .describe("Time taken to complete the analysis in milliseconds"),
 });
 
+// ── Command Brief ─────────────────────────────────────────────────────────────
+
+export const RunCommandBriefResponse = zod.object({
+  overallStatus: zod.enum(["normal", "attention", "action"]),
+  headline: zod.string(),
+  items: zod
+    .array(
+      zod.object({
+        category: zod.enum([
+          "system", "portfolio", "risk", "market", "stock",
+          "event", "opportunity", "action",
+        ]),
+        severity: zod.enum(["positive", "neutral", "watch", "warning", "critical"]),
+        symbol: zod.string().optional(),
+        text: zod.string(),
+      })
+    )
+    .max(6),
+  actionStatus: zod.object({
+    status: zod.enum(["none", "monitor", "review", "trade_ready"]),
+    text: zod.string(),
+  }),
+  generatedAt: zod.string(),
+});
+
 // ── Company Monitor (reset endpoint) ─────────────────────────────────────────
 
 export const ResetCompanyMonitorDataResponse = zod.object({

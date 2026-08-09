@@ -18,6 +18,7 @@ import InvestorWatch from '@/pages/InvestorWatch';
 import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 import Automation from '@/pages/Automation';
+import CommandBrief from '@/pages/CommandBrief';
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/trade-review" component={TradeReview} />
         <Route path="/investors" component={InvestorWatch} />
         <Route path="/automation" component={Automation} />
+        <Route path="/command-brief" component={CommandBrief} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />

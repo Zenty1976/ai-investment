@@ -18,6 +18,7 @@ import {
   History,
   Settings,
   Users,
+  Zap,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
@@ -51,8 +52,9 @@ const NAV_ITEMS = [
   { label: "OPPORTUNITY", href: "/opportunities", icon: Lightbulb,  enabled: true  },
   { label: "ALERTS",      href: "/alerts",        icon: Bell,       enabled: true  },
   { label: "DECISIONS",   href: "/decisions",     icon: GitMerge,      enabled: true  },
-  { label: "REVIEW",      href: "/trade-review",  icon: ClipboardList, enabled: true  },
-  { label: "AUTOMATE",   href: "/automation",    icon: Cpu,           enabled: true  },
+  { label: "REVIEW",      href: "/trade-review",   icon: ClipboardList, enabled: true  },
+  { label: "BRIEF",       href: "/command-brief",  icon: Zap,           enabled: true  },
+  { label: "AUTOMATE",   href: "/automation",     icon: Cpu,           enabled: true  },
   { label: "LOG & HIST.", href: "/log",           icon: History,    enabled: true  },
   { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]

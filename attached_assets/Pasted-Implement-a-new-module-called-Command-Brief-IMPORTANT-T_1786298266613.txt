@@ -1,0 +1,449 @@
+Implement a new module called "Command Brief".
+
+IMPORTANT:
+This is an addition to the existing architecture, not a redesign.
+
+Purpose
+-------
+Command Brief is a very compact executive summary of the current state of the AI Investor system.
+
+It should answer in approximately 20 seconds:
+
+"What is the overall situation right now, what requires my attention, and is there anything I need to do?"
+
+It is an INFORMATION/SUMMARY module only.
+
+It must NOT:
+- make independent investment decisions
+- invent BUY/SELL recommendations
+- override Trade Decision
+- override Risk Analyzer
+- override Portfolio Analyzer
+- create Trade Review proposals
+- perform its own web/news research
+
+It summarizes conclusions already produced by the existing system.
+
+Trade Decision remains the decision engine.
+Trade Review remains the only source of trades that are actionable NOW.
+
+
+INPUTS
+======
+
+Build Command Brief primarily from the latest stored results of:
+
+- Automation Orchestrator / module health
+- Market Alerts
+- Trade Decision Engine
+- Trade Review
+- Portfolio Manager
+- Portfolio Analyzer
+- Risk Analyzer
+- Event Monitor
+
+Optionally include limited context from:
+- Market Monitor
+- Sector Monitor
+- Opportunity Finder
+
+Do NOT send complete historical data or huge module outputs to OpenAI.
+
+Create a compact structured input containing only the latest relevant state from each module.
+
+Company Monitor and News Monitor should normally NOT be sent in full because their relevant conclusions should already have propagated into the higher-level modules.
+
+Investor Watch must NOT be an input. It remains informational and outside the decision pipeline.
+
+
+EXECUTION / ORCHESTRATOR
+========================
+
+Add Command Brief as a normal module controlled by Automation Orchestrator.
+
+It must NOT have its own frontend timer.
+
+Run it LAST in the normal analysis cycle, after its required source modules have completed.
+
+Dependencies should include:
+
+Market Alerts
+Trade Decision Engine
+Trade Review
+Portfolio Manager
+Portfolio Analyzer
+Risk Analyzer
+Event Monitor
+
+Command Brief should summarize one coherent snapshot of the system.
+
+Add Command Brief to:
+- module registry/list
+- left navigation
+- dashboard module selector
+- Automation module/status list
+- scheduling/dependency system
+- existing persistence mechanism
+
+Follow the same architecture/patterns used by the existing OpenAI-based modules. Do not introduce a separate framework just for Command Brief.
+
+
+OPENAI INPUT
+============
+
+Send OpenAI structured JSON representing the current state.
+
+Use approximately this conceptual structure, adapted to the actual existing types/data structures:
+
+{
+  "generatedAt": "...",
+
+  "system": {
+    "fresh": 13,
+    "stale": 0,
+    "failed": 0,
+    "status": "healthy"
+  },
+
+  "alerts": {
+    "level": "medium",
+    "importantAlerts": [...]
+  },
+
+  "tradeDecisions": {
+    "overallReadiness": 65,
+    "stance": "SelectivePreparation",
+    "decisions": [
+      {
+        "symbol": "SERV",
+        "action": "WaitForEvent",
+        "priority": "High",
+        "reason": "..."
+      },
+      {
+        "symbol": "AIT",
+        "action": "Review",
+        "priority": "Medium",
+        "reason": "..."
+      }
+    ]
+  },
+
+  "tradeReview": {
+    "readyTradeCount": 0,
+    "readyTrades": [...]
+  },
+
+  "portfolio": {
+    "totalValue": ...,
+    "positions": [...],
+    "unrealizedPL": ...
+  },
+
+  "portfolioAnalysis": {
+    "score": 72,
+    "stance": "Moderately Bullish",
+    "summary": "...",
+    "recommendedActions": [...]
+  },
+
+  "risk": {
+    "score": 62,
+    "previousScore": 58,
+    "level": "Moderate",
+    "topRisks": [...]
+  },
+
+  "events": {
+    "nextMajorEvent": {...},
+    "importantUpcomingEvents": [...]
+  },
+
+  "marketContext": {
+    "marketTone": "...",
+    "strongSectors": [...],
+    "weakSectors": [...]
+  },
+
+  "opportunities": [
+    {
+      "symbol": "...",
+      "score": ...
+    }
+  ]
+}
+
+Use the actual existing stored module output models rather than duplicating data unnecessarily.
+
+
+OPENAI SYSTEM INSTRUCTION
+=========================
+
+The prompt should tell OpenAI approximately:
+
+"You are generating the executive Command Brief for an AI investment system.
+
+Your job is to summarize the supplied module outputs into an extremely concise situational overview that can be understood in approximately 20 seconds.
+
+You are NOT an independent investment decision engine.
+
+Never create a BUY, SELL, REDUCE or other trading instruction that is not explicitly supported by Trade Decision / Trade Review.
+
+Trade Review is authoritative for whether a trade is actionable NOW.
+
+Trade Decision is authoritative for Hold, Review, PrepareToBuy, PrepareToReduce, WaitForEvent, Buy/Ready and Sell/Ready states.
+
+If Trade Review contains zero ready trades, explicitly communicate that no trade requires approval/action now.
+
+Prioritize CHANGE and ATTENTION over repeating normal information.
+
+Examples:
+- increasing/decreasing risk
+- important new alerts
+- positions requiring monitoring
+- decisions waiting for events
+- new opportunities under review
+- upcoming events capable of changing the outlook
+- actual trades ready for approval
+
+Do not simply summarize every input module.
+
+A user should understand the important situation in approximately 20 seconds.
+
+Be concise, factual and action-oriented without creating new investment recommendations."
+
+
+OUTPUT SCHEMA
+=============
+
+Require structured JSON output and validate it using the same robust schema validation/retry approach already used elsewhere in the application.
+
+Use approximately:
+
+{
+  "overallStatus": "normal | attention | action",
+
+  "headline": "string",
+
+  "items": [
+    {
+      "category": "system | portfolio | risk | market | stock | event | opportunity | action",
+      "severity": "positive | neutral | watch | warning | critical",
+      "symbol": "optional ticker",
+      "text": "short sentence"
+    }
+  ],
+
+  "actionStatus": {
+    "status": "none | monitor | review | trade_ready",
+    "text": "string"
+  },
+
+  "generatedAt": "timestamp"
+}
+
+Limit items to MAXIMUM 6.
+
+Each item should preferably fit on one line in the dashboard.
+
+The model should select the most important information rather than trying to represent every module.
+
+Do not allow the model to return arbitrary additional fields.
+
+
+EXAMPLE OUTPUT
+==============
+
+For a state similar to the current dashboard, an appropriate result could conceptually be:
+
+{
+  "overallStatus": "attention",
+  "headline": "Portfolio healthy, but risk has increased slightly",
+  "items": [
+    {
+      "category": "system",
+      "severity": "positive",
+      "text": "System healthy — all modules fresh"
+    },
+    {
+      "category": "portfolio",
+      "severity": "positive",
+      "text": "Portfolio remains Good / Moderately Bullish"
+    },
+    {
+      "category": "risk",
+      "severity": "watch",
+      "text": "Risk increased 58 → 62; macro and geopolitical risk rising"
+    },
+    {
+      "category": "stock",
+      "severity": "warning",
+      "symbol": "SERV",
+      "text": "Wait for Q3 earnings/deployment updates"
+    },
+    {
+      "category": "opportunity",
+      "severity": "watch",
+      "symbol": "AIT",
+      "text": "Under review for potential industrial diversification"
+    },
+    {
+      "category": "event",
+      "severity": "watch",
+      "text": "U.S. CPI is the next major event in 3 days"
+    }
+  ],
+  "actionStatus": {
+    "status": "none",
+    "text": "No trades ready for approval"
+  }
+}
+
+This is only an example. Do not hardcode these values.
+
+
+DASHBOARD UI
+============
+
+Create a compact dashboard card called:
+
+COMMAND BRIEF
+
+It should be designed to be read in approximately 20 seconds.
+
+Suggested appearance:
+
+COMMAND BRIEF                         Updated 2m ago
+
+● PORTFOLIO HEALTHY — RISK RISING SLIGHTLY
+
+✓ System healthy — 13/13 fresh
+✓ Portfolio Good / Moderately Bullish
+● Risk 58 → 62 — Moderate
+⚠ SERV — Waiting for Q3 update
+● AIT / JPM — Under review
+◷ CPI in 3 days
+
+NO ACTION REQUIRED
+
+Use the existing application's visual language.
+
+Severity colors:
+green = positive/healthy
+blue/grey = neutral/information
+yellow = watch/attention
+red = critical/action/problem
+
+Do not make the card text-heavy.
+
+Maximum 6 summary lines.
+
+The bottom action status should be visually prominent.
+
+If Trade Review is empty:
+"NO ACTION REQUIRED"
+
+If Trade Review contains one or more actionable trades:
+show something clearly visible such as:
+"2 TRADES READY FOR REVIEW"
+
+Do NOT put Approve/Reject buttons in Command Brief.
+The user must open/use Trade Review for execution decisions.
+
+
+IMPORTANT UI PRINCIPLE
+======================
+
+Command Brief should reduce information overload.
+
+Do NOT simply copy paragraphs from the source modules.
+
+The dashboard version should contain:
+- one headline
+- maximum six short lines
+- one clear action status
+
+Clicking/opening the module may show a slightly more detailed explanation, but the dashboard tile must remain extremely compact.
+
+
+STATE / HISTORY
+===============
+
+Persist the latest Command Brief using the same persistence approach as the other modules.
+
+Also retain the previous Command Brief/result if the existing module architecture supports previous-result comparison.
+
+Do not make this a complicated stateful Company-Monitor-style analysis.
+
+Command Brief is a current snapshot.
+
+The source modules themselves are responsible for maintaining their own state/history.
+
+
+DEBUG DIALOG
+============
+
+Command Brief must have the same OpenAI debug functionality as the other OpenAI modules.
+
+Add a debug dialog accessible in the same way as existing modules.
+
+It must show:
+
+- execution timestamp
+- model used
+- complete structured input assembled from the source modules
+- exact system/developer/user prompt sent to OpenAI
+- raw OpenAI response
+- parsed/validated JSON result
+- validation errors
+- retry/repair attempts
+- final error if execution failed
+
+Reuse the existing OpenAI debug infrastructure/components if possible.
+
+Do NOT build a separate debug system if the application already has reusable debug components.
+
+
+ERROR HANDLING
+==============
+
+Command Brief must never make the entire automation cycle fail because a non-critical source is missing.
+
+Required sources:
+- Trade Decision
+- Trade Review
+- Portfolio
+- Risk Analyzer
+
+Optional context:
+- Alerts
+- Events
+- Market
+- Sector
+- Opportunity Finder
+
+If an optional source is unavailable, summarize without it.
+
+If one of the required sources is stale, Command Brief may still be generated but must clearly indicate reduced confidence / stale source information.
+
+Never invent missing information.
+
+
+FINAL ACCEPTANCE TEST
+=====================
+
+After implementation, running "Run all now" should result in:
+
+existing modules run
+→ dependencies finish
+→ Command Brief runs last
+→ latest stored module outputs are assembled
+→ one OpenAI request generates the structured brief
+→ schema is validated
+→ result is persisted
+→ dashboard updates
+→ Automation shows Command Brief as a normal module
+
+The result should allow me to understand the overall state of the investment system in approximately 20 seconds without reading every module.
+
+Do not modify the responsibilities of the existing modules while implementing this.

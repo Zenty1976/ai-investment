@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart2, Calendar, Newspaper, PieChart, Building2,
   Briefcase, TrendingUp, Crosshair, Scale, Bell,
-  Cpu, Activity, Users, ClipboardList,
+  Cpu, Activity, Users, ClipboardList, Zap,
 } from "lucide-react";
 
 import { MarketMonitorWidget }     from "@/components/widgets/MarketMonitorWidget";
@@ -19,6 +19,7 @@ import { TradeDecisionWidget }      from "@/components/widgets/TradeDecisionWidg
 import { TradeReviewWidget }        from "@/components/widgets/TradeReviewWidget";
 import { AutomationWidget }         from "@/components/widgets/AutomationWidget";
 import { InvestorWatchWidget }      from "@/components/widgets/InvestorWatchWidget";
+import { CommandBriefWidget }       from "@/components/widgets/CommandBriefWidget";
 
 export interface ModuleDef {
   id: string;
@@ -126,5 +127,12 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     icon: Users,
     route: "/investors",
     Widget: InvestorWatchWidget,
+  },
+  {
+    id: "command-brief",
+    label: "Command Brief",
+    icon: Zap,
+    route: "/command-brief",
+    Widget: CommandBriefWidget,
   },
 ];
