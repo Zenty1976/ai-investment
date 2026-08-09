@@ -9,7 +9,7 @@ import type { LayoutItem } from "react-grid-layout";
 // Cast to any to avoid overly-strict @types/react-grid-layout callback signatures
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GridLayout = GridLayoutBase as React.ComponentType<any>;
-import { LayoutGrid, Pencil, Check, RotateCcw } from "lucide-react";
+import { LayoutGrid, Pencil, Check, RotateCcw, Trash2 } from "lucide-react";
 
 import {
   useDashboardLayout,
@@ -65,7 +65,7 @@ export function DashboardGrid() {
   }
 
   // ── Per-layout data ──────────────────────────────────────────────────────
-  const { activeModules, layout, saveLayout, addModule, removeModule, resetLayout } =
+  const { activeModules, layout, saveLayout, addModule, removeModule, resetLayout, clearLayout } =
     useDashboardLayout(activeLayout);
 
   const [editMode, setEditMode] = useState(false);
@@ -144,6 +144,14 @@ export function DashboardGrid() {
               >
                 <RotateCcw className="h-3 w-3" />
                 Reset
+              </button>
+              <button
+                onClick={clearLayout}
+                title="Remove all modules from this layout"
+                className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-red-500/40 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1"
+              >
+                <Trash2 className="h-3 w-3" />
+                Clear
               </button>
             </>
           )}

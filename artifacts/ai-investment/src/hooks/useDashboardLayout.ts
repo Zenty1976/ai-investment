@@ -148,5 +148,12 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
     localStorage.setItem(storageKey, JSON.stringify(DEFAULT_LAYOUT));
   }, [layoutId, modulesKey, storageKey]);
 
-  return { activeModules, layout, saveLayout, addModule, removeModule, resetLayout };
+  const clearLayout = useCallback(() => {
+    setActiveModules([]);
+    setLayout([]);
+    localStorage.setItem(modulesKey, JSON.stringify([]));
+    localStorage.setItem(storageKey, JSON.stringify([]));
+  }, [modulesKey, storageKey]);
+
+  return { activeModules, layout, saveLayout, addModule, removeModule, resetLayout, clearLayout };
 }
