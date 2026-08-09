@@ -246,29 +246,31 @@ export function CompanyMonitorWidget() {
               {/* ── Card view ── */}
               {viewMode === "card" && (
                 <div className="flex-1 overflow-y-auto min-h-0">
-                  <div className="grid grid-cols-3 gap-2 pb-1">
+                  <div className="grid grid-cols-3 gap-1.5 pb-1">
                     {companies.map(c => (
                       <div
                         key={c.ticker}
-                        className="rounded-lg border border-border/50 bg-card/40 p-2.5 flex flex-col items-center gap-1.5 text-center"
+                        className="rounded-lg border border-border/50 bg-card/40 px-2 py-1.5 flex flex-col gap-1"
                       >
-                        {/* Logo */}
-                        <CompanyLogo ticker={c.ticker} />
-
-                        {/* Ticker */}
-                        <span className="text-[11px] font-bold text-foreground leading-none truncate w-full text-center">
+                        {/* Row 1: Ticker name */}
+                        <span className="text-[11px] font-bold text-foreground leading-none truncate">
                           {c.ticker}
                         </span>
 
-                        {/* Rating badge */}
-                        {c.rating && (
-                          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border leading-none ${ratingBadgeStyle(c.rating)}`}>
-                            {c.rating}
-                          </span>
-                        )}
+                        {/* Row 2: Logo left, rating right */}
+                        <div className="flex items-center justify-between gap-1">
+                          <CompanyLogo ticker={c.ticker} />
+                          {c.rating && (
+                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border leading-none text-right ${ratingBadgeStyle(c.rating)}`}>
+                              {c.rating}
+                            </span>
+                          )}
+                        </div>
 
-                        {/* Score circle */}
-                        <ScoreCircle score={c.strength} />
+                        {/* Row 3: Score circle centered */}
+                        <div className="flex justify-center">
+                          <ScoreCircle score={c.strength} />
+                        </div>
                       </div>
                     ))}
                   </div>
