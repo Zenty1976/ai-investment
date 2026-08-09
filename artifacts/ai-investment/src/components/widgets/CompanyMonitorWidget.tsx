@@ -36,26 +36,28 @@ function scoreCircleColor(score: number | null): string {
 }
 
 // SVG circular score indicator
-function ScoreCircle({ score }: { score: number | null }) {
-  const r = 18;
+function ScoreCircle({ score, size = 44 }: { score: number | null; size?: number }) {
+  const half = size / 2;
+  const r = half - 4;
   const circ = 2 * Math.PI * r;
   const pct = score !== null ? Math.max(0, Math.min(100, score)) / 100 : 0;
   const color = scoreCircleColor(score);
+  const fontSize = size <= 36 ? 9 : 11;
   return (
-    <svg width={44} height={44} viewBox="0 0 44 44">
-      <circle cx={22} cy={22} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={4} />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={half} cy={half} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={3} />
       <circle
-        cx={22} cy={22} r={r}
+        cx={half} cy={half} r={r}
         fill="none"
         stroke={color}
-        strokeWidth={4}
+        strokeWidth={3}
         strokeLinecap="round"
         strokeDasharray={circ}
         strokeDashoffset={circ * (1 - pct)}
-        transform="rotate(-90 22 22)"
+        transform={`rotate(-90 ${half} ${half})`}
         style={{ transition: "stroke-dashoffset 0.5s ease" }}
       />
-      <text x={22} y={26} textAnchor="middle" fontSize={11} fontWeight="bold" fill={color}>
+      <text x={half} y={half + fontSize * 0.4} textAnchor="middle" fontSize={fontSize} fontWeight="bold" fill={color}>
         {score !== null ? score : "—"}
       </text>
     </svg>
@@ -63,13 +65,17 @@ function ScoreCircle({ score }: { score: number | null }) {
 }
 
 // Company logo via Financial Modeling Prep (free, ticker-based)
-function CompanyLogo({ ticker }: { ticker: string }) {
+function CompanyLogo({ ticker, size = 40 }: { ticker: string; size?: number }) {
   const [failed, setFailed] = useState(false);
   const src = `https://financialmodelingprep.com/image-stock/${ticker}.png`;
+  const px = `${size}px`;
 
   if (failed) {
     return (
-      <div className="w-10 h-10 rounded flex items-center justify-center bg-white/5 text-[10px] font-bold text-muted-foreground">
+      <div
+        className="rounded flex items-center justify-center bg-white/5 text-[9px] font-bold text-muted-foreground shrink-0"
+        style={{ width: px, height: px }}
+      >
         {ticker.slice(0, 3)}
       </div>
     );
@@ -79,7 +85,8 @@ function CompanyLogo({ ticker }: { ticker: string }) {
     <img
       src={src}
       alt={ticker}
-      className="w-10 h-10 object-contain rounded"
+      className="object-contain rounded shrink-0"
+      style={{ width: px, height: px }}
       onError={() => setFailed(true)}
     />
   );
@@ -246,22 +253,22 @@ export function CompanyMonitorWidget() {
               {/* ── Card view ── */}
               {viewMode === "card" && (
                 <div className="flex-1 overflow-y-auto min-h-0">
-                  <div className="grid grid-cols-3 gap-1.5 pb-1">
+                  <div className="grid grid-cols-4 gap-1 pb-1">
                     {companies.map(c => (
                       <div
                         key={c.ticker}
-                        className="rounded-lg border border-border/50 bg-card/40 px-2 py-1.5 flex flex-col gap-1"
+                        className="rounded-lg border border-border/50 bg-card/40 px-1.5 py-1.5 flex flex-col gap-1"
                       >
                         {/* Row 1: Ticker name */}
-                        <span className="text-[11px] font-bold text-foreground leading-none truncate">
+                        <span className="text-[10px] font-bold text-foreground leading-none truncate">
                           {c.ticker}
                         </span>
 
-                        {/* Row 2: Logo left, rating right */}
-                        <div className="flex items-center justify-between gap-1">
-                          <CompanyLogo ticker={c.ticker} />
+                        {/* Row 2: Logo left, rating badge right — both hugging each other */}
+                        <div className="flex items-center gap-1.5">
+                          <CompanyLogo ticker={c.ticker} size={28} />
                           {c.rating && (
-                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border leading-none text-right ${ratingBadgeStyle(c.rating)}`}>
+                            <span className={`text-[8px] font-semibold px-1 py-0.5 rounded border leading-none ${ratingBadgeStyle(c.rating)}`}>
                               {c.rating}
                             </span>
                           )}
@@ -269,7 +276,7 @@ export function CompanyMonitorWidget() {
 
                         {/* Row 3: Score circle centered */}
                         <div className="flex justify-center">
-                          <ScoreCircle score={c.strength} />
+                          <ScoreCircle score={c.strength} size={36} />
                         </div>
                       </div>
                     ))}
