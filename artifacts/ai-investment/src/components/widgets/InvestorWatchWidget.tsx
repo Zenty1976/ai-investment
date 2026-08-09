@@ -36,7 +36,7 @@ function InvestorAvatarCard({ entry }: { entry: InvestorResult }) {
   return (
     <div className="flex flex-col items-center gap-1 shrink-0 w-[86px] select-none">
       {/* Avatar with real photo */}
-      <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 relative">
+      <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 relative">
         <img
           src={photoSrc}
           alt={name}
