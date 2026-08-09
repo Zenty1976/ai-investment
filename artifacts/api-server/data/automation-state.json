@@ -10,18 +10,18 @@
   },
   "market-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-09T17:57:51.307Z",
-    "lastSuccessfulRunAt": "2026-08-09T17:57:56.225Z",
-    "nextRunAt": "2026-08-09T18:27:56.225Z",
+    "lastRunAt": "2026-08-09T18:28:25.567Z",
+    "lastSuccessfulRunAt": "2026-08-09T18:28:29.904Z",
+    "nextRunAt": "2026-08-09T18:58:29.904Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "news-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-09T17:57:51.308Z",
-    "lastSuccessfulRunAt": "2026-08-09T17:58:00.905Z",
-    "nextRunAt": "2026-08-09T18:28:00.905Z",
+    "lastRunAt": "2026-08-09T18:28:25.568Z",
+    "lastSuccessfulRunAt": "2026-08-09T18:28:32.140Z",
+    "nextRunAt": "2026-08-09T18:58:32.140Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
@@ -55,18 +55,18 @@
   },
   "market-alerts": {
     "status": "Idle",
-    "lastRunAt": "2026-08-09T18:13:25.347Z",
-    "lastSuccessfulRunAt": "2026-08-09T18:13:29.939Z",
-    "nextRunAt": "2026-08-09T18:28:29.939Z",
+    "lastRunAt": "2026-08-09T18:28:55.583Z",
+    "lastSuccessfulRunAt": "2026-08-09T18:29:01.717Z",
+    "nextRunAt": "2026-08-09T18:44:01.717Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
   },
   "risk-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-09T16:27:19.785Z",
-    "lastSuccessfulRunAt": "2026-08-09T16:27:28.974Z",
-    "nextRunAt": "2026-08-09T18:27:28.974Z",
+    "lastRunAt": "2026-08-09T18:27:55.553Z",
+    "lastSuccessfulRunAt": "2026-08-09T18:28:06.311Z",
+    "nextRunAt": "2026-08-09T20:28:06.311Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
@@ -96,13 +96,15 @@
     "nextRunAt": "2026-08-09T18:28:11.896Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": []
+    "waitingForDeps": [
+      "market-alerts"
+    ]
   },
   "trade-review": {
     "status": "Idle",
-    "lastRunAt": "2026-08-09T16:28:12.807Z",
-    "lastSuccessfulRunAt": "2026-08-09T16:28:12.815Z",
-    "nextRunAt": "2026-08-09T18:28:12.815Z",
+    "lastRunAt": "2026-08-09T18:24:25.537Z",
+    "lastSuccessfulRunAt": "2026-08-09T18:24:25.550Z",
+    "nextRunAt": "2026-08-09T20:24:25.550Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []
@@ -118,9 +120,9 @@
   },
   "command-brief": {
     "status": "Idle",
-    "lastRunAt": null,
-    "lastSuccessfulRunAt": null,
-    "nextRunAt": "2026-08-09T18:24:00.311Z",
+    "lastRunAt": "2026-08-09T18:24:25.552Z",
+    "lastSuccessfulRunAt": "2026-08-09T18:24:29.196Z",
+    "nextRunAt": "2026-08-09T20:24:29.196Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": []

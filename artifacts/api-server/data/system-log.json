@@ -1,222 +1,5 @@
 [
   {
-    "id": "e09a7d70-d73d-4376-a199-e6e08cbf8da4",
-    "timestamp": "2026-08-09T08:26:58.979Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via Scheduled (6635ms, change: Medium)"
-  },
-  {
-    "id": "997019a8-cbb1-4569-965f-54a85790e7f9",
-    "timestamp": "2026-08-09T08:26:58.980Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts waiting for fresh: news-monitor"
-  },
-  {
-    "id": "0265e541-3d99-4601-a9b4-a9d88477ecc6",
-    "timestamp": "2026-08-09T08:26:59.103Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed: 4 market-moving stories found"
-  },
-  {
-    "id": "535cfee0-15cb-4d30-9019-bcbefad062d9",
-    "timestamp": "2026-08-09T08:26:59.107Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via Scheduled (6737ms, change: Medium)"
-  },
-  {
-    "id": "c978dc88-697a-405c-91a0-7df7e71430e2",
-    "timestamp": "2026-08-09T08:26:59.111Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "687a67b1-539c-45e2-bf58-b3837919e87c",
-    "timestamp": "2026-08-09T08:27:03.353Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "43b1a515-cb5b-4eba-b8cc-8bf349e4ebfe",
-    "timestamp": "2026-08-09T08:27:03.354Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 new alert(s): Houthi attack on Saudi oil facility escalates Middle East energy risk; SpaceX Q2 earnings reveal massive AI capex, spooking markets"
-  },
-  {
-    "id": "d206171f-f18f-4b00-9b05-84e480de0a23",
-    "timestamp": "2026-08-09T08:27:03.356Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 alert(s) resolved: OpenAI pauses ‘Astra’ model development; Oil prices volatile after U.S.–Iran tensions ease then flare"
-  },
-  {
-    "id": "0b5e26ba-f7cd-4e44-b68d-ab8e48c7fdca",
-    "timestamp": "2026-08-09T08:27:03.359Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Houthi attack on Saudi oil facility escalates Middle East energy risk [Geopolitical]"
-  },
-  {
-    "id": "970be49d-674c-4692-adbf-53bae8f75e31",
-    "timestamp": "2026-08-09T08:27:03.363Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Dependency (4254ms, change: High)"
-  },
-  {
-    "id": "2d8f51c7-a478-4ad1-b474-4b4c2b950e3f",
-    "timestamp": "2026-08-09T14:25:56.716Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "69a899d2-30da-43c0-b8ef-226db2cdb96e",
-    "timestamp": "2026-08-09T14:26:01.812Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "86c0e8d9-485c-4adf-82ab-5ba559d8d737",
-    "timestamp": "2026-08-09T14:26:01.813Z",
-    "module": "Portfolio Manager",
-    "level": "warning",
-    "message": "Portfolio update is using mock Saxo data"
-  },
-  {
-    "id": "eef8bef2-e132-4639-b029-efd98fced835",
-    "timestamp": "2026-08-09T14:26:01.825Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "a884d307-1cae-4101-bdd7-069f0ca9b010",
-    "timestamp": "2026-08-09T14:26:01.832Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "efa4b325-a58f-4694-a8d0-a41a0fae1571",
-    "timestamp": "2026-08-09T14:26:01.871Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via Scheduled (150ms, change: None)"
-  },
-  {
-    "id": "fce48332-ed96-465e-aca0-46383a110a98",
-    "timestamp": "2026-08-09T14:26:01.872Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "9205f13d-e39b-49b0-be5a-9a1d8d202121",
-    "timestamp": "2026-08-09T14:26:01.875Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "bb2341dd-b02b-4660-a414-ba216d152065",
-    "timestamp": "2026-08-09T14:26:01.879Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "2233b7c2-5629-4993-b675-e07107205166",
-    "timestamp": "2026-08-09T14:26:01.883Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "6a38d7a6-3051-4f65-9a67-e796d24b0990",
-    "timestamp": "2026-08-09T14:26:01.886Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "34eea8ff-52f4-4456-a646-e7e5679f508c",
-    "timestamp": "2026-08-09T14:26:01.890Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NOVO B (trigger: Scheduled)"
-  },
-  {
-    "id": "75191b72-cae1-493a-922f-0091d648605e",
-    "timestamp": "2026-08-09T14:26:01.894Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "ff4ac3b2-a432-4c45-ae0f-c52e598f5265",
-    "timestamp": "2026-08-09T14:26:01.895Z",
-    "module": "Risk Analyzer",
-    "level": "warning",
-    "message": "Risk analysis performed using mock portfolio data"
-  },
-  {
-    "id": "bca864f6-e2fb-4d4e-948f-c07c7a6998e8",
-    "timestamp": "2026-08-09T14:26:01.902Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "3ea0b525-9423-4277-aaa6-32f3b2e8800c",
-    "timestamp": "2026-08-09T14:26:01.903Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis is based on mock portfolio data"
-  },
-  {
-    "id": "d304dcef-5afa-415e-be5f-95f8521b07da",
-    "timestamp": "2026-08-09T14:26:01.909Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "a1515dd7-8710-4058-ba24-c05b691175ab",
-    "timestamp": "2026-08-09T14:26:01.910Z",
-    "module": "Trade Decision Engine",
-    "level": "warning",
-    "message": "Using mock portfolio data — decisions reflect simulated positions only"
-  },
-  {
-    "id": "df4cde89-0887-4288-b1f4-11c493070815",
-    "timestamp": "2026-08-09T14:26:01.928Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "18d5007b-4aba-4a56-b311-3d6ec0c4ceb7",
-    "timestamp": "2026-08-09T14:26:01.938Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for MSFT (trigger: Scheduled)"
-  },
-  {
-    "id": "41e3b11f-b7f7-4229-b671-d3e90ab5cce7",
-    "timestamp": "2026-08-09T14:26:02.023Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for SERV (trigger: Scheduled)"
-  },
-  {
     "id": "39e5b83f-c7e7-42fa-8b28-030aadae68d5",
     "timestamp": "2026-08-09T14:26:02.028Z",
     "module": "Company Monitor",
@@ -3498,5 +3281,222 @@
     "module": "Command Brief",
     "level": "info",
     "message": "Command Brief generated (3716ms): attention — Monitor Serve Robotics and upcoming U.S. CPI data; no trades require approval."
+  },
+  {
+    "id": "79f8f3c2-0dab-41d6-b39c-987db84e0898",
+    "timestamp": "2026-08-09T18:24:25.541Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
+  },
+  {
+    "id": "38529bc7-ab93-4603-973d-0070b16bfd2a",
+    "timestamp": "2026-08-09T18:24:25.550Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via Dependency (13ms, change: None)"
+  },
+  {
+    "id": "86c86e53-7cae-4b79-9631-17f17fb30c01",
+    "timestamp": "2026-08-09T18:24:25.555Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "f4a31a01-4b4f-4172-b38c-65cdf9c55075",
+    "timestamp": "2026-08-09T18:24:29.194Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (3634ms): attention — Monitor Serve Robotics and upcoming U.S. CPI data; no trades require approval."
+  },
+  {
+    "id": "7782d51d-2bd7-43c8-8234-fab6c4934048",
+    "timestamp": "2026-08-09T18:24:29.197Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief completed via Dependency (3644ms, change: Medium)"
+  },
+  {
+    "id": "48f2536c-2318-45a5-95d5-cadf8d4c028c",
+    "timestamp": "2026-08-09T18:27:55.556Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "10ce51b8-d186-42eb-a6b8-526cabf928b8",
+    "timestamp": "2026-08-09T18:27:55.557Z",
+    "module": "Risk Analyzer",
+    "level": "warning",
+    "message": "Risk analysis performed using mock portfolio data"
+  },
+  {
+    "id": "ff4018e5-29e4-425a-b4ff-e0b9304d45e3",
+    "timestamp": "2026-08-09T18:28:06.291Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Risk analysis completed"
+  },
+  {
+    "id": "5279b0ca-a4dc-456c-a2c9-32faddc230fa",
+    "timestamp": "2026-08-09T18:28:06.292Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk score: 58 ▼ 4 (was 62)"
+  },
+  {
+    "id": "88f5aca4-d57c-4ddc-a2c1-3697dc0013ee",
+    "timestamp": "2026-08-09T18:28:06.295Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Highest portfolio risk: U.S. CPI/PPI releases [Macro, High severity]"
+  },
+  {
+    "id": "3adef24b-2ea6-40cd-a514-e53d6579ce49",
+    "timestamp": "2026-08-09T18:28:06.296Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: U.S. CPI/PPI releases"
+  },
+  {
+    "id": "f201099b-2368-4b56-b23e-1faa110d585f",
+    "timestamp": "2026-08-09T18:28:06.298Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Middle East‑driven oil price volatility"
+  },
+  {
+    "id": "06e22fba-6bb9-4dd1-a24f-c491b7edb9c4",
+    "timestamp": "2026-08-09T18:28:06.300Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Concentration in correlated growth exposures"
+  },
+  {
+    "id": "e08670db-f23c-48e6-b278-1a5c42104b18",
+    "timestamp": "2026-08-09T18:28:06.301Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Competitive and margin pressure at Novo Nordisk"
+  },
+  {
+    "id": "9c4be488-ceaa-477b-bb7e-6f240e213f3c",
+    "timestamp": "2026-08-09T18:28:06.303Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Energy‑driven inflation and rate volatility from Middle East conflict"
+  },
+  {
+    "id": "b4368708-e88b-4d3a-bf96-b70c9ec7fd0d",
+    "timestamp": "2026-08-09T18:28:06.304Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: U.S. inflation data and trade policy events"
+  },
+  {
+    "id": "aadb162a-af19-4961-80e5-29bbf8f7b92f",
+    "timestamp": "2026-08-09T18:28:06.306Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Currency translation risk (DKK/USD)"
+  },
+  {
+    "id": "e6c588b5-40fc-4d44-a37f-e25318cea47f",
+    "timestamp": "2026-08-09T18:28:06.308Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Microsoft capex/margin pressure amid datacenter ramp"
+  },
+  {
+    "id": "c56c14e6-42d8-42e7-b2c0-a98d0ac4accb",
+    "timestamp": "2026-08-09T18:28:06.311Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer completed via Scheduled (10758ms, change: Medium)"
+  },
+  {
+    "id": "0f1ec63f-3d38-48ef-b472-f24f5199523c",
+    "timestamp": "2026-08-09T18:28:25.571Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "c987dc18-ceff-476b-afc9-841206ab4fd4",
+    "timestamp": "2026-08-09T18:28:25.575Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "a7261645-57ae-41ec-b030-f770e0604136",
+    "timestamp": "2026-08-09T18:28:29.902Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "4fcbec70-cbca-4616-baa4-b11d06a7c949",
+    "timestamp": "2026-08-09T18:28:29.905Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (4337ms, change: Medium)"
+  },
+  {
+    "id": "f1feb3f5-5d06-4a5f-9c08-003245007d1b",
+    "timestamp": "2026-08-09T18:28:32.138Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 5 market-moving stories found"
+  },
+  {
+    "id": "edff5802-b84b-455d-adb6-59daba2aa3f5",
+    "timestamp": "2026-08-09T18:28:32.141Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (6572ms, change: Medium)"
+  },
+  {
+    "id": "40b2ad7a-de6e-4de1-ac7d-e4dbde9b8030",
+    "timestamp": "2026-08-09T18:28:55.586Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "48689602-86d9-4e6d-841b-e35aef750878",
+    "timestamp": "2026-08-09T18:29:01.699Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "7f931467-1982-4177-854d-7d0e86fb6439",
+    "timestamp": "2026-08-09T18:29:01.701Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "4 new alert(s): Novo Nordisk raises 2026 adjusted guidance; Novo Nordisk announces interim dividend and key dates; Novo Nordisk to launch Wegovy® pill in Germany soon; Novo Nordisk partners with H1 to scale AI‑driven clinical development"
+  },
+  {
+    "id": "46d28e86-0056-4a65-ba58-50693d551d8d",
+    "timestamp": "2026-08-09T18:29:01.712Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 alert(s) resolved: U.S. unexpectedly lost 23,000 jobs in July"
+  },
+  {
+    "id": "cbbb491a-6221-424b-8ace-f37137eea95b",
+    "timestamp": "2026-08-09T18:29:01.713Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Novo Nordisk raises 2026 adjusted guidance [Company]"
+  },
+  {
+    "id": "0c3a558d-e483-4e11-ab89-70d1691160c2",
+    "timestamp": "2026-08-09T18:29:01.719Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (6134ms, change: High)"
   }
 ]

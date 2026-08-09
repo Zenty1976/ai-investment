@@ -2,27 +2,28 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices rose modestly, volatility eased, central banks held rates amid inflation concerns and geopolitical risks.",
-      "marketSentiment": "Positive",
+      "summary": "Global equity indices are mixed: US markets are higher, Asia weaker; volatility (VIX) is lower. Central banks largely hold rates steady amid geopolitical and inflation uncertainty.",
+      "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "Major indices advanced, supporting equity sentiment",
-        "Volatility (VIX) declined, easing risk perception"
+        "US equities rising, supported by easing volatility and strong earnings in select sectors",
+        "European indices gaining as ECB maintains rates and signals data‑dependent approach"
       ],
       "negativeFactors": [
-        "Central banks held rates amid persistent inflation and geopolitical uncertainty"
+        "Asian markets under pressure amid geopolitical tensions and energy uncertainty",
+        "Federal Reserve’s reduced communication increases market uncertainty"
       ],
       "strongSectors": [
         "Healthcare",
-        "Consumer Cyclical"
+        "Financials"
       ],
       "weakSectors": [
         "Technology",
         "Energy"
       ],
       "keyRisks": [
-        "Middle East conflict disrupting energy markets",
-        "Upcoming US inflation data could shift rate expectations"
+        "Middle East conflict driving energy price volatility",
+        "Uncertainty around Fed policy communication"
       ],
       "sources": [
         {
@@ -41,21 +42,21 @@
           "published": "2026-07-28"
         },
         {
-          "title": "Bank of England holds Bank Rate at 3.75%, inflation at 2.6%",
-          "url": "https://www.bankofengland.co.uk/monetary-policy/the-interest-rate-bank-rate.",
-          "published": "2026-07-30"
+          "title": "Monetary policy decisions",
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260723~29f24d99bc.en.html",
+          "published": "2026-07-23"
         },
         {
-          "title": "Bank of Canada maintains the policy rate at 2¼%",
-          "url": "https://www.bankofcanada.ca/2026/07/fad-press-release-2026-07-15/",
-          "published": "2026-07-15"
+          "title": "Wall Street: Less Fed information will mean more volatile markets",
+          "url": "https://www.axios.com/2026/08/04/fed-warsh-volatile-markets",
+          "published": "2026-08-04"
         }
       ],
-      "timestamp": "2026-08-09T17:57:51.407Z",
-      "analysisDuration": 4801
+      "timestamp": "2026-08-09T18:28:25.572Z",
+      "analysisDuration": 4258
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-09T17:57:56.210Z"
+    "updatedAt": "2026-08-09T18:28:29.830Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -129,103 +130,103 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Middle East tensions continue to drive oil volatility and inflation concerns, while ECB holds rates amid energy shock risks. South Korea raises rates as inflation persists. Markets brace for U.S. CPI data ahead of key releases.",
-      "overallMarketImpact": "Cautiously negative—energy-driven inflation risks weigh on sentiment, while central banks remain cautious.",
+      "executiveSummary": "Middle East conflict continues to drive energy volatility and inflation concerns, while ECB holds rates amid renewed commodity shocks. AI infrastructure spending supports U.S. equities despite tech sector softness.",
+      "overallMarketImpact": "Markets remain cautiously optimistic, buoyed by resilient U.S. growth and AI investment, but tempered by geopolitical-driven energy risks.",
       "topStory": {
-        "title": "Middle East conflict fuels oil price volatility",
-        "summary": "Renewed US‑Iran tensions and Strait of Hormuz risks are keeping oil prices elevated and markets on edge.",
+        "title": "Middle East conflict fuels energy price shock",
+        "summary": "Ongoing Iran‑related conflict and Strait of Hormuz disruptions are triggering historic oil supply shocks and elevated commodity prices.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "ecb-holds-rates-amid-energy-shock-2026-08-09",
-          "title": "ECB holds rates amid energy shock risks",
-          "summary": "ECB holds rates, flags energy‑driven inflation risks and drops balanced risk language.",
-          "category": "Rates",
-          "importance": "High",
-          "affectedMarkets": [
-            "Euro bonds",
-            "EUR",
-            "Inflation expectations"
-          ],
-          "whyItMatters": "ECB’s cautious stance signals inflation risks remain elevated, influencing bond yields and FX.",
-          "marketImpact": "Negative for euro bonds, mixed for EUR",
-          "confidence": 0.85,
-          "source": "ECB",
-          "publishedAt": "2026-07-23T00:00:00Z"
-        },
-        {
-          "id": "middle-east-oil-volatility-2026-08-09",
-          "title": "Middle East conflict fuels oil volatility",
-          "summary": "Escalating US‑Iran tensions and Strait of Hormuz risks keep oil prices elevated and pressure markets.",
+          "id": "middle-east-energy-shock-2026-08-09",
+          "title": "Middle East conflict fuels energy price shock",
+          "summary": "War‑related disruptions in the Strait of Hormuz are causing the largest oil supply shock on record, pushing energy and commodity prices sharply higher.",
           "category": "Energy",
           "importance": "High",
           "affectedMarkets": [
             "Oil",
             "Inflation",
-            "Equities"
+            "Commodities"
           ],
-          "whyItMatters": "Oil volatility raises inflation expectations and complicates central bank policy, pressuring equities and bonds.",
-          "marketImpact": "Negative for equities, positive for oil and inflation‑linked assets",
+          "whyItMatters": "Energy price surges feed into inflation, central bank policy uncertainty, and global growth risks.",
+          "marketImpact": "Positive for oil; negative for inflation‑sensitive assets",
           "confidence": 0.9,
-          "source": "AA",
-          "publishedAt": "2026-07-13T00:00:00Z"
+          "source": "World Bank",
+          "publishedAt": "2026-04-28"
         },
         {
-          "id": "el-nino-food-commodity-risk-2026-08-09",
-          "title": "El Niño threatens food commodity prices",
-          "summary": "El Niño may disrupt agricultural supply, raising food commodity prices globally.",
-          "category": "Commodities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Food commodities",
-            "Inflation"
-          ],
-          "whyItMatters": "Food price shocks could add to inflation pressures and affect emerging markets.",
-          "marketImpact": "Positive for food commodities, inflationary",
-          "confidence": 0.7,
-          "source": "Reddit",
-          "publishedAt": "2026-08-08T00:00:00Z"
-        },
-        {
-          "id": "spaceX-earnings-ai-spending-2026-08-09",
-          "title": "SpaceX earnings highlight AI spending",
-          "summary": "SpaceX Q2 revenue nearly doubled; heavy AI infrastructure spending spooked AMD, boosted NVIDIA.",
+          "id": "spacex‑earnings‑boost‑ai‑stocks‑2026‑08‑09",
+          "title": "SpaceX earnings lift AI infrastructure sentiment",
+          "summary": "SpaceX Q2 revenue nearly doubled to $7.8B, boosting AI infrastructure optimism despite AMD weakness.",
           "category": "Technology",
           "importance": "Medium",
           "affectedMarkets": [
             "AI stocks",
             "Semiconductors"
           ],
-          "whyItMatters": "Signals strong AI investment but raises concerns over semiconductor capital allocation.",
-          "marketImpact": "Positive for NVIDIA/AI stocks, negative for AMD",
-          "confidence": 0.75,
+          "whyItMatters": "Strong AI‑related spending supports tech sector, offsetting broader tech softness.",
+          "marketImpact": "Positive for AI stocks; negative for AMD",
+          "confidence": 0.7,
           "source": "Reddit",
-          "publishedAt": "2026-08-05T00:00:00Z"
+          "publishedAt": "2026-08-05"
         },
         {
-          "id": "bank-of-korea-rate-hike-2026-08-09",
-          "title": "Bank of Korea raises rate 25bps",
-          "summary": "BOK hikes key rate to 2.75%, citing elevated inflation and Middle East uncertainty.",
+          "id": "ecb-holds-rates-amid-energy‑shock-2026-08-09",
+          "title": "ECB holds rates amid energy‑driven risks",
+          "summary": "ECB maintained rates, citing energy‑shock volatility and uncertain inflation dynamics.",
           "category": "Rates",
           "importance": "Medium",
           "affectedMarkets": [
-            "Korean bonds",
-            "KRW",
-            "Asian equities"
+            "Euro bonds",
+            "EUR",
+            "Rates"
           ],
-          "whyItMatters": "Rate hike tightens regional monetary conditions and reflects persistent inflation pressures.",
-          "marketImpact": "Negative for Korean bonds, mixed for KRW",
+          "whyItMatters": "ECB’s cautious stance signals sensitivity to commodity‑driven inflation risks.",
+          "marketImpact": "Neutral to slightly negative for euro bonds",
+          "confidence": 0.8,
+          "source": "ECB",
+          "publishedAt": "2026-07-23"
+        },
+        {
+          "id": "bok‑raises‑rates‑on‑inflation‑concerns‑2026‑08‑09",
+          "title": "Bank of Korea raises rates on inflation concerns",
+          "summary": "BOK lifted its base rate by 25bps to 2.75%, citing elevated inflation and energy‑price pass‑through.",
+          "category": "Rates",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Asian bonds",
+            "FX"
+          ],
+          "whyItMatters": "Reflects regional central bank tightening amid global inflation pressures.",
+          "marketImpact": "Negative for Korean bonds; supportive for KRW",
           "confidence": 0.8,
           "source": "Yonhap",
-          "publishedAt": "2026-07-16T00:00:00Z"
+          "publishedAt": "2026-07-16"
+        },
+        {
+          "id": "imf-precious-metals-correction-2026-08-09",
+          "title": "Precious metals correct after earlier surge",
+          "summary": "Gold and base metals prices have pulled back from record highs amid stronger dollar and rising rate expectations.",
+          "category": "Commodities",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Precious Metals",
+            "FX",
+            "Rates"
+          ],
+          "whyItMatters": "Shifts in metals prices reflect changing inflation and rate outlooks, affecting safe‑haven demand.",
+          "marketImpact": "Negative for gold; mixed for base metals",
+          "confidence": 0.75,
+          "source": "IMF",
+          "publishedAt": "2026-04-01"
         }
       ],
-      "timestamp": "2026-08-09T17:57:51.411Z",
-      "analysisDuration": 9488
+      "timestamp": "2026-08-09T18:28:25.576Z",
+      "analysisDuration": 6554
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-09T17:58:00.900Z"
+    "updatedAt": "2026-08-09T18:28:32.130Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -1740,43 +1741,38 @@
   "risk-analyzer": {
     "moduleName": "risk-analyzer",
     "result": {
-      "executiveSummary": "Over the next 1–3 months, the portfolio faces elevated macro‑geopolitical and currency risks, compounded by concentrated exposure to two large-cap growth names and a speculative small-cap holding. Energy supply disruptions from the Middle East conflict may drive inflation and volatility, while upcoming U.S. inflation data and trade policy events could shift rate expectations. Currency exposure (DKK vs USD) adds translation risk. Company‑specific catalysts—Microsoft’s datacenter ramp and Serve Robotics’ execution—could amplify portfolio swings.",
+      "executiveSummary": "Over the next 1–3 months, the portfolio faces elevated macro‑geopolitical risk from Middle East energy volatility and U.S. inflation data, concentrated exposure to correlated growth sectors (AI/cloud via Microsoft and healthcare via Novo Nordisk), and execution and financing risk in the speculative Serve Robotics position. The large cash buffer offers flexibility but may underperform if markets rally.",
       "overallRiskLevel": "Moderate",
       "mainConclusion": {
-        "title": "Macro‑geopolitical and concentration risks dominate near‑term portfolio risk",
-        "reason": "The portfolio’s concentrated exposure to Microsoft and Novo Nordisk (combined ~44.7 %) and speculative Serve Robotics (~2 %) increases sensitivity to macro shocks and company‑specific catalysts. Energy‑driven inflation and rate uncertainty, along with currency translation risk between DKK and USD, pose material threats to portfolio volatility and value."
+        "title": "Macro‑geopolitical volatility and concentrated growth exposures drive portfolio risk",
+        "reason": "Elevated oil price volatility from Middle East tensions and upcoming U.S. CPI/PPI releases may amplify equity volatility. The portfolio’s concentrated exposure to Microsoft and Novo Nordisk increases sensitivity to macro shifts, while Serve Robotics adds idiosyncratic execution and financing risk."
       },
-      "riskScore": 62,
+      "riskScore": 58,
       "scoreDrivers": [
         {
-          "factor": "High cash buffer (53 %)",
+          "factor": "High cash allocation (~53%)",
           "impact": "Positive",
-          "reason": "Large liquidity provides flexibility to respond to volatility or reposition if needed."
+          "reason": "Provides liquidity to reposition or buffer drawdowns."
         },
         {
-          "factor": "Concentration in two large-cap growth names",
+          "factor": "Concentration in two large holdings (MSFT and NOVO B ~45% combined)",
           "impact": "Negative",
-          "reason": "Combined weight of Microsoft and Novo Nordisk (~44.7 %) increases sensitivity to sector or company shocks."
+          "reason": "Correlated sector exposures increase vulnerability to macro shocks."
         },
         {
-          "factor": "Speculative small-cap exposure (Serve Robotics)",
+          "factor": "Speculative small position (SERV)",
           "impact": "Negative",
-          "reason": "Serve’s execution risk and guidance uncertainty could introduce outsized volatility relative to its weight."
+          "reason": "High execution and financing risk could lead to sharp drawdowns."
         },
         {
-          "factor": "Currency exposure (DKK vs USD)",
+          "factor": "Macro‑geopolitical volatility (oil, inflation)",
           "impact": "Negative",
-          "reason": "Unhedged USD exposure (~24.7 %) introduces translation risk amid FX volatility."
+          "reason": "Oil price swings and inflation surprises may drive equity volatility and rate repricing."
         },
         {
-          "factor": "Macro‑geopolitical uncertainty (energy/inflation)",
-          "impact": "Negative",
-          "reason": "Middle East conflict and energy disruptions may drive inflation, rate volatility, and market stress."
-        },
-        {
-          "factor": "Upcoming company‑specific catalysts",
-          "impact": "Negative",
-          "reason": "Microsoft’s datacenter ramp and Serve’s Q3 earnings could trigger sharp moves."
+          "factor": "Quality defensive exposure (Novo Nordisk)",
+          "impact": "Positive",
+          "reason": "Healthcare anchor may provide resilience amid macro uncertainty."
         }
       ],
       "riskProfile": [
@@ -1784,50 +1780,55 @@
           "category": "Concentration",
           "score": 70,
           "level": "High",
-          "reason": "Two holdings account for nearly half the portfolio, limiting diversification."
+          "reason": "Two largest holdings account for ~45% of portfolio weight, increasing sensitivity to sector and macro shocks."
         },
         {
           "category": "Macro",
           "score": 65,
-          "level": "Moderate",
-          "reason": "Energy shocks, inflation data, and trade policy may shift rate expectations and equity sentiment."
-        },
-        {
-          "category": "Currency",
-          "score": 60,
-          "level": "Moderate",
-          "reason": "Significant USD exposure against DKK base currency creates translation risk."
+          "level": "High",
+          "reason": "Upcoming U.S. CPI/PPI and persistent Middle East energy volatility pose significant market‑wide risk."
         },
         {
           "category": "Company",
-          "score": 55,
+          "score": 60,
           "level": "Moderate",
-          "reason": "Serve Robotics’ execution risk and Microsoft’s capex/margin pressure pose idiosyncratic threats."
+          "reason": "Serve Robotics’ execution and financing risk is material; Microsoft and Novo Nordisk face margin and competitive pressures."
         },
         {
           "category": "Geopolitical",
           "score": 60,
           "level": "Moderate",
-          "reason": "Middle East conflict and energy supply disruptions elevate global risk environment."
+          "reason": "Middle East conflict continues to drive oil price volatility and inflation risk."
+        },
+        {
+          "category": "Currency",
+          "score": 40,
+          "level": "Low",
+          "reason": "Moderate USD and DKK exposures; limited near‑term FX risk."
+        },
+        {
+          "category": "Liquidity",
+          "score": 30,
+          "level": "Low",
+          "reason": "High cash buffer ensures liquidity and flexibility."
         }
       ],
       "topRisks": [
         {
-          "title": "Energy‑driven inflation and rate volatility from Middle East conflict",
+          "title": "U.S. CPI/PPI releases",
           "category": "Macro",
           "probability": "High",
           "severity": "High",
-          "timeHorizon": "Weeks",
-          "eventDate": "",
+          "timeHorizon": "Immediate",
+          "eventDate": "2026-08-12",
           "affectedHoldings": [
             "MSFT",
-            "NOVO B",
-            "SERV"
+            "NOVO B"
           ],
-          "reason": "Ongoing disruptions in the Strait of Hormuz and energy markets may elevate inflation and force central banks to shift policy, increasing equity volatility.",
-          "portfolioImpact": "Could depress valuations across holdings, especially growth‑sensitive names like Microsoft and Novo Nordisk.",
-          "interactionWithOtherRisks": "Reinforces currency and concentration risks by amplifying translation effects and portfolio swings.",
-          "monitor": "Watch energy price trends, CPI/PPI data, and central bank communications.",
+          "reason": "July inflation data will influence Fed rate expectations and equity sentiment, especially for growth‑sensitive holdings.",
+          "portfolioImpact": "Surprise upside could trigger rate repricing and equity pullback; downside surprise may support valuations.",
+          "interactionWithOtherRisks": "Amplifies Macro and Concentration risks.",
+          "monitor": "Track CPI/PPI prints and market reaction.",
           "status": "New"
         },
         {
@@ -1835,141 +1836,181 @@
           "category": "Company",
           "probability": "Medium",
           "severity": "High",
-          "timeHorizon": "Months",
+          "timeHorizon": "Weeks",
           "eventDate": "",
           "affectedHoldings": [
             "SERV"
           ],
-          "reason": "Q3 earnings may reveal further revenue weakness or cash burn, raising dilution or financing concerns.",
-          "portfolioImpact": "Could lead to sharp drawdown in small‑cap speculative holding, increasing portfolio volatility.",
-          "interactionWithOtherRisks": "Concentration risk magnifies impact despite small weight.",
-          "monitor": "Monitor earnings release and cash burn metrics.",
-          "status": "New"
+          "reason": "Q3 earnings or vertical deployment delays could exacerbate cash burn and necessitate dilutive financing.",
+          "portfolioImpact": "Potential sharp drawdown in small speculative position, though limited absolute impact due to low weight.",
+          "interactionWithOtherRisks": "Standalone but could amplify volatility in small cap segment.",
+          "monitor": "Monitor company updates, cash burn metrics, and financing announcements.",
+          "status": "Unchanged"
         },
         {
-          "title": "U.S. inflation data and trade policy events",
-          "category": "Macro",
+          "title": "Middle East‑driven oil price volatility",
+          "category": "Geopolitical",
           "probability": "High",
           "severity": "Medium",
           "timeHorizon": "Immediate",
-          "eventDate": "2026-08-12",
+          "eventDate": "",
           "affectedHoldings": [
             "MSFT",
             "NOVO B"
           ],
-          "reason": "U.S. CPI (Aug 12) and PPI (Aug 13), plus Section 232 tariff expansion (Aug 18), may shift Fed expectations and trade sentiment.",
-          "portfolioImpact": "Could trigger short‑term volatility in growth and healthcare sectors.",
-          "interactionWithOtherRisks": "Amplifies macro and concentration risks.",
-          "monitor": "Track data releases and tariff announcements closely.",
+          "reason": "Ongoing conflict and Strait of Hormuz disruptions continue to fuel oil price swings and inflation concerns, which may pressure equity valuations and cost structures.",
+          "portfolioImpact": "Increased equity volatility and potential margin pressure for Microsoft (higher energy costs) and Novo Nordisk (inflation‑driven cost pressures).",
+          "interactionWithOtherRisks": "Reinforces Macro risk and Concentration risk.",
+          "monitor": "Watch oil price indices, Middle East news, and inflation expectations.",
           "status": "New"
         },
         {
-          "title": "Currency translation risk (DKK/USD)",
-          "category": "Currency",
+          "title": "Concentration in correlated growth exposures",
+          "category": "Concentration",
           "probability": "High",
           "severity": "Medium",
           "timeHorizon": "Months",
           "eventDate": "",
           "affectedHoldings": [
             "MSFT",
-            "SERV"
+            "NOVO B"
           ],
-          "reason": "Unhedged USD exposure (~24.7 %) may lead to translation losses if USD weakens vs DKK.",
-          "portfolioImpact": "Could reduce base‑currency returns even if underlying equities perform.",
-          "interactionWithOtherRisks": "Amplified by macro volatility and concentration.",
-          "monitor": "Track DKK/USD FX movements and consider hedging strategies.",
+          "reason": "High combined weight (~45%) in growth sectors increases portfolio sensitivity to sector‑wide shocks.",
+          "portfolioImpact": "Simultaneous negative moves in both could drive disproportionate portfolio drawdown.",
+          "interactionWithOtherRisks": "Interacts with Macro and Geopolitical risks.",
+          "monitor": "Assess sector rotation trends and relative performance.",
           "status": "New"
         },
         {
-          "title": "Microsoft capex/margin pressure amid datacenter ramp",
+          "title": "Competitive and margin pressure at Novo Nordisk",
           "category": "Company",
           "probability": "Medium",
           "severity": "Medium",
           "timeHorizon": "Months",
-          "eventDate": "",
+          "eventDate": "2026-11-04",
           "affectedHoldings": [
-            "MSFT"
+            "NOVO B"
           ],
-          "reason": "Pecos datacenter ramp and AI infrastructure investment may pressure margins despite growth.",
-          "portfolioImpact": "Could weigh on stock performance and drag portfolio returns.",
-          "interactionWithOtherRisks": "Interacts with macro risk if rate environment tightens.",
-          "monitor": "Watch Q1 FY27 earnings (Oct 28) and margin commentary.",
+          "reason": "Intensifying competition (e.g., Lilly) and pricing dynamics may compress margins; Q3 earnings in November will be key.",
+          "portfolioImpact": "Could weigh on stock performance and reduce defensive buffer.",
+          "interactionWithOtherRisks": "Interacts with Concentration risk.",
+          "monitor": "Watch EU uptake of Wegovy, competitive launches, and Q3 earnings.",
           "status": "New"
         }
       ],
       "riskInteractions": [
         {
-          "title": "Macro‑geopolitical shock amplifying currency and concentration risk",
-          "reason": "Energy‑driven inflation or rate shocks could weaken USD or increase volatility, magnifying translation losses and concentrated equity swings.",
+          "title": "Macro‑Geopolitical amplification",
+          "reason": "Oil price volatility from Middle East tensions may drive inflation surprises, which in turn amplify equity volatility and rate repricing.",
           "affectedHoldings": [
             "MSFT",
-            "NOVO B",
-            "SERV"
+            "NOVO B"
+          ],
+          "severity": "High"
+        },
+        {
+          "title": "Concentration‑Macro feedback",
+          "reason": "High weight in growth‑sensitive holdings means macro shocks (inflation, rates) disproportionately impact portfolio.",
+          "affectedHoldings": [
+            "MSFT",
+            "NOVO B"
           ],
           "severity": "High"
         }
       ],
       "portfolioWeaknesses": [
-        "High concentration in two large‑cap growth names",
-        "Speculative small‑cap exposure with execution risk",
-        "Unhedged USD exposure vs DKK base currency",
-        "Sensitivity to macro‑geopolitical shocks"
+        "High concentration in two correlated growth holdings",
+        "Speculative small position with execution/financing risk"
       ],
       "portfolioStrengths": [
-        "Large cash buffer (~53 %) provides flexibility",
-        "High‑quality fundamentals in Microsoft and Novo Nordisk"
+        "Large cash buffer provides flexibility",
+        "Defensive healthcare exposure via Novo Nordisk"
       ],
       "watchClosely": [
-        "U.S. CPI/PPI data (Aug 12–13)",
-        "Section 232 tariff developments (Aug 18)",
-        "Energy price and Middle East conflict developments",
-        "Serve Robotics Q3 earnings and cash burn",
-        "Microsoft Q1 FY27 earnings and margin commentary",
-        "DKK/USD exchange rate movements"
+        "U.S. CPI/PPI releases (Aug 12–13)",
+        "Oil price and Middle East developments",
+        "Serve Robotics updates on Q3 and vertical deployments"
       ],
-      "timestamp": "2026-08-09T16:27:19.788Z",
-      "analysisDuration": 9142,
-      "previousRiskScore": 58,
+      "timestamp": "2026-08-09T18:27:55.557Z",
+      "analysisDuration": 10660,
+      "previousRiskScore": 62,
       "resolvedRisks": [
         {
-          "title": "Middle East energy disruption and oil volatility",
+          "title": "Energy‑driven inflation and rate volatility from Middle East conflict",
           "category": "Macro",
           "severity": "High",
           "probability": "High"
         },
         {
-          "title": "Serve Robotics execution and liquidity risk",
-          "category": "Company",
-          "severity": "High",
-          "probability": "High"
-        },
-        {
-          "title": "El Niño‑driven food commodity inflation",
+          "title": "U.S. inflation data and trade policy events",
           "category": "Macro",
           "severity": "Medium",
           "probability": "High"
         },
         {
-          "title": "Simultaneous sector shocks to Microsoft and Novo Nordisk",
-          "category": "Concentration",
-          "severity": "Medium",
-          "probability": "Medium"
-        },
-        {
-          "title": "Currency mismatch and USD strength",
+          "title": "Currency translation risk (DKK/USD)",
           "category": "Currency",
-          "severity": "Low",
+          "severity": "Medium",
+          "probability": "High"
+        },
+        {
+          "title": "Microsoft capex/margin pressure amid datacenter ramp",
+          "category": "Company",
+          "severity": "Medium",
           "probability": "Medium"
         }
       ]
     },
     "createdAt": "2026-08-01T21:31:28.077Z",
-    "updatedAt": "2026-08-09T16:27:28.931Z"
+    "updatedAt": "2026-08-09T18:28:06.219Z"
   },
   "risk-analyzer-history": {
     "moduleName": "risk-analyzer-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-09T18:27:55.557Z",
+          "overallRiskLevel": "Moderate",
+          "riskScore": 58,
+          "risks": [
+            {
+              "title": "U.S. CPI/PPI releases",
+              "category": "Macro",
+              "probability": "High",
+              "severity": "High",
+              "normalizedKey": "u.s. cpi/ppi releases|macro"
+            },
+            {
+              "title": "Serve Robotics execution and financing risk",
+              "category": "Company",
+              "probability": "Medium",
+              "severity": "High",
+              "normalizedKey": "serve robotics execution and financing risk|company"
+            },
+            {
+              "title": "Middle East‑driven oil price volatility",
+              "category": "Geopolitical",
+              "probability": "High",
+              "severity": "Medium",
+              "normalizedKey": "middle east‑driven oil price volatility|geopolitical"
+            },
+            {
+              "title": "Concentration in correlated growth exposures",
+              "category": "Concentration",
+              "probability": "High",
+              "severity": "Medium",
+              "normalizedKey": "concentration in correlated growth exposures|concentration"
+            },
+            {
+              "title": "Competitive and margin pressure at Novo Nordisk",
+              "category": "Company",
+              "probability": "Medium",
+              "severity": "Medium",
+              "normalizedKey": "competitive and margin pressure at novo nordisk|company"
+            }
+          ],
+          "overallConclusion": "Macro‑geopolitical volatility and concentrated growth exposures drive portfolio risk"
+        },
         {
           "timestamp": "2026-08-09T16:27:19.788Z",
           "overallRiskLevel": "Moderate",
@@ -2786,97 +2827,149 @@
             }
           ],
           "overallConclusion": "Event‑driven and macro‑sensitive portfolio with concentrated exposures"
-        },
-        {
-          "timestamp": "2026-08-01T21:54:06.186Z",
-          "overallRiskLevel": "Moderate",
-          "riskScore": 65,
-          "risks": [
-            {
-              "title": "Clustered near‑term company events",
-              "category": "Event",
-              "probability": "High",
-              "severity": "High",
-              "normalizedKey": "clustered near‑term company events|event"
-            },
-            {
-              "title": "Novo Nordisk impairment or weak guidance",
-              "category": "Company",
-              "probability": "Medium",
-              "severity": "High",
-              "normalizedKey": "novo nordisk impairment or weak guidance|company"
-            },
-            {
-              "title": "Serve Robotics execution and dilution risk",
-              "category": "Company",
-              "probability": "Medium",
-              "severity": "High",
-              "normalizedKey": "serve robotics execution and dilution risk|company"
-            },
-            {
-              "title": "Macro data and Fed policy shifts",
-              "category": "Macro",
-              "probability": "High",
-              "severity": "Medium",
-              "normalizedKey": "macro data and fed policy shifts|macro"
-            },
-            {
-              "title": "Geopolitical and energy‑driven market shocks",
-              "category": "Macro",
-              "probability": "Medium",
-              "severity": "Medium",
-              "normalizedKey": "geopolitical and energy‑driven market shocks|macro"
-            }
-          ],
-          "overallConclusion": "Clustered event and macro risks in a concentrated, growth‑oriented portfolio"
         }
       ]
     },
     "createdAt": "2026-08-01T21:31:28.079Z",
-    "updatedAt": "2026-08-09T16:27:28.936Z"
+    "updatedAt": "2026-08-09T18:28:06.223Z"
   },
   "market-alerts": {
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "Medium",
-      "executiveSummary": "Since the last analysis 12 minutes ago, the only material new development is the U.S. July jobs report confirming a 23,000‑job loss, reinforcing easing Fed rate‑hike expectations. No new company‑specific or portfolio‑relevant updates emerged for Novo Nordisk, Microsoft, or Serve Robotics.",
-      "headline": "U.S. July jobs loss reinforces dovish Fed outlook",
+      "executiveSummary": "Since the last check 18 minutes ago, the only material development concerns Novo Nordisk: the company has raised its full‑year 2026 adjusted sales and operating profit guidance, announced an interim dividend with key dates, confirmed an imminent launch of the Wegovy® pill in Germany, and entered a strategic AI‑powered clinical development partnership. These updates reinforce the investment thesis but warrant attention ahead of upcoming events. No new developments for Microsoft or Serve Robotics, and no fresh macro or geopolitical shocks.",
+      "headline": "Novo Nordisk delivers multiple strategic updates—guidance upgrade, dividend, Germany launch, AI partnership",
       "alerts": [
         {
-          "title": "U.S. unexpectedly lost 23,000 jobs in July",
-          "category": "Macro",
+          "title": "Novo Nordisk raises 2026 adjusted guidance",
+          "category": "Company",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [
+            "NOVO B"
+          ],
+          "summary": "Novo Nordisk raised its full‑year 2026 adjusted sales guidance to 0% to –6% at constant exchange rates (from –4% to –12%) and adjusted operating profit guidance to 0% to –6% at CER, driven by strong GLP‑1 volume growth and favorable U.S. rebate adjustments.",
+          "whyItMatters": "Improved guidance signals stronger underlying demand and supports earnings trajectory, reinforcing the investment case.",
+          "recommendedAttention": "Monitor",
+          "sourceType": "Web",
+          "status": "New"
+        },
+        {
+          "title": "Novo Nordisk announces interim dividend and key dates",
+          "category": "Company",
           "importance": "Medium",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "MSFT",
-            "NOVO B",
-            "SERV"
+            "NOVO B"
           ],
-          "summary": "The U.S. labor market contracted by 23,000 jobs in July, missing expectations and signaling cooling labor conditions.",
-          "whyItMatters": "Weaker payrolls reduce near‑term pressure on the Fed to raise rates, supporting equity valuations and easing financing conditions across the portfolio.",
+          "summary": "Novo Nordisk declared an interim dividend of DKK 3.75 per A and B share; ex‑dividend date is August 14, record date August 17, and payment date August 18 (ADR payment August 25).",
+          "whyItMatters": "Dividend provides near‑term cash return and may influence share price around ex‑date.",
+          "recommendedAttention": "Review",
+          "sourceType": "Web",
+          "status": "New"
+        },
+        {
+          "title": "Novo Nordisk to launch Wegovy® pill in Germany soon",
+          "category": "Company",
+          "importance": "Medium",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [
+            "NOVO B"
+          ],
+          "summary": "Novo CEO confirmed that the Wegovy® (semaglutide) pill will be launched in Germany imminently, marking the first EU market rollout of the oral GLP‑1 product.",
+          "whyItMatters": "Germany launch expands commercial footprint in Europe and supports growth momentum for the oral GLP‑1 franchise.",
           "recommendedAttention": "Monitor",
+          "sourceType": "Web",
+          "status": "New"
+        },
+        {
+          "title": "Novo Nordisk partners with H1 to scale AI‑driven clinical development",
+          "category": "Company",
+          "importance": "Low",
+          "isNew": true,
+          "requiresAttention": false,
+          "affectedHoldings": [
+            "NOVO B"
+          ],
+          "summary": "Novo Nordisk entered a partnership with AI‑platform H1 to enhance clinical trial efficiency via AI‑powered workflows, including site selection and study design.",
+          "whyItMatters": "Improves R&D productivity and pipeline execution over time, though impact is longer‑term.",
+          "recommendedAttention": "Watch",
           "sourceType": "Web",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Upcoming U.S. CPI and PPI data (Aug 12–13) to confirm inflation trajectory and influence Fed policy outlook"
+        "Upcoming ex‑dividend date (August 14) and payment (August 18) for Novo Nordisk",
+        "Market reaction to guidance upgrade and Germany launch",
+        "Q3 earnings and Capital Markets Day later in 2026"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-09T16:27:14.286Z",
-      "analysisDuration": 4549,
-      "lastCheckedAt": "2026-08-09T18:13:25.364Z",
-      "lastMeaningfulUpdateAt": "2026-08-09T16:27:14.286Z",
-      "noNewDevelopmentsSinceLastCheck": true
+      "timestamp": "2026-08-09T18:28:55.588Z",
+      "analysisDuration": 6089,
+      "lastCheckedAt": "2026-08-09T18:28:55.588Z",
+      "lastMeaningfulUpdateAt": "2026-08-09T18:28:55.588Z",
+      "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-09T18:13:29.914Z"
+    "updatedAt": "2026-08-09T18:29:01.677Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-09T18:28:55.588Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Novo Nordisk delivers multiple strategic updates—guidance upgrade, dividend, Germany launch, AI partnership",
+          "alertCount": 4,
+          "alerts": [
+            {
+              "title": "Novo Nordisk raises 2026 adjusted guidance",
+              "category": "Company",
+              "importance": "High",
+              "summary": "Novo Nordisk raised its full‑year 2026 adjusted sales guidance to 0% to –6% at constant exchange rates (from –4% to –12%) and adjusted operating profit guidance to 0% to –6% at CER, driven by strong GLP‑1 volume growth and favorable U.S. rebate adjustments.",
+              "normalizedKey": "novo nordisk raises 2026 adjusted guidance|company"
+            },
+            {
+              "title": "Novo Nordisk announces interim dividend and key dates",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Novo Nordisk declared an interim dividend of DKK 3.75 per A and B share; ex‑dividend date is August 14, record date August 17, and payment date August 18 (ADR payment August 25).",
+              "normalizedKey": "novo nordisk announces interim dividend and key dates|company"
+            },
+            {
+              "title": "Novo Nordisk to launch Wegovy® pill in Germany soon",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Novo CEO confirmed that the Wegovy® (semaglutide) pill will be launched in Germany imminently, marking the first EU market rollout of the oral GLP‑1 product.",
+              "normalizedKey": "novo nordisk to launch wegovy® pill in germany soon|company"
+            },
+            {
+              "title": "Novo Nordisk partners with H1 to scale AI‑driven clinical development",
+              "category": "Company",
+              "importance": "Low",
+              "summary": "Novo Nordisk entered a partnership with AI‑platform H1 to enhance clinical trial efficiency via AI‑powered workflows, including site selection and study design.",
+              "normalizedKey": "novo nordisk partners with h1 to scale ai‑driven clinical development|company"
+            }
+          ],
+          "newsIds": [
+            "middle-east-energy-shock-2026-08-09",
+            "spacex‑earnings‑boost‑ai‑stocks‑2026‑08‑09",
+            "ecb-holds-rates-amid-energy‑shock-2026-08-09",
+            "bok‑raises‑rates‑on‑inflation‑concerns‑2026‑08‑09",
+            "imf-precious-metals-correction-2026-08-09"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "U.S. Producer Price Index (PPI) – July",
+            "U.S. Section 232 Tariff Expansion on Steel/Aluminum Derivatives",
+            "Czech National Bank Monetary Policy Meeting"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-09T18:13:25.364Z",
           "overallAlertLevel": "Medium",
@@ -3389,31 +3482,11 @@
             "U.S. Retail Sales – July"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-09T06:50:55.125Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk media account shift and sustained oil volatility amid Middle East tensions",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [
-            "ecb-holds-rates-amid-energy-shock-2026-07-23",
-            "middle-east-conflict-energy-commodity-volatility-2026-08-08",
-            "markets-rotate-amid-energy-uncertainty-2026-07-28",
-            "europe-growth-inflation-mix-supports-risk-assets-2026-07-23"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (July)",
-            "FOMC Minutes (July 28–29 meeting)",
-            "U.S. Producer Price Index (July)",
-            "U.S. Retail Sales (July)"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-09T18:13:29.919Z"
+    "updatedAt": "2026-08-09T18:29:01.683Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -5525,10 +5598,10 @@
     "result": {
       "proposals": [],
       "tdeTimestamp": "2026-08-09T16:27:46.304Z",
-      "generatedAt": "2026-08-09T16:28:12.810Z"
+      "generatedAt": "2026-08-09T18:24:25.542Z"
     },
     "createdAt": "2026-08-02T11:20:05.680Z",
-    "updatedAt": "2026-08-09T16:28:12.810Z"
+    "updatedAt": "2026-08-09T18:24:25.543Z"
   },
   "company-monitor:SERV": {
     "moduleName": "company-monitor:SERV",
@@ -11814,6 +11887,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-09T18:28:25.572Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-09T17:57:51.407Z",
           "sentiment": "Positive",
           "riskLevel": "Moderate",
@@ -11894,7 +11973,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-09T17:57:56.216Z"
+    "updatedAt": "2026-08-09T18:28:29.836Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
@@ -12751,13 +12830,13 @@
         {
           "category": "risk",
           "severity": "warning",
-          "text": "Macro-geopolitical and concentration risks dominate near-term portfolio risk."
+          "text": "High risk from Middle East conflict and Serve Robotics execution."
         },
         {
           "category": "stock",
-          "severity": "critical",
+          "severity": "watch",
           "symbol": "SERV",
-          "text": "Immediate attention required due to execution and financing risk."
+          "text": "Immediate attention needed due to execution and financing risks."
         },
         {
           "category": "event",
@@ -12768,22 +12847,17 @@
           "category": "opportunity",
           "severity": "positive",
           "symbol": "AIT",
-          "text": "Review opportunity in Applied Industrial Technologies due to strong Q3 results."
-        },
-        {
-          "category": "market",
-          "severity": "neutral",
-          "text": "Global equity indices rose modestly; volatility eased."
+          "text": "Review opportunity with strong Q3 results and raised guidance."
         }
       ],
       "actionStatus": {
         "status": "none",
-        "text": "No trades ready for approval."
+        "text": "No trades ready for approval"
       },
-      "generatedAt": "2026-08-09T18:20:58.115Z",
-      "analysisDuration": 3716
+      "generatedAt": "2026-08-09T18:24:25.556Z",
+      "analysisDuration": 3634
     },
     "createdAt": "2026-08-09T18:18:33.020Z",
-    "updatedAt": "2026-08-09T18:21:01.831Z"
+    "updatedAt": "2026-08-09T18:24:29.190Z"
   }
 }

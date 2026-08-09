@@ -40,7 +40,6 @@ const TICKERS = [
 const NAV_ITEMS = [
   { label: "OVERVIEW",    href: "/",          icon: LayoutGrid,   enabled: true  },
   { label: "PORTFOLIO",   href: "/portfolio", icon: Briefcase,    enabled: true  },
-  { label: "STOCKS",      href: "/stocks",    icon: TrendingUp,   enabled: false },
   { label: "MARKET",      href: "/market",    icon: Activity,     enabled: true  },
   { label: "NEWS",        href: "/news",      icon: Newspaper,    enabled: true  },
   { label: "EVENTS",      href: "/events",    icon: CalendarDays, enabled: true  },
