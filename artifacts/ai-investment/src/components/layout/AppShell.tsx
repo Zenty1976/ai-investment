@@ -20,20 +20,31 @@ import {
   Users,
   Zap,
 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { format } from "date-fns"
 
 interface AppShellProps {
   children: React.ReactNode
 }
 
-// Market tickers shown in header — static display, live data comes in a future iteration
-const TICKERS = [
-  { label: "OMXC25", value: null },
-  { label: "S&P 500", value: null },
+interface IndexValue {
+  label: string
+  value: number | null
+}
+
+const DEFAULT_INDICES: IndexValue[] = [
+  { label: "OMXC25",     value: null },
+  { label: "S&P 500",    value: null },
   { label: "NASDAQ 100", value: null },
-  { label: "VIX", value: null },
+  { label: "VIX",        value: null },
 ]
+
+/** Format an index value for display — whole numbers for equity indices, 2 decimals for VIX */
+function formatIndexValue(label: string, value: number): string {
+  if (label === "VIX") return value.toFixed(2)
+  if (value >= 1000) return value.toLocaleString("en-US", { maximumFractionDigits: 0 })
+  return value.toFixed(2)
+}
 
 // All sidebar nav items.
 // enabled=true → clickable and navigates; enabled=false → greyed-out stub for future modules
@@ -78,6 +89,24 @@ function LiveClock() {
 
 export function AppShell({ children }: AppShellProps) {
   const [location] = useLocation()
+  const [indices, setIndices] = useState<IndexValue[]>(DEFAULT_INDICES)
+
+  const fetchIndices = useCallback(async () => {
+    try {
+      const res = await fetch("/api/market-indices")
+      if (!res.ok) return
+      const data: IndexValue[] = await res.json()
+      if (Array.isArray(data)) setIndices(data)
+    } catch {
+      // Silently ignore — header just keeps showing "—"
+    }
+  }, [])
+
+  useEffect(() => {
+    void fetchIndices()
+    const id = setInterval(() => void fetchIndices(), 60_000)
+    return () => clearInterval(id)
+  }, [fetchIndices])
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -154,11 +183,11 @@ export function AppShell({ children }: AppShellProps) {
 
             {/* Ticker strip */}
             <div className="hidden lg:flex items-center gap-3 border-l border-border pl-4">
-              {TICKERS.map((t) => (
+              {indices.map((t) => (
                 <div key={t.label} className="flex flex-col items-center leading-tight">
                   <span className="text-[10px] font-bold text-muted-foreground tracking-widest">{t.label}</span>
-                  <span className="text-xs font-mono text-foreground/40 tracking-tight">
-                    {t.value ?? "—"}
+                  <span className={`text-xs font-mono tracking-tight ${t.value !== null ? "text-foreground" : "text-foreground/40"}`}>
+                    {t.value !== null ? formatIndexValue(t.label, t.value) : "—"}
                   </span>
                 </div>
               ))}

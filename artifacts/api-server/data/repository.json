@@ -3492,32 +3492,37 @@
     "moduleName": "trade-decision-engine",
     "result": {
       "mainConclusion": {
-        "title": "Maintain core positions, monitor key events, and selectively prepare for diversification",
-        "reason": "Portfolio remains concentrated in MSFT and NOVO B with speculative exposure to SERV; macro and company‑specific risks warrant caution. High cash provides flexibility to diversify into cyclicals and financials if catalysts materialize."
+        "title": "Maintain core positions, selectively prepare for diversification, monitor key events",
+        "reason": "Portfolio remains anchored by strong fundamentals in Microsoft and Novo Nordisk, supported by recent strategic updates. However, macro volatility, concentration risk, and speculative exposure in Serve Robotics warrant caution. Diversification into cyclicals and financials may improve balance."
       },
-      "executiveSummary": "The portfolio is anchored by strong convictions in Microsoft and Novo Nordisk, both with intact investment theses and high conviction scores. Serve Robotics remains speculative with elevated execution and financing risk. Macro risks—especially U.S. inflation data (CPI/PPI), trade policy, and FX volatility—pose short‑term threats. Given the high cash buffer (~53 %), there is room to selectively prepare for new positions in industrials (AIT) and financials (JPM) to improve diversification, but only after confirming upcoming catalysts. No immediate trade actions are warranted; instead, maintain current holdings, monitor key events, and prepare to act if evidence converges.",
+      "executiveSummary": "The portfolio’s overweight in Microsoft (22.6%) and Novo Nordisk (22.1%) continues to reflect high-conviction positions supported by strong AI/cloud momentum and GLP‑1 leadership, respectively. Recent guidance upgrades and EU approval reinforce Novo’s thesis, while Microsoft’s datacenter expansion and AI infrastructure remain intact. Serve Robotics remains speculative with no new developments since its Q2 earnings miss and guidance cut. Macro risks—particularly U.S. CPI/PPI releases and geopolitical-driven oil volatility—pose near-term threats. With over 53% cash, the portfolio has flexibility to diversify into industrials and financials, aligning with improving sector trends. Key upcoming events (CPI/PPI, tariffs, Novo’s ex-dividend) should be monitored before deploying capital.",
       "overallDecisionPosture": "SelectivePreparation",
-      "decisionReadinessScore": 65,
+      "decisionReadinessScore": 75,
       "readinessDrivers": [
         {
-          "factor": "High cash buffer (~53 %)",
+          "factor": "High cash buffer",
           "impact": "Positive",
-          "reason": "Provides flexibility to deploy into new opportunities without forced selling."
+          "reason": "Over 53% cash provides flexibility to act on opportunities."
         },
         {
-          "factor": "Concentrated exposure to MSFT and NOVO B",
+          "factor": "Macro event risk (CPI/PPI, tariffs)",
           "impact": "Negative",
-          "reason": "Elevates portfolio sensitivity to sector and company‑specific shocks."
+          "reason": "Upcoming U.S. inflation data and tariff actions may trigger volatility."
         },
         {
-          "factor": "Upcoming macro events (CPI/PPI, tariffs)",
-          "impact": "Negative",
-          "reason": "Could trigger volatility affecting growth and healthcare holdings."
-        },
-        {
-          "factor": "Strong fundamentals for AIT and JPM",
+          "factor": "Novo Nordisk strategic updates",
           "impact": "Positive",
-          "reason": "Diversification candidates with upcoming catalysts and high conviction."
+          "reason": "Guidance upgrade, EU approval, and Germany launch strengthen thesis."
+        },
+        {
+          "factor": "Serve Robotics uncertainty",
+          "impact": "Negative",
+          "reason": "No new developments since Q2 miss; execution risk remains high."
+        },
+        {
+          "factor": "Sector rotation trends",
+          "impact": "Positive",
+          "reason": "Industrials and financials gaining momentum amid macro easing."
         }
       ],
       "decisions": [
@@ -3528,35 +3533,35 @@
           "ticker": "SERV",
           "decision": "WaitForEvent",
           "title": "Wait for Serve Robotics Q3 earnings and vertical deployment updates",
-          "reason": "Speculative holding with execution and financing risk; no new developments since Q2 miss and guidance cut.",
+          "reason": "No new developments since Q2 earnings miss and guidance cut; high execution and financing risk persists.",
           "supportingEvidence": [
-            "Company Monitor shows no material change since Q2 earnings miss and guidance cut; investment case strength remains low (20) and outlook moderately bearish.",
-            "Risk Analyzer flags execution and financing risk for SERV with high severity and medium probability."
+            "Company Monitor indicates no material change and high risk",
+            "Risk Analyzer flags execution and financing risk"
           ],
-          "opposingEvidence": [],
+          "opposingEvidence": [
+            "Speculative upside remains if vertical deployments progress"
+          ],
           "confidence": "High",
           "urgency": "Immediate",
           "blockedByEvent": true,
-          "blockingEvent": "Serve Robotics Q3 earnings and vertical deployment updates",
+          "blockingEvent": "Serve Robotics Q3 earnings or vertical deployment update",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Q3 revenue and EPS beat or improved guidance",
-            "Evidence of progress in vertical deployments"
+            "Positive Q3 results or deployment progress"
           ],
           "missingEvidence": [
-            "Q3 earnings release date and metrics",
-            "Updates on cash burn and financing plans"
+            "Q3 revenue, utilization metrics, vertical deployment updates"
           ],
-          "portfolioImpact": "Speculative risk remains high",
-          "accountConsiderations": "USD exposure unhedged",
+          "portfolioImpact": "Limits speculative downside",
+          "accountConsiderations": "Instrument and account currency USD; small weight limits FX impact",
           "sourceModules": [
             "CompanyMonitor",
             "RiskAnalyzer"
           ],
-          "status": "Weakened",
+          "status": "Unchanged",
           "readiness": "WaitingForReevaluation",
-          "readinessReason": "Waiting for Serve Robotics Q3 earnings and vertical deployment updates — decision cannot be assessed until the event occurs.",
-          "lastValidated": "2026-08-09T16:27:46.304Z"
+          "readinessReason": "Waiting for Serve Robotics Q3 earnings or vertical deployment update — decision cannot be assessed until the event occurs.",
+          "lastValidated": "2026-08-09T18:29:25.608Z"
         },
         {
           "rank": 2,
@@ -3565,13 +3570,13 @@
           "ticker": "AIT",
           "decision": "Review",
           "title": "Prepare to buy AIT for industrial diversification",
-          "reason": "Strong Q3 results, raised guidance, and share buyback signal improving industrial demand and shareholder return potential.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
+          "reason": "High-confidence opportunity with improving industrial momentum and guidance upgrade; adds cyclical exposure to balance portfolio.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
           "supportingEvidence": [
-            "Opportunity Finder identifies AIT as top industrial candidate with high confidence and upcoming catalysts.",
-            "Web search confirms Q3 results with organic sales growth, raised FY26 guidance, and new 3 M share repurchase authorization."
+            "Opportunity Finder identifies AIT with high confidence and guidance catalyst",
+            "Sector Monitor shows Industrials improving amid AI infrastructure build‑out"
           ],
           "opposingEvidence": [
-            "Industrial demand could falter if macro or trade tensions re‑escalate (Risk Analyzer macro risks)."
+            "Industrial demand could falter if macro or trade tensions re‑escalate"
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
@@ -3579,24 +3584,23 @@
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Macro deterioration or trade shock",
-            "Q4 guidance cut"
+            "Deterioration in macro or industrial data",
+            "Weak Q3 results from AIT"
           ],
           "missingEvidence": [
-            "Q4 outlook details",
-            "Valuation metrics relative to peers",
+            "Recent AIT Q3 earnings details",
             "Missing/stale: CompanyMonitor. Additional independent analyses required before a trade proposal can be issued."
           ],
-          "portfolioImpact": "Adds cyclical industrial exposure to diversify portfolio.",
-          "accountConsiderations": "Instrument USD; account USD; adds USD exposure; base‑currency DKK FX risk increases.",
+          "portfolioImpact": "Adds cyclical diversification",
+          "accountConsiderations": "Instrument currency USD; introduces sector and FX exposure",
           "sourceModules": [
             "OpportunityFinder",
-            "Web"
+            "SectorMonitor"
           ],
-          "status": "New",
+          "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
-          "lastValidated": "2026-08-09T16:27:46.304Z"
+          "lastValidated": "2026-08-09T18:29:25.608Z"
         },
         {
           "rank": 3,
@@ -3604,14 +3608,14 @@
           "company": "JPMorgan Chase & Co.",
           "ticker": "JPM",
           "decision": "Review",
-          "title": "Prepare to buy JPM for financials exposure",
-          "reason": "Financials gaining momentum; JPM offers diversified banking exposure ahead of Q3 earnings and regulatory clarity.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
+          "title": "Prepare to buy JPMorgan for financials exposure",
+          "reason": "High-confidence opportunity; financials gaining momentum and JPM offers diversified bank exposure ahead of Q3 earnings.\n\n[Backend gate] Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review.",
           "supportingEvidence": [
-            "Opportunity Finder flags JPM as high‑confidence candidate with mid‑October earnings catalyst.",
-            "Web search indicates strong Q2 earnings beat and dividend/buyback increase, supporting thesis."
+            "Opportunity Finder flags JPM with high confidence and upcoming earnings catalyst",
+            "Sector Monitor shows Financials improving amid rotation"
           ],
           "opposingEvidence": [
-            "Macroeconomic slowdown or credit deterioration could pressure bank earnings (Sector Monitor financials risk)."
+            "Macroeconomic slowdown or credit deterioration could pressure bank earnings"
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
@@ -3619,65 +3623,60 @@
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Weak Q3 earnings or regulatory setbacks",
-            "Credit quality deterioration"
+            "Weak Q3 earnings or credit stress signals"
           ],
           "missingEvidence": [
-            "Q3 earnings date and guidance",
-            "Valuation and NIM outlook",
+            "Recent JPM Q3 preview or analyst expectations",
             "Missing/stale: CompanyMonitor. Additional independent analyses required before a trade proposal can be issued."
           ],
-          "portfolioImpact": "Adds financial sector diversification and interest‑rate sensitivity.",
-          "accountConsiderations": "Instrument USD; account USD; increases USD exposure; FX risk applies.",
+          "portfolioImpact": "Adds interest-rate sensitive diversification",
+          "accountConsiderations": "Instrument currency USD; introduces sector and FX exposure",
           "sourceModules": [
             "OpportunityFinder",
-            "Web"
+            "SectorMonitor"
           ],
-          "status": "New",
+          "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
-          "lastValidated": "2026-08-09T16:27:46.304Z"
+          "lastValidated": "2026-08-09T18:29:25.608Z"
         },
         {
           "rank": 4,
-          "subjectType": "Holding",
-          "company": "Microsoft Corporation",
-          "ticker": "MSFT",
-          "decision": "Hold",
-          "title": "Hold Microsoft — thesis intact amid AI/cloud strength",
-          "reason": "Strong AI/cloud momentum, high conviction (92), and no material changes; upcoming Q1 FY27 earnings and datacenter ramp are catalysts to monitor.",
+          "subjectType": "Opportunity",
+          "company": "Costco Wholesale Corporation",
+          "ticker": "COST",
+          "decision": "Review",
+          "title": "Review Costco ahead of Q3 earnings",
+          "reason": "Consumer discretionary exposure could add resilience; Q3 earnings on September 24 may provide timely catalyst.",
           "supportingEvidence": [
-            "Company Monitor shows unchanged investment case with high strength (92) and continued AI/cloud leadership.",
-            "Portfolio Analyzer notes stable earnings anchor; Risk Analyzer flags margin pressure but manageable."
+            "Opportunity Finder identifies COST with medium confidence and upcoming earnings catalyst",
+            "Sector Monitor notes consumer discretionary stable and resilient"
           ],
           "opposingEvidence": [
-            "Risk of margin pressure from capex ramp and regulatory risk in UK.",
-            "Macro volatility from upcoming CPI/PPI and tariffs may impact growth names."
+            "Valuations may be stretched; consumer slowdown risk exists"
           ],
-          "confidence": "High",
-          "urgency": "NoUrgency",
+          "confidence": "Low",
+          "urgency": "Weeks",
           "blockedByEvent": false,
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Q1 FY27 earnings showing deceleration or margin deterioration",
-            "Adverse regulatory developments"
+            "Strong Q3 results or guidance",
+            "Consumer spending weakness"
           ],
           "missingEvidence": [
-            "Q1 FY27 guidance details",
-            "UK CMA investigation updates"
+            "Analyst expectations for Q3, same-store sales trends"
           ],
-          "portfolioImpact": "Maintains core growth exposure",
-          "accountConsiderations": "USD instrument and account; FX risk remains.",
+          "portfolioImpact": "Potential defensive cyclicality",
+          "accountConsiderations": "Instrument currency USD; introduces sector and FX exposure",
           "sourceModules": [
-            "CompanyMonitor",
-            "PortfolioAnalyzer",
-            "RiskAnalyzer"
+            "OpportunityFinder",
+            "SectorMonitor"
           ],
-          "status": "Unchanged",
+          "status": "New",
           "readiness": "Informational",
-          "readinessReason": "No trade action required for this position.",
-          "lastValidated": "2026-08-09T16:27:46.304Z"
+          "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
+          "lastValidated": "2026-08-09T18:29:25.608Z"
         },
         {
           "rank": 5,
@@ -3685,51 +3684,91 @@
           "company": "Novo Nordisk A/S",
           "ticker": "NOVO B",
           "decision": "Hold",
-          "title": "Hold Novo Nordisk — EU approval strengthens thesis",
-          "reason": "EU approval of Wegovy® pill strengthens GLP‑1 leadership; investment case strength high (93) with low‑severity change.",
+          "title": "Hold Novo Nordisk — thesis reinforced by guidance upgrade and EU approval",
+          "reason": "Recent guidance upgrade, EU approval of Wegovy® pill, and Germany launch reinforce growth thesis; investment case strength remains high (93) with strengthened GLP‑1 momentum.",
           "supportingEvidence": [
-            "Company Monitor shows strengthened thesis via EU approval and high conviction (93).",
-            "Portfolio Analyzer highlights GLP‑1 momentum and EU rollout opportunity."
+            "Company Monitor shows investmentCaseStrength 93 and strengthened thesis on GLP‑1 momentum",
+            "Market Alerts confirm guidance upgrade and Germany launch",
+            "Portfolio Analyzer notes EU approval and strong US uptake"
           ],
           "opposingEvidence": [
-            "Competitive and pricing pressure from Lilly may temper upside.",
-            "Macro volatility could impact sentiment."
+            "Competitive and pricing pressures remain elevated",
+            "Macro and concentration risks may impact performance"
           ],
-          "confidence": "Medium",
+          "confidence": "High",
           "urgency": "NoUrgency",
           "blockedByEvent": false,
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "EU commercial uptake disappointing",
-            "Q3 earnings show margin pressure or guidance cut"
+            "Significant competitive setback or trial failure",
+            "Disappointing Q3 earnings"
           ],
           "missingEvidence": [
-            "Early EU sales data",
-            "Q3 earnings details"
+            "Early EU commercial uptake data post‑launch"
           ],
-          "portfolioImpact": "Maintains defensive growth exposure",
-          "accountConsiderations": "DKK instrument and account; minimal FX impact.",
+          "portfolioImpact": "Maintains defensive growth anchor",
+          "accountConsiderations": "Instrument currency DKK; dividend ex‑date August 14 may influence short‑term price but not primary decision",
+          "sourceModules": [
+            "CompanyMonitor",
+            "MarketAlerts",
+            "PortfolioAnalyzer"
+          ],
+          "status": "Strengthened",
+          "readiness": "Informational",
+          "readinessReason": "No trade action required for this position.",
+          "lastValidated": "2026-08-09T18:29:25.608Z"
+        },
+        {
+          "rank": 6,
+          "subjectType": "Holding",
+          "company": "Microsoft Corporation",
+          "ticker": "MSFT",
+          "decision": "Hold",
+          "title": "Hold Microsoft — AI/cloud momentum intact",
+          "reason": "Strong Q4 results, AI/cloud leadership, and infrastructure expansion support thesis; investment case strength remains high (92) with no material change.",
+          "supportingEvidence": [
+            "Company Monitor shows investmentCaseStrength 92 and unchanged thesis",
+            "Portfolio Analyzer highlights AI/cloud momentum and datacenter ramp-up"
+          ],
+          "opposingEvidence": [
+            "Margin pressure from elevated capex",
+            "Regulatory risk in UK remains unresolved"
+          ],
+          "confidence": "High",
+          "urgency": "NoUrgency",
+          "blockedByEvent": false,
+          "blockingEvent": "",
+          "blockingEventDate": "",
+          "whatWouldChangeDecision": [
+            "Weak Q1 FY27 earnings or margin deterioration",
+            "Adverse regulatory outcome"
+          ],
+          "missingEvidence": [
+            "Near‑term margin trend clarity"
+          ],
+          "portfolioImpact": "Maintains core tech exposure",
+          "accountConsiderations": "Instrument and account currency USD; no FX mismatch",
           "sourceModules": [
             "CompanyMonitor",
             "PortfolioAnalyzer"
           ],
-          "status": "Weakened",
+          "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "No trade action required for this position.",
-          "lastValidated": "2026-08-09T16:27:46.304Z"
+          "lastValidated": "2026-08-09T18:29:25.608Z"
         }
       ],
       "conflictsResolved": [
         {
           "topic": "Diversification vs cash deployment",
-          "conflict": "High cash but concentrated holdings vs need to diversify",
-          "resolution": "Recommend PrepareToBuy for AIT and JPM but only after confirming catalysts; maintain core holdings until events clarify."
+          "conflict": "High cash but macro risk suggests caution deploying all capital",
+          "resolution": "Propose PrepareToBuy for select opportunities while holding core positions and waiting on Serve Robotics."
         }
       ],
       "nextReviewTriggers": [
         {
-          "trigger": "U.S. CPI release",
+          "trigger": "U.S. CPI/PPI releases",
           "date": "2026-08-12",
           "affectedDecisions": [
             "Hold Microsoft",
@@ -3737,15 +3776,7 @@
           ]
         },
         {
-          "trigger": "U.S. PPI release",
-          "date": "2026-08-13",
-          "affectedDecisions": [
-            "Hold Microsoft",
-            "Hold Novo Nordisk"
-          ]
-        },
-        {
-          "trigger": "Serve Robotics Q3 earnings",
+          "trigger": "Serve Robotics Q3 earnings or deployment update",
           "date": "",
           "affectedDecisions": [
             "Wait for Serve Robotics Q3 earnings and vertical deployment updates"
@@ -3759,23 +3790,131 @@
           ]
         },
         {
-          "trigger": "Microsoft Q1 FY27 earnings",
-          "date": "2026-10-28",
+          "trigger": "AIT Q3 earnings",
+          "date": "",
           "affectedDecisions": [
-            "Hold Microsoft"
+            "Prepare to buy AIT for industrial diversification"
+          ]
+        },
+        {
+          "trigger": "JPM Q3 earnings",
+          "date": "2026-10-15",
+          "affectedDecisions": [
+            "Prepare to buy JPMorgan for financials exposure"
           ]
         }
       ],
-      "timestamp": "2026-08-09T16:27:46.304Z",
-      "analysisDuration": 25544
+      "timestamp": "2026-08-09T18:29:25.608Z",
+      "analysisDuration": 12446
     },
     "createdAt": "2026-08-02T09:52:12.533Z",
-    "updatedAt": "2026-08-09T16:28:11.861Z"
+    "updatedAt": "2026-08-09T18:29:38.065Z"
   },
   "trade-decision-engine-history": {
     "moduleName": "trade-decision-engine-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-09T18:29:25.608Z",
+          "overallDecisionPosture": "SelectivePreparation",
+          "decisionReadinessScore": 75,
+          "decisions": [
+            {
+              "subjectKey": "holding|serv",
+              "normalizedKey": "holding|serv|waitforevent",
+              "subjectType": "Holding",
+              "company": "Serve Robotics Inc.",
+              "ticker": "SERV",
+              "decision": "WaitForEvent",
+              "confidence": "High",
+              "urgency": "Immediate",
+              "readiness": "WaitingForReevaluation",
+              "blockedByEvent": true,
+              "blockingEvent": "Serve Robotics Q3 earnings or vertical deployment update",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"High\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Serve Robotics Q3 earnings or vertical deployment update\",\"bed\":\"\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|ait",
+              "normalizedKey": "opportunity|ait|review",
+              "subjectType": "Opportunity",
+              "company": "Applied Industrial Technologies",
+              "ticker": "AIT",
+              "decision": "Review",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "Informational",
+              "evidenceScore": 20,
+              "evidenceBand": "Weak",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|jpm",
+              "normalizedKey": "opportunity|jpm|review",
+              "subjectType": "Opportunity",
+              "company": "JPMorgan Chase & Co.",
+              "ticker": "JPM",
+              "decision": "Review",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "Informational",
+              "evidenceScore": 20,
+              "evidenceBand": "Weak",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|cost",
+              "normalizedKey": "opportunity|cost|review",
+              "subjectType": "Opportunity",
+              "company": "Costco Wholesale Corporation",
+              "ticker": "COST",
+              "decision": "Review",
+              "confidence": "Low",
+              "urgency": "Weeks",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"Low\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|novo b",
+              "normalizedKey": "holding|novo b|hold",
+              "subjectType": "Holding",
+              "company": "Novo Nordisk A/S",
+              "ticker": "NOVO B",
+              "decision": "Hold",
+              "confidence": "High",
+              "urgency": "NoUrgency",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Hold\",\"c\":\"High\",\"u\":\"NoUrgency\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|msft",
+              "normalizedKey": "holding|msft|hold",
+              "subjectType": "Holding",
+              "company": "Microsoft Corporation",
+              "ticker": "MSFT",
+              "decision": "Hold",
+              "confidence": "High",
+              "urgency": "NoUrgency",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Hold\",\"c\":\"High\",\"u\":\"NoUrgency\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            }
+          ]
+        },
         {
           "timestamp": "2026-08-09T16:27:46.304Z",
           "overallDecisionPosture": "SelectivePreparation",
@@ -5498,110 +5637,21 @@
               "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Eli Lilly Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
             }
           ]
-        },
-        {
-          "timestamp": "2026-08-03T12:13:40.982Z",
-          "overallDecisionPosture": "WaitForEvents",
-          "decisionReadinessScore": 65,
-          "decisions": [
-            {
-              "subjectKey": "holding|novo b",
-              "normalizedKey": "holding|novo b|waitforevent",
-              "subjectType": "Holding",
-              "company": "Novo Nordisk A/S",
-              "ticker": "NOVO B",
-              "decision": "WaitForEvent",
-              "confidence": "High",
-              "urgency": "Immediate",
-              "readiness": "WaitingForReevaluation",
-              "blockedByEvent": true,
-              "blockingEvent": "Novo Nordisk Q2 earnings",
-              "blockingEventDate": "2026-08-05",
-              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"High\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Novo Nordisk Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "holding|serv",
-              "normalizedKey": "holding|serv|waitforevent",
-              "subjectType": "Holding",
-              "company": "Serve Robotics Inc",
-              "ticker": "SERV",
-              "decision": "WaitForEvent",
-              "confidence": "Medium",
-              "urgency": "Immediate",
-              "readiness": "WaitingForReevaluation",
-              "blockedByEvent": true,
-              "blockingEvent": "Serve Robotics Q2 earnings",
-              "blockingEventDate": "2026-08-06",
-              "fingerprint": "{\"d\":\"WaitForEvent\",\"c\":\"Medium\",\"u\":\"Immediate\",\"b\":true,\"be\":\"Serve Robotics Q2 earnings\",\"bed\":\"2026-08-06\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "holding|msft",
-              "normalizedKey": "holding|msft|review",
-              "subjectType": "Holding",
-              "company": "Microsoft Corporation",
-              "ticker": "MSFT",
-              "decision": "Review",
-              "confidence": "High",
-              "urgency": "Days",
-              "readiness": "Informational",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"High\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "opportunity|cat",
-              "normalizedKey": "opportunity|cat|preparetobuy",
-              "subjectType": "Opportunity",
-              "company": "Caterpillar Inc.",
-              "ticker": "CAT",
-              "decision": "PrepareToBuy",
-              "confidence": "Medium",
-              "urgency": "Weeks",
-              "readiness": "WaitingForReevaluation",
-              "evidenceScore": 35,
-              "evidenceBand": "Adequate",
-              "blockedByEvent": true,
-              "blockingEvent": "Caterpillar Q2 earnings",
-              "blockingEventDate": "2026-08-04",
-              "targetAllocationPercent": 10,
-              "maximumAllocationPercent": 15,
-              "sizingConfidence": "Medium",
-              "fingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Caterpillar Q2 earnings\",\"bed\":\"2026-08-04\",\"r\":\"WaitingForReevaluation\",\"ta\":10,\"ma\":15,\"sc\":\"Medium\",\"eb\":\"Adequate\",\"sm\":\"OpportunityFinder,PortfolioAnalyzer\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "opportunity|lly",
-              "normalizedKey": "opportunity|lly|review",
-              "subjectType": "Opportunity",
-              "company": "Eli Lilly and Company",
-              "ticker": "LLY",
-              "decision": "Review",
-              "confidence": "Medium",
-              "urgency": "Weeks",
-              "readiness": "WaitingForReevaluation",
-              "evidenceScore": 20,
-              "evidenceBand": "Weak",
-              "blockedByEvent": true,
-              "blockingEvent": "Eli Lilly Q2 earnings",
-              "blockingEventDate": "2026-08-05",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Eli Lilly Q2 earnings\",\"bed\":\"2026-08-05\",\"r\":\"WaitingForReevaluation\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
-            }
-          ]
         }
       ]
     },
     "createdAt": "2026-08-02T09:52:12.535Z",
-    "updatedAt": "2026-08-09T16:28:11.867Z"
+    "updatedAt": "2026-08-09T18:29:38.070Z"
   },
   "trade-review": {
     "moduleName": "trade-review",
     "result": {
       "proposals": [],
-      "tdeTimestamp": "2026-08-09T16:27:46.304Z",
-      "generatedAt": "2026-08-09T18:24:25.542Z"
+      "tdeTimestamp": "2026-08-09T18:29:25.608Z",
+      "generatedAt": "2026-08-09T18:29:38.104Z"
     },
     "createdAt": "2026-08-02T11:20:05.680Z",
-    "updatedAt": "2026-08-09T18:24:25.543Z"
+    "updatedAt": "2026-08-09T18:29:38.104Z"
   },
   "company-monitor:SERV": {
     "moduleName": "company-monitor:SERV",
@@ -12825,39 +12875,43 @@
     "moduleName": "command-brief",
     "result": {
       "overallStatus": "attention",
-      "headline": "Monitor Serve Robotics and upcoming U.S. CPI data; no trades require approval.",
+      "headline": "Monitor Serve Robotics and upcoming U.S. CPI release; no trades require approval.",
       "items": [
         {
           "category": "risk",
           "severity": "warning",
-          "text": "High risk from Middle East conflict and Serve Robotics execution."
+          "text": "High risk from U.S. CPI/PPI releases and Serve Robotics execution."
         },
         {
           "category": "stock",
-          "severity": "watch",
+          "severity": "critical",
           "symbol": "SERV",
-          "text": "Immediate attention needed due to execution and financing risks."
+          "text": "Immediate attention needed; high execution and financing risk."
         },
         {
           "category": "event",
           "severity": "watch",
-          "text": "U.S. CPI data release in 3 days could impact market outlook."
+          "text": "U.S. CPI release in 3 days could impact market outlook."
+        },
+        {
+          "category": "portfolio",
+          "severity": "positive",
+          "text": "Novo Nordisk shows strong performance with strategic updates."
         },
         {
           "category": "opportunity",
-          "severity": "positive",
-          "symbol": "AIT",
-          "text": "Review opportunity with strong Q3 results and raised guidance."
+          "severity": "neutral",
+          "text": "Review opportunities in AIT, JPM, and COST for potential diversification."
         }
       ],
       "actionStatus": {
         "status": "none",
         "text": "No trades ready for approval"
       },
-      "generatedAt": "2026-08-09T18:24:25.556Z",
-      "analysisDuration": 3634
+      "generatedAt": "2026-08-09T18:29:38.115Z",
+      "analysisDuration": 2698
     },
     "createdAt": "2026-08-09T18:18:33.020Z",
-    "updatedAt": "2026-08-09T18:24:29.190Z"
+    "updatedAt": "2026-08-09T18:29:40.813Z"
   }
 }
