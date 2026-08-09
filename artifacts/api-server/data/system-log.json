@@ -1,82 +1,5 @@
 [
   {
-    "id": "f48ef3b2-9180-4c81-8b73-23fd0663b841",
-    "timestamp": "2026-08-07T20:38:35.891Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Simultaneous company events increasing volatility"
-  },
-  {
-    "id": "9250da85-5825-4925-a1a3-42bcfa17c329",
-    "timestamp": "2026-08-07T20:38:35.893Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Concentration in correlated growth exposures"
-  },
-  {
-    "id": "8929a1d1-dfd5-4f59-bf01-ed42dba7426a",
-    "timestamp": "2026-08-07T20:38:35.895Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Geopolitical‑driven energy and market volatility"
-  },
-  {
-    "id": "25ff2e43-cdb3-4280-953e-14b31b356a99",
-    "timestamp": "2026-08-07T20:38:35.897Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: U.S. monetary policy uncertainty and data surprises"
-  },
-  {
-    "id": "8a0b64d8-da7c-4aca-ae41-fd5d27a6c80d",
-    "timestamp": "2026-08-07T20:38:35.899Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Currency volatility (DKK‑USD)"
-  },
-  {
-    "id": "94038a3c-003b-4e4b-b60d-ec7218eb4236",
-    "timestamp": "2026-08-07T20:38:35.901Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Novo Nordisk EU launch execution and competitive pressure"
-  },
-  {
-    "id": "43cde19b-591b-4450-926b-9c577e5fce47",
-    "timestamp": "2026-08-07T20:38:35.905Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via Scheduled (9497ms, change: Medium)"
-  },
-  {
-    "id": "25cd8779-08b8-45b2-a5f7-c6a31ca75874",
-    "timestamp": "2026-08-07T20:38:56.417Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "74a18ffc-aee1-4011-a2ba-3bad88fc02ff",
-    "timestamp": "2026-08-07T20:38:56.419Z",
-    "module": "Trade Decision Engine",
-    "level": "warning",
-    "message": "Using mock portfolio data — decisions reflect simulated positions only"
-  },
-  {
-    "id": "d20942ce-985d-4736-8219-0df11b052dd6",
-    "timestamp": "2026-08-07T20:39:12.724Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy NVIDIA — AI infrastructure leader ahead of earnings catalyst\" (NVDA): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "57828d2b-9c81-4412-a194-31123ffa9e17",
-    "timestamp": "2026-08-07T20:39:12.725Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Applied Materials — semiconductor equipment exposure ahead of earnings\" (AMAT): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
     "id": "0f46be0c-6a29-4ef1-b547-ccadf6cbf1f5",
     "timestamp": "2026-08-07T20:39:12.729Z",
     "module": "Trade Decision Engine",
@@ -3498,5 +3421,82 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "market-alerts completed via Scheduled (4190ms, change: Medium)"
+  },
+  {
+    "id": "ff287ceb-012a-4ed7-b1f5-a78458b1f7b2",
+    "timestamp": "2026-08-09T15:26:03.637Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "cd1ffdcc-a0da-4669-806b-c42d53d93ac3",
+    "timestamp": "2026-08-09T15:26:03.639Z",
+    "module": "Portfolio Manager",
+    "level": "warning",
+    "message": "Portfolio update is using mock Saxo data"
+  },
+  {
+    "id": "f6df6d95-0011-40b9-afa9-3b5abe02c7c6",
+    "timestamp": "2026-08-09T15:26:03.669Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
+  },
+  {
+    "id": "06148ddf-9d04-411b-b987-9ab6533d6962",
+    "timestamp": "2026-08-09T15:26:03.674Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Mock portfolio snapshot stored"
+  },
+  {
+    "id": "069e94bc-ad23-4f06-9ed8-cd02fc9aa406",
+    "timestamp": "2026-08-09T15:26:03.682Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via Scheduled (49ms, change: None)"
+  },
+  {
+    "id": "449e350b-a8c0-40d2-b75a-6cde23e2a845",
+    "timestamp": "2026-08-09T15:26:03.683Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts downstream skipped — upstream change was None"
+  },
+  {
+    "id": "a8d51a8c-aba9-4640-b258-61a0da7c0319",
+    "timestamp": "2026-08-09T15:26:03.686Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "dc5e29e5-a9f5-4594-868a-a95b04536ab5",
+    "timestamp": "2026-08-09T15:26:03.688Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "d131973b-86b2-4e6c-9f2a-f0a6cd8d5ead",
+    "timestamp": "2026-08-09T15:26:03.691Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "64054617-b00f-44ad-8b34-83934ed05eab",
+    "timestamp": "2026-08-09T15:26:03.693Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine downstream skipped — upstream change was None"
+  },
+  {
+    "id": "c03bf534-bbef-491f-b069-6cab9340140d",
+    "timestamp": "2026-08-09T15:26:06.355Z",
+    "module": "Portfolio Manager v2",
+    "level": "error",
+    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
   }
 ]

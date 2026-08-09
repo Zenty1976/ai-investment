@@ -132,7 +132,7 @@ function ProposalRow({ proposal, qty, onQtyChange, onAction, onNavigate, isMutat
               disabled={isMutating}>
               <Plus className="h-2 w-2" />
             </Button>
-            <span className="text-[10px] text-muted-foreground ml-0.5">stk.</span>
+            <span className="text-[10px] text-muted-foreground ml-0.5">shares</span>
           </div>
           {proposal.estimatedValue > 0 && qty > 0 && (
             <span className="text-[10px] text-muted-foreground">
@@ -155,17 +155,17 @@ function ProposalRow({ proposal, qty, onQtyChange, onAction, onNavigate, isMutat
                 onClick={() => onAction(proposal.id, "Approved", qty)}
                 disabled={isMutating || qty === 0}
                 title={qty === 0 ? "Set quantity first" : undefined}>
-                <CheckCircle2 className="h-3 w-3 mr-0.5" /> OK
+                <CheckCircle2 className="h-3 w-3 mr-0.5" /> Approve
               </Button>
               <Button size="sm" variant="ghost" className="h-6 text-[10px] text-muted-foreground px-1.5"
                 onClick={() => onAction(proposal.id, "Waiting", qty)}
                 disabled={isMutating}>
-                <Clock className="h-3 w-3 mr-0.5" /> Udsæt
+                <Clock className="h-3 w-3 mr-0.5" /> Later
               </Button>
               <Button size="sm" variant="ghost" className="h-6 text-[10px] text-rose-500 hover:text-rose-400 px-1.5"
                 onClick={() => onAction(proposal.id, "Rejected", qty)}
                 disabled={isMutating}>
-                <XCircle className="h-3 w-3 mr-0.5" /> Afvis
+                <XCircle className="h-3 w-3 mr-0.5" /> Reject
               </Button>
             </>
           )}
@@ -173,7 +173,7 @@ function ProposalRow({ proposal, qty, onQtyChange, onAction, onNavigate, isMutat
             <Button size="sm" variant="outline" className="h-6 text-[10px] px-2"
               onClick={() => onAction(proposal.id, "Waiting", qty)}
               disabled={isMutating}>
-              Fortryd
+              Undo
             </Button>
           )}
           <Button size="sm" variant="ghost" className="h-6 text-[10px] px-1"
@@ -296,12 +296,12 @@ export function TradeReviewWidget() {
             <SummaryPills proposals={proposals} />
             {waitingDecisions.length > 0 && (
               <p className="text-[10px] text-muted-foreground">
-                {waitingDecisions.length} afventer
+                {waitingDecisions.length} waiting
               </p>
             )}
             <Button size="sm" variant="ghost" className="h-6 text-[10px] self-start px-0 text-muted-foreground"
               onClick={() => navigate("/review")}>
-              <ExternalLink className="h-3 w-3 mr-1" /> Åbn
+              <ExternalLink className="h-3 w-3 mr-1" /> Open
             </Button>
           </>
         )}
@@ -321,9 +321,9 @@ export function TradeReviewWidget() {
           <ClipboardList className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           {hasTde && proposals.length > 0 && <SummaryPills proposals={proposals} />}
           {hasTde && proposals.length === 0 && (
-            <span className="text-[11px] text-muted-foreground">Ingen forslag klar</span>
+            <span className="text-[11px] text-muted-foreground">No proposals ready</span>
           )}
-          {!hasTde && <span className="text-[11px] text-muted-foreground">Ingen TDE-analyse</span>}
+          {!hasTde && <span className="text-[11px] text-muted-foreground">No TDE analysis</span>}
         </div>
         <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0"
           onClick={() => refetch()} disabled={isRefetching}>
@@ -343,9 +343,9 @@ export function TradeReviewWidget() {
       {!isLoading && !hasTde && (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
           <Info className="h-6 w-6 text-muted-foreground/40" />
-          <p className="text-[11px] text-muted-foreground">Kør Trade Decision Engine for at generere forslag.</p>
+          <p className="text-[11px] text-muted-foreground">Run the Trade Decision Engine to generate proposals.</p>
           <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => navigate("/decisions")}>
-            Gå til TDE
+            Go to TDE
           </Button>
         </div>
       )}
@@ -354,7 +354,7 @@ export function TradeReviewWidget() {
       {!isLoading && hasTde && proposals.length === 0 && waitingDecisions.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center gap-1.5 text-center">
           <ClipboardList className="h-6 w-6 text-muted-foreground/30" />
-          <p className="text-[11px] text-muted-foreground">Ingen aktuelle handelsforslag.</p>
+          <p className="text-[11px] text-muted-foreground">No current trade proposals.</p>
         </div>
       )}
 
@@ -382,7 +382,7 @@ export function TradeReviewWidget() {
           <div className="flex items-center gap-1 mb-1">
             <CalendarClock className="h-3 w-3 text-muted-foreground/50" />
             <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-widest">
-              Afventer re-evaluering
+              Awaiting re-evaluation
             </span>
           </div>
           <div className="rounded border border-border/35 overflow-hidden">
@@ -403,7 +403,7 @@ export function TradeReviewWidget() {
         <div className="shrink-0 flex items-start gap-1.5 rounded border border-amber-500/20 bg-amber-500/5 px-2 py-1">
           <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" />
           <p className="text-[10px] text-muted-foreground">
-            Phase 1 — godkendelser registreres kun. Ingen ordrer afgives automatisk.
+            Phase 1 — approvals are recorded only. No orders are placed automatically.
           </p>
         </div>
       )}
