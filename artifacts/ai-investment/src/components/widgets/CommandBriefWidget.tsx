@@ -98,7 +98,7 @@ export function CommandBriefWidget() {
                   ? "border-yellow-500/40 bg-yellow-500/10"
                   : "border-red-500/40 bg-red-500/10"}`}>
                 <Dot color={osColor} />
-                <span className={`text-sm font-bold leading-snug ${osColor}`}>
+                <span className={`text-base font-bold leading-snug ${osColor}`}>
                   {headline}
                 </span>
               </div>
