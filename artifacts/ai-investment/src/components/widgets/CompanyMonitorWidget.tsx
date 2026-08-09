@@ -260,7 +260,7 @@ export function CompanyMonitorWidget() {
                         className="rounded-lg border border-border/50 bg-card/40 px-1.5 py-1 flex flex-col gap-1"
                       >
                         {/* Row 1: Ticker name */}
-                        <span className="text-[10px] font-bold text-foreground leading-none truncate">
+                        <span className="text-[13px] font-bold text-foreground leading-none truncate">
                           {c.ticker}
                         </span>
 
