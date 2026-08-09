@@ -676,8 +676,13 @@ class AutomationOrchestratorService {
           t => portfolioSet.has(t)
         );
         // Portfolio holding missing → Stale.
-        // Only OF/TDE candidates missing → DueSoon (will be covered next run).
-        return missingPortfolioHolding ? "Stale" : "DueSoon";
+        // Only OF/TDE candidates missing → Fresh. These tickers were discovered by
+        // Opportunity Finder *after* Company Monitor already ran in the same cycle,
+        // so they can never be covered in the same cycle. They are opportunistic
+        // targets and will be picked up in the next scheduled cycle. Showing
+        // "DueSoon" immediately after a successful run is misleading and the
+        // scheduler treats Fresh and DueSoon identically anyway (_isFresh).
+        return missingPortfolioHolding ? "Stale" : "Fresh";
       }
 
       // All required targets are fresh.  Check DueSoon (≥ 85 % of stale window).
