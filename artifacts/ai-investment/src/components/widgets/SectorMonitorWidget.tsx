@@ -174,21 +174,15 @@ export function SectorMonitorWidget() {
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
 
-              {/* Header */}
-              <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <Dot color={sentimentColor(outlook)} />
-                  <span className={`text-xs font-semibold ${sentimentColor(outlook)}`}>{outlook || "—"}</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>
-              </div>
-
               {/* ── Bar strength overview ── */}
               {sectors.length > 0 && (
                 <div className="shrink-0 flex flex-col gap-0.5">
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                    Strength (relative to market)
-                  </p>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
+                      Strength (relative to market)
+                    </p>
+                    <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>
+                  </div>
                   {sectors.map((s: any, i: number) => {
                     const { width, color } = barStyle(s.rating ?? "Neutral");
                     const label = (s.rating ?? "").replace("Moderately ", "Mod. ");
@@ -211,6 +205,13 @@ export function SectorMonitorWidget() {
               )}
 
               <div className="shrink-0 border-t border-border/40" />
+
+              {/* Overall outlook summary */}
+              {d.executiveSummary && (
+                <p className="text-[11px] text-muted-foreground leading-relaxed shrink-0 line-clamp-2">
+                  {d.executiveSummary}
+                </p>
+              )}
 
               {/* Per-sector detail cards */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
