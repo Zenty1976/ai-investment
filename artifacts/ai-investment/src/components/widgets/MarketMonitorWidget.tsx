@@ -121,83 +121,133 @@ export function MarketMonitorWidget() {
             </div>
           )}
 
-          {/* ── lg — chart view ── */}
+          {/* ── lg — existing content + mini chart ── */}
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
-              {/* Header row */}
-              <div className="flex items-center gap-2 shrink-0">
+              {/* Header */}
+              <div className="flex items-center gap-1.5 shrink-0">
                 <Dot color={sentimentColor(d.marketSentiment)} />
-                <span className={`text-sm font-semibold uppercase tracking-wide ${sentimentColor(d.marketSentiment)}`}>
-                  {d.marketSentiment}
-                </span>
-                <span className={`text-[11px] ${sentimentColor(d.riskLevel)}`}>· {d.riskLevel} Risk</span>
+                <span className={`text-xs font-semibold ${sentimentColor(d.marketSentiment)}`}>{d.marketSentiment}</span>
+                <span className={`text-[11px] ${sentimentColor(d.riskLevel)}`}>· {d.riskLevel} risk</span>
                 <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(updatedAt)}</span>
               </div>
 
-              {/* Period selector */}
-              <div className="flex items-center gap-1 shrink-0">
-                {PERIODS.map(p => (
-                  <button
-                    key={p.key}
-                    onClick={() => setPeriod(p.key)}
-                    className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
-                      period === p.key
-                        ? "bg-foreground/10 text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+              {/* Mini chart + period selector */}
+              <div className="shrink-0 flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  {PERIODS.map(p => (
+                    <button
+                      key={p.key}
+                      onClick={() => setPeriod(p.key)}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                        period === p.key
+                          ? "bg-foreground/10 text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ height: 72 }}>
+                  {chartData.length === 0 ? (
+                    <div className="h-full flex items-center">
+                      <p className="text-[10px] text-muted-foreground italic">Ingen historik endnu</p>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData} margin={{ top: 2, right: 2, left: -32, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="mmGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%"  stopColor={lineColor} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={lineColor} stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <ReferenceLine y={0} stroke="#334155" strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="timestamp"
+                          tickFormatter={ts => formatAxisDate(ts, activeDays)}
+                          tick={{ fontSize: 9, fill: "#64748b" }}
+                          tickLine={false}
+                          axisLine={false}
+                          interval="preserveStartEnd"
+                          minTickGap={40}
+                        />
+                        <YAxis
+                          domain={[-1.2, 1.2]}
+                          ticks={[-1, 0, 1]}
+                          tickFormatter={v => v === 1 ? "+" : v === -1 ? "−" : "0"}
+                          tick={{ fontSize: 9, fill: "#64748b" }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <Tooltip content={<ChartTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="score"
+                          stroke={lineColor}
+                          strokeWidth={1.5}
+                          fill="url(#mmGrad)"
+                          dot={false}
+                          activeDot={{ r: 3, fill: lineColor }}
+                          isAnimationActive={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
               </div>
 
-              {/* Chart */}
-              <div className="flex-1 min-h-0">
-                {chartData.length === 0 ? (
-                  <div className="h-full flex items-center justify-center">
-                    <p className="text-[11px] text-muted-foreground">Ingen historik endnu for denne periode</p>
+              {/* Divider */}
+              <div className="shrink-0 border-t border-border/40" />
+
+              {/* Summary */}
+              <p className="text-[11px] text-muted-foreground leading-relaxed shrink-0 line-clamp-2">{d.summary}</p>
+
+              {/* Sectors side-by-side */}
+              {(d.strongSectors?.length > 0 || d.weakSectors?.length > 0) && (
+                <div className="grid grid-cols-2 gap-x-3 shrink-0">
+                  {d.strongSectors?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-0.5 font-medium">Strong</p>
+                      {d.strongSectors.map((s: string) => (
+                        <p key={s} className="text-[10px] text-green-400 truncate">↑ {s}</p>
+                      ))}
+                    </div>
+                  )}
+                  {d.weakSectors?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-0.5 font-medium">Weak</p>
+                      {d.weakSectors.map((s: string) => (
+                        <p key={s} className="text-[10px] text-red-400 truncate">↓ {s}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Factors + risks scrollable */}
+              <div className="flex-1 overflow-y-auto min-h-0 space-y-0.5">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(d as any).positiveFactors?.map((f: string, i: number) => (
+                  <div key={i} className="flex items-start gap-1.5 text-[10px]">
+                    <Dot color="text-green-400" />
+                    <span className="text-foreground/80">{f}</span>
                   </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="mmGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor={lineColor} stopOpacity={0.25} />
-                          <stop offset="95%" stopColor={lineColor} stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
-                      <ReferenceLine y={0} stroke="#334155" strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="timestamp"
-                        tickFormatter={ts => formatAxisDate(ts, activeDays)}
-                        tick={{ fontSize: 10, fill: "#64748b" }}
-                        tickLine={false}
-                        axisLine={false}
-                        interval="preserveStartEnd"
-                        minTickGap={40}
-                      />
-                      <YAxis
-                        domain={[-1.2, 1.2]}
-                        ticks={[-1, 0, 1]}
-                        tickFormatter={v => v === 1 ? "+Pos" : v === -1 ? "−Neg" : "0"}
-                        tick={{ fontSize: 9, fill: "#64748b" }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <Tooltip content={<ChartTooltip />} />
-                      <Area
-                        type="monotone"
-                        dataKey="score"
-                        stroke={lineColor}
-                        strokeWidth={1.5}
-                        fill="url(#mmGrad)"
-                        dot={false}
-                        activeDot={{ r: 3, fill: lineColor }}
-                        isAnimationActive={false}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
+                ))}
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(d as any).negativeFactors?.map((f: string, i: number) => (
+                  <div key={i} className="flex items-start gap-1.5 text-[10px]">
+                    <Dot color="text-red-400" />
+                    <span className="text-foreground/80">{f}</span>
+                  </div>
+                ))}
+                {d.keyRisks?.map((r: string, i: number) => (
+                  <div key={i} className="flex items-start gap-1.5 text-[10px]">
+                    <Dot color="text-orange-400" />
+                    <span className="text-foreground/70">{r}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
