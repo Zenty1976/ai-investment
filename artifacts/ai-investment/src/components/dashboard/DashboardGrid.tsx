@@ -70,6 +70,7 @@ export function DashboardGrid() {
 
   const [editMode, setEditMode] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"reset" | "clear" | null>(null);
 
   // ── Container width ──────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,28 +132,55 @@ export function DashboardGrid() {
         <div className="flex items-center gap-1.5">
           {editMode && (
             <>
-              <button
-                onClick={() => setShowAdd(v => !v)}
-                className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-foreground/20 hover:bg-white/5 text-foreground transition-colors"
-              >
-                + Add Module
-              </button>
-              <button
-                onClick={handleReset}
-                title="Reset to default layout"
-                className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-foreground/20 hover:bg-white/5 text-muted-foreground transition-colors flex items-center gap-1"
-              >
-                <RotateCcw className="h-3 w-3" />
-                Reset
-              </button>
-              <button
-                onClick={clearLayout}
-                title="Remove all modules from this layout"
-                className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-red-500/40 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1"
-              >
-                <Trash2 className="h-3 w-3" />
-                Clear
-              </button>
+              {confirmAction ? (
+                /* ── Inline confirmation ── */
+                <div className="flex items-center gap-1.5 rounded border border-border/60 px-2 py-1">
+                  <span className="text-[11px] text-muted-foreground">
+                    {confirmAction === "reset" ? "Reset to default?" : "Remove all modules?"}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirmAction === "reset") handleReset();
+                      else clearLayout();
+                      setConfirmAction(null);
+                    }}
+                    className="text-[11px] px-2 py-0.5 rounded bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-colors font-medium"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setConfirmAction(null)}
+                    className="text-[11px] px-2 py-0.5 rounded border border-border/60 text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowAdd(v => !v)}
+                    className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-foreground/20 hover:bg-white/5 text-foreground transition-colors"
+                  >
+                    + Add Module
+                  </button>
+                  <button
+                    onClick={() => setConfirmAction("reset")}
+                    title="Reset to default layout"
+                    className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-foreground/20 hover:bg-white/5 text-muted-foreground transition-colors flex items-center gap-1"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setConfirmAction("clear")}
+                    title="Remove all modules from this layout"
+                    className="text-[11px] px-2 py-1 rounded border border-border/60 hover:border-red-500/40 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    Clear
+                  </button>
+                </>
+              )}
             </>
           )}
           <button
