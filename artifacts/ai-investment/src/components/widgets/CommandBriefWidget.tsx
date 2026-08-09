@@ -87,19 +87,24 @@ export function CommandBriefWidget() {
             </div>
           )}
 
-          {/* MD/LG: headline + items + action status + timestamp */}
+          {/* MD/LG: headline box + items + action status + timestamp */}
           {(size === "md" || size === "lg") && (
-            <div className="h-full flex flex-col gap-1 overflow-hidden">
-              {/* Status + headline */}
-              <div className="flex items-start gap-1.5 shrink-0">
+            <div className="h-full flex flex-col gap-1.5 overflow-hidden">
+              {/* Headline — boxed status summary */}
+              <div className={`shrink-0 rounded border px-2.5 py-1.5 flex items-center gap-2
+                ${overallStatus === "normal"
+                  ? "border-green-500/40 bg-green-500/10"
+                  : overallStatus === "attention"
+                  ? "border-yellow-500/40 bg-yellow-500/10"
+                  : "border-red-500/40 bg-red-500/10"}`}>
                 <Dot color={osColor} />
-                <span className={`text-sm font-semibold leading-snug ${osColor}`}>
+                <span className={`text-sm font-bold leading-snug ${osColor}`}>
                   {headline}
                 </span>
               </div>
 
               {/* Items */}
-              <div className="flex-1 overflow-hidden space-y-1 min-h-0 py-0.5">
+              <div className="flex-1 overflow-hidden space-y-1 min-h-0">
                 {items.map((item, i) => (
                   <div key={i} className="flex items-baseline gap-1.5 text-xs">
                     <span className={`shrink-0 leading-none ${severityColor(item.severity as ItemSeverity)}`}>
