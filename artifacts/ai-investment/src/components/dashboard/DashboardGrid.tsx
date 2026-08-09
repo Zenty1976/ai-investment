@@ -230,8 +230,8 @@ export function DashboardGrid() {
             rowHeight={100}
             margin={[8, 8]}
             containerPadding={[0, 0]}
-            compactType={null}
-            preventCollision={true}
+            compactType="vertical"
+            preventCollision={false}
             isDraggable={editMode}
             isResizable={editMode}
             resizeHandles={["s", "se", "e"]}
