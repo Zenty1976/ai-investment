@@ -52,24 +52,21 @@ function LayoutSelector({
   );
 }
 
-export function DashboardGrid() {
-  // ── Active layout (persisted) ────────────────────────────────────────────
-  const [activeLayout, setActiveLayout] = useState<LayoutId>(readActiveLayoutId);
+// ── LayoutPane ────────────────────────────────────────────────────────────────
+// Rendered with key={layoutId} so React fully remounts it on every layout
+// switch, giving useDashboardLayout a clean slate (no stale-state window).
 
-  function handleSwitchLayout(id: LayoutId) {
-    setActiveLayout(id);
-    localStorage.setItem(ACTIVE_LAYOUT_KEY, String(id));
-    // Leave edit mode when switching layouts
-    setEditMode(false);
-    setShowAdd(false);
-  }
+interface LayoutPaneProps {
+  layoutId: LayoutId;
+  onSwitchLayout: (id: LayoutId) => void;
+}
 
-  // ── Per-layout data ──────────────────────────────────────────────────────
+function LayoutPane({ layoutId, onSwitchLayout }: LayoutPaneProps) {
   const { activeModules, layout, saveLayout, addModule, removeModule, resetLayout, clearLayout } =
-    useDashboardLayout(activeLayout);
+    useDashboardLayout(layoutId);
 
-  const [editMode, setEditMode] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
+  const [editMode, setEditMode]         = useState(false);
+  const [showAdd, setShowAdd]           = useState(false);
   const [confirmAction, setConfirmAction] = useState<"reset" | "clear" | null>(null);
 
   // ── Container width ──────────────────────────────────────────────────────
@@ -120,7 +117,7 @@ export function DashboardGrid() {
         <div className="flex items-center gap-2">
           <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-sm font-semibold text-foreground">Dashboard</span>
-          <LayoutSelector active={activeLayout} onChange={handleSwitchLayout} />
+          <LayoutSelector active={layoutId} onChange={onSwitchLayout} />
           {editMode && (
             <span className="text-[10px] text-muted-foreground hidden sm:inline">
               — grab handles to drag · resize from corners · × to remove
@@ -209,7 +206,7 @@ export function DashboardGrid() {
         <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
           <LayoutGrid className="h-8 w-8 text-muted-foreground/30" />
           <p className="text-sm text-muted-foreground">
-            Layout {activeLayout} is empty — add modules to get started.
+            Layout {layoutId} is empty — add modules to get started.
           </p>
           <button
             onClick={() => { setEditMode(true); setShowAdd(true); }}
@@ -257,5 +254,26 @@ export function DashboardGrid() {
         </div>
       )}
     </div>
+  );
+}
+
+// ── DashboardGrid ─────────────────────────────────────────────────────────────
+// Owns only the active layout ID. LayoutPane is keyed by it so a switch
+// fully remounts the pane — no stale hook state, no cross-layout writes.
+
+export function DashboardGrid() {
+  const [activeLayout, setActiveLayout] = useState<LayoutId>(readActiveLayoutId);
+
+  function handleSwitchLayout(id: LayoutId) {
+    setActiveLayout(id);
+    localStorage.setItem(ACTIVE_LAYOUT_KEY, String(id));
+  }
+
+  return (
+    <LayoutPane
+      key={activeLayout}
+      layoutId={activeLayout}
+      onSwitchLayout={handleSwitchLayout}
+    />
   );
 }

@@ -1,68 +1,5 @@
 [
   {
-    "id": "0f46be0c-6a29-4ef1-b547-ccadf6cbf1f5",
-    "timestamp": "2026-08-07T20:39:12.729Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] NVDA (Review): score=15 band=Weak supporting=[OpportunityFinder] opposing=[] stale=[CompanyMonitor]"
-  },
-  {
-    "id": "ac833140-d76d-4f13-b55b-51fcfb0a76bc",
-    "timestamp": "2026-08-07T20:39:12.730Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] AMAT (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "3e58e7ab-0ebb-4a31-a206-71ec65dda470",
-    "timestamp": "2026-08-07T20:39:12.750Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "9fea234f-54c1-4ed0-a473-3f43a4a28457",
-    "timestamp": "2026-08-07T20:39:12.751Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "d4d8d0e0-f324-44aa-b1c9-b85339c38ebc",
-    "timestamp": "2026-08-07T20:39:12.753Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 75/100"
-  },
-  {
-    "id": "c1e90556-826f-4660-bc30-cfca2f320fe3",
-    "timestamp": "2026-08-07T20:39:12.755Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "2 WaitingForReevaluation"
-  },
-  {
-    "id": "e93e2d13-727b-4c97-b3ee-957380eaf3e0",
-    "timestamp": "2026-08-07T20:39:12.756Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Changed: Strengthened Review Serve Robotics — elevated execution and cash‑burn risk persists; Weakened Prepare to buy NVIDIA — AI infrastructure leader ahead of earnings catalyst; Weakened Prepare to buy Applied Materials — semiconductor equipment exposure ahead of earnings"
-  },
-  {
-    "id": "ebf3aac6-e37f-4758-9e95-229585c80ca3",
-    "timestamp": "2026-08-07T20:39:12.758Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 2 decision(s) downgraded"
-  },
-  {
-    "id": "1a3315c0-2b1f-462c-bac2-8f9537fd885e",
-    "timestamp": "2026-08-07T20:39:12.763Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via Scheduled (16356ms, change: High)"
-  },
-  {
     "id": "9f47b972-77b6-439f-b14a-9c07e66a532f",
     "timestamp": "2026-08-07T20:39:12.766Z",
     "module": "TradeReview",
@@ -3498,5 +3435,68 @@
     "module": "Portfolio Manager v2",
     "level": "error",
     "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
+  },
+  {
+    "id": "22275b0f-cd9a-490c-ba84-91db9da71205",
+    "timestamp": "2026-08-09T15:31:03.821Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "10e3a40c-fd32-46d6-a036-459e7b2990c3",
+    "timestamp": "2026-08-09T15:31:03.826Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "9d6d964d-dae8-4388-b7ce-f74b6c727a87",
+    "timestamp": "2026-08-09T15:31:09.742Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "d68be3c1-1327-494b-a4c9-7178b5aa0ba6",
+    "timestamp": "2026-08-09T15:31:09.745Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (6084ms, change: Medium)"
+  },
+  {
+    "id": "a379248e-7c07-4fe7-8a50-a47cf97a2abc",
+    "timestamp": "2026-08-09T15:31:11.954Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 6 market-moving stories found"
+  },
+  {
+    "id": "9cff745c-17b5-4f20-9635-dd4ccb599f1f",
+    "timestamp": "2026-08-09T15:31:11.957Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (8220ms, change: Medium)"
+  },
+  {
+    "id": "55de68d2-f44a-427a-916c-3ac80f56a7f5",
+    "timestamp": "2026-08-09T15:31:33.664Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "0e9b272c-0771-46cb-92c3-690c4be6635b",
+    "timestamp": "2026-08-09T15:31:37.638Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "ca653f88-11d9-4410-a23a-56d95bc64292",
+    "timestamp": "2026-08-09T15:31:37.641Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (3979ms, change: Medium)"
   }
 ]
