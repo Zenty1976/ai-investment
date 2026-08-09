@@ -5,6 +5,73 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { useTileSize } from "@/hooks/useTileSize";
 import { WidgetSpinner, WidgetNoData, Dot } from "@/lib/widget-components";
 
+// ── Investor avatar initials ─────────────────────────────────────────────────
+const INVESTOR_INITIALS: Record<string, string> = {
+  "michael-burry":         "MB",
+  "stanley-druckenmiller": "SD",
+  "howard-marks":          "HM",
+  "warren-buffett":        "WB",
+  "bill-ackman":           "BA",
+  "david-tepper":          "DT",
+};
+
+function toneRingColor(tone: string): string {
+  if (tone === "Bullish")  return "#4ade80";
+  if (tone === "Bearish")  return "#f87171";
+  if (tone === "Cautious") return "#facc15";
+  if (tone === "Mixed")    return "#60a5fa";
+  return "#6b7280";
+}
+
+function InvestorAvatarCard({ entry }: { entry: InvestorResult }) {
+  const { id, name, focusLabel } = entry.person;
+  const tone    = entry.currentView?.overallTone ?? "Unclear";
+  const ring    = toneRingColor(tone);
+  const initials = INVESTOR_INITIALS[id] ?? name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase();
+  const lastName = name.split(" ").slice(-1)[0];
+  const tags     = focusLabel?.split(" / ").slice(0, 3) ?? [];
+  const ago      = timeAgo(entry.lastCheckedAt ?? entry.lastMaterialUpdateAt);
+
+  return (
+    <div className="flex flex-col items-center gap-1 shrink-0 w-[86px] select-none">
+      {/* Avatar circle */}
+      <div
+        className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold text-foreground shrink-0"
+        style={{
+          background: `radial-gradient(circle at 40% 35%, #2a2d3a, #1a1c24)`,
+          boxShadow: `0 0 0 2px ${ring}, 0 0 8px ${ring}44`,
+          color: ring,
+        }}
+      >
+        {initials}
+      </div>
+
+      {/* Name */}
+      <span className="text-[11px] font-semibold text-foreground leading-none">{lastName}</span>
+
+      {/* Tone */}
+      <span
+        className="text-[10px] font-bold leading-none"
+        style={{ color: ring }}
+      >
+        {tone}
+      </span>
+
+      {/* Focus tags */}
+      <div className="flex flex-col items-center gap-0.5 w-full">
+        {tags.map((tag, i) => (
+          <span key={i} className="text-[9px] text-muted-foreground/70 leading-none text-center truncate w-full">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Time */}
+      <span className="text-[9px] text-muted-foreground/50 leading-none mt-auto">{ago}</span>
+    </div>
+  );
+}
+
 interface InvestorResult {
   person: { id: string; name: string; focusLabel: string };
   updateType: string;
@@ -133,12 +200,20 @@ export function InvestorWatchWidget() {
 
           {/* lg — full compact briefing */}
           {size === "lg" && (
-            <div className="h-full flex flex-col gap-1.5 overflow-hidden">
-              <div className="flex items-center justify-between shrink-0">
-                <span className="text-[10px] text-muted-foreground font-medium">Smart Money Briefing</span>
-                <span className="text-[9px] text-muted-foreground">{timeAgo(entries[0]?.lastCheckedAt)}</span>
+            <div className="h-full flex flex-col gap-2 overflow-hidden">
+
+              {/* ── Investor photo strip ── */}
+              <div className="shrink-0 overflow-x-auto pb-1 -mx-1 px-1">
+                <div className="flex gap-3 min-w-max">
+                  {sorted.map(e => (
+                    <InvestorAvatarCard key={e.person.id} entry={e} />
+                  ))}
+                </div>
               </div>
 
+              <div className="shrink-0 border-t border-border/40" />
+
+              {/* ── Briefing list ── */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
                 {sorted.map(e => (
                   <div key={e.person.id} className="border-t border-border/30 pt-1">
