@@ -31,10 +31,10 @@ function overallStatusColor(os: OverallStatus): string {
 }
 
 function actionColor(status: ActionStatusCode): string {
-  if (status === "none")        return "text-green-400";
-  if (status === "monitor")     return "text-muted-foreground";
-  if (status === "review")      return "text-yellow-400";
-  return "text-red-400"; // trade_ready
+  if (status === "none")    return "text-green-400";
+  if (status === "monitor") return "text-muted-foreground";
+  if (status === "review")  return "text-yellow-400";
+  return "text-red-400";
 }
 
 export function CommandBriefWidget() {
@@ -65,7 +65,7 @@ export function CommandBriefWidget() {
           {size === "xs" && (
             <div className="h-full flex items-center gap-1.5">
               <Dot color={osColor} />
-              <span className={`text-[10px] font-semibold truncate ${osColor}`}>{headline}</span>
+              <span className={`text-xs font-semibold truncate ${osColor}`}>{headline}</span>
             </div>
           )}
 
@@ -74,16 +74,16 @@ export function CommandBriefWidget() {
             <div className="h-full flex flex-col justify-between">
               <div className="flex items-start gap-1.5">
                 <Dot color={osColor} />
-                <span className={`text-[11px] font-semibold leading-snug ${osColor}`}>
+                <span className={`text-sm font-semibold leading-snug ${osColor}`}>
                   {headline}
                 </span>
               </div>
               {actionStatus && (
-                <span className={`text-[10px] font-bold uppercase tracking-wide ${actionColor(actionStatus.status)}`}>
+                <span className={`text-xs font-bold uppercase tracking-wide ${actionColor(actionStatus.status)}`}>
                   {actionStatus.text}
                 </span>
               )}
-              <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>
+              <span className="text-[11px] text-muted-foreground">{timeAgo(updatedAt)}</span>
             </div>
           )}
 
@@ -93,15 +93,15 @@ export function CommandBriefWidget() {
               {/* Status + headline */}
               <div className="flex items-start gap-1.5 shrink-0">
                 <Dot color={osColor} />
-                <span className={`text-[11px] font-semibold leading-snug ${osColor}`}>
+                <span className={`text-sm font-semibold leading-snug ${osColor}`}>
                   {headline}
                 </span>
               </div>
 
               {/* Items */}
-              <div className="flex-1 overflow-hidden space-y-0.5 min-h-0 py-0.5">
+              <div className="flex-1 overflow-hidden space-y-1 min-h-0 py-0.5">
                 {items.map((item, i) => (
-                  <div key={i} className="flex items-baseline gap-1 text-[10px]">
+                  <div key={i} className="flex items-baseline gap-1.5 text-xs">
                     <span className={`shrink-0 leading-none ${severityColor(item.severity as ItemSeverity)}`}>
                       {severityIcon(item.severity as ItemSeverity)}
                     </span>
@@ -116,13 +116,13 @@ export function CommandBriefWidget() {
               {/* Action status — prominent footer */}
               {actionStatus && (
                 <div className="shrink-0 border-t border-border/30 pt-1">
-                  <span className={`text-[10px] font-bold uppercase tracking-wide ${actionColor(actionStatus.status)}`}>
+                  <span className={`text-xs font-bold uppercase tracking-wide ${actionColor(actionStatus.status)}`}>
                     {actionStatus.text}
                   </span>
                 </div>
               )}
 
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
+              <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>
