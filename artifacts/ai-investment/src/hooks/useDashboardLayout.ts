@@ -21,6 +21,7 @@ const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "company-monitor":     { w: 6, h: 4 },
   "trade-decision":      { w: 6, h: 4 },
   "investor-watch":      { w: 6, h: 4 },
+  "trade-review":        { w: 6, h: 4 },
 };
 
 /** Layout 1 default: all 13 modules. Layouts 2 & 3 start empty. */

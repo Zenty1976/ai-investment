@@ -199,6 +199,12 @@ interface NormalizationResult {
   normalizations: string[];
 }
 
+// Unicode dash/hyphen characters the model occasionally uses instead of
+// the plain ASCII hyphen (U+002D) required by the kebab-case ID regex.
+// Covers: hyphen (2010), non-breaking hyphen (2011), figure dash (2012),
+// en dash (2013), em dash (2014), horizontal bar (2015), minus sign (2212).
+const UNICODE_DASH_RE = /[\u2010\u2011\u2012\u2013\u2014\u2015\u2212]/g;
+
 function normalizeRawResponse(raw: unknown): NormalizationResult {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return { normalized: raw as Record<string, unknown>, normalizations: [] };
@@ -213,6 +219,27 @@ function normalizeRawResponse(raw: unknown): NormalizationResult {
   if (obj.marketSentiment === 'Neutral') {
     obj.marketSentiment = 'Mixed';
     normalizations.push('marketSentiment: "Neutral" → "Mixed"');
+  }
+
+  // Thesis point IDs must be ASCII kebab-case. The model occasionally uses
+  // Unicode non-breaking hyphens (U+2011) or other dash variants in IDs such
+  // as "cash‑flow‑strength". Replace all Unicode dashes with plain ASCII hyphens
+  // before schema validation so a valid ID isn't rejected unnecessarily.
+  if (Array.isArray(obj.investmentThesis)) {
+    let anyFixed = false;
+    obj.investmentThesis = (obj.investmentThesis as Array<Record<string, unknown>>).map(pt => {
+      if (pt && typeof pt.id === 'string' && UNICODE_DASH_RE.test(pt.id)) {
+        UNICODE_DASH_RE.lastIndex = 0;
+        const fixed = pt.id.replace(UNICODE_DASH_RE, '-');
+        anyFixed = true;
+        return { ...pt, id: fixed };
+      }
+      UNICODE_DASH_RE.lastIndex = 0;
+      return pt;
+    });
+    if (anyFixed) {
+      normalizations.push('investmentThesis ids: Unicode dashes → ASCII hyphens');
+    }
   }
 
   return { normalized: obj, normalizations };

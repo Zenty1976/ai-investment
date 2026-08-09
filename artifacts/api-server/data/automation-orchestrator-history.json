@@ -195,5 +195,51 @@
       "trade-decision-engine",
       "trade-review"
     ]
+  },
+  {
+    "id": "4f763337-ffe0-4bda-982e-06b5b0e529f9",
+    "correlationId": "1717bc1c-407d-4d61-a1f4-30f52acce3c4",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-09T16:06:55.271Z",
+    "completedAt": "2026-08-09T16:11:15.978Z",
+    "durationMs": 260707,
+    "status": "Failed",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor",
+      "company-monitor",
+      "market-alerts",
+      "risk-analyzer",
+      "portfolio-analyzer",
+      "opportunity-finder"
+    ],
+    "error": "trade-decision-engine failed: HTTP 500: {\"error\":\"Schema validation failed: readinessDrivers.1.impact: Invalid enum value. Expected 'Positive' | 'Negative', received 'Mixed'\",\"_debug\":{\"request\":{\"model\":\"gpt-4o\",\"max_output_tokens\":6000,\"t",
+    "failedModuleId": "trade-decision-engine"
+  },
+  {
+    "id": "6018cc6d-a3f4-4c33-964b-902eeea14eef",
+    "correlationId": "438f6db4-2865-4c1d-a7c4-874190b6cab8",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-09T16:12:57.586Z",
+    "completedAt": "2026-08-09T16:15:48.661Z",
+    "durationMs": 171075,
+    "status": "Completed",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor",
+      "company-monitor",
+      "market-alerts",
+      "risk-analyzer",
+      "portfolio-analyzer",
+      "opportunity-finder",
+      "trade-decision-engine",
+      "trade-review"
+    ]
   }
 ]

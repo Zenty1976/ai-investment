@@ -1168,6 +1168,15 @@ class AutomationOrchestratorService {
     return [...tickers].slice(0, maxCount);
   }
 
+  /**
+   * Best-effort company name lookup for a given ticker.
+   * Priority:
+   *   1. Existing company-monitor analysis in repository (most reliable — already verified by the AI)
+   *   2. Portfolio manager positions (has instrument name from Saxo)
+   *   3. Trade Decision Engine decisions
+   *   4. Opportunity Finder candidates
+   * Returns undefined when no name can be found (caller passes only the ticker, same as before).
+   */
   private async _dispatchCompanyMonitorScheduled(
     trigger: ModuleTrigger,
     correlationId?: string,
