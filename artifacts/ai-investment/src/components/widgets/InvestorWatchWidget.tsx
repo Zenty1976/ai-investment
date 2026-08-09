@@ -31,31 +31,41 @@ function InvestorAvatarCard({ entry }: { entry: InvestorResult }) {
   const lastName = name.split(" ").slice(-1)[0];
   const tags     = focusLabel?.split(" / ").slice(0, 3) ?? [];
   const ago      = timeAgo(entry.lastCheckedAt ?? entry.lastMaterialUpdateAt);
+  const photoSrc = `${import.meta.env.BASE_URL}investors/${id}.jpg`;
 
   return (
     <div className="flex flex-col items-center gap-1 shrink-0 w-[86px] select-none">
-      {/* Avatar circle */}
+      {/* Avatar circle with real photo */}
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold text-foreground shrink-0"
-        style={{
-          background: `radial-gradient(circle at 40% 35%, #2a2d3a, #1a1c24)`,
-          boxShadow: `0 0 0 2px ${ring}, 0 0 8px ${ring}44`,
-          color: ring,
-        }}
+        className="w-11 h-11 rounded-full overflow-hidden shrink-0 relative"
+        style={{ boxShadow: `0 0 0 2px ${ring}, 0 0 10px ${ring}55` }}
       >
-        {initials}
+        <img
+          src={photoSrc}
+          alt={name}
+          className="w-full h-full object-cover object-top"
+          onError={e => {
+            // Fallback: hide img, show initials div
+            const el = e.currentTarget;
+            el.style.display = "none";
+            const fallback = el.nextElementSibling as HTMLElement | null;
+            if (fallback) fallback.style.display = "flex";
+          }}
+        />
+        {/* Initials fallback (hidden by default) */}
+        <div
+          className="absolute inset-0 items-center justify-center text-[13px] font-bold hidden"
+          style={{ background: `radial-gradient(circle at 40% 35%, #2a2d3a, #1a1c24)`, color: ring }}
+        >
+          {initials}
+        </div>
       </div>
 
       {/* Name */}
-      <span className="text-[11px] font-semibold text-foreground leading-none">{lastName}</span>
+      <span className="text-[11px] font-semibold text-foreground leading-none text-center">{lastName}</span>
 
       {/* Tone */}
-      <span
-        className="text-[10px] font-bold leading-none"
-        style={{ color: ring }}
-      >
-        {tone}
-      </span>
+      <span className="text-[10px] font-bold leading-none" style={{ color: ring }}>{tone}</span>
 
       {/* Focus tags */}
       <div className="flex flex-col items-center gap-0.5 w-full">
