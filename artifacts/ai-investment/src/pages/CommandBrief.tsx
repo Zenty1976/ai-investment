@@ -138,6 +138,7 @@ export default function CommandBrief() {
   const [debugOpen, setDebugOpen] = useState(false)
   const [lastDebug, setLastDebug] = useState<AiDebugInfo | undefined>()
   const [lastError, setLastError] = useState<unknown>(null)
+  const [visibleError, setVisibleError] = useState<string | null>(null)
 
   const { data: entry, isLoading: isLoadingData, refetch } = useGetRepositoryEntry("command-brief")
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,6 +155,13 @@ export default function CommandBrief() {
       },
       onError: (err) => {
         setLastError(err)
+        // Extract the server-side error message from the ApiError payload
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload = (err as any)?.payload as Record<string, unknown> | undefined
+        const msg =
+          (payload?.error as string | undefined) ??
+          (err instanceof Error ? err.message : String(err))
+        setVisibleError(msg)
       },
     },
   })
@@ -195,6 +203,23 @@ export default function CommandBrief() {
           </Button>
         </div>
       </div>
+
+      {/* Error banner */}
+      {visibleError && (
+        <div className="flex items-start gap-3 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm">
+          <XCircle className="h-4 w-4 shrink-0 text-red-400 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-red-300 mb-0.5">Analysis failed</p>
+            <p className="text-red-200/80 break-words">{visibleError}</p>
+          </div>
+          <button
+            onClick={() => setVisibleError(null)}
+            className="shrink-0 text-red-400/60 hover:text-red-300"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Loading skeleton */}
       {isLoadingData && (

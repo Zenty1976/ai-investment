@@ -1,24 +1,5 @@
 [
   {
-    "id": "93af0729-a13b-4a82-87a4-c1da60e96bf2",
-    "correlationId": "e0269fdd-2bea-4a84-a446-341e85288e88",
-    "moduleId": "trade-decision-engine",
-    "trigger": "Dependency",
-    "status": "Completed",
-    "priority": 80,
-    "requestedAt": "2026-08-09T06:50:55.015Z",
-    "startedAt": "2026-08-09T06:50:55.015Z",
-    "completedAt": "2026-08-09T06:51:09.295Z",
-    "durationMs": 14280,
-    "attempt": 1,
-    "maxAttempts": 2,
-    "error": null,
-    "affectedTickers": [],
-    "parentJobId": null,
-    "resultUpdated": true,
-    "meaningfulChange": "High"
-  },
-  {
     "id": "9195a8dd-9aa9-4880-baa5-7e76562b0783",
     "correlationId": "9c19f2ca-66ca-4747-8800-8541349061a3",
     "moduleId": "company-monitor",
@@ -1962,6 +1943,25 @@
     "error": null,
     "affectedTickers": [],
     "parentJobId": "bc6f315e-e486-4243-b037-529e6bb49f11",
+    "resultUpdated": true,
+    "meaningfulChange": "Medium"
+  },
+  {
+    "id": "058ab82b-a801-45fc-986c-ffc3354739ae",
+    "correlationId": "896d94b6-6e33-4046-9bca-675764d8ebbb",
+    "moduleId": "market-alerts",
+    "trigger": "Scheduled",
+    "status": "Completed",
+    "priority": 40,
+    "requestedAt": "2026-08-09T18:13:25.346Z",
+    "startedAt": "2026-08-09T18:13:25.347Z",
+    "completedAt": "2026-08-09T18:13:29.939Z",
+    "durationMs": 4592,
+    "attempt": 1,
+    "maxAttempts": 2,
+    "error": null,
+    "affectedTickers": [],
+    "parentJobId": null,
     "resultUpdated": true,
     "meaningfulChange": "Medium"
   }
