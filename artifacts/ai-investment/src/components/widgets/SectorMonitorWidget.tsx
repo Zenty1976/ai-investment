@@ -30,6 +30,16 @@ export function SectorMonitorWidget() {
     return "→";
   }
 
+  // Bar width + colour based on rating string
+  function barStyle(rating: string): { width: string; color: string } {
+    const r = rating.toLowerCase();
+    if (r.includes("strong") && r.includes("moderate")) return { width: "72%", color: "#86efac" }; // green-300
+    if (r.includes("strong"))                            return { width: "100%", color: "#4ade80" }; // green-400
+    if (r.includes("weak") && r.includes("moderate"))   return { width: "28%", color: "#f97316" }; // orange-400
+    if (r.includes("weak"))                              return { width: "14%", color: "#f87171" }; // red-400
+    return { width: "50%", color: "#facc15" }; // yellow-400 — Neutral
+  }
+
   return (
     <div ref={ref} className="h-full w-full overflow-hidden p-2 flex flex-col gap-1.5">
       {isLoading && <WidgetSpinner />}
@@ -90,6 +100,33 @@ export function SectorMonitorWidget() {
               {d.executiveSummary && (
                 <p className="text-[11px] text-muted-foreground line-clamp-2 shrink-0">{d.executiveSummary}</p>
               )}
+
+              {/* ── Bar strength overview ── */}
+              {sectors.length > 0 && (
+                <div className="shrink-0 flex flex-col gap-1 py-1">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">Styrke (relativt til markedet)</p>
+                  {sectors.slice(0, 6).map((s: any, i: number) => {
+                    const { width, color } = barStyle(s.rating ?? "Neutral");
+                    const label = (s.rating ?? "").replace("Moderately ", "Mod. ");
+                    return (
+                      <div key={`bar-${s.name}-${i}`} className="flex items-center gap-2">
+                        <span className="text-[10px] text-foreground/80 w-24 shrink-0 truncate">{s.name}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{ width, backgroundColor: color }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-semibold w-14 text-right shrink-0" style={{ color }}>
+                          {label.toUpperCase()}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="shrink-0 border-t border-border/40" />
 
               {/* Per-sector cards */}
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
