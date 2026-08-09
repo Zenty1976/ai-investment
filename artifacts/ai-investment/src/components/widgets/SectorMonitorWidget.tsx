@@ -103,21 +103,21 @@ export function SectorMonitorWidget() {
 
               {/* ── Bar strength overview ── */}
               {sectors.length > 0 && (
-                <div className="shrink-0 flex flex-col gap-1 py-1">
+                <div className="shrink-0 flex flex-col gap-0.5 py-0.5">
                   <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">Styrke (relativt til markedet)</p>
-                  {sectors.slice(0, 6).map((s: any, i: number) => {
+                  {sectors.map((s: any, i: number) => {
                     const { width, color } = barStyle(s.rating ?? "Neutral");
                     const label = (s.rating ?? "").replace("Moderately ", "Mod. ");
                     return (
-                      <div key={`bar-${s.name}-${i}`} className="flex items-center gap-2">
-                        <span className="text-[10px] text-foreground/80 w-24 shrink-0 truncate">{s.name}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div key={`bar-${s.name}-${i}`} className="flex items-center gap-2 min-w-0">
+                        <span className="text-[10px] text-foreground/80 w-24 shrink-0 whitespace-nowrap overflow-hidden text-ellipsis">{s.name}</span>
+                        <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden min-w-0">
                           <div
-                            className="h-full rounded-full transition-all"
+                            className="h-full rounded-full"
                             style={{ width, backgroundColor: color }}
                           />
                         </div>
-                        <span className="text-[9px] font-semibold w-14 text-right shrink-0" style={{ color }}>
+                        <span className="text-[9px] font-semibold w-16 text-right shrink-0 whitespace-nowrap" style={{ color }}>
                           {label.toUpperCase()}
                         </span>
                       </div>
