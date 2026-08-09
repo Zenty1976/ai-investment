@@ -2,16 +2,16 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices rose in the U.S. and Europe, while Japan’s Nikkei declined; volatility eased. Central banks held rates steady amid inflation and geopolitical uncertainty.",
+      "summary": "Global equity indices are mixed: US markets modestly higher, European indices up, Asian markets lower; volatility (VIX) eased. Central banks largely held rates steady amid inflation and energy uncertainty. Sentiment cautious amid geopolitical risks.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. and European equities advanced, supporting investor confidence",
-        "Volatility (VIX) declined, indicating reduced near-term uncertainty"
+        "US and European equities rising, supporting risk appetite",
+        "Central banks holding rates steady, reducing policy uncertainty"
       ],
       "negativeFactors": [
-        "Nikkei 225 fell, reflecting regional weakness",
-        "Ongoing Middle East conflict continues to pressure energy markets and inflation outlook"
+        "Asian markets under pressure, reflecting regional weakness",
+        "Geopolitical tensions and energy volatility weigh on sentiment"
       ],
       "strongSectors": [
         "Healthcare",
@@ -22,41 +22,41 @@
         "Energy"
       ],
       "keyRisks": [
-        "Geopolitical tensions in the Middle East",
-        "Uncertainty around central bank communication and future policy"
+        "Middle East conflict driving energy price uncertainty",
+        "Potential volatility from reduced Fed communication"
       ],
       "sources": [
         {
           "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
-          "url": "source",
+          "url": "https://www.nexqual.com/markets",
           "published": "2026-07-29"
         },
         {
-          "title": "Markets: World Indexes, Futures, Bonds, Currencies, Stocks & ETFs - Yahoo Finance",
-          "url": "source",
-          "published": ""
+          "title": "Markets data - stock market, bond, equity, commodity prices - FT.com",
+          "url": "https://markets.ft.markitdigital.com/data/",
+          "published": "2026-07-24"
         },
         {
           "title": "Fed leaves interest rate unchanged but with 3 dissents as Warsh praises 'good family fight'",
-          "url": "source",
+          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
           "published": "2026-07-28"
         },
         {
-          "title": "Monetary Policy Summary – Bank of England holds Bank Rate at 3.75%, inflation at 2.6%",
-          "url": "source",
-          "published": "2026-07-30"
+          "title": "Monetary policy decisions",
+          "url": "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260723~29f24d99bc.en.html",
+          "published": "2026-07-23"
         },
         {
-          "title": "Monetary policy decisions – ECB holds rates unchanged at 2.25%–2.65%",
-          "url": "source",
-          "published": "2026-07-23"
+          "title": "Wall Street: Less Fed information will mean more volatile markets",
+          "url": "https://www.axios.com/2026/08/04/fed-warsh-volatile-markets",
+          "published": "2026-08-04"
         }
       ],
-      "timestamp": "2026-08-09T07:51:50.202Z",
-      "analysisDuration": 4443
+      "timestamp": "2026-08-09T08:26:52.395Z",
+      "analysisDuration": 6392
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-09T07:51:54.645Z"
+    "updatedAt": "2026-08-09T08:26:58.788Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -131,100 +131,84 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Middle East energy tensions continue to pressure commodity markets, while AI sector developments—particularly OpenAI’s pause on its ‘Astra’ model—are prompting investor caution amid heavy tech spending.",
-      "overallMarketImpact": "Markets are navigating mixed signals: energy-driven inflation risks weigh on macro sentiment, while AI sector uncertainty tempers tech enthusiasm.",
+      "executiveSummary": "Geopolitical tensions in the Middle East continue to drive oil volatility and inflation concerns, while AI infrastructure spending and a major earnings report from SpaceX are reshaping equity sentiment.",
+      "overallMarketImpact": "Markets are cautiously optimistic, buoyed by AI momentum but tempered by energy-driven inflation risks.",
       "topStory": {
-        "title": "OpenAI pauses ‘Astra’ model development",
-        "summary": "OpenAI halts development of its next‑gen ‘Astra’ AI model over cybersecurity concerns, raising sector‑wide deployment and regulatory questions.",
+        "title": "SpaceX Q2 earnings surprise",
+        "summary": "SpaceX reports $7.8B Q2 revenue, heavy AI infrastructure spending spooks markets.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "openai-astr a-pause-2026-08-07",
-          "title": "OpenAI pauses ‘Astra’ model development",
-          "summary": "OpenAI halts development of its next‑gen ‘Astra’ model citing cybersecurity risks.",
-          "category": "AI",
+          "id": "spacex-q2-earnings-2026-08-05",
+          "title": "SpaceX Q2 earnings surprise",
+          "summary": "SpaceX posts $7.8 billion Q2 revenue; major AI infrastructure commitment rattles markets.",
+          "category": "Technology",
           "importance": "High",
           "affectedMarkets": [
-            "Technology",
+            "Equities",
             "AI"
           ],
-          "whyItMatters": "Raises concerns about AI deployment timelines and regulatory scrutiny across the sector.",
-          "marketImpact": "Negative for AI stocks",
-          "confidence": 0.8,
-          "source": "Reddit/EverHint",
-          "publishedAt": "2026-08-07"
+          "whyItMatters": "First public earnings from SpaceX reveal strong revenue but signal heavy AI capex, influencing tech and AI stock sentiment.",
+          "marketImpact": "Mixed: positive for AI infrastructure names, negative for broader tech sentiment",
+          "confidence": 0.85,
+          "source": "Reddit (EverHint)",
+          "publishedAt": "2026-08-05T00:00:00Z"
         },
         {
-          "id": "energy-price-volatility-middle-east-2026-07-17",
-          "title": "Commodity prices swing amid US‑Iran attacks",
-          "summary": "Renewed US‑Iran attacks disrupt shipping, pushing oil up ~12 %, LNG ~21 %, jet fuel ~6.7 %.",
-          "category": "Commodities",
+          "id": "middle-east-geopolitics-oil-2026-07-08",
+          "title": "Middle East tensions lift oil volatility",
+          "summary": "Renewed US‑Iran tensions and Strait of Hormuz risks keep oil prices volatile.",
+          "category": "Energy",
           "importance": "High",
           "affectedMarkets": [
-            "Energy",
+            "Oil",
             "Inflation"
           ],
-          "whyItMatters": "Heightens inflation risks and complicates central bank policy outlooks.",
-          "marketImpact": "Positive for oil, negative for inflation‑sensitive assets",
-          "confidence": 0.85,
-          "source": "AA",
-          "publishedAt": "2026-07-17"
+          "whyItMatters": "Energy supply fears sustain oil price volatility, impacting inflation and central bank policy outlooks.",
+          "marketImpact": "Positive for oil prices, inflationary pressure",
+          "confidence": 0.8,
+          "source": "Euronews",
+          "publishedAt": "2026-07-08T00:00:00Z"
         },
         {
-          "id": "us-tech-investment-outlook-2026-08-06",
-          "title": "US tech investments no longer excite markets",
-          "summary": "SpaceX and Alphabet AI growth impressive but losses persist; Alphabet stock down 7 % after raising investment outlook.",
+          "id": "el-nino-food-commodities-2026-08-08",
+          "title": "El Niño threatens food commodity prices",
+          "summary": "El Niño may disrupt key agricultural commodities, raising food price inflation risks.",
+          "category": "Commodities",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Agricultural commodities",
+            "Inflation"
+          ],
+          "whyItMatters": "Potential supply shocks in food markets could feed into inflation and consumer price pressures.",
+          "marketImpact": "Positive for agricultural commodity prices, inflationary pressure",
+          "confidence": 0.7,
+          "source": "Reddit (collapse)",
+          "publishedAt": "2026-08-08T00:00:00Z"
+        },
+        {
+          "id": "ai-investment-supports-us-equities-2026-07-23",
+          "title": "AI investment supports US equities",
+          "summary": "AI infrastructure spending and resilient US growth underpin equity optimism.",
           "category": "Equities",
           "importance": "Medium",
           "affectedMarkets": [
-            "Technology",
-            "Equities"
-          ],
-          "whyItMatters": "Investor enthusiasm dampened despite AI growth, signaling valuation concerns.",
-          "marketImpact": "Negative for tech equities",
-          "confidence": 0.75,
-          "source": "Le Monde",
-          "publishedAt": "2026-08-06"
-        },
-        {
-          "id": "tech-spending-surges-2026-07-27",
-          "title": "Tech sector pours $1T into AI infrastructure",
-          "summary": "Tech companies’ AI infrastructure spending hits ~$1 trillion, up 34.7 % in 2026.",
-          "category": "Technology",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Technology",
+            "US equities",
             "AI"
           ],
-          "whyItMatters": "Historic infrastructure build‑out supports long‑term AI growth but raises cost pressures.",
-          "marketImpact": "Mixed for tech stocks",
+          "whyItMatters": "AI investment continues to broaden equity leadership beyond hyperscalers, supporting market confidence.",
+          "marketImpact": "Positive for US equities and AI sector",
           "confidence": 0.75,
-          "source": "The Register",
-          "publishedAt": "2026-07-27"
-        },
-        {
-          "id": "world-bank-energy-price-forecast-2026-04-28",
-          "title": "World Bank sees 24 % energy price surge in 2026",
-          "summary": "Energy prices projected to rise 24 % this year, largest surge since 2022.",
-          "category": "Commodities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Energy",
-            "Macro"
-          ],
-          "whyItMatters": "Signals sustained inflation pressure and growth headwinds globally.",
-          "marketImpact": "Positive for energy, negative for bonds",
-          "confidence": 0.8,
-          "source": "World Bank",
-          "publishedAt": "2026-04-28"
+          "source": "LGT Private Banking",
+          "publishedAt": "2026-07-23T00:00:00Z"
         }
       ],
-      "timestamp": "2026-08-09T07:51:50.204Z",
-      "analysisDuration": 6326
+      "timestamp": "2026-08-09T08:26:52.424Z",
+      "analysisDuration": 6675
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-09T07:51:56.530Z"
+    "updatedAt": "2026-08-09T08:26:59.099Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2810,59 +2794,125 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "High",
-      "executiveSummary": "Since the last check 0.3 hours ago, two material developments have emerged that warrant immediate attention: Serve Robotics’ Q2 earnings miss and guidance cut, and Novo Nordisk’s strategic updates including raised guidance, EU expansion, AI partnership, and dividend schedule.",
-      "headline": "Serve Robotics earnings miss and Novo Nordisk strategic momentum shift",
+      "executiveSummary": "Since the last analysis 0.6 hours ago, two significant developments have emerged that warrant immediate attention: a fresh Houthi attack on a Saudi oil facility, escalating Middle East energy risk, and SpaceX’s Q2 earnings revealing massive AI infrastructure spending that spooked markets. Both have direct implications for inflation, energy markets, and tech sentiment.",
+      "headline": "New Middle East energy shock and SpaceX’s AI‑capex shock demand attention",
       "alerts": [
         {
-          "title": "Serve Robotics Q2 miss and guidance cut",
-          "category": "Company",
+          "title": "Houthi attack on Saudi oil facility escalates Middle East energy risk",
+          "category": "Geopolitical",
           "importance": "High",
           "isNew": true,
           "requiresAttention": true,
-          "affectedHoldings": [
-            "SERV"
-          ],
-          "summary": "Serve Robotics reported Q2 revenue of ~$3.24M, missing expectations (~$3.92M), EPS of –$0.80 vs –$0.65 expected, and slashed full‑year 2026 revenue guidance to $9–10M (from implied >$12M), citing weaker Uber Eats volume. Shares dropped ~13% after hours.",
-          "whyItMatters": "This materially weakens the growth outlook, heightens execution and financing risk, and may require reassessment of the speculative robotics exposure.",
-          "recommendedAttention": "Review",
-          "sourceType": "Web",
+          "affectedHoldings": [],
+          "summary": "Yemen’s Houthi rebels claimed an attack on a Saudi Aramco oil facility today, intensifying regional energy supply risk.",
+          "whyItMatters": "Renewed energy supply threats could reignite oil price volatility, feeding into inflation and central bank policy uncertainty.",
+          "recommendedAttention": "Monitor",
+          "sourceType": "NewsMonitor",
           "status": "New"
         },
         {
-          "title": "Novo Nordisk raises guidance, expands EU launch, AI partnership, and interim dividend details",
-          "category": "Company",
+          "title": "SpaceX Q2 earnings reveal massive AI capex, spooking markets",
+          "category": "Sector",
           "importance": "High",
           "isNew": true,
           "requiresAttention": true,
-          "affectedHoldings": [
-            "NOVO B"
-          ],
-          "summary": "Novo Nordisk raised its 2026 adjusted sales and operating profit guidance (to ~0% to –6% CER from prior –4% to –12%), driven by strong GLP‑1 (Wegovy® pill) uptake (5M+ US prescriptions, 265K+ weekly TRx), announced imminent launch in Germany, formed AI‑powered clinical development partnership with H1, and set interim dividend (DKK 3.75; ex‑div 14 Aug, pay 18 Aug).",
-          "whyItMatters": "These developments reinforce the core growth thesis, expand market reach in EU, enhance R&D efficiency, and deliver near‑term shareholder return.",
-          "recommendedAttention": "Monitor",
-          "sourceType": "Web",
+          "affectedHoldings": [],
+          "summary": "SpaceX reported strong Q2 revenue (~$7.8 B) but disclosed $15–18 B in AI infrastructure spending, triggering a sharp share price drop.",
+          "whyItMatters": "Heavy AI capex raises concerns about tech sector free cash flow and investor sentiment, potentially spilling over to broader AI‑exposed holdings.",
+          "recommendedAttention": "Watch",
+          "sourceType": "NewsMonitor",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Serve Robotics cash burn and potential financing needs following guidance cut",
-        "Novo Nordisk Germany Wegovy® pill launch execution and uptake",
-        "Market reaction to Novo’s raised guidance and dividend ahead of ex‑div date"
+        "Oil price reaction and inflation expectations ahead of U.S. CPI (Aug 12)",
+        "Tech/AI sector sentiment following SpaceX capex shock"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-09T07:21:50.067Z",
-      "analysisDuration": 3849,
-      "lastCheckedAt": "2026-08-09T07:37:20.153Z",
-      "lastMeaningfulUpdateAt": "2026-08-09T07:21:50.067Z",
-      "noNewDevelopmentsSinceLastCheck": true
+      "timestamp": "2026-08-09T08:26:59.112Z",
+      "analysisDuration": 4229,
+      "lastCheckedAt": "2026-08-09T08:26:59.112Z",
+      "lastMeaningfulUpdateAt": "2026-08-09T08:26:59.112Z",
+      "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-09T07:37:24.002Z"
+    "updatedAt": "2026-08-09T08:27:03.342Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-09T08:26:59.112Z",
+          "overallAlertLevel": "High",
+          "headline": "New Middle East energy shock and SpaceX’s AI‑capex shock demand attention",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Houthi attack on Saudi oil facility escalates Middle East energy risk",
+              "category": "Geopolitical",
+              "importance": "High",
+              "summary": "Yemen’s Houthi rebels claimed an attack on a Saudi Aramco oil facility today, intensifying regional energy supply risk.",
+              "normalizedKey": "houthi attack on saudi oil facility escalates middle east energy risk|geopolitical"
+            },
+            {
+              "title": "SpaceX Q2 earnings reveal massive AI capex, spooking markets",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "SpaceX reported strong Q2 revenue (~$7.8 B) but disclosed $15–18 B in AI infrastructure spending, triggering a sharp share price drop.",
+              "normalizedKey": "spacex q2 earnings reveal massive ai capex, spooking markets|sector"
+            }
+          ],
+          "newsIds": [
+            "spacex-q2-earnings-2026-08-05",
+            "middle-east-geopolitics-oil-2026-07-08",
+            "el-nino-food-commodities-2026-08-08",
+            "ai-investment-supports-us-equities-2026-07-23"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "U.S. Producer Price Index (PPI) – July",
+            "FOMC Minutes – July 28–29 Meeting",
+            "U.S. Retail Sales – July"
+          ],
+          "checkResult": "Meaningful"
+        },
+        {
+          "timestamp": "2026-08-09T07:52:50.220Z",
+          "overallAlertLevel": "Medium",
+          "headline": "OpenAI halts Astra model; oil volatility resurfaces amid U.S.–Iran tensions",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "OpenAI pauses ‘Astra’ model development",
+              "category": "Sector",
+              "importance": "Medium",
+              "summary": "OpenAI has paused internal development of its next‑generation AI model ‘Astra’ due to concerns it may possess ‘critical’ cyber capabilities, prompting expanded safety testing.",
+              "normalizedKey": "openai pauses ‘astra’ model development|sector"
+            },
+            {
+              "title": "Oil prices volatile after U.S.–Iran tensions ease then flare",
+              "category": "Macro",
+              "importance": "Medium",
+              "summary": "Oil prices dropped ~5% after U.S. paused strikes on Iran, then surged ~9–10% following renewed attacks and control claims over the Strait of Hormuz.",
+              "normalizedKey": "oil prices volatile after u.s.–iran tensions ease then flare|macro"
+            }
+          ],
+          "newsIds": [
+            "openai-astr a-pause-2026-08-07",
+            "energy-price-volatility-middle-east-2026-07-17",
+            "us-tech-investment-outlook-2026-08-06",
+            "tech-spending-surges-2026-07-27",
+            "world-bank-energy-price-forecast-2026-04-28"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "U.S. Producer Price Index (PPI) – July",
+            "FOMC Minutes – July 28–29 Meeting",
+            "U.S. Retail Sales – July"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-09T07:37:20.153Z",
           "overallAlertLevel": "High",
@@ -3306,80 +3356,11 @@
             "Producer Price Index – July 2026"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-07T17:59:58.344Z",
-          "overallAlertLevel": "High",
-          "headline": "July jobs contraction fuels Fed easing hopes; SpaceX Q2 public‑company debut shows booming revenue and heavy AI capex",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "U.S. unexpectedly lost 23,000 jobs in July",
-              "category": "Macro",
-              "importance": "High",
-              "summary": "July nonfarm payrolls fell by 23,000, the first decline since February, with steep downward revisions to prior months, signaling a cooling labor market.",
-              "normalizedKey": "u.s. unexpectedly lost 23,000 jobs in july|macro"
-            },
-            {
-              "title": "SpaceX Q2 earnings as public company: strong revenue, heavy AI capex",
-              "category": "Sector",
-              "importance": "Medium",
-              "summary": "SpaceX reported a 92% jump in Q2 revenue (~$7.8 billion) and halved operating losses, but spent ~$18.4 billion in capex—nearly $16 billion on AI infrastructure.",
-              "normalizedKey": "spacex q2 earnings as public company: strong revenue, heavy ai capex|sector"
-            }
-          ],
-          "newsIds": [
-            "us-july-jobs-loss-2026-08-07",
-            "space-x-earnings-ai-spending-2026-08-05",
-            "strait-of-hormuz-tensions-2026-07-13"
-          ],
-          "eventTitles": [
-            "U.S. Employment Situation – July 2026",
-            "FOMC Minutes – July 28–29 Meeting",
-            "EIA Short‑Term Energy Outlook",
-            "Producer Price Index – July 2026"
-          ],
-          "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-07T17:07:51.445Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk shifts U.S. media account; Microsoft signals Xbox backward‑compatibility roadmap",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "Novo Nordisk shifts U.S. media account to Omnicom",
-              "category": "Company",
-              "importance": "Medium",
-              "summary": "Novo Nordisk has selected Omnicom as its agency‑of‑record to manage U.S. media buying beginning in Q4 2026.",
-              "normalizedKey": "novo nordisk shifts u.s. media account to omnicom|company"
-            },
-            {
-              "title": "Microsoft signals Xbox 360 backward‑compatibility for 2027–28",
-              "category": "Company",
-              "importance": "Low",
-              "summary": "Microsoft internal memo suggests next‑gen Xbox Helix will support backward compatibility for all Xbox games, with Xbox 360 titles coming to PC in 2027–28.",
-              "normalizedKey": "microsoft signals xbox 360 backward‑compatibility for 2027–28|company"
-            }
-          ],
-          "newsIds": [
-            "us-july-jobs-loss-2026-08-07",
-            "ecb-cautious-guidance-2026-07-23",
-            "bank-of-korea-rate-hike-2026-07-16",
-            "geopolitical-oil-risk-2026-07-13"
-          ],
-          "eventTitles": [
-            "U.S. Employment Situation – July 2026",
-            "FOMC Minutes – July 28–29 Meeting",
-            "EIA Short‑Term Energy Outlook",
-            "Producer Price Index – July 2026"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-09T07:37:24.007Z"
+    "updatedAt": "2026-08-09T08:27:03.346Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -11382,6 +11363,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-09T08:26:52.395Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-09T07:51:50.202Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -11408,7 +11395,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-09T07:51:54.652Z"
+    "updatedAt": "2026-08-09T08:26:58.792Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",

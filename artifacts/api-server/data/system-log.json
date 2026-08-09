@@ -1,145 +1,5 @@
 [
   {
-    "id": "389005b9-5d4c-4b8c-a039-619b87acd4e7",
-    "timestamp": "2026-08-07T17:59:52.490Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "1e33abab-f8a5-493b-afc1-aa3c439ddc7b",
-    "timestamp": "2026-08-07T17:59:52.493Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "efa6fd54-b5ea-49d3-942b-6a3146bd99bc",
-    "timestamp": "2026-08-07T17:59:52.501Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "b7e76be2-d689-4eef-ae4f-e9a8247b0987",
-    "timestamp": "2026-08-07T17:59:55.058Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
-  },
-  {
-    "id": "7f78b0de-261e-4b13-872f-c95b95aaf3ac",
-    "timestamp": "2026-08-07T17:59:58.295Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
-    "id": "5a90d5c3-6279-4540-93eb-21b1ecf8e921",
-    "timestamp": "2026-08-07T17:59:58.297Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via Scheduled (5879ms, change: Medium)"
-  },
-  {
-    "id": "6ef9b785-2c42-4c11-9137-5960beae4b9b",
-    "timestamp": "2026-08-07T17:59:58.301Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts waiting for fresh: news-monitor"
-  },
-  {
-    "id": "84c017c7-7c30-48b4-a290-26584798fc6f",
-    "timestamp": "2026-08-07T17:59:58.337Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed: 3 market-moving stories found"
-  },
-  {
-    "id": "00ddbbdd-341b-4a41-997a-9d76fbebfef4",
-    "timestamp": "2026-08-07T17:59:58.339Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via Scheduled (5921ms, change: Medium)"
-  },
-  {
-    "id": "e80110e1-f97e-4443-9996-da19b1aaed6a",
-    "timestamp": "2026-08-07T17:59:58.343Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "fdbad203-e93d-4124-a964-78064b399ce6",
-    "timestamp": "2026-08-07T18:00:03.037Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "d8e5d742-38df-4730-a677-e9bf213f12ca",
-    "timestamp": "2026-08-07T18:00:03.038Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 new alert(s): U.S. unexpectedly lost 23,000 jobs in July; SpaceX Q2 earnings as public company: strong revenue, heavy AI capex"
-  },
-  {
-    "id": "e8385ede-4f77-4625-b9ba-47b0655c6a57",
-    "timestamp": "2026-08-07T18:00:03.040Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 alert(s) resolved: Novo Nordisk shifts U.S. media account to Omnicom; Microsoft signals Xbox 360 backward‑compatibility for 2027–28"
-  },
-  {
-    "id": "ec0ff2bc-25b7-4f37-9525-9ba55b76ac81",
-    "timestamp": "2026-08-07T18:00:03.042Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: U.S. unexpectedly lost 23,000 jobs in July [Macro]"
-  },
-  {
-    "id": "59167aa7-7c92-40cc-87cb-6382c17d4b6b",
-    "timestamp": "2026-08-07T18:00:03.046Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Dependency (4705ms, change: High)"
-  },
-  {
-    "id": "1eebe3f3-161b-4463-a44f-d2871232a311",
-    "timestamp": "2026-08-07T18:15:18.315Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "b3b9853c-7d7e-4ded-936a-dc87c355ec5d",
-    "timestamp": "2026-08-07T18:15:22.366Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked: no new material developments"
-  },
-  {
-    "id": "e950ffeb-253a-4a86-885c-b89ff36c9a53",
-    "timestamp": "2026-08-07T18:15:22.371Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Scheduled (4430ms, change: Medium)"
-  },
-  {
-    "id": "c72db732-fb41-41c2-96d1-9deb63bacfbb",
-    "timestamp": "2026-08-07T18:30:18.036Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "42b9b649-1042-4363-b227-c9fa3cc44307",
-    "timestamp": "2026-08-07T18:30:18.040Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
     "id": "9b6d1d9d-fa7c-4044-af0a-40e2fb9bd8aa",
     "timestamp": "2026-08-07T18:30:23.464Z",
     "module": "Market Monitor",
@@ -3498,5 +3358,145 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "news-monitor completed via Scheduled (6346ms, change: Medium)"
+  },
+  {
+    "id": "5ab3b06d-70b7-4f72-912e-04fddc27caa1",
+    "timestamp": "2026-08-09T07:52:50.219Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "97b2431d-3669-4828-80c4-d0eb94a12ba1",
+    "timestamp": "2026-08-09T07:52:54.742Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "4cab97b3-fbfa-45cb-8acb-1a3d92d932ad",
+    "timestamp": "2026-08-09T07:52:54.743Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): OpenAI pauses ‘Astra’ model development; Oil prices volatile after U.S.–Iran tensions ease then flare"
+  },
+  {
+    "id": "a313c587-26ea-4497-8760-5af6ac7f163b",
+    "timestamp": "2026-08-09T07:52:54.755Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Serve Robotics Q2 miss and guidance cut; Novo Nordisk raises guidance, expands EU launch, AI partnership, and interim dividend details"
+  },
+  {
+    "id": "9419b6fd-3886-41a4-9f11-12e93b439333",
+    "timestamp": "2026-08-09T07:52:54.757Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: OpenAI pauses ‘Astra’ model development [Sector]"
+  },
+  {
+    "id": "fc4c3f82-0e31-458d-9ac5-a7134a2b66fd",
+    "timestamp": "2026-08-09T07:52:54.760Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (4544ms, change: High)"
+  },
+  {
+    "id": "bc402419-ddf0-44fd-b1fa-3c7941f14f25",
+    "timestamp": "2026-08-09T08:26:47.341Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "f1af0c42-21bb-4781-a217-6c4ca78913fc",
+    "timestamp": "2026-08-09T08:26:52.394Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "795d4b9c-ffc0-41e5-a81b-a0f8d3f7ca37",
+    "timestamp": "2026-08-09T08:26:52.424Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "8f487b0c-039d-44eb-a50a-39dedbb41ca5",
+    "timestamp": "2026-08-09T08:26:58.974Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "e09a7d70-d73d-4376-a199-e6e08cbf8da4",
+    "timestamp": "2026-08-09T08:26:58.979Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (6635ms, change: Medium)"
+  },
+  {
+    "id": "997019a8-cbb1-4569-965f-54a85790e7f9",
+    "timestamp": "2026-08-09T08:26:58.980Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts waiting for fresh: news-monitor"
+  },
+  {
+    "id": "0265e541-3d99-4601-a9b4-a9d88477ecc6",
+    "timestamp": "2026-08-09T08:26:59.103Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 4 market-moving stories found"
+  },
+  {
+    "id": "535cfee0-15cb-4d30-9019-bcbefad062d9",
+    "timestamp": "2026-08-09T08:26:59.107Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (6737ms, change: Medium)"
+  },
+  {
+    "id": "c978dc88-697a-405c-91a0-7df7e71430e2",
+    "timestamp": "2026-08-09T08:26:59.111Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "687a67b1-539c-45e2-bf58-b3837919e87c",
+    "timestamp": "2026-08-09T08:27:03.353Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "43b1a515-cb5b-4eba-b8cc-8bf349e4ebfe",
+    "timestamp": "2026-08-09T08:27:03.354Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): Houthi attack on Saudi oil facility escalates Middle East energy risk; SpaceX Q2 earnings reveal massive AI capex, spooking markets"
+  },
+  {
+    "id": "d206171f-f18f-4b00-9b05-84e480de0a23",
+    "timestamp": "2026-08-09T08:27:03.356Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: OpenAI pauses ‘Astra’ model development; Oil prices volatile after U.S.–Iran tensions ease then flare"
+  },
+  {
+    "id": "0b5e26ba-f7cd-4e44-b68d-ab8e48c7fdca",
+    "timestamp": "2026-08-09T08:27:03.359Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Houthi attack on Saudi oil facility escalates Middle East energy risk [Geopolitical]"
+  },
+  {
+    "id": "970be49d-674c-4692-adbf-53bae8f75e31",
+    "timestamp": "2026-08-09T08:27:03.363Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Dependency (4254ms, change: High)"
   }
 ]
