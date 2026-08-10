@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import type { OrchestratorStatus } from "@workspace/api-client-react";
 import { format } from "date-fns";
@@ -10,6 +10,7 @@ import {
   PauseCircle,
   Loader2,
   Clock,
+  RefreshCw,
 } from "lucide-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo, freshnessColor } from "@/lib/widget-utils";
@@ -143,11 +144,24 @@ function StatusBar({
 export function AutomationWidget() {
   const ref = useRef<HTMLDivElement>(null);
   const size = useTileSize(ref);
+  const queryClient = useQueryClient();
+  const [runAllError, setRunAllError] = useState<string | null>(null);
 
   const { data: status, isLoading } = useQuery<OrchestratorStatus>({
     queryKey: ["automation/status/widget"],
     queryFn: () => customFetch<OrchestratorStatus>("/api/automation/status"),
     refetchInterval: 5_000,
+  });
+
+  const runAll = useMutation({
+    mutationFn: () => customFetch("/api/automation/run-all", { method: "POST" }),
+    onSuccess: () => {
+      setRunAllError(null);
+      void queryClient.invalidateQueries({ queryKey: ["automation/status/widget"] });
+    },
+    onError: (err) => {
+      setRunAllError(err instanceof Error ? err.message : String(err));
+    },
   });
 
   const modules  = status?.modules ?? [];
@@ -201,6 +215,24 @@ export function AutomationWidget() {
             nextTime={nextTime}
             cycleRunning={!!status.cycleInProgress}
           />
+
+          {/* ── Run All button: always shown ────────────────────────────── */}
+          <div className="shrink-0 flex items-center gap-2">
+            <button
+              onClick={() => { setRunAllError(null); runAll.mutate(); }}
+              disabled={runAll.isPending || !!status.cycleInProgress}
+              className="flex items-center gap-1.5 rounded border border-border/40 bg-black/25 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-foreground/80 transition-colors hover:border-border hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {runAll.isPending || status.cycleInProgress
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <RefreshCw className="h-3.5 w-3.5" />
+              }
+              {status.cycleInProgress ? "Running…" : "Force Full Update"}
+            </button>
+            {runAllError && (
+              <span className="text-[10px] text-red-400 truncate">{runAllError}</span>
+            )}
+          </div>
 
           {/* ── Stats row: md and above ─────────────────────────────────── */}
           {(size === "md" || size === "lg") && (

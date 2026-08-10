@@ -1,187 +1,5 @@
 [
   {
-    "id": "94ba6609-51bb-46a4-9657-5241522e4f04",
-    "timestamp": "2026-08-09T16:10:14.286Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder completed via RunAllNow (11342ms, change: Medium)"
-  },
-  {
-    "id": "5971fbf7-96c2-40ae-87d3-99b47d2b493e",
-    "timestamp": "2026-08-09T16:10:14.453Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "3c87e2ef-907f-4b24-a108-78a8b1fd8c1a",
-    "timestamp": "2026-08-09T16:10:14.455Z",
-    "module": "Trade Decision Engine",
-    "level": "warning",
-    "message": "Using mock portfolio data — decisions reflect simulated positions only"
-  },
-  {
-    "id": "eb50e85b-4426-4527-be2e-9d4c1f314ee0",
-    "timestamp": "2026-08-09T16:10:39.198Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy JPMorgan ahead of Q3 earnings\" (JPM): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "f2c35dfa-c1ae-4ad1-bf1d-5bd33cafef27",
-    "timestamp": "2026-08-09T16:10:39.199Z",
-    "module": "Trade Decision Engine",
-    "level": "error",
-    "message": "Decision analysis failed: Trade-producing decision(s) missing valid sizing fields — retry required: \"Prepare to reduce Serve Robotics exposure\" (SERV)"
-  },
-  {
-    "id": "604c50fe-d687-4b82-91c8-9c6af3f47722",
-    "timestamp": "2026-08-09T16:10:49.210Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "6a202834-5511-4f7d-b0d2-8427662792ce",
-    "timestamp": "2026-08-09T16:10:49.211Z",
-    "module": "Trade Decision Engine",
-    "level": "warning",
-    "message": "Using mock portfolio data — decisions reflect simulated positions only"
-  },
-  {
-    "id": "433030f8-55cb-4574-916c-8e45d012e378",
-    "timestamp": "2026-08-09T16:11:15.837Z",
-    "module": "Trade Decision Engine",
-    "level": "error",
-    "message": "Decision analysis failed: Schema validation failed: readinessDrivers.1.impact: Invalid enum value. Expected 'Positive' | 'Negative', received 'Mixed'"
-  },
-  {
-    "id": "f151b596-7875-4ca6-9a8b-a7cec5cd1bf4",
-    "timestamp": "2026-08-09T16:11:15.844Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "trade-decision-engine failed after 2 attempt(s): HTTP 500: {\"error\":\"Schema validation failed: readinessDrivers.1.impact: Invalid enum value. Expected 'Positive' | 'Negative', received 'Mixed'\",\"_debug\":{\"request\":{\"model\":\"gpt-4o\",\"max_output_tokens\":6000,\"t"
-  },
-  {
-    "id": "ae5c9f75-3e04-40f7-b070-304f81c85d99",
-    "timestamp": "2026-08-09T16:11:15.978Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "Full cycle failed: trade-decision-engine failed: HTTP 500: {\"error\":\"Schema validation failed: readinessDrivers.1.impact: Invalid enum value. Expected 'Positive' | 'Negative', received 'Mixed'\",\"_debug\":{\"request\":{\"model\":\"gpt-4o\",\"max_output_tokens\":6000,\"t"
-  },
-  {
-    "id": "278a1550-19ee-4cb9-ad10-158479d75732",
-    "timestamp": "2026-08-09T16:12:57.586Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [438f6db4-2865-4c1d-a7c4-874190b6cab8]"
-  },
-  {
-    "id": "f80a8901-5d28-41e3-9505-52961c0501c9",
-    "timestamp": "2026-08-09T16:12:57.590Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "d9b9f46c-e12e-44eb-83a6-708cbef1a60f",
-    "timestamp": "2026-08-09T16:12:57.653Z",
-    "module": "Portfolio Manager",
-    "level": "warning",
-    "message": "Portfolio update is using mock Saxo data"
-  },
-  {
-    "id": "5872a466-ce6e-4558-83cd-7531fcb107fc",
-    "timestamp": "2026-08-09T16:12:57.657Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "fe62ff69-4b31-47d5-b73c-37819d175895",
-    "timestamp": "2026-08-09T16:12:57.663Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "2a100139-39e6-44d9-8726-05c21cc84de9",
-    "timestamp": "2026-08-09T16:12:57.668Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (80ms, change: None)"
-  },
-  {
-    "id": "0df67853-6aa5-430c-aa9e-3ba50c146c28",
-    "timestamp": "2026-08-09T16:12:57.669Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "959bfbbe-7063-42b0-a319-e5d45c6fa6ab",
-    "timestamp": "2026-08-09T16:12:57.671Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "60166d28-3656-4f81-bcc7-2234d52bf796",
-    "timestamp": "2026-08-09T16:12:57.673Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "520fb4de-15f8-4047-95e3-3caa5e9b2ff9",
-    "timestamp": "2026-08-09T16:12:57.675Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "97003fab-e599-45ce-8bec-a4c191216e40",
-    "timestamp": "2026-08-09T16:12:57.680Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "14166b1c-a46a-45ae-80b2-b22076260044",
-    "timestamp": "2026-08-09T16:12:58.095Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "4a03f7f0-4727-4695-b900-a59acdd596b7",
-    "timestamp": "2026-08-09T16:12:58.097Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "4935713a-a8ea-44c9-883f-35affe4a7f3b",
-    "timestamp": "2026-08-09T16:12:58.101Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "bf526013-2b27-4396-b102-2ae2ee0d177d",
-    "timestamp": "2026-08-09T16:12:59.283Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
-  },
-  {
-    "id": "b4980235-cb0b-402b-8d4e-b7b8b4a41c5b",
-    "timestamp": "2026-08-09T16:13:02.930Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
     "id": "db15315d-89d7-4236-8378-5d849398233e",
     "timestamp": "2026-08-09T16:13:02.933Z",
     "module": "AutomationOrchestrator",
@@ -3498,5 +3316,187 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "e64c2bf3-350b-4d8c-87bb-973c5b0dd4aa",
+    "timestamp": "2026-08-10T07:53:21.965Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "c1aa547c-a96f-477b-a6db-f36e3f4830b6",
+    "timestamp": "2026-08-10T07:53:26.391Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "7a9604ba-ec94-4829-87ad-ab8b00aaa368",
+    "timestamp": "2026-08-10T07:53:26.395Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (4592ms, change: Medium)"
+  },
+  {
+    "id": "aa937b71-00b2-4538-8334-cdaca77401f0",
+    "timestamp": "2026-08-10T08:48:17.214Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "01965cd0-ea1c-478b-916c-db94dc180616",
+    "timestamp": "2026-08-10T08:48:22.272Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "5f6aa74b-996c-4ca2-b60a-e0a8a199b92b",
+    "timestamp": "2026-08-10T08:48:22.274Z",
+    "module": "Portfolio Manager",
+    "level": "warning",
+    "message": "Portfolio update is using mock Saxo data"
+  },
+  {
+    "id": "e3bd4c7e-1e8a-42f3-8ea0-c07e4874080a",
+    "timestamp": "2026-08-10T08:48:22.306Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
+  },
+  {
+    "id": "48c136b2-b244-40ad-8a7b-aed580d0aaca",
+    "timestamp": "2026-08-10T08:48:22.322Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Mock portfolio snapshot stored"
+  },
+  {
+    "id": "e308e594-24dc-4e99-bb37-4e98c120ea04",
+    "timestamp": "2026-08-10T08:48:22.376Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via Scheduled (158ms, change: None)"
+  },
+  {
+    "id": "b1a90139-4716-4e58-a8f7-c6c4ff9f33b6",
+    "timestamp": "2026-08-10T08:48:22.376Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts waiting for fresh: market-monitor, news-monitor"
+  },
+  {
+    "id": "7fb15834-bc75-4777-ab57-d9a807ae7227",
+    "timestamp": "2026-08-10T08:48:22.379Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "65ab9b43-d063-46e9-b314-521a9a7961fd",
+    "timestamp": "2026-08-10T08:48:22.381Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "6b0f3611-303d-4da5-8690-a031258a139c",
+    "timestamp": "2026-08-10T08:48:22.384Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "c9af57a1-2d49-4230-a595-19e906ca72b9",
+    "timestamp": "2026-08-10T08:48:22.386Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine downstream skipped — upstream change was None"
+  },
+  {
+    "id": "2eeb07c7-985c-4e35-bf5a-99300d7fbf29",
+    "timestamp": "2026-08-10T08:48:22.388Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief downstream skipped — upstream change was None"
+  },
+  {
+    "id": "f36bfd99-fb8b-48b7-8f11-858e0329c622",
+    "timestamp": "2026-08-10T08:48:22.392Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "6e98e382-a1fa-46e3-953d-8a1c8df02550",
+    "timestamp": "2026-08-10T08:48:22.397Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "8ddc5f60-cc7c-4e6c-bcf7-6974622c3cbc",
+    "timestamp": "2026-08-10T08:48:28.601Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "6bac6ead-2956-4370-a2a2-1dfb80ca5724",
+    "timestamp": "2026-08-10T08:48:28.607Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (6359ms, change: Medium)"
+  },
+  {
+    "id": "b3fc86ba-f160-4929-8b79-05471ca0ecec",
+    "timestamp": "2026-08-10T08:48:28.608Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts waiting for fresh: news-monitor"
+  },
+  {
+    "id": "292771e2-668b-47ed-8654-b8a80c5772a2",
+    "timestamp": "2026-08-10T08:48:29.614Z",
+    "module": "Portfolio Manager v2",
+    "level": "error",
+    "message": "CIO analysis failed: Target synthesiser: allocations are infeasible — 5 position(s) fill only 58.4% equity at their role maxes (maximum cash is 40%). The AI must return more or larger allocations to fill the equity budget."
+  },
+  {
+    "id": "0f6577c6-745c-4f30-b7b2-c31faf6537c8",
+    "timestamp": "2026-08-10T08:48:32.588Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 5 market-moving stories found"
+  },
+  {
+    "id": "2b94b51f-5f89-47ba-9271-26a2027628d3",
+    "timestamp": "2026-08-10T08:48:32.591Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (10342ms, change: Medium)"
+  },
+  {
+    "id": "f7607003-82a4-41a7-be6d-2af4e81d8d25",
+    "timestamp": "2026-08-10T08:48:32.601Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "d7fa05db-29d9-457e-be1e-84a789f277a5",
+    "timestamp": "2026-08-10T08:48:35.834Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "12b77c55-f477-415e-b496-93ff046f5f0c",
+    "timestamp": "2026-08-10T08:48:35.838Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Dependency (3240ms, change: Medium)"
   }
 ]
