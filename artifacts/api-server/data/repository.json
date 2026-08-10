@@ -2,34 +2,39 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices are mixed: U.S. markets modestly higher, Asia weaker; volatility easing. Central banks largely on hold amid cooling inflation, though geopolitical risks persist.",
+      "summary": "Global equity indices are mixed: US markets modestly higher, Asia weaker; volatility easing. Central banks largely on hold amid cooling inflation and AI-driven growth. Energy and geopolitical risks persist.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. equities supported by resilient consumer spending and AI investment",
-        "Cooling inflation in U.S. and Europe reducing near‑term rate‑hike pressure"
+        "Resilient US consumer and AI investment supporting equities",
+        "Cooling inflation enabling central banks to hold rates"
       ],
       "negativeFactors": [
-        "Middle East conflict continues to disrupt energy markets, posing inflation and growth risks",
-        "Memory chip sector sell‑off weighing on technology and broader markets"
+        "Middle East conflict and energy uncertainty weighing on sentiment",
+        "Tech sector volatility amid memory chip sell‑off"
       ],
       "strongSectors": [
         "Healthcare",
-        "Consumer Staples"
+        "Consumer Cyclical"
       ],
       "weakSectors": [
         "Technology",
         "Energy"
       ],
       "keyRisks": [
-        "Geopolitical tensions in the Middle East affecting energy prices and inflation",
-        "Volatility from reduced central bank forward guidance"
+        "Geopolitical tensions in Middle East disrupting energy markets",
+        "Earnings‑season volatility in AI/tech sectors"
       ],
       "sources": [
         {
+          "title": "Markets data - stock market, bond, equity, commodity prices",
+          "url": "https://markets.ft.markitdigital.com/data/",
+          "published": ""
+        },
+        {
           "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
           "url": "https://www.nexqual.com/markets",
-          "published": "2026-07-29"
+          "published": ""
         },
         {
           "title": "August 2026 - in a nutshell | LGT",
@@ -37,82 +42,52 @@
           "published": "2026-07-23"
         },
         {
-          "title": "Fed leaves interest rate unchanged but with 3 dissents as Warsh praises 'good family fight'",
-          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
-          "published": "2026-07-28"
+          "title": "Fed keeps rates steady despite high inflation",
+          "url": "https://www.lemonde.fr/en/economy/article/2026/07/30/fed-keeps-rates-steady-despite-high-inflation_6755980_19.html",
+          "published": "2026-07-29"
         },
         {
-          "title": "Bank of Canada maintains the policy rate at 2¼% - Bank of Canada",
-          "url": "https://www.bankofcanada.ca/2026/07/fad-press-release-2026-07-15/",
-          "published": "2026-07-15"
+          "title": "Europe's central bank raises rates to fight inflation from Iran war, the Fed to decide next week",
+          "url": "https://apnews.com/article/2a2c26c580961a979372393706a7f93c",
+          "published": "2026-06-11"
         },
         {
-          "title": "Bank Rate maintained at 3.75% - June 2026 Monetary Policy Summary and Minutes | Bank of England",
-          "url": "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/june-2026",
-          "published": "2026-06-18"
-        },
-        {
-          "title": "Stock Market News — August 06, 2026 — Morning Update — Last 12 Hours (Pacific Time)",
+          "title": "Stock Market News — August 06, 2026 — Morning Update — Last 12 Hours",
           "url": "https://www.reddit.com/r/EverHint/comments/1vh9dlx/stock_market_news_august_06_2026_morning_update/",
           "published": "2026-08-06"
         }
       ],
-      "timestamp": "2026-08-10T08:48:22.393Z",
-      "analysisDuration": 6054
+      "timestamp": "2026-08-10T08:51:34.859Z",
+      "analysisDuration": 5259
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-10T08:48:28.449Z"
+    "updatedAt": "2026-08-10T08:51:40.118Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
     "result": {
-      "summary": "Key scheduled financial events over the next 14 days include the U.S. July CPI release, July PPI release, FOMC minutes from the July meeting, and a heavy slate of corporate earnings starting August 10.",
+      "summary": "Key scheduled financial events over the next two weeks include U.S. inflation data, PPI, GDP second estimate, U.S. energy outlook, and central bank decisions in Australia and the Czech Republic. These releases and meetings are likely to influence interest rate expectations, market volatility, and sector-specific performance.",
       "nextMajorEvent": {
-        "title": "U.S. Consumer Price Index (July)",
+        "title": "U.S. Consumer Price Index (CPI) – July",
         "date": "2026-08-12",
         "countdownDays": 2
       },
       "events": [
         {
-          "title": "U.S. Consumer Price Index (July)",
+          "title": "U.S. Consumer Price Index (CPI) – July",
           "date": "2026-08-12",
           "category": "Inflation Data",
           "importance": "High",
           "affectedMarkets": [
-            "Equities",
+            "U.S. equities",
             "Bonds",
-            "USD"
-          ],
-          "expectedImpact": "Could influence Fed policy expectations and market sentiment on inflation.",
-          "reason": "CPI is a primary gauge of inflation; July’s reading will inform markets on whether inflation pressures are cooling or persisting."
-        },
-        {
-          "title": "FOMC Minutes (July 28–29 meeting)",
-          "date": "2026-08-19",
-          "category": "Central Bank",
-          "importance": "High",
-          "affectedMarkets": [
-            "Bonds",
-            "Equities",
             "FX"
           ],
-          "expectedImpact": "Minutes will reveal policymakers’ views on inflation and rate path, shaping market expectations.",
-          "reason": "FOMC minutes provide detailed insight into Fed deliberations and future monetary policy direction."
+          "expectedImpact": "CPI will influence Fed rate expectations and market sentiment.",
+          "reason": "As a key inflation gauge, July CPI will shape monetary policy outlook and risk asset pricing."
         },
         {
-          "title": "Corporate Earnings Season Begins (Week of August 10)",
-          "date": "2026-08-10",
-          "category": "Earnings",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Equities",
-            "Sector-specific"
-          ],
-          "expectedImpact": "Earnings reports will drive stock-specific moves and influence broader equity sentiment.",
-          "reason": "A large number of companies begin reporting Q2 results starting August 10, setting tone for equity markets."
-        },
-        {
-          "title": "U.S. Producer Price Index (July)",
+          "title": "U.S. Producer Price Index (PPI) – July",
           "date": "2026-08-13",
           "category": "Inflation Data",
           "importance": "Medium",
@@ -121,142 +96,114 @@
             "Equities",
             "Bonds"
           ],
-          "expectedImpact": "Provides insight into upstream inflation trends that may feed into consumer prices.",
-          "reason": "PPI tracks wholesale price changes; July’s data will help assess inflationary pressures at the producer level."
+          "expectedImpact": "PPI will provide insight into upstream inflation pressures.",
+          "reason": "Producer prices feed into consumer inflation and can signal cost pressures for businesses."
         }
       ],
       "sources": [
         {
-          "title": "Schedule of Releases for the Consumer Price Index",
-          "url": "https://www.bls.gov/schedule/news_release/cpi.htm?mod=article_inline",
+          "title": "Consumer Price Index Summary – July 2026 release date",
+          "url": "https://www.bls.gov/news.release/cpi.nr0.htm?facet=app&mode=light",
           "published": ""
         },
         {
-          "title": "Producer Price Index Release Dates",
+          "title": "Producer Price Index Release Dates – July 2026",
           "url": "https://www.bls.gov/ppi/detailed-report/ppi-detailed-report-march-2026.pdf",
           "published": ""
         },
         {
-          "title": "Federal Reserve Board - Monetary Policy",
-          "url": "https://www.federalreserve.gov/monetarypolicy.htm?gtmlinkcontext=main&gtmlinkname=official+mandate",
+          "title": "Release Schedule | U.S. Bureau of Economic Analysis (BEA)",
+          "url": "https://www.bea.gov/news/schedule",
           "published": ""
         },
         {
-          "title": "Economic Calendar - August 2026",
-          "url": "https://www.thomsoninvestmentgroup.com/economic-calendar-august-2026",
+          "title": "Short‑Term Energy Outlook next release date",
+          "url": "https://www.eia.gov/outlooks/steo/release_schedule.php",
           "published": ""
         },
         {
-          "title": "Earnings Calendar and Analysis for This Week (August 10-14)",
-          "url": "https://www.kiplinger.com/investing/stocks/17494/next-week-earnings-calendar-stocks",
-          "published": "2026-08-07"
+          "title": "Reserve Bank of Australia Monetary Policy Board Meeting schedule",
+          "url": "https://www.rba.gov.au/schedules-events/calendar/",
+          "published": ""
+        },
+        {
+          "title": "Czech National Bank Board meeting dates",
+          "url": "https://www.cnb.cz/en/cnb-news/news/Dates-of-the-CNB-Boards-meetings-in-2026-00001",
+          "published": ""
         }
       ],
-      "timestamp": "2026-08-10T07:37:58.644Z",
-      "analysisDuration": 10545
+      "timestamp": "2026-08-10T08:51:34.866Z",
+      "analysisDuration": 7915
     },
     "createdAt": "2026-07-31T10:21:03.481Z",
-    "updatedAt": "2026-08-10T07:38:09.189Z"
+    "updatedAt": "2026-08-10T08:51:42.781Z"
   },
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Middle East conflict continues to drive energy price volatility and inflation concerns, while central banks maintain cautious stances amid persistent uncertainty.",
-      "overallMarketImpact": "Markets remain cautious, with elevated energy-driven inflation risks tempering sentiment despite resilient growth signals.",
+      "executiveSummary": "Middle East conflict continues to disrupt energy markets, keeping inflation and volatility elevated. AI‑related earnings and infrastructure spending drive equity resilience, while markets await U.S. July CPI ahead of FOMC minutes.",
+      "overallMarketImpact": "Mixed: energy and inflation risks weigh, but AI and earnings support equities.",
       "topStory": {
-        "title": "Middle East conflict fuels energy‑inflation shock",
-        "summary": "Ongoing Middle East war continues to disrupt oil supply, keeping energy prices elevated and inflation pressures high.",
+        "title": "Middle East conflict fuels energy‑inflation risks",
+        "summary": "Ongoing war continues to disrupt oil supply, sustaining inflation and volatility risks.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "middle-east-energy-inflation‑2026-08-10",
-          "title": "Middle East conflict fuels energy‑inflation shock",
-          "summary": "War in Middle East continues to disrupt oil supply, keeping energy prices elevated and inflation pressures high.",
-          "category": "Energy",
+          "id": "middle-east-energy‑inflation‑2026-08-10",
+          "title": "Middle East conflict sustains energy‑inflation risks",
+          "summary": "Ongoing war continues to disrupt oil supply, keeping inflation and volatility elevated.",
+          "category": "Commodities",
           "importance": "High",
           "affectedMarkets": [
-            "Oil",
+            "Energy",
             "Inflation",
-            "Central banks"
+            "Equities"
           ],
-          "whyItMatters": "Sustained energy supply shocks feed into inflation and complicate central bank policy decisions.",
-          "marketImpact": "Positive for oil prices; negative for inflation outlook and bond markets",
-          "confidence": 0.9,
-          "source": "World Bank",
-          "publishedAt": "2026-04-28"
+          "whyItMatters": "Persistent energy supply disruptions maintain inflation pressure and market volatility.",
+          "marketImpact": "Positive for oil; negative for equities and inflation‑sensitive assets",
+          "confidence": 0.85,
+          "source": "IMF",
+          "publishedAt": "2026-03-30"
         },
         {
-          "id": "ecb-holds-rates‑amid‑energy‑uncertainty‑2026-07-23",
-          "title": "ECB holds rates amid energy uncertainty",
-          "summary": "ECB keeps interest rates unchanged, citing volatile energy prices and uncertain inflation outlook.",
-          "category": "Rates",
+          "id": "markets‑await‑us‑cpi‑2026-08-10",
+          "title": "Markets await U.S. July CPI release",
+          "summary": "Investors focus on upcoming CPI ahead of FOMC minutes for policy clues.",
+          "category": "Macro",
           "importance": "Medium",
           "affectedMarkets": [
-            "Euro bonds",
-            "Eurozone equities"
+            "Rates",
+            "Equities"
           ],
-          "whyItMatters": "ECB’s cautious stance reflects inflation risks from energy shocks, influencing euro‑area rates and equities.",
-          "marketImpact": "Neutral to slightly negative for eurozone bonds",
-          "confidence": 0.8,
-          "source": "ECB",
-          "publishedAt": "2026-07-23"
+          "whyItMatters": "CPI data could shift Fed rate expectations and market direction.",
+          "marketImpact": "Potentially positive if inflation cools; negative if hot",
+          "confidence": 0.7,
+          "source": "Event Monitor",
+          "publishedAt": "2026-08-12T00:00:00Z"
         },
         {
-          "id": "bok‑rate‑hike‑2026-07-16",
-          "title": "Bank of Korea raises rate 25bps",
-          "summary": "Bank of Korea hikes key rate to 2.75%, citing elevated inflation and energy‑price pass‑through.",
-          "category": "Rates",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Korean bonds",
-            "FX"
-          ],
-          "whyItMatters": "Rate hike signals tightening in Asia amid global inflation pressures, affecting regional bond yields and FX.",
-          "marketImpact": "Negative for Korean bonds; positive for KRW",
-          "confidence": 0.75,
-          "source": "Yonhap",
-          "publishedAt": "2026-07-16"
-        },
-        {
-          "id": "ai‑capex‑supports‑growth‑2026‑mid‑year",
-          "title": "AI capex supports resilient growth",
-          "summary": "AI‑related capital spending remains strong, underpinning economic resilience despite geopolitical headwinds.",
+          "id": "ai‑earnings‑infrastructure‑2026-08-05",
+          "title": "AI infrastructure boosts equity resilience",
+          "summary": "SpaceX Q2 earnings show strong revenue and heavy AI infrastructure spending.",
           "category": "Technology",
           "importance": "Medium",
           "affectedMarkets": [
-            "Tech equities",
-            "Capex sectors"
+            "Equities",
+            "AI"
           ],
-          "whyItMatters": "Sustained AI investment supports growth and offsets some geopolitical and inflationary pressures.",
-          "marketImpact": "Positive for tech and capex‑heavy sectors",
-          "confidence": 0.7,
-          "source": "J.P. Morgan",
-          "publishedAt": "2026-07-01"
-        },
-        {
-          "id": "equity‑rotation‑amid‑energy‑volatility‑2026‑07‑28",
-          "title": "Equity rotation amid energy volatility",
-          "summary": "Markets rotate toward defensives, financials and industrials as energy volatility persists.",
-          "category": "Equities",
-          "importance": "Low",
-          "affectedMarkets": [
-            "Defensive equities",
-            "Financials",
-            "Industrials"
-          ],
-          "whyItMatters": "Sector rotation reflects investor caution amid energy‑driven uncertainty.",
-          "marketImpact": "Positive for defensives and industrials; negative for energy",
-          "confidence": 0.65,
-          "source": "Amundi",
-          "publishedAt": "2026-07-28"
+          "whyItMatters": "Strong AI‑related earnings and spending support tech sector sentiment.",
+          "marketImpact": "Positive for AI and tech stocks",
+          "confidence": 0.75,
+          "source": "Reddit‑EverHint",
+          "publishedAt": "2026-08-05T00:00:00Z"
         }
       ],
-      "timestamp": "2026-08-10T08:48:22.398Z",
-      "analysisDuration": 10183
+      "timestamp": "2026-08-10T08:51:34.863Z",
+      "analysisDuration": 6297
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-10T08:48:32.582Z"
+    "updatedAt": "2026-08-10T08:51:41.160Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -482,7 +429,7 @@
   "portfolio-manager": {
     "moduleName": "portfolio-manager",
     "result": {
-      "updatedAt": "2026-08-10T08:48:22.277Z",
+      "updatedAt": "2026-08-10T08:51:34.355Z",
       "environment": "sim",
       "baseCurrency": "DKK",
       "totalValue": 637800,
@@ -574,7 +521,7 @@
       "isMockData": true
     },
     "createdAt": "2026-08-01T15:14:57.937Z",
-    "updatedAt": "2026-08-10T08:48:22.307Z"
+    "updatedAt": "2026-08-10T08:51:34.357Z"
   },
   "portfolio-analyzer": {
     "moduleName": "portfolio-analyzer",
@@ -11998,6 +11945,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-10T08:51:34.859Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-10T08:48:22.393Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -12102,7 +12055,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-10T08:48:28.454Z"
+    "updatedAt": "2026-08-10T08:51:40.124Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",

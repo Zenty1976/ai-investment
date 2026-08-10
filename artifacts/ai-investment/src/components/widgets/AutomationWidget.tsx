@@ -87,12 +87,16 @@ function StatusBar({
   health,
   nextTime,
   cycleRunning,
+  onRunAll,
+  runAllDisabled,
 }: {
   modeLabel: string;
   modeColor: string;
   health: HealthInfo;
   nextTime: string | null;
   cycleRunning: boolean;
+  onRunAll: () => void;
+  runAllDisabled: boolean;
 }) {
   const { Icon } = health;
   return (
@@ -122,7 +126,7 @@ function StatusBar({
         </div>
       </div>
 
-      {/* ── Right: Next Update ── */}
+      {/* ── Right: Next Update + Force-run icon ── */}
       <div className="px-4 py-3 flex items-center gap-3 min-w-0">
         <Clock
           className={`h-6 w-6 shrink-0 ${cycleRunning ? "text-blue-400 animate-pulse" : "text-muted-foreground"}`}
@@ -135,6 +139,17 @@ function StatusBar({
             {cycleRunning ? "Running…" : nextTime ?? "—"}
           </p>
         </div>
+        <button
+          onClick={onRunAll}
+          disabled={runAllDisabled}
+          title="Force full update"
+          className="shrink-0 rounded p-1 text-muted-foreground transition-colors hover:text-foreground hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {cycleRunning
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <RefreshCw className="h-4 w-4" />
+          }
+        </button>
       </div>
     </div>
   );
@@ -214,25 +229,9 @@ export function AutomationWidget() {
             health={health}
             nextTime={nextTime}
             cycleRunning={!!status.cycleInProgress}
+            onRunAll={() => { setRunAllError(null); runAll.mutate(); }}
+            runAllDisabled={runAll.isPending || !!status.cycleInProgress}
           />
-
-          {/* ── Run All button: always shown ────────────────────────────── */}
-          <div className="shrink-0 flex items-center gap-2">
-            <button
-              onClick={() => { setRunAllError(null); runAll.mutate(); }}
-              disabled={runAll.isPending || !!status.cycleInProgress}
-              className="flex items-center gap-1.5 rounded border border-border/40 bg-black/25 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-foreground/80 transition-colors hover:border-border hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {runAll.isPending || status.cycleInProgress
-                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                : <RefreshCw className="h-3.5 w-3.5" />
-              }
-              {status.cycleInProgress ? "Running…" : "Force Full Update"}
-            </button>
-            {runAllError && (
-              <span className="text-[10px] text-red-400 truncate">{runAllError}</span>
-            )}
-          </div>
 
           {/* ── Stats row: md and above ─────────────────────────────────── */}
           {(size === "md" || size === "lg") && (
