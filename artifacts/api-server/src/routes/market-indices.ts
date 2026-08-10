@@ -51,6 +51,12 @@ let _cache: IndexResult[] | null = null;
 let _cacheExpiry = 0;
 const CACHE_TTL_MS = 60_000;
 
+/** Call this to force a fresh fetch on the next request (e.g. after reconnect). */
+export function invalidateMarketIndicesCache(): void {
+  _cache = null;
+  _cacheExpiry = 0;
+}
+
 // ---------------------------------------------------------------------------
 // Saxo helpers (local — same pattern as portfolio-manager)
 // ---------------------------------------------------------------------------
@@ -93,7 +99,18 @@ interface SaxoInfoPrice {
     LastTraded?: number;
     Ask?: number;
     Bid?: number;
+    Close?: number;
+    Open?: number;
     ErrorCode?: string;
+    PriceTypeAsk?: string;
+    PriceTypeBid?: string;
+  };
+  DisplayAndFormat?: {
+    LastClose?: number;
+  };
+  InstrumentPriceDetails?: {
+    LastClose?: number;
+    Open?: number;
   };
 }
 
@@ -102,6 +119,7 @@ async function fetchIndexValue(
   assetTypes: string,
   token: string,
   base: string,
+  fallback: number | null,
 ): Promise<number | null> {
   try {
     // Step 1 — find the instrument UIC
@@ -114,7 +132,10 @@ async function fetchIndexValue(
 
     const searchRes = await saxoGet<SaxoInstrumentSearchResponse>(searchUrl, token);
     const instruments = searchRes.Data ?? [];
-    if (instruments.length === 0) return null;
+    if (instruments.length === 0) {
+      logger.warn({ keywords }, "[market-indices] No instruments found");
+      return fallback;
+    }
 
     // Pick first result — prefer exact symbol match if possible
     const match =
@@ -124,25 +145,46 @@ async function fetchIndexValue(
 
     const uic = match.Identifier;
     const assetType = match.AssetType ?? assetTypes;
-    if (!uic) return null;
+    if (!uic) return fallback;
 
-    // Step 2 — fetch InfoPrice
+    // Step 2 — fetch InfoPrice with extended field groups so we get Ask/Bid/LastTraded
+    // and DisplayAndFormat for last-close fallback
     const priceUrl =
       `${base}/trade/v1/infoprices` +
       `?AssetType=${encodeURIComponent(assetType)}` +
       `&Uic=${uic}` +
-      `&FieldGroups=Quote`;
+      `&FieldGroups=Quote,DisplayAndFormat,InstrumentPriceDetails`;
 
     const priceRes = await saxoGet<SaxoInfoPrice>(priceUrl, token);
     const q = priceRes.Quote;
-    if (!q || q.ErrorCode === "None" === false) {
-      // ErrorCode "None" means no error in Saxo API
+
+    // "NoAccess" means SIM account has no price access for this instrument.
+    // Return the mock/fallback value so the topbar still shows something useful.
+    if (q?.PriceTypeAsk === "NoAccess" || q?.PriceTypeBid === "NoAccess") {
+      logger.warn({ keywords, uic }, "[market-indices] NoAccess — using fallback");
+      return fallback;
     }
-    const price = q?.Mid ?? q?.LastTraded ?? q?.Ask ?? q?.Bid ?? null;
-    return typeof price === "number" ? price : null;
+
+    // Prefer live mid/last-traded, then best side, then last close
+    const price =
+      q?.Mid ??
+      q?.LastTraded ??
+      q?.Ask ??
+      q?.Bid ??
+      q?.Close ??
+      priceRes.InstrumentPriceDetails?.LastClose ??
+      priceRes.DisplayAndFormat?.LastClose ??
+      null;
+
+    if (typeof price === "number") return price;
+
+    // If still no price (e.g. market closed, only OldIndicative but no value),
+    // fall back to the mock reference value rather than showing "—".
+    logger.warn({ keywords, uic, quote: q }, "[market-indices] No price in response — using fallback");
+    return fallback;
   } catch (err) {
     logger.warn({ err, keywords }, "[market-indices] Failed to fetch index");
-    return null;
+    return fallback;
   }
 }
 
@@ -183,11 +225,11 @@ router.get("/market-indices", async (_req, res): Promise<void> => {
   const env = saxoStore.getEnvironment();
   const base = saxoBase(env);
 
-  // Fetch all 4 indices in parallel — each failure returns null independently
+  // Fetch all 4 indices in parallel — each failure returns fallback independently
   const results = await Promise.all(
     INDEX_TARGETS.map(async (t): Promise<IndexResult> => ({
       label: t.label,
-      value: await fetchIndexValue(t.keywords, t.assetTypes, token, base),
+      value: await fetchIndexValue(t.keywords, t.assetTypes, token, base, MOCK_VALUES[t.label] ?? null),
     }))
   );
 
