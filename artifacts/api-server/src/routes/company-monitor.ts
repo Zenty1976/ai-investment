@@ -28,7 +28,7 @@ import { RunCompanyAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { automationOrchestrator } from "../lib/automation-orchestrator";
-import { getPriceContext } from "../lib/price-context-service.js";
+import { getPriceContext, fetchAndStorePriceContexts } from "../lib/price-context-service.js";
 import { formatPriceContextForPrompt } from "../lib/price-context-calculator.js";
 import type { z } from "zod";
 
@@ -867,8 +867,19 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
   // ── Choose prompt and build user message ───────────────────────────────────
 
-  // ── Read Price Context from repository ────────────────────────────────────
-  const priceCtxEntry = getPriceContext(ticker);
+  // ── Read Price Context from repository (fetch inline if stale or missing recentBehavior) ──
+  let priceCtxEntry = getPriceContext(ticker);
+  if (!priceCtxEntry) {
+    // Entry is absent, stale, or lacks recentBehavior — fetch a fresh one now
+    // so the user doesn't have to wait for the next orchestrator cycle.
+    try {
+      req.log.info({ ticker }, "[company-monitor] Price Context stale/missing — triggering inline Saxo fetch");
+      await fetchAndStorePriceContexts([{ symbol: ticker }]);
+      priceCtxEntry = getPriceContext(ticker);
+    } catch (err) {
+      req.log.warn({ err, ticker }, "[company-monitor] Inline Price Context fetch failed — continuing without");
+    }
+  }
   const priceContextStr = priceCtxEntry ? formatPriceContextForPrompt(priceCtxEntry) : null;
 
   const systemPrompt = isFirstRun ? SYSTEM_PROMPT_FULL : SYSTEM_PROMPT_UPDATE;

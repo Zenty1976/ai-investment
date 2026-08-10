@@ -1,82 +1,5 @@
 [
   {
-    "id": "b57e8070-180d-4ba3-a59a-39a00d539584",
-    "timestamp": "2026-08-10T18:13:34.952Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 75/100"
-  },
-  {
-    "id": "82985f95-b802-4b07-ad04-c518f5bb8985",
-    "timestamp": "2026-08-10T18:13:34.954Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "1 WaitingForReevaluation"
-  },
-  {
-    "id": "ed49a017-dce6-4a51-9017-b95912ae1dd9",
-    "timestamp": "2026-08-10T18:13:34.956Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Changed: Strengthened Wait for U.S. CPI, PPI, and FOMC minutes before deploying cash"
-  },
-  {
-    "id": "3b761fb3-c265-45aa-8d80-3a79a5d5a88a",
-    "timestamp": "2026-08-10T18:13:34.958Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 2 decision(s) downgraded"
-  },
-  {
-    "id": "a842f7dd-5dde-4c1e-b73c-f7b21c316e99",
-    "timestamp": "2026-08-10T18:13:34.962Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via Dependency (16715ms, change: Medium)"
-  },
-  {
-    "id": "476158c4-5a99-41ca-a8ff-362f763e33bb",
-    "timestamp": "2026-08-10T18:13:34.963Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: trade-review, portfolio-manager"
-  },
-  {
-    "id": "3ebf422b-0bdf-4f7d-bfe7-b38e3802f57d",
-    "timestamp": "2026-08-10T18:13:34.966Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "0c432414-91c0-4ca5-96bf-d0d3f2739370",
-    "timestamp": "2026-08-10T18:13:34.976Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (12ms, change: Medium)"
-  },
-  {
-    "id": "7ed8ffba-8d1f-4055-a932-029cc2c1cf32",
-    "timestamp": "2026-08-10T18:13:34.977Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "f09ab2b9-d933-41a5-83bf-dcccf63f71c9",
-    "timestamp": "2026-08-10T18:13:39.168Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "Updated — Stanley Druckenmiller — no material change."
-  },
-  {
-    "id": "afa99670-3e51-4950-8705-4c2243e6f601",
-    "timestamp": "2026-08-10T18:13:46.881Z",
-    "module": "Settings",
-    "level": "user",
-    "message": "User started Saxo login"
-  },
-  {
     "id": "cdf77c0b-8a7e-47f6-95d7-420d9e4de5ef",
     "timestamp": "2026-08-10T18:13:48.468Z",
     "module": "Investor Watch",
@@ -3495,6 +3418,83 @@
   {
     "id": "42f70091-4d8c-4fc3-b416-cbc3f724aaf9",
     "timestamp": "2026-08-10T20:30:32.294Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "5195847a-f489-4b52-bee7-224a6ef1ae60",
+    "timestamp": "2026-08-10T20:31:27.761Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "1218fbce-bce7-487e-92b6-f5e083b3793b",
+    "timestamp": "2026-08-10T20:31:49.424Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Watch, strength 25, meaningfulChange=High"
+  },
+  {
+    "id": "b3d92436-65a2-46c3-b1cd-59b80bb60220",
+    "timestamp": "2026-08-10T20:32:14.172Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "9eacd098-e97c-4492-8e63-47b7e279f8bf",
+    "timestamp": "2026-08-10T20:32:36.398Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Watch, strength 25, meaningfulChange=High"
+  },
+  {
+    "id": "483778f5-7461-4cec-a273-562146c105f2",
+    "timestamp": "2026-08-10T20:35:32.805Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "a86ee6a9-ff06-418a-9e26-08734a6b44e3",
+    "timestamp": "2026-08-10T20:36:02.423Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "6c3e19b6-c74e-4afa-b5c2-3fde0ab0de42",
+    "timestamp": "2026-08-10T20:36:05.306Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "d758b1ff-a001-4df1-82ea-39815e5914b4",
+    "timestamp": "2026-08-10T20:36:06.416Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "25bcffb8-f3ed-4965-9f36-711e964c3577",
+    "timestamp": "2026-08-10T20:36:06.419Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (3999ms, change: Medium)"
+  },
+  {
+    "id": "8bf50239-1206-4b7a-8777-1062acdb5b37",
+    "timestamp": "2026-08-10T20:36:24.162Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Watch, strength 25, meaningfulChange=High"
+  },
+  {
+    "id": "52764c59-4a74-4453-86d0-dd88939002fd",
+    "timestamp": "2026-08-10T20:46:22.079Z",
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"

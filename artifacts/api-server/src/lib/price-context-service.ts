@@ -51,6 +51,9 @@ import { calculatePriceContext, formatPriceContextForPrompt, type PriceContext }
 export const PRICE_CONTEXT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 export function isPriceContextFresh(ctx: PriceContext): boolean {
+  // Legacy entries (created before recentBehavior was added) must be re-fetched
+  // even if their timestamp is recent — the shape is incomplete.
+  if (!ctx.recentBehavior) return false;
   const age = Date.now() - new Date(ctx.asOf).getTime();
   return age < PRICE_CONTEXT_MAX_AGE_MS;
 }

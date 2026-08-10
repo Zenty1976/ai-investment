@@ -1,0 +1,108 @@
+There is still a bug with the newly implemented recentBehavior Price Context.
+
+I have refreshed/re-analyzed SERV after the recentBehavior implementation.
+
+The Company Monitor now shows:
+Updated: 10 Aug 22:36 UTC
+
+So this is a newly updated Company Monitor result.
+
+However, the PRICE CONTEXT card still does NOT show the RECENT section.
+
+It currently goes directly from:
+
+VOL / 30D RANGE
+
+to:
+
+"Observed price behavior — not a forecast..."
+
+This proves that in the rendered Company Monitor result:
+
+ctx.recentBehavior is undefined/null.
+
+The frontend implementation itself already looks correct:
+
+{ctx.recentBehavior && (...)}
+
+and price-context-calculator.ts also appears to correctly calculate and return:
+
+recentBehavior
+
+Therefore DO NOT redesign the recentBehavior algorithm or UI.
+
+Trace the ACTUAL runtime data flow for a fresh SERV Company Monitor update and find where recentBehavior is being lost.
+
+Specifically trace:
+
+Saxo historical OHLC
+→ calculatePriceContext()
+→ returned PriceContext
+→ any persistence/storage/cache layer
+→ Company Monitor analysis request
+→ Company Monitor stored result
+→ Company Monitor API response
+→ frontend ctx
+→ Price Context card
+
+For SERV, log/inspect the actual object at each relevant boundary.
+
+We need to answer these exact questions:
+
+1. Does calculatePriceContext("SERV:XNAS", ...) produce recentBehavior?
+
+2. If yes, what are the actual values for:
+   - twoDayReturnPct
+   - threeDayReturnPct
+   - threeDaySlope
+   - fiveDaySlope
+   - daysSinceRecentLow
+   - newLowLast3Days
+   - newLowLast5Days
+   - declineDecelerating
+   - state
+
+3. Is recentBehavior present in the PriceContext supplied to the Company Monitor OpenAI request?
+
+4. Is recentBehavior present in the newly persisted Company Monitor result?
+
+5. Is recentBehavior present in the API response returned to CompanyMonitor.tsx?
+
+6. Why is ctx.recentBehavior falsy in the current frontend render?
+
+Check especially for:
+
+- stale persisted PriceContext objects
+- cached price context generated before recentBehavior existed
+- serialization/schema definitions that strip unknown/new fields
+- API response mapping that reconstructs PriceContext but omits recentBehavior
+- Company Monitor result schemas/types that still use the old PriceContext shape
+- frontend/API DTOs that omit recentBehavior
+- refresh logic that updates the AI analysis but reuses an old stored PriceContext
+- spread/destructuring/mapping code that only copies the old PriceContext fields
+
+IMPORTANT:
+
+Do not merely verify that recentBehavior exists in the source code.
+
+We already know that.
+
+Verify the ACTUAL runtime SERV data all the way from calculatePriceContext() to CompanyMonitor.tsx.
+
+A fresh Company Monitor update must use a freshly calculated/enriched PriceContext containing recentBehavior.
+
+Do not solve this by hardcoding SERV or fabricating recentBehavior.
+
+After fixing it, run a real SERV update and report the actual calculated recentBehavior values.
+
+Then verify that the PRICE CONTEXT card visibly contains:
+
+RECENT [state]
+2D ...
+3D ...
+3D trend ...
+Last low ...
+
+and "↓ Slowing" when declineDecelerating=true.
+
+Do not change the existing broader PriceState classification.
