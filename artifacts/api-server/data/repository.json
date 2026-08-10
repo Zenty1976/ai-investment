@@ -2,51 +2,60 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices are mixed: U.S. markets modestly higher, Asia weaker; volatility easing. Central banks largely on hold amid energy-driven inflation risks and geopolitical uncertainty.",
+      "summary": "Global equity indices are mixed: US markets modestly higher, Asia weaker; volatility easing. Central banks largely on hold amid cooling inflation and energy uncertainty.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. equities rising modestly, supporting risk appetite",
-        "European indices advancing, reflecting resilience amid geopolitical tensions"
+        "US equities supported by resilient consumer demand and AI investment",
+        "Cooling inflation in US and Europe reduces near‑term rate‑hike pressure"
       ],
       "negativeFactors": [
-        "Asian markets under pressure, particularly Japan’s Nikkei",
-        "Central banks signaling caution amid energy-driven inflation and geopolitical risks"
+        "Middle East energy conflict keeps inflation and volatility risks elevated",
+        "Technology sector showing signs of profit‑taking amid crowded AI positioning"
       ],
       "strongSectors": [
-        "Healthcare",
-        "Consumer Cyclical"
+        "Consumer discretionary (US)",
+        "Health care"
       ],
       "weakSectors": [
-        "Technology",
-        "Energy"
+        "Technology/semiconductors"
       ],
       "keyRisks": [
-        "Middle East conflict sustaining energy price volatility",
-        "Uncertainty around Fed’s policy path due to limited forward guidance"
+        "Escalation of Middle East conflict impacting energy prices and inflation",
+        "Uncertainty around Fed communication increasing market volatility"
       ],
       "sources": [
         {
+          "title": "Markets data - stock market, bond, equity, commodity prices - FT.com",
+          "url": "https://markets.ft.markitdigital.com/data/",
+          "published": ""
+        },
+        {
+          "title": "August 2026 - in a nutshell | LGT",
+          "url": "https://www.lgt.com/ch-en/market-assessments/market-view/august-2026-in-a-nutshell-364324",
+          "published": "2026-07-23"
+        },
+        {
+          "title": "Federal Reserve policymakers show support for rate hikes as Warsh reins in guidance",
+          "url": "https://apnews.com/article/103325df845d2d6bde63dfa4b8093d35",
+          "published": "2026-07-? (last month)"
+        },
+        {
           "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
           "url": "https://www.nexqual.com/markets",
-          "published": "2026-07-29"
+          "published": ""
         },
         {
-          "title": "Federal Reserve leaves interest rate unchanged but with 3 dissents",
-          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
-          "published": "2026-07-28"
-        },
-        {
-          "title": "Europe’s central bank raises rates to fight inflation from Iran war, the Fed to decide next week",
-          "url": "https://apnews.com/article/2a2c26c580961a979372393706a7f93c",
-          "published": "2026-06-11"
+          "title": "Sector Heatmap Rotation?",
+          "url": "https://www.reddit.com/r/MarketProbabilities/comments/1v9fb65/sector_heatmap_rotation/",
+          "published": ""
         }
       ],
-      "timestamp": "2026-08-10T19:08:05.933Z",
-      "analysisDuration": 4976
+      "timestamp": "2026-08-10T19:38:39.159Z",
+      "analysisDuration": 6667
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-10T19:08:10.915Z"
+    "updatedAt": "2026-08-10T19:38:45.829Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -146,69 +155,70 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Geopolitical tensions in the Middle East continue to drive elevated energy prices and inflation risks, while resilient U.S. growth and AI investment support equity markets. Commodity shocks and central bank caution remain key market drivers.",
-      "overallMarketImpact": "Mixed—energy and inflation pressures weigh on bonds and EM, while U.S. equities and AI sectors benefit.",
+      "executiveSummary": "Geopolitical tensions in the Middle East continue to underpin elevated energy and commodity price volatility, while cooling inflation in China and softening U.S. labor data signal shifting macro dynamics ahead of key U.S. inflation releases.",
+      "overallMarketImpact": "Mixed: energy and commodity sectors remain under pressure, while easing inflation and labor softness support risk assets.",
       "topStory": {
-        "title": "Middle East conflict fuels energy‑inflation shock",
-        "summary": "Ongoing Iran‑related conflict and Strait of Hormuz disruptions are sustaining energy price surges and inflation pressures globally.",
+        "title": "Middle East energy tensions sustain commodity volatility",
+        "summary": "Ongoing Strait of Hormuz closure and war-related disruptions keep oil and commodity prices elevated and volatile.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "middle-east-energy-inflation-2026-08-10",
-          "title": "Middle East conflict sustains energy‑inflation shock",
-          "summary": "Iran war and Strait of Hormuz disruptions continue to elevate oil and gas prices, fueling inflation globally.",
+          "id": "middle-east-energy-tensions-2026-08-10",
+          "title": "Middle East energy tensions persist",
+          "summary": "Strait of Hormuz remains closed, keeping gas prices over $1 above pre‑war levels and sustaining energy market volatility.",
           "category": "Energy",
           "importance": "High",
           "affectedMarkets": [
-            "Commodities",
-            "Inflation",
-            "Emerging Markets"
-          ],
-          "whyItMatters": "Persistent energy shocks raise inflation and pressure central banks, while weighing on growth and EM currencies.",
-          "marketImpact": "Negative for bonds and EM assets; positive for oil and inflation‑hedges",
-          "confidence": 0.9,
-          "source": "World Bank",
-          "publishedAt": "2026-04-28"
-        },
-        {
-          "id": "el-nino-food-commodity-risk-2026-08-08",
-          "title": "El Niño threatens food commodity prices",
-          "summary": "Strong El Niño event expected to raise global food commodity prices by around 9%.",
-          "category": "Commodities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Agricultural Commodities",
+            "Oil",
+            "Gas",
             "Inflation"
           ],
-          "whyItMatters": "Higher food prices add to inflation pressures and risk consumer stress globally.",
-          "marketImpact": "Positive for agricultural commodities; negative for inflation outlook",
-          "confidence": 0.7,
-          "source": "Reddit (ECB cited)",
-          "publishedAt": "2026-08-08"
+          "whyItMatters": "Continued supply disruption maintains inflation pressure and energy market uncertainty.",
+          "marketImpact": "Positive for oil and gas prices; negative for inflation outlook",
+          "confidence": 0.85,
+          "source": "CBS News",
+          "publishedAt": "2026-08-09T20:38:00Z"
         },
         {
-          "id": "us-ai‑investment‑supports‑equities-2026-07-23",
-          "title": "U.S. AI investment underpins equity resilience",
-          "summary": "Resilient U.S. growth and sustained AI infrastructure investment support equity markets.",
-          "category": "Technology",
+          "id": "china-inflation-cools-2026-08-10",
+          "title": "China inflation cools amid oil shock easing",
+          "summary": "China’s inflation is cooling as the Iran war‑driven oil shock begins to ease.",
+          "category": "Inflation",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "FX",
+            "Commodities",
+            "Equities"
+          ],
+          "whyItMatters": "Lower Chinese inflation may ease global import price pressures and support risk sentiment.",
+          "marketImpact": "Positive for equities; mixed for commodities",
+          "confidence": 0.75,
+          "source": "Bloomberg",
+          "publishedAt": "2026-08-10T00:59:00Z"
+        },
+        {
+          "id": "us-july-jobs-softening-2026-08-09",
+          "title": "July jobs report shows surprise job losses",
+          "summary": "U.S. July jobs report shows unexpected job losses, signaling a softening labor market.",
+          "category": "Macro",
           "importance": "Medium",
           "affectedMarkets": [
             "Equities",
-            "Technology"
+            "Rates"
           ],
-          "whyItMatters": "AI spending bolsters equity sentiment amid macro uncertainty.",
-          "marketImpact": "Positive for U.S. equities and AI/tech sectors",
+          "whyItMatters": "Weaker labor data may reduce Fed rate‑hike expectations and support equities.",
+          "marketImpact": "Positive for equities; negative for bond yields",
           "confidence": 0.8,
-          "source": "LGT Private Banking",
-          "publishedAt": "2026-07-23"
+          "source": "Investopedia",
+          "publishedAt": "2026-08-09T11:52:00Z"
         }
       ],
-      "timestamp": "2026-08-10T19:08:35.890Z",
-      "analysisDuration": 7583
+      "timestamp": "2026-08-10T19:39:09.163Z",
+      "analysisDuration": 6473
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-10T19:08:43.474Z"
+    "updatedAt": "2026-08-10T19:39:15.636Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -447,11 +457,11 @@
   "portfolio-manager": {
     "moduleName": "portfolio-manager",
     "result": {
-      "updatedAt": "2026-08-10T18:37:58.294Z",
+      "updatedAt": "2026-08-10T19:38:09.629Z",
       "environment": "sim",
       "baseCurrency": "EUR",
-      "totalValue": 1000036.95,
-      "totalAvailableCash": 995739.09,
+      "totalValue": 1000041.85,
+      "totalAvailableCash": 995739.22,
       "totalUnrealizedProfitLoss": 0,
       "accounts": [
         {
@@ -460,9 +470,9 @@
           "accountName": "20885406",
           "accountType": "Normal",
           "currency": "EUR",
-          "availableCash": 995739.09,
-          "accountValue": 1000036.95,
-          "unrealizedProfitLoss": 352.15999999999997,
+          "availableCash": 995739.22,
+          "accountValue": 1000041.85,
+          "unrealizedProfitLoss": 355.64,
           "positions": [
             {
               "id": "15629__Share",
@@ -499,7 +509,7 @@
               "currentPrice": 0,
               "marketValue": 0,
               "marketValueBaseCurrency": 0,
-              "profitLoss": -3.04,
+              "profitLoss": 0.44,
               "dayChangePercent": 0,
               "priceDelayMinutes": 15,
               "isMarketOpen": true
@@ -510,7 +520,7 @@
       "isMockData": false
     },
     "createdAt": "2026-08-01T15:14:57.937Z",
-    "updatedAt": "2026-08-10T18:37:58.304Z"
+    "updatedAt": "2026-08-10T19:38:09.646Z"
   },
   "portfolio-analyzer": {
     "moduleName": "portfolio-analyzer",
@@ -2769,8 +2779,8 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "High",
-      "executiveSummary": "Two significant developments have emerged since the last analysis: Serve Robotics reported disappointing Q2 results with a sharp guidance cut, and geopolitical tensions around the Strait of Hormuz remain unresolved as Iran refuses to reopen it without concessions. Both warrant immediate attention.",
-      "headline": "Serve Robotics Q2 miss and guidance cut; Strait of Hormuz remains closed amid stalled reopening talks",
+      "executiveSummary": "Since the last analysis (~18 minutes ago), two significant developments have emerged that warrant immediate attention: Serve Robotics has reported Q2 results that missed expectations and slashed its full‑year guidance, and Middle East geopolitical tensions have escalated with renewed attacks on energy infrastructure, reinforcing supply‑side risks.",
+      "headline": "Serve Robotics Q2 miss and guidance cut; renewed Middle East energy infrastructure attacks escalate geopolitical risk",
       "alerts": [
         {
           "title": "Serve Robotics Q2 earnings miss and full‑year guidance cut",
@@ -2779,49 +2789,83 @@
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "Serve Robotics Inc."
+            "SERV:xnas"
           ],
-          "summary": "Serve Robotics reported Q2 revenue of approximately $3.24M, missing consensus (~$3.49M), and slashed full‑year 2026 revenue guidance to $9M–$10M from implied >$12M.",
-          "whyItMatters": "The miss and guidance cut materially weaken the growth outlook and heighten execution and funding risks for the company.",
+          "summary": "Serve Robotics reported Q2 revenue of approximately $3.24M, missing consensus (~$3.49M), and slashed its full‑year 2026 revenue guidance to $9M–$10M from prior implied run‑rate above $12M.",
+          "whyItMatters": "This materially weakens the growth outlook, increases execution risk, and may pressure valuation and investor sentiment.",
           "recommendedAttention": "Review",
           "sourceType": "Web",
-          "status": "New"
+          "status": "Updated"
         },
         {
-          "title": "Strait of Hormuz remains closed as Iran demands concessions",
+          "title": "Renewed Middle East energy infrastructure attacks escalate supply‑side risk",
           "category": "Geopolitical",
           "importance": "High",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "Novo Nordisk B A/S",
-            "Serve Robotics Inc."
+            "NOVOb:xcse",
+            "SERV:xnas"
           ],
-          "summary": "Iran continues to refuse reopening the Strait of Hormuz unless U.S. meets demands, prolonging energy supply disruption and inflation pressure.",
-          "whyItMatters": "Persistent closure sustains elevated oil prices and inflation risk, which could impact central bank policy and market sentiment across sectors.",
+          "summary": "New attacks on Saudi energy infrastructure (e.g., Aramco refinery fire) and continued Houthi strikes on shipping routes have intensified regional instability and energy supply disruption.",
+          "whyItMatters": "Elevated energy volatility may fuel inflation, impact global markets, and affect both healthcare and tech‑growth sentiment.",
           "recommendedAttention": "Monitor",
           "sourceType": "NewsMonitor",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Serve Robotics Q3 guidance and cash‑burn commentary",
-        "U.S. CPI data (Aug 12) for inflation trajectory amid energy shock"
+        "Serve Robotics management commentary on revised guidance and cost control measures",
+        "Developments in Middle East conflict and energy supply disruptions ahead of U.S. CPI data"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-10T18:55:23.761Z",
-      "analysisDuration": 6095,
-      "lastCheckedAt": "2026-08-10T19:25:57.901Z",
-      "lastMeaningfulUpdateAt": "2026-08-10T18:55:23.761Z",
-      "noNewDevelopmentsSinceLastCheck": true
+      "timestamp": "2026-08-10T19:41:09.244Z",
+      "analysisDuration": 5867,
+      "lastCheckedAt": "2026-08-10T19:41:09.244Z",
+      "lastMeaningfulUpdateAt": "2026-08-10T19:41:09.244Z",
+      "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-10T19:26:03.997Z"
+    "updatedAt": "2026-08-10T19:41:15.112Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-10T19:41:09.244Z",
+          "overallAlertLevel": "High",
+          "headline": "Serve Robotics Q2 miss and guidance cut; renewed Middle East energy infrastructure attacks escalate geopolitical risk",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Serve Robotics Q2 earnings miss and full‑year guidance cut",
+              "category": "Company",
+              "importance": "High",
+              "summary": "Serve Robotics reported Q2 revenue of approximately $3.24M, missing consensus (~$3.49M), and slashed its full‑year 2026 revenue guidance to $9M–$10M from prior implied run‑rate above $12M.",
+              "normalizedKey": "serve robotics q2 earnings miss and full‑year guidance cut|company"
+            },
+            {
+              "title": "Renewed Middle East energy infrastructure attacks escalate supply‑side risk",
+              "category": "Geopolitical",
+              "importance": "High",
+              "summary": "New attacks on Saudi energy infrastructure (e.g., Aramco refinery fire) and continued Houthi strikes on shipping routes have intensified regional instability and energy supply disruption.",
+              "normalizedKey": "renewed middle east energy infrastructure attacks escalate supply‑side risk|geopolitical"
+            }
+          ],
+          "newsIds": [
+            "middle-east-energy-tensions-2026-08-10",
+            "china-inflation-cools-2026-08-10",
+            "us-july-jobs-softening-2026-08-09"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026",
+            "FOMC Minutes – July 28–29 Meeting",
+            "U.S. Import and Export Price Indexes – July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-10T19:25:57.901Z",
           "overallAlertLevel": "High",
@@ -3333,43 +3377,11 @@
             "U.S. Producer Price Index (PPI) – July"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-10T08:52:57.395Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk raises guidance, announces dividend and Germany launch; Middle East energy tensions persist",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "Novo Nordisk raises 2026 guidance, declares interim dividend, and confirms Germany launch of Wegovy pill",
-              "category": "Company",
-              "importance": "High",
-              "summary": "Novo Nordisk reported Q2 2026 adjusted sales up 7% and adjusted operating profit up 11% at CER, raised full‑year adjusted sales and operating profit guidance (to 0% to –6% at CER), announced an interim dividend (DKK 3.75 per share; ex‑dividend August 14, record August 17, payment August 18), and confirmed imminent launch of the Wegovy pill in Germany.",
-              "normalizedKey": "novo nordisk raises 2026 guidance, declares interim dividend, and confirms germany launch of wegovy pill|company"
-            },
-            {
-              "title": "Middle East conflict continues to fuel energy‑inflation risks",
-              "category": "Geopolitical",
-              "importance": "Medium",
-              "summary": "Ongoing conflict in the Middle East continues to disrupt energy markets, sustaining inflation and volatility risks.",
-              "normalizedKey": "middle east conflict continues to fuel energy‑inflation risks|geopolitical"
-            }
-          ],
-          "newsIds": [
-            "middle-east-energy‑inflation‑2026-08-10",
-            "markets‑await‑us‑cpi‑2026-08-10",
-            "ai‑earnings‑infrastructure‑2026-08-05"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (CPI) – July",
-            "U.S. Producer Price Index (PPI) – July"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-10T19:26:04.007Z"
+    "updatedAt": "2026-08-10T19:41:15.243Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -12058,6 +12070,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-10T19:38:39.159Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-10T19:08:05.933Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -12240,7 +12258,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-10T19:08:10.939Z"
+    "updatedAt": "2026-08-10T19:38:45.838Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
@@ -13136,11 +13154,11 @@
   "portfolio-manager-v2": {
     "moduleName": "portfolio-manager-v2",
     "result": {
-      "generatedAt": "2026-08-10T11:28:05.108Z",
-      "durationMs": 6406,
-      "snapshotUpdatedAt": "2026-08-10T11:27:58.643Z",
+      "generatedAt": "2026-08-10T19:38:15.843Z",
+      "durationMs": 6185,
+      "snapshotUpdatedAt": "2026-08-10T19:38:09.629Z",
       "health": {
-        "overall": 60,
+        "overall": 62,
         "grade": "C",
         "subScores": [
           {
@@ -13157,7 +13175,7 @@
           },
           {
             "name": "Sector Balance",
-            "score": 13,
+            "score": 24,
             "weight": 0.11,
             "reason": "Sector data available for only 0% of portfolio — score is low-confidence.",
             "lowConfidence": true
@@ -13172,7 +13190,7 @@
             "name": "Cash vs Target Alignment",
             "score": 5,
             "weight": 0.11,
-            "reason": "Cash 99.6% is 63.6pp above CIO target 36.0%."
+            "reason": "Cash 99.6% is 66.6pp above CIO target 33.0%."
           },
           {
             "name": "Event Concentration",
@@ -13184,7 +13202,7 @@
             "name": "Risk Concentration",
             "score": 95,
             "weight": 0.11,
-            "reason": "1 high-severity risk(s) identified but none concentrated in a single holding."
+            "reason": "3 high-severity risk(s) identified but none concentrated in a single holding."
           },
           {
             "name": "Conviction Alignment",
@@ -13201,32 +13219,32 @@
           },
           {
             "name": "Diversification Quality",
-            "score": 25,
+            "score": 42,
             "weight": 0.05,
-            "reason": "Only 1 position — highly concentrated."
+            "reason": "Only 2 positions — highly concentrated."
           }
         ],
-        "computedAt": "2026-08-10T11:28:05.108Z",
+        "computedAt": "2026-08-10T19:38:15.843Z",
         "classifiedPositionPercent": 0,
         "unknownSectorPercent": 0,
         "sectorCoverageConfidence": "Low"
       },
       "target": {
-        "generatedAt": "2026-08-10T11:28:05.105Z",
-        "totalEquityTargetPercent": 64,
-        "cashTargetPercent": 36,
+        "generatedAt": "2026-08-10T19:38:15.839Z",
+        "totalEquityTargetPercent": 67,
+        "cashTargetPercent": 33,
         "allocations": [
           {
             "ticker": "NOVOB:XCSE",
             "company": "Novo Nordisk B A/S",
             "role": "CoreHolding",
             "targetPercent": 20,
-            "minPercent": 13.3,
+            "minPercent": 14.4,
             "maxPercent": 20,
-            "rationale": "Strong Q2 results and EU approval of Wegovy® pill support growth, despite competitive pressures.",
+            "rationale": "Strong fundamentals, raised guidance, and upcoming regulatory and earnings catalysts support a core holding position.",
             "conviction": "High",
             "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "Novo Nordisk's strong fundamentals and strategic positioning justify a core holding.",
+            "reasonForStatus": "Novo Nordisk is rated as a Buy with high confidence and no blocking factors.",
             "blockingFactors": [],
             "supportingModules": [
               "CompanyMonitor",
@@ -13234,108 +13252,91 @@
             ]
           },
           {
-            "ticker": "ENI",
-            "company": "Eni S.p.A.",
-            "role": "CyclicalExposure",
-            "targetPercent": 10,
-            "minPercent": 5,
-            "maxPercent": 10,
-            "rationale": "Strong Q2 results and increased shareholder returns position Eni well amid energy sector strength.",
+            "ticker": "AVGO",
+            "company": "Broadcom Inc.",
+            "role": "GrowthCore",
+            "targetPercent": 15,
+            "minPercent": 9,
+            "maxPercent": 15,
+            "rationale": "Broadcom benefits from AI infrastructure capex and enterprise demand, with upcoming earnings as a potential catalyst.",
             "conviction": "Medium",
             "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "Eni's performance and sector outlook align with strategic energy exposure.",
+            "reasonForStatus": "Broadcom is a top candidate with a strong investment thesis and no blocking factors.",
             "blockingFactors": [],
             "supportingModules": [
               "OpportunityFinder",
-              "SectorMonitor"
+              "CompanyMonitor"
             ]
           },
           {
-            "ticker": "HAL",
-            "company": "Halliburton Company",
+            "ticker": "JPM",
+            "company": "JPMorgan Chase & Co.",
+            "role": "Defensive",
+            "targetPercent": 12,
+            "minPercent": 5.4,
+            "maxPercent": 12,
+            "rationale": "JPMorgan benefits from net interest margin expansion and strong capital, providing defensive exposure in financials.",
+            "conviction": "Medium",
+            "allocationStatus": "StrategicTarget",
+            "reasonForStatus": "JPMorgan is rated as a Buy with high confidence and no blocking factors.",
+            "blockingFactors": [],
+            "supportingModules": [
+              "OpportunityFinder",
+              "CompanyMonitor"
+            ]
+          },
+          {
+            "ticker": "CSCO",
+            "company": "Cisco Systems, Inc.",
             "role": "SectorPlay",
             "targetPercent": 8,
-            "minPercent": 3.3,
+            "minPercent": 3.6,
             "maxPercent": 8,
-            "rationale": "Capital return strength and benefits from elevated oil prices support Halliburton's inclusion.",
+            "rationale": "Cisco benefits from enterprise IT spending and network upgrades, with earnings providing visibility into demand trends.",
             "conviction": "Medium",
             "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "Halliburton's alignment with energy sector trends supports its role as a sector play.",
+            "reasonForStatus": "Cisco is a top candidate with a strong investment thesis and no blocking factors.",
             "blockingFactors": [],
             "supportingModules": [
               "OpportunityFinder",
-              "SectorMonitor"
+              "CompanyMonitor"
             ]
           },
           {
-            "ticker": "BKR",
-            "company": "Baker Hughes Company",
-            "role": "SectorPlay",
-            "targetPercent": 8,
-            "minPercent": 3.3,
-            "maxPercent": 8,
-            "rationale": "Strong demand across energy and industrial markets supports Baker Hughes' growth potential.",
+            "ticker": "CAH",
+            "company": "Cardinal Health, Inc.",
+            "role": "IncomeDividend",
+            "targetPercent": 12,
+            "minPercent": 5.4,
+            "maxPercent": 12,
+            "rationale": "Cardinal Health offers defensive healthcare exposure with a raised EPS guidance and strong distribution business.",
             "conviction": "Medium",
             "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "Baker Hughes' strategic positioning in energy services aligns with sector opportunities.",
+            "reasonForStatus": "Cardinal Health is a top candidate with a strong investment thesis and no blocking factors.",
             "blockingFactors": [],
             "supportingModules": [
               "OpportunityFinder",
-              "SectorMonitor"
-            ]
-          },
-          {
-            "ticker": "SLB",
-            "company": "SLB (Schlumberger Limited)",
-            "role": "SectorPlay",
-            "targetPercent": 8,
-            "minPercent": 3.3,
-            "maxPercent": 8,
-            "rationale": "Advancements in digital AI energy solutions enhance SLB's growth narrative.",
-            "conviction": "Medium",
-            "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "SLB's innovative approach and sector alignment support its inclusion as a sector play.",
-            "blockingFactors": [],
-            "supportingModules": [
-              "OpportunityFinder",
-              "SectorMonitor"
-            ]
-          },
-          {
-            "ticker": "EQT",
-            "company": "EQT Corporation",
-            "role": "CyclicalExposure",
-            "targetPercent": 10,
-            "minPercent": 5,
-            "maxPercent": 10,
-            "rationale": "EQT's LNG agreements and energy security demand position it well for growth.",
-            "conviction": "Medium",
-            "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "EQT's strategic positioning in LNG aligns with energy sector opportunities.",
-            "blockingFactors": [],
-            "supportingModules": [
-              "OpportunityFinder",
-              "SectorMonitor"
+              "CompanyMonitor"
             ]
           }
         ],
-        "strategicRationale": "The portfolio aims to balance growth potential with defensive positioning, leveraging opportunities in healthcare and energy sectors while maintaining liquidity for flexibility amid macroeconomic uncertainties.",
+        "strategicRationale": "The portfolio is restructured to balance strategic flexibility with targeted exposure to high-conviction opportunities in healthcare, technology, and financials, while maintaining a substantial cash reserve to navigate potential macroeconomic volatility.",
         "keyAssumptions": [
-          "Macroeconomic volatility will persist, requiring a cautious approach.",
-          "Healthcare sector remains stable with defensive demand.",
-          "Energy sector benefits from elevated oil prices and geopolitical tensions.",
-          "Currency risks are manageable with diversified exposure.",
-          "Competitive pressures in healthcare are offset by innovation and market expansion."
+          "Geopolitical tensions will continue to affect energy prices and inflation.",
+          "Healthcare and technology sectors will remain resilient amid macro uncertainties.",
+          "Financials will benefit from rising interest rates and strong capital positions.",
+          "Sector rotation will favor cyclicals and defensives over mega-cap tech.",
+          "Market volatility will persist, necessitating a flexible cash position."
         ]
       },
       "drift": [
         {
           "type": "CashTooHigh",
           "currentPercent": 99.6,
-          "targetPercent": 36,
-          "deviationPercent": 63.6,
+          "targetPercent": 33,
+          "deviationPercent": 66.6,
           "severity": "High",
-          "action": "Deploy 63.6% of portfolio from cash into positions"
+          "action": "Deploy 66.6% of portfolio from cash into positions"
         },
         {
           "type": "Missing",
@@ -13357,129 +13358,72 @@
         },
         {
           "type": "Missing",
-          "ticker": "ENI",
+          "ticker": "AVGO",
           "currentPercent": 0,
-          "targetPercent": 10,
-          "deviationPercent": -10,
+          "targetPercent": 15,
+          "deviationPercent": -15,
           "severity": "High",
-          "action": "Initiate position in ENI — target allocation 10.0%"
+          "action": "Initiate position in AVGO — target allocation 15.0%"
         },
         {
           "type": "Missing",
-          "ticker": "EQT",
+          "ticker": "JPM",
           "currentPercent": 0,
-          "targetPercent": 10,
-          "deviationPercent": -10,
+          "targetPercent": 12,
+          "deviationPercent": -12,
           "severity": "High",
-          "action": "Initiate position in EQT — target allocation 10.0%"
+          "action": "Initiate position in JPM — target allocation 12.0%"
         },
         {
           "type": "Missing",
-          "ticker": "HAL",
+          "ticker": "CAH",
+          "currentPercent": 0,
+          "targetPercent": 12,
+          "deviationPercent": -12,
+          "severity": "High",
+          "action": "Initiate position in CAH — target allocation 12.0%"
+        },
+        {
+          "type": "Missing",
+          "ticker": "CSCO",
           "currentPercent": 0,
           "targetPercent": 8,
           "deviationPercent": -8,
           "severity": "Medium",
-          "action": "Initiate position in HAL — target allocation 8.0%"
-        },
-        {
-          "type": "Missing",
-          "ticker": "BKR",
-          "currentPercent": 0,
-          "targetPercent": 8,
-          "deviationPercent": -8,
-          "severity": "Medium",
-          "action": "Initiate position in BKR — target allocation 8.0%"
-        },
-        {
-          "type": "Missing",
-          "ticker": "SLB",
-          "currentPercent": 0,
-          "targetPercent": 8,
-          "deviationPercent": -8,
-          "severity": "Medium",
-          "action": "Initiate position in SLB — target allocation 8.0%"
+          "action": "Initiate position in CSCO — target allocation 8.0%"
         }
       ],
       "capitalAllocation": {
-        "availableCashBase": 996119,
-        "totalPortfolioBase": 1000006,
+        "availableCashBase": 995739,
+        "totalPortfolioBase": 1000042,
         "cashPercent": 99.6,
-        "cashTargetPercent": 36,
-        "deployableCashBase": 636117,
+        "cashTargetPercent": 33,
+        "deployableCashBase": 665725,
         "items": [
           {
-            "ticker": "EQT",
-            "company": "EQT Corporation",
-            "role": "CyclicalExposure",
+            "ticker": "CAH",
+            "company": "Cardinal Health, Inc.",
+            "role": "IncomeDividend",
             "currentPercent": 0,
-            "targetPercent": 10,
-            "gapPercent": 10,
-            "suggestedAmountBase": 100001,
+            "targetPercent": 12,
+            "gapPercent": 12,
+            "suggestedAmountBase": 120005,
             "priority": "High",
-            "rationale": "EQT is a target position with no current holding — open a new position",
-            "allocationStatus": "StrategicTarget"
-          },
-          {
-            "ticker": "BKR",
-            "company": "Baker Hughes Company",
-            "role": "SectorPlay",
-            "currentPercent": 0,
-            "targetPercent": 8,
-            "gapPercent": 8,
-            "suggestedAmountBase": 80001,
-            "priority": "High",
-            "rationale": "BKR is a target position with no current holding — open a new position",
-            "allocationStatus": "StrategicTarget"
-          },
-          {
-            "ticker": "SLB",
-            "company": "SLB (Schlumberger Limited)",
-            "role": "SectorPlay",
-            "currentPercent": 0,
-            "targetPercent": 8,
-            "gapPercent": 8,
-            "suggestedAmountBase": 80001,
-            "priority": "High",
-            "rationale": "SLB is a target position with no current holding — open a new position",
+            "rationale": "CAH is a target position with no current holding — open a new position",
             "allocationStatus": "StrategicTarget"
           }
         ],
         "actionableItems": [
           {
-            "ticker": "EQT",
-            "company": "EQT Corporation",
-            "role": "CyclicalExposure",
+            "ticker": "CAH",
+            "company": "Cardinal Health, Inc.",
+            "role": "IncomeDividend",
             "currentPercent": 0,
-            "targetPercent": 10,
-            "gapPercent": 10,
-            "suggestedAmountBase": 100001,
+            "targetPercent": 12,
+            "gapPercent": 12,
+            "suggestedAmountBase": 120005,
             "priority": "High",
-            "rationale": "EQT is a target position with no current holding — open a new position",
-            "allocationStatus": "StrategicTarget"
-          },
-          {
-            "ticker": "BKR",
-            "company": "Baker Hughes Company",
-            "role": "SectorPlay",
-            "currentPercent": 0,
-            "targetPercent": 8,
-            "gapPercent": 8,
-            "suggestedAmountBase": 80001,
-            "priority": "High",
-            "rationale": "BKR is a target position with no current holding — open a new position",
-            "allocationStatus": "StrategicTarget"
-          },
-          {
-            "ticker": "SLB",
-            "company": "SLB (Schlumberger Limited)",
-            "role": "SectorPlay",
-            "currentPercent": 0,
-            "targetPercent": 8,
-            "gapPercent": 8,
-            "suggestedAmountBase": 80001,
-            "priority": "High",
-            "rationale": "SLB is a target position with no current holding — open a new position",
+            "rationale": "CAH is a target position with no current holding — open a new position",
             "allocationStatus": "StrategicTarget"
           }
         ],
@@ -13499,12 +13443,12 @@
             "blockingReason": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview."
           },
           {
-            "ticker": "ENI",
-            "company": "Eni S.p.A.",
-            "role": "CyclicalExposure",
+            "ticker": "AVGO",
+            "company": "Broadcom Inc.",
+            "role": "GrowthCore",
             "currentPercent": 0,
-            "targetPercent": 10,
-            "gapPercent": 10,
+            "targetPercent": 15,
+            "gapPercent": 15,
             "suggestedAmountBase": 0,
             "priority": "Low",
             "rationale": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview.",
@@ -13512,8 +13456,21 @@
             "blockingReason": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview."
           },
           {
-            "ticker": "HAL",
-            "company": "Halliburton Company",
+            "ticker": "JPM",
+            "company": "JPMorgan Chase & Co.",
+            "role": "Defensive",
+            "currentPercent": 0,
+            "targetPercent": 12,
+            "gapPercent": 12,
+            "suggestedAmountBase": 0,
+            "priority": "Low",
+            "rationale": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview.",
+            "allocationStatus": "Provisional",
+            "blockingReason": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview."
+          },
+          {
+            "ticker": "CSCO",
+            "company": "Cisco Systems, Inc.",
             "role": "SectorPlay",
             "currentPercent": 0,
             "targetPercent": 8,
@@ -13526,164 +13483,132 @@
           }
         ],
         "excludedItems": [],
-        "totalSuggestedDeploymentBase": 260003,
-        "residualCashAfterDeploymentBase": 736116,
-        "computedAt": "2026-08-10T11:28:05.106Z"
+        "totalSuggestedDeploymentBase": 120005,
+        "residualCashAfterDeploymentBase": 875734,
+        "computedAt": "2026-08-10T19:38:15.840Z"
       },
       "replacements": [
         {
-          "holdingTicker": "NOVOB:XCSE",
-          "holdingCompany": "Novo Nordisk B A/S",
+          "holdingTicker": "SERV:XNAS",
+          "holdingCompany": "Serve Robotics Inc.",
           "holdingCurrentPercent": 0,
-          "holdingScore": 55,
-          "holdingCaseStrength": 65,
-          "holdingInvestmentView": "Buy",
-          "holdingThesisDirection": "Medium",
-          "candidateTicker": "ENI",
-          "candidateCompany": "Eni S.p.A.",
-          "candidateOverallScore": 88,
-          "scoreDelta": 33,
-          "rationale": "NOVOB:XCSE (Buy) scores 55; ENI scores 88 (+33). Q2 2026 results exceeded expectations with 11% underlying production growth and raised guidance.. [Provisional: Missing Company Monitor for candidate ENI]",
-          "priority": "Medium",
-          "isProvisional": true,
-          "provisionalReasons": [
-            "Missing Company Monitor for candidate ENI",
-            "Candidate ENI Trade Decision is not ReadyForReview (readiness: Informational)"
-          ]
-        },
-        {
-          "holdingTicker": "NOVOB:XCSE",
-          "holdingCompany": "Novo Nordisk B A/S",
-          "holdingCurrentPercent": 0,
-          "holdingScore": 55,
-          "holdingCaseStrength": 65,
-          "holdingInvestmentView": "Buy",
-          "holdingThesisDirection": "Medium",
-          "candidateTicker": "HAL",
-          "candidateCompany": "Halliburton Company",
-          "candidateOverallScore": 82,
+          "holdingScore": 53,
+          "holdingCaseStrength": 55,
+          "holdingInvestmentView": "Watch",
+          "candidateTicker": "AVGO",
+          "candidateCompany": "Broadcom Inc.",
+          "candidateOverallScore": 80,
+          "candidateCaseStrength": 80,
+          "candidateInvestmentView": "Buy",
           "scoreDelta": 27,
-          "rationale": "NOVOB:XCSE (Buy) scores 55; HAL scores 82 (+27). Q2 2026 free cash flow of $668 million and $200 million in buybacks signal capital return strength.. [Provisional: Missing Company Monitor for candidate HAL]",
+          "rationale": "SERV:XNAS (Watch) scores 53; AVGO (Buy) scores 80 (+27). Catalyst: Q3 2026 earnings report. Broadcom benefits from AI infrastructure capex and enterprise demand.. [Provisional: Candidate AVGO Trade Decision is not ReadyForReview (readiness: Informational)]",
           "priority": "Medium",
           "isProvisional": true,
           "provisionalReasons": [
-            "Missing Company Monitor for candidate HAL",
-            "Candidate HAL Trade Decision is not ReadyForReview (readiness: Informational)"
+            "Candidate AVGO Trade Decision is not ReadyForReview (readiness: Informational)"
           ]
         },
         {
-          "holdingTicker": "NOVOB:XCSE",
-          "holdingCompany": "Novo Nordisk B A/S",
+          "holdingTicker": "SERV:XNAS",
+          "holdingCompany": "Serve Robotics Inc.",
           "holdingCurrentPercent": 0,
-          "holdingScore": 55,
-          "holdingCaseStrength": 65,
-          "holdingInvestmentView": "Buy",
-          "holdingThesisDirection": "Medium",
-          "candidateTicker": "BKR",
-          "candidateCompany": "Baker Hughes Company",
-          "candidateOverallScore": 78,
-          "scoreDelta": 23,
-          "rationale": "NOVOB:XCSE (Buy) scores 55; BKR scores 78 (+23). Q2 2026 raised full-year IET order guidance and expanded Horizon 2 orders to >$45 billion.. [Provisional: Missing Company Monitor for candidate BKR]",
+          "holdingScore": 53,
+          "holdingCaseStrength": 55,
+          "holdingInvestmentView": "Watch",
+          "candidateTicker": "JPM",
+          "candidateCompany": "JPMorgan Chase & Co.",
+          "candidateOverallScore": 74,
+          "candidateCaseStrength": 83,
+          "candidateInvestmentView": "Buy",
+          "scoreDelta": 26,
+          "rationale": "SERV:XNAS (Watch) scores 53; JPM (Buy) scores 79 (+26). Catalyst: Q3 2026 earnings report. JPMorgan benefits from net interest margin expansion and strong capital.. [Provisional: Candidate JPM Trade Decision is not ReadyForReview (readiness: Informational)]",
           "priority": "Low",
           "isProvisional": true,
           "provisionalReasons": [
-            "Missing Company Monitor for candidate BKR",
-            "Missing Trade Decision validation for candidate BKR"
+            "Candidate JPM Trade Decision is not ReadyForReview (readiness: Informational)"
           ]
         },
         {
-          "holdingTicker": "NOVOB:XCSE",
-          "holdingCompany": "Novo Nordisk B A/S",
+          "holdingTicker": "SERV:XNAS",
+          "holdingCompany": "Serve Robotics Inc.",
           "holdingCurrentPercent": 0,
-          "holdingScore": 55,
-          "holdingCaseStrength": 65,
-          "holdingInvestmentView": "Buy",
-          "holdingThesisDirection": "Medium",
-          "candidateTicker": "SLB",
-          "candidateCompany": "SLB (Schlumberger Limited)",
+          "holdingScore": 53,
+          "holdingCaseStrength": 55,
+          "holdingInvestmentView": "Watch",
+          "candidateTicker": "CSCO",
+          "candidateCompany": "Cisco Systems, Inc.",
           "candidateOverallScore": 75,
-          "scoreDelta": 20,
-          "rationale": "NOVOB:XCSE (Buy) scores 55; SLB scores 75 (+20). Declared quarterly dividend payable October 8, 2026, and advancing digital AI energy solutions.. [Provisional: Missing Company Monitor for candidate SLB]",
+          "candidateCaseStrength": 78,
+          "candidateInvestmentView": "Buy",
+          "scoreDelta": 24,
+          "rationale": "SERV:XNAS (Watch) scores 53; CSCO (Buy) scores 77 (+24). Catalyst: Q4 FY2026 earnings report. Cisco benefits from enterprise IT spending and network upgrades.. [Provisional: Candidate CSCO Trade Decision is not ReadyForReview (readiness: Informational)]",
           "priority": "Low",
           "isProvisional": true,
           "provisionalReasons": [
-            "Missing Company Monitor for candidate SLB",
-            "Missing Trade Decision validation for candidate SLB"
+            "Candidate CSCO Trade Decision is not ReadyForReview (readiness: Informational)"
           ]
         }
       ],
       "changes": [
         {
           "type": "RemovedPosition",
-          "ticker": "DCI",
-          "description": "DCI (Donaldson Company, Inc.) removed from target (was 7.2%)",
-          "previousValue": 7.2
+          "ticker": "BKR",
+          "description": "BKR (Baker Hughes Company) removed from target (was 8.0%)",
+          "previousValue": 8
         },
         {
           "type": "RemovedPosition",
-          "ticker": "MSFT",
-          "description": "MSFT (Microsoft Corp) removed from target (was 20.0%)",
-          "previousValue": 20
-        },
-        {
-          "type": "RemovedPosition",
-          "ticker": "NOVO B",
-          "description": "NOVO B (Novo Nordisk B) removed from target (was 20.0%)",
-          "previousValue": 20
-        },
-        {
-          "type": "RemovedPosition",
-          "ticker": "RJF",
-          "description": "RJF (Raymond James Financial) removed from target (was 10.0%)",
+          "ticker": "ENI",
+          "description": "ENI (Eni S.p.A.) removed from target (was 10.0%)",
           "previousValue": 10
         },
         {
           "type": "RemovedPosition",
-          "ticker": "SERV",
-          "description": "SERV (Serve Robotics Inc) removed from target (was 3.6%)",
-          "previousValue": 3.6
-        },
-        {
-          "type": "AddedPosition",
-          "ticker": "BKR",
-          "description": "BKR (Baker Hughes Company) added to target at 8.0% as SectorPlay",
-          "newValue": 8
-        },
-        {
-          "type": "AddedPosition",
-          "ticker": "ENI",
-          "description": "ENI (Eni S.p.A.) added to target at 10.0% as CyclicalExposure",
-          "newValue": 10
-        },
-        {
-          "type": "AddedPosition",
           "ticker": "EQT",
-          "description": "EQT (EQT Corporation) added to target at 10.0% as CyclicalExposure",
-          "newValue": 10
+          "description": "EQT (EQT Corporation) removed from target (was 10.0%)",
+          "previousValue": 10
         },
         {
-          "type": "AddedPosition",
+          "type": "RemovedPosition",
           "ticker": "HAL",
-          "description": "HAL (Halliburton Company) added to target at 8.0% as SectorPlay",
-          "newValue": 8
+          "description": "HAL (Halliburton Company) removed from target (was 8.0%)",
+          "previousValue": 8
         },
         {
-          "type": "AddedPosition",
-          "ticker": "NOVOB:XCSE",
-          "description": "NOVOB:XCSE (Novo Nordisk B A/S) added to target at 20.0% as CoreHolding",
-          "newValue": 20
-        },
-        {
-          "type": "AddedPosition",
+          "type": "RemovedPosition",
           "ticker": "SLB",
-          "description": "SLB (SLB (Schlumberger Limited)) added to target at 8.0% as SectorPlay",
+          "description": "SLB (SLB (Schlumberger Limited)) removed from target (was 8.0%)",
+          "previousValue": 8
+        },
+        {
+          "type": "AddedPosition",
+          "ticker": "AVGO",
+          "description": "AVGO (Broadcom Inc.) added to target at 15.0% as GrowthCore",
+          "newValue": 15
+        },
+        {
+          "type": "AddedPosition",
+          "ticker": "CAH",
+          "description": "CAH (Cardinal Health, Inc.) added to target at 12.0% as IncomeDividend",
+          "newValue": 12
+        },
+        {
+          "type": "AddedPosition",
+          "ticker": "CSCO",
+          "description": "CSCO (Cisco Systems, Inc.) added to target at 8.0% as SectorPlay",
           "newValue": 8
+        },
+        {
+          "type": "AddedPosition",
+          "ticker": "JPM",
+          "description": "JPM (JPMorgan Chase & Co.) added to target at 12.0% as Defensive",
+          "newValue": 12
         },
         {
           "type": "CashTargetChanged",
-          "description": "Cash target lowered from 39.2% to 36.0%",
-          "previousValue": 39.2,
-          "newValue": 36
+          "description": "Cash target lowered from 36.0% to 33.0%",
+          "previousValue": 36,
+          "newValue": 33
         }
       ],
       "provenance": {
@@ -13695,7 +13620,12 @@
           "SectorMonitor",
           "MarketAlerts",
           "MarketMonitor",
-          "CompanyMonitor:NOVOB:XCSE"
+          "CompanyMonitor:SERV:XNAS",
+          "CompanyMonitor:NOVOB:XCSE",
+          "CompanyMonitor:JPM",
+          "CompanyMonitor:HD",
+          "CompanyMonitor:CSCO",
+          "CompanyMonitor:AVGO"
         ],
         "sourceUpdatedAt": {
           "PortfolioAnalyzer": "",
@@ -13705,7 +13635,12 @@
           "SectorMonitor": "",
           "MarketAlerts": "",
           "MarketMonitor": "",
-          "CompanyMonitor:NOVOB:XCSE": ""
+          "CompanyMonitor:SERV:XNAS": "",
+          "CompanyMonitor:NOVOB:XCSE": "",
+          "CompanyMonitor:JPM": "",
+          "CompanyMonitor:HD": "",
+          "CompanyMonitor:CSCO": "",
+          "CompanyMonitor:AVGO": ""
         },
         "staleSources": [
           "PortfolioAnalyzer",
@@ -13715,19 +13650,78 @@
           "SectorMonitor",
           "MarketAlerts",
           "MarketMonitor",
-          "CompanyMonitor:NOVOB:XCSE"
+          "CompanyMonitor:SERV:XNAS",
+          "CompanyMonitor:NOVOB:XCSE",
+          "CompanyMonitor:JPM",
+          "CompanyMonitor:HD",
+          "CompanyMonitor:CSCO",
+          "CompanyMonitor:AVGO"
         ],
         "missingSources": [],
         "targetConfidence": "Low",
-        "inputFingerprint": "8f5d6468"
+        "inputFingerprint": "7ef82c98"
       }
     },
     "createdAt": "2026-08-09T20:32:59.137Z",
-    "updatedAt": "2026-08-10T11:28:05.108Z"
+    "updatedAt": "2026-08-10T19:38:15.843Z"
   },
   "portfolio-manager-v2-history": {
     "moduleName": "portfolio-manager-v2-history",
     "result": [
+      {
+        "snapshotAt": "2026-08-10T19:38:15.843Z",
+        "healthOverall": 62,
+        "healthGrade": "C",
+        "driftItemCount": 7,
+        "highSeverityDriftCount": 6,
+        "cashPercent": 99.6,
+        "cashTargetPercent": 33,
+        "totalValue": 1000041.85,
+        "positionCount": 2,
+        "targetFingerprint": "7ef82c98",
+        "targetConfidence": "Low",
+        "targetAllocations": [
+          {
+            "ticker": "NOVOB:XCSE",
+            "percent": 20,
+            "role": "CoreHolding",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "AVGO",
+            "percent": 15,
+            "role": "GrowthCore",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "JPM",
+            "percent": 12,
+            "role": "Defensive",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "CSCO",
+            "percent": 8,
+            "role": "SectorPlay",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "CAH",
+            "percent": 12,
+            "role": "IncomeDividend",
+            "status": "StrategicTarget"
+          }
+        ],
+        "sourceFreshnessSummary": "0/13 fresh, 13 stale, 0 missing",
+        "majorChanges": [
+          "BKR (Baker Hughes Company) removed from target (was 8.0%)",
+          "ENI (Eni S.p.A.) removed from target (was 10.0%)",
+          "EQT (EQT Corporation) removed from target (was 10.0%)",
+          "HAL (Halliburton Company) removed from target (was 8.0%)",
+          "SLB (SLB (Schlumberger Limited)) removed from target (was 8.0%)"
+        ],
+        "strategicRationaleSummary": "The portfolio is restructured to balance strategic flexibility with targeted exposure to high-conviction opportunities i…"
+      },
       {
         "snapshotAt": "2026-08-10T11:28:05.108Z",
         "healthOverall": 60,
@@ -13940,7 +13934,7 @@
       }
     ],
     "createdAt": "2026-08-09T20:32:59.141Z",
-    "updatedAt": "2026-08-10T11:28:05.114Z"
+    "updatedAt": "2026-08-10T19:38:15.849Z"
   },
   "company-monitor:AIT": {
     "moduleName": "company-monitor:AIT",

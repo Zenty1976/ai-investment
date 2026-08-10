@@ -1,131 +1,5 @@
 [
   {
-    "id": "a377911d-b820-4686-9ff6-02d26de68652",
-    "timestamp": "2026-08-10T10:30:27.252Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 2 decision(s) downgraded"
-  },
-  {
-    "id": "9a43a735-1c6b-46f8-a99e-86c39eb6f257",
-    "timestamp": "2026-08-10T10:30:27.257Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via RunAllNow (10344ms, change: High)"
-  },
-  {
-    "id": "2e2e6cfa-f498-49ac-8cf9-b02e9e4a075f",
-    "timestamp": "2026-08-10T10:30:27.359Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "8fadc72b-4b9b-4fb4-a7f1-e29799aedb96",
-    "timestamp": "2026-08-10T10:30:27.367Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (12ms, change: Medium)"
-  },
-  {
-    "id": "e2c399a2-2de7-4bf4-86c3-cb0059eea0ef",
-    "timestamp": "2026-08-10T10:30:27.371Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "1e18e48f-5ee6-4dac-85c9-50ac73478d20",
-    "timestamp": "2026-08-10T10:30:27.419Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
-  },
-  {
-    "id": "ce7b6956-7ca2-4a01-93c4-a4f3211a55d9",
-    "timestamp": "2026-08-10T10:30:27.428Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via RunAllNow (12ms, change: None)"
-  },
-  {
-    "id": "77b53e3b-a156-442a-a809-dcb589026df9",
-    "timestamp": "2026-08-10T10:30:32.220Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Command Brief generated (4842ms): attention — Monitor U.S. macro events impacting investment timing; Novo Nordisk Q2 results strong."
-  },
-  {
-    "id": "413456c4-d3eb-42a8-91fb-f0f2c2e946b5",
-    "timestamp": "2026-08-10T10:30:32.223Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief completed via Dependency (4854ms, change: Medium)"
-  },
-  {
-    "id": "4037c349-dcea-4147-a660-46b8fabff877",
-    "timestamp": "2026-08-10T10:30:32.417Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle completed in 165s"
-  },
-  {
-    "id": "31ed3215-7a67-4e6e-9d5a-73b9a3c286d4",
-    "timestamp": "2026-08-10T10:35:14.148Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "b0807ea6-4ad6-4030-ba96-9323303356d3",
-    "timestamp": "2026-08-10T10:36:46.217Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "5995049c-694d-45e5-892b-026ac127a08a",
-    "timestamp": "2026-08-10T10:40:37.480Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "0facae00-e2e3-4007-b9f9-05ff40c83b1f",
-    "timestamp": "2026-08-10T10:45:07.554Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "4af3f0ac-c627-445d-aea8-d50b3b2e419f",
-    "timestamp": "2026-08-10T10:45:11.974Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "a6112a64-3a10-4343-8612-deaf027ca5a6",
-    "timestamp": "2026-08-10T10:45:11.977Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 new alert(s): No high‑dose Wegovy pill planned, per management commentary"
-  },
-  {
-    "id": "9dfe6ebc-0aae-40e5-ad66-09593a95aa8b",
-    "timestamp": "2026-08-10T10:45:11.978Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 alert(s) resolved: Q2 2026 earnings beat and guidance raised; Interim dividend announced with ex‑dividend date August 14, 2026"
-  },
-  {
-    "id": "b1000ccd-65d7-417c-b7b3-7f2da8a24d5d",
-    "timestamp": "2026-08-10T10:45:11.980Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: No high‑dose Wegovy pill planned, per management commentary [Company]"
-  },
-  {
     "id": "de52777c-85b5-42cb-9608-e9c47b10c801",
     "timestamp": "2026-08-10T10:45:11.984Z",
     "module": "AutomationOrchestrator",
@@ -3495,6 +3369,132 @@
   {
     "id": "44851e4a-f8b2-489a-a24e-591a914e64e5",
     "timestamp": "2026-08-10T19:34:39.102Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "afc1f80f-e5f5-4d5e-a357-cb45cf5d8fd7",
+    "timestamp": "2026-08-10T19:38:09.176Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "7bfe9131-7a99-4ae8-bddb-d678719bb41d",
+    "timestamp": "2026-08-10T19:38:09.645Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
+  },
+  {
+    "id": "ee736f0a-a4b1-4af3-a39d-7c2d050a4e9d",
+    "timestamp": "2026-08-10T19:38:09.680Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via Scheduled (536ms, change: High)"
+  },
+  {
+    "id": "916a09c8-3d72-4b67-a115-67a9c60230cd",
+    "timestamp": "2026-08-10T19:38:15.859Z",
+    "module": "Portfolio Manager v2",
+    "level": "info",
+    "message": "CIO analysis complete — health 62/100 (C), 6 high-severity drift, confidence Low"
+  },
+  {
+    "id": "852a7080-d376-4834-a2c2-3864bf2d1d92",
+    "timestamp": "2026-08-10T19:38:39.157Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "935c8d87-5b0d-46ed-bcb6-ab9a8a6701f7",
+    "timestamp": "2026-08-10T19:38:45.862Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "d71474e8-88e9-44a2-9811-66a493026ec4",
+    "timestamp": "2026-08-10T19:38:45.866Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (6722ms, change: Medium)"
+  },
+  {
+    "id": "f8d1217d-8016-4376-bf64-767b2220ca12",
+    "timestamp": "2026-08-10T19:39:09.162Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "82214ff8-4f14-41a8-a18e-c74de9cd6a41",
+    "timestamp": "2026-08-10T19:39:15.641Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 3 market-moving stories found"
+  },
+  {
+    "id": "fc878fad-5f9c-4ea5-9a8d-3e9c31c5e955",
+    "timestamp": "2026-08-10T19:39:15.645Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (6486ms, change: Medium)"
+  },
+  {
+    "id": "7a2ad02e-130f-460d-ad81-c0ff89e4815b",
+    "timestamp": "2026-08-10T19:39:39.489Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "1db77972-b0f8-4fdf-8647-11bdc424b281",
+    "timestamp": "2026-08-10T19:41:09.242Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "5f02f996-c78a-4212-a75d-0e3c6d15578d",
+    "timestamp": "2026-08-10T19:41:15.333Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "fafdf520-14bc-446e-b8d6-15ae82f28719",
+    "timestamp": "2026-08-10T19:41:15.335Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 new alert(s): Renewed Middle East energy infrastructure attacks escalate supply‑side risk"
+  },
+  {
+    "id": "97670cb5-1c1c-4c2a-b461-e2b32c3dd4f8",
+    "timestamp": "2026-08-10T19:41:15.338Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 alert(s) resolved: Strait of Hormuz remains closed as Iran demands concessions"
+  },
+  {
+    "id": "df49aa61-c633-47a3-9803-bced6041733a",
+    "timestamp": "2026-08-10T19:41:15.340Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Serve Robotics Q2 earnings miss and full‑year guidance cut [Company]"
+  },
+  {
+    "id": "849fd9fa-0e91-47ca-848d-1c8eb97865cb",
+    "timestamp": "2026-08-10T19:41:15.347Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (6121ms, change: High)"
+  },
+  {
+    "id": "f89be84b-683c-4958-ade7-83783e7a75b4",
+    "timestamp": "2026-08-10T19:44:02.175Z",
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"

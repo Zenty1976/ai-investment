@@ -18,7 +18,7 @@ import { resolve } from "path";
 import { randomUUID } from "crypto";
 import { analysisRepository } from "./analysis-repository.js";
 import { systemLog } from "./system-log.js";
-import { fetchAndStorePriceContexts, extractTargetsFromPortfolio } from "./price-context-service.js";
+import { fetchAndStorePriceContexts, collectAllKnownTargets, collectOpportunityFinderTargets } from "./price-context-service.js";
 
 // ── Data directory ───────────────────────────────────────────────────────────
 
@@ -1291,14 +1291,23 @@ class AutomationOrchestratorService {
       completeStage("portfolio-manager");
     });
 
-    // Stage 1.5: Price Context — fetch Saxo OHLC + calculate for all portfolio positions
-    // Must run after Stage 1 (portfolio-manager) so position UICs are known.
-    // Uses runIsolated so a Saxo outage never aborts the full cycle.
-    await runIsolated("price-context", async () => {
-      const targets = extractTargetsFromPortfolio();
+    // Stage 1.5: Price Context — initial fetch for all known symbols
+    //
+    // Collects targets from three sources:
+    //   1. Portfolio positions (UICs always available from Saxo position data)
+    //   2. Company Monitor tracked companies (UICs resolved via Saxo instrument search)
+    //   3. Opportunity Finder candidates from the PREVIOUS cycle (already in repository)
+    //
+    // Skips symbols whose Price Context is already fresh — no duplicate Saxo requests.
+    // Opportunity Finder hasn't run yet this cycle, so only previous-cycle OF data
+    // is included here; newly discovered OF candidates are handled at Stage 8.5.
+    await runIsolated("price-context-initial", async () => {
+      const targets = await collectAllKnownTargets();
       if (targets.length > 0) {
-        await fetchAndStorePriceContexts(targets);
-        systemLog.logInfo("Price Context", `Stored price context for ${targets.length} symbols`);
+        const stored = await fetchAndStorePriceContexts(targets);
+        systemLog.logInfo("Price Context", `Stage 1.5: ${stored.size} symbol(s) refreshed from ${targets.length} known targets`);
+      } else {
+        systemLog.logInfo("Price Context", "Stage 1.5: no targets — Saxo may not be connected");
       }
     });
 
@@ -1365,6 +1374,23 @@ class AutomationOrchestratorService {
     await runIsolated("opportunity-finder", async () => {
       await this._runStage(["opportunity-finder"], corrId, "RunAllNow");
       completeStage("opportunity-finder");
+    });
+
+    // Stage 8.5: Price Context — incremental enrichment for newly discovered OF candidates
+    //
+    // Opportunity Finder may have just discovered NEW symbols that were unknown at Stage 1.5.
+    // This stage fetches Price Context only for those new/stale symbols, so Trade Decision
+    // Engine receives Price Context for BOTH portfolio holdings AND new candidates in
+    // the same automation cycle.
+    //
+    // fetchAndStorePriceContexts() skips any symbol that already has fresh Price Context,
+    // so no duplicate Saxo history requests are made.
+    await runIsolated("price-context-incremental", async () => {
+      const newTargets = await collectOpportunityFinderTargets();
+      if (newTargets.length > 0) {
+        const stored = await fetchAndStorePriceContexts(newTargets);
+        systemLog.logInfo("Price Context", `Stage 8.5: ${stored.size} new candidate(s) enriched`);
+      }
     });
 
     // Stage 9: Trade Decision Engine

@@ -1,0 +1,177 @@
+The Price Context implementation is generally good and should NOT be redesigned.
+
+The deterministic backend calculator, Saxo Chart API fetch, repository persistence, OpenAI prompt integration and Company Monitor UI are all conceptually correct.
+
+However, there is one important architectural gap.
+
+Currently Automation Orchestrator Stage 1.5 does:
+
+extractTargetsFromPortfolio()
+→ fetchAndStorePriceContexts(targets)
+
+This means the normal automated cycle only refreshes Price Context for CURRENT PORTFOLIO POSITIONS.
+
+That is insufficient.
+
+Price Context is also consumed by Opportunity Finder and Trade Decision, and those modules frequently evaluate stocks that are NOT already in the portfolio.
+
+Fix the target/update flow without redesigning the existing Price Context architecture.
+
+
+REQUIRED TARGETS
+
+Price Context must eventually be available for:
+
+1. Current portfolio positions
+2. Company Monitor tracked companies
+3. Current Opportunity Finder candidates
+4. Symbols currently being evaluated by Trade Decision
+
+Do not make every module independently call Saxo.
+
+Keep one shared Price Context service/cache/repository.
+
+
+IMPORTANT PIPELINE ISSUE
+
+Opportunity Finder may discover a NEW symbol during the current automation cycle.
+
+That symbol could not have been included in Stage 1.5 if Stage 1.5 only knew the portfolio/tracked symbols before Opportunity Finder ran.
+
+Therefore support incremental Price Context enrichment.
+
+The intended flow should conceptually be:
+
+Portfolio Manager
+↓
+refresh Price Context for already-known relevant symbols
+↓
+normal monitors/analyzers
+↓
+Opportunity Finder discovers candidates
+↓
+identify any Opportunity Finder symbols for which fresh Price Context is missing
+↓
+fetch/calculate Price Context ONLY for those missing/stale symbols
+↓
+Trade Decision runs with Price Context available for both holdings and newly discovered opportunities.
+
+Do not unnecessarily re-fetch symbols whose Price Context is already fresh.
+
+
+COMPANY MONITOR
+
+Include tracked Company Monitor symbols in the initial known Price Context target set when their Saxo instrument identity/UIC is known.
+
+Reuse the existing company identity/instrument mapping infrastructure.
+
+Do not invent UICs or guess instrument identity.
+
+If a symbol cannot be safely mapped to a Saxo UIC/AssetType, skip Price Context for that symbol and log the reason.
+
+
+OPPORTUNITY FINDER
+
+There is a timing limitation:
+
+Opportunity Finder cannot use current-cycle Price Context for a completely NEW symbol before it has discovered that symbol.
+
+That is acceptable.
+
+Do NOT introduce circular dependencies.
+
+Opportunity Finder may discover the candidate first using its existing inputs.
+
+After discovery, fetch Price Context for new candidates.
+
+Then Trade Decision must receive the enriched Price Context in the SAME automation cycle.
+
+On subsequent Opportunity Finder runs, persisted fresh Price Context from the previous discovery can also be used as input.
+
+
+TRADE DECISION
+
+Before Trade Decision runs, ensure Price Context has been refreshed/enriched for:
+
+- portfolio holdings
+- relevant Company Monitor companies
+- current Opportunity Finder candidates
+- any other symbols Trade Decision is about to evaluate, when a valid Saxo identity is available.
+
+This is particularly important because Trade Decision is where Price Context is most useful for timing.
+
+
+FRESHNESS
+
+Also fix Price Context freshness handling.
+
+Currently getPriceContext() reads the repository entry but does not appear to enforce meaningful freshness before returning it.
+
+Add a centralized freshness policy.
+
+Price Context contains an asOf timestamp.
+
+Define a reasonable freshness window for daily historical Price Context and centralize the value/configuration.
+
+Do not refetch 90 days of Saxo history every time an AI module accesses Price Context.
+
+Instead:
+
+get fresh cached Price Context
+→ use it
+
+missing/stale Price Context
+→ refresh through shared Price Context service
+→ persist
+→ reuse.
+
+If stale Price Context cannot be refreshed because Saxo is unavailable, do NOT silently present it to OpenAI as current.
+
+Either omit it or explicitly mark it stale according to the existing graceful-degradation architecture.
+
+
+DO NOT CHANGE
+
+Do not change the deterministic calculations unless you find an actual mathematical bug.
+
+Keep:
+
+- 1D/5D/10D/30D/90D returns
+- normalized trend slopes
+- momentumChange
+- volatility state/trend
+- range position
+- higherLows/lowerHighs
+- PriceState classifications
+- compact OpenAI formatting
+- semantic safeguards
+- Company Monitor Price Context panel
+- repository-based reuse
+- graceful degradation when Saxo is unavailable.
+
+Do not add RSI/MACD or other technical indicators.
+
+
+ACCEPTANCE TEST
+
+Test with:
+
+A) one stock already in the portfolio
+B) one Company Monitor stock not in the portfolio
+C) one Opportunity Finder candidate not previously known
+
+After Run All Now:
+
+A must have fresh Price Context.
+
+B should have fresh Price Context if a valid Saxo UIC/AssetType can be resolved.
+
+C may initially be discovered by Opportunity Finder without current-cycle Price Context, but Price Context must then be fetched after discovery and be available to Trade Decision in that SAME cycle.
+
+The Trade Decision OpenAI debug payload must visibly contain Price Context for C.
+
+Verify that no duplicate Saxo history requests are made for symbols whose Price Context is already fresh.
+
+Also verify that stale Price Context is not silently sent to OpenAI as current.
+
+Do not redesign the existing implementation. Fix this target coverage + current-cycle enrichment + freshness gap only.
