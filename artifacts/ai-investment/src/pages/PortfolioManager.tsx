@@ -10,7 +10,7 @@
  */
 
 import { useState } from "react"
-import { useGetPortfolio, useUpdatePortfolio } from "@workspace/api-client-react"
+import { useGetPortfolioLive, useUpdatePortfolio } from "@workspace/api-client-react"
 import type { PortfolioAccount, PortfolioSnapshot } from "@workspace/api-client-react"
 import {
   RefreshCw,
@@ -403,14 +403,14 @@ export default function PortfolioManager() {
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [cashExpanded, setCashExpanded] = useState(false)
 
-  const { data: stored, isLoading, refetch } = useGetPortfolio({
-    query: { retry: false },
+  // useGetPortfolioLive returns PortfolioSnapshot directly (not wrapped in a RepositoryEntry)
+  const { data: liveData, isLoading, refetch } = useGetPortfolioLive({
+    query: { retry: false, refetchInterval: 10_000 },
   })
 
   const updateMutation = useUpdatePortfolio()
 
-  const snapshot: PortfolioSnapshot | null =
-    (stored?.result as PortfolioSnapshot) ?? null
+  const snapshot: PortfolioSnapshot | null = (liveData as PortfolioSnapshot) ?? null
 
   const handleUpdate = () => {
     setUpdateError(null)

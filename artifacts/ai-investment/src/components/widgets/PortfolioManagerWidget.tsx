@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useGetPortfolio } from "@workspace/api-client-react";
+import { useGetPortfolioLive } from "@workspace/api-client-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo } from "@/lib/widget-utils";
 import { WidgetSpinner, WidgetNoData, ScoreBar } from "@/lib/widget-components";
@@ -17,11 +17,13 @@ function plColor(n: number) {
 export function PortfolioManagerWidget() {
   const ref = useRef<HTMLDivElement>(null);
   const size = useTileSize(ref);
-  const { data, isLoading } = useGetPortfolio();
+  const { data, isLoading } = useGetPortfolioLive({
+    query: { refetchInterval: 5_000 },
+  });
 
-  // useGetPortfolio returns { result: PortfolioSnapshot, ... } — unwrap .result
+  // useGetPortfolioLive returns PortfolioSnapshot directly (not wrapped in a RepositoryEntry)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const portfolio = (data as any)?.result as any;
+  const portfolio = data as any;
   const accounts: any[] = portfolio?.accounts ?? [];
   const totalPositions = accounts.flatMap((a: any) => a.positions ?? []);
   const totalPL = accounts.reduce((s: number, a: any) => s + (a.unrealizedProfitLoss ?? 0), 0);

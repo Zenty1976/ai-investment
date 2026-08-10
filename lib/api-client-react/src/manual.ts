@@ -285,10 +285,24 @@ export interface PortfolioSnapshot {
 
 // ── Portfolio Manager ─────────────────────────────────────────────────────────
 
-export function useGetPortfolio() {
+export function useGetPortfolio(options?: { query?: Parameters<typeof useQuery>[0] }) {
   return useQuery({
     queryKey: ["portfolio"],
     queryFn: () => customFetch<PortfolioSnapshot | null>("/api/portfolio-manager"),
+    ...(options?.query ?? {}),
+  });
+}
+
+/**
+ * Fetches a fresh portfolio snapshot directly from Saxo on every poll —
+ * no stored cache on the server. Use this for near-real-time P/L display.
+ * Positions with CurrentPrice=0 are automatically enriched via InfoPrice.
+ */
+export function useGetPortfolioLive(options?: { query?: Parameters<typeof useQuery>[0] }) {
+  return useQuery({
+    queryKey: ["portfolio-live"],
+    queryFn: () => customFetch<PortfolioSnapshot | null>("/api/portfolio-manager/live"),
+    ...(options?.query ?? {}),
   });
 }
 

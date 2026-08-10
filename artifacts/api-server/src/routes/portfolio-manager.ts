@@ -127,6 +127,8 @@ export interface PortfolioPosition {
   currency: string;
   /** AccountKey this position belongs to */
   accountKey: string;
+  /** Saxo UIC — needed for InfoPrice enrichment */
+  uic?: number;
   quantity: number;
   direction: string;
   averageOpenPrice: number;
@@ -238,6 +240,7 @@ function normalisePosition(
     exchange:               exch.Name ?? exch.ExchangeId ?? "",
     currency:               fmt.Currency ?? "",
     accountKey,
+    uic:                    base.Uic,
     quantity,
     direction:              base.OpeningDirection ?? "",
     averageOpenPrice:       view.AverageOpenPrice ?? 0,
@@ -1039,6 +1042,140 @@ async function runV2Pass(snapshot: PortfolioSnapshot): Promise<void> {
     systemLog.logError("Portfolio Manager v2", `CIO analysis failed: ${message}`);
   }
 }
+
+// ── InfoPrice enrichment ──────────────────────────────────────────────────────
+// For positions where Saxo NetPositionView.CurrentPrice is 0 (common in SIM),
+// fetch the current price directly from the InfoPrice endpoint.
+
+interface InfoPriceQuote {
+  Mid?: number;
+  LastTraded?: number;
+  Ask?: number;
+  Bid?: number;
+  Close?: number;
+  PriceTypeAsk?: string;
+  PriceTypeBid?: string;
+  DayPercentChange?: number;
+}
+interface InfoPriceResponse {
+  Quote?: InfoPriceQuote;
+  InstrumentPriceDetails?: { LastClose?: number; DayPercentChange?: number };
+  DisplayAndFormat?: { LastClose?: number };
+}
+
+async function enrichPositionsWithInfoPrices(
+  accounts: PortfolioAccount[],
+  token: string,
+  baseUrl: string,
+): Promise<void> {
+  const toEnrich = accounts
+    .flatMap((a) => a.positions)
+    .filter((p) => p.currentPrice === 0 && p.uic && p.assetType);
+
+  if (toEnrich.length === 0) return;
+
+  await Promise.all(
+    toEnrich.map(async (pos) => {
+      try {
+        const url =
+          `${baseUrl}/trade/v1/infoprices` +
+          `?AssetType=${encodeURIComponent(pos.assetType)}` +
+          `&Uic=${pos.uic}` +
+          `&FieldGroups=Quote,DisplayAndFormat,InstrumentPriceDetails`;
+
+        const resp = await saxoGet<InfoPriceResponse>(url, token);
+        const q = resp.Quote;
+
+        if (!q || q.PriceTypeAsk === "NoAccess" || q.PriceTypeBid === "NoAccess") return;
+
+        const price =
+          q.Mid ?? q.LastTraded ?? q.Ask ?? q.Bid ?? q.Close ??
+          resp.InstrumentPriceDetails?.LastClose ??
+          resp.DisplayAndFormat?.LastClose ??
+          null;
+
+        if (typeof price !== "number" || price <= 0) return;
+
+        pos.currentPrice = price;
+        pos.marketValue = pos.quantity * price;
+        // Preserve any existing FX conversion ratio — if none exists, assume same currency.
+        if (pos.marketValueBaseCurrency === 0) {
+          pos.marketValueBaseCurrency = pos.marketValue;
+        } else {
+          // Re-apply the same FX ratio that was originally derived
+          const fxRatio = pos.marketValueBaseCurrency !== 0
+            ? pos.marketValueBaseCurrency / (pos.quantity * pos.averageOpenPrice || 1)
+            : 1;
+          pos.marketValueBaseCurrency = pos.marketValue * fxRatio;
+        }
+
+        // Day % — prefer Saxo's own field, else InstrumentPriceDetails fallback
+        const dayPct =
+          q.DayPercentChange ??
+          resp.InstrumentPriceDetails?.DayPercentChange ??
+          null;
+        if (typeof dayPct === "number") {
+          pos.dayChangePercent = dayPct;
+        }
+      } catch (err) {
+        logger.warn({ err, symbol: pos.symbol }, "[portfolio-manager/live] InfoPrice enrich failed");
+      }
+    }),
+  );
+}
+
+// ── GET /portfolio-manager/live ───────────────────────────────────────────────
+// Lightweight endpoint polled by the frontend every few seconds.
+// Fetches fresh positions directly from Saxo (no AI, no repository write),
+// then enriches any position with CurrentPrice=0 via InfoPrice.
+// Falls back to stored snapshot when not connected.
+
+portfolioRouter.get("/portfolio-manager/live", async (_req, res): Promise<void> => {
+  // Mock mode — return stored snapshot directly (no Saxo calls needed)
+  if (saxoStore.isMockMode()) {
+    const entry = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
+    res.json(entry?.result ?? null);
+    return;
+  }
+
+  // Not connected — return stored snapshot as fallback
+  if (!saxoStore.isConnected()) {
+    const entry = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
+    res.json(entry?.result ?? null);
+    return;
+  }
+
+  const token = saxoStore.getAccessToken()!;
+  const env = saxoStore.getEnvironment();
+  const base = saxoBaseUrl(env);
+
+  try {
+    const snapshot = await buildSnapshot(token, env);
+
+    // Enrich positions that Saxo returned with CurrentPrice=0
+    await enrichPositionsWithInfoPrices(snapshot.accounts, token, base);
+
+    // Recalculate totals using enriched position data
+    const totalUnrealizedProfitLoss = snapshot.accounts.reduce((total, acct) => {
+      return total + acct.positions.reduce((sum, pos) => {
+        if (pos.marketValue === 0) return sum;
+        const fxRate = pos.marketValueBaseCurrency / pos.marketValue;
+        return sum + pos.profitLoss * fxRate;
+      }, 0);
+    }, 0);
+
+    res.json({ ...snapshot, totalUnrealizedProfitLoss });
+  } catch (err) {
+    // On error return stored snapshot rather than failing the widget
+    const stored = analysisRepository.get<PortfolioSnapshot>(MODULE_NAME);
+    if (stored) {
+      res.json(stored.result);
+      return;
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(502).json({ error: message });
+  }
+});
 
 // ── GET /portfolio-manager ────────────────────────────────────────────────────
 
