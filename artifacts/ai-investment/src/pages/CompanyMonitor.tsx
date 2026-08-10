@@ -175,15 +175,50 @@ function timeframeBadgeVariant(
 interface PriceContext {
   symbol: string
   asOf: string
+  source: "saxo"
   currentPrice: number
-  returns: { d1: number; d5: number; d10: number; d30: number; d90: number }
-  trend: { shortTermTrend: string; mediumTermTrend: string; longTermTrend: string }
-  momentum: { change: string; shortTermSlope: number; mediumTermSlope: number }
-  volatility: { realized30d: number; realized90d: number; state: string; trend: string }
-  rangePosition: { from30dLow: number; from30dHigh: number; from90dLow: number; from90dHigh: number }
+  returns: {
+    oneDayPct: number | null
+    fiveDayPct: number | null
+    tenDayPct: number | null
+    thirtyDayPct: number | null
+    ninetyDayPct: number | null
+  }
+  range: {
+    thirtyDayHigh: number | null
+    thirtyDayLow: number | null
+    distanceFrom30DayHighPct: number | null
+    distanceFrom30DayLowPct: number | null
+    ninetyDayHigh: number | null
+    ninetyDayLow: number | null
+    distanceFrom90DayHighPct: number | null
+    distanceFrom90DayLowPct: number | null
+  }
+  trend: {
+    fiveDaySlope: number | null
+    tenDaySlope: number | null
+    thirtyDaySlope: number | null
+    ninetyDaySlope: number | null
+    shortTermTrend: string
+    mediumTermTrend: string
+    longTermTrend: string
+    momentumChange: string
+  }
+  volatility: {
+    fiveDay: number | null
+    thirtyDay: number | null
+    volatilityState: string
+    volatilityTrend: string
+  }
+  structure: {
+    higherLows: boolean | null
+    lowerHighs: boolean | null
+  }
   priceState: string
-  observedOn: string
-  barsUsed: number
+  dataQuality: {
+    availableTradingDays: number
+    sufficientFor90DayAnalysis: boolean
+  }
 }
 
 function priceStateBadgeVariant(
@@ -215,11 +250,15 @@ function fmtPct(n: number): string {
 
 function PriceContextPanel({ ctx }: { ctx: PriceContext }) {
   const returns = [
-    { label: "1D",  val: ctx.returns.d1 },
-    { label: "5D",  val: ctx.returns.d5 },
-    { label: "1M",  val: ctx.returns.d30 },
-    { label: "3M",  val: ctx.returns.d90 },
+    { label: "1D",  val: ctx.returns.oneDayPct },
+    { label: "5D",  val: ctx.returns.fiveDayPct },
+    { label: "1M",  val: ctx.returns.thirtyDayPct },
+    { label: "3M",  val: ctx.returns.ninetyDayPct },
   ]
+
+  const fromLow  = ctx.range.distanceFrom30DayLowPct
+  const fromHigh = ctx.range.distanceFrom30DayHighPct
+  const vol30    = ctx.volatility.thirtyDay
 
   return (
     <Card className="bg-card/40 border-card-border/40">
@@ -236,7 +275,7 @@ function PriceContextPanel({ ctx }: { ctx: PriceContext }) {
             {ctx.priceState.replace(/([A-Z])/g, ' $1').trim()}
           </Badge>
           <span className="ml-auto text-[10px] text-muted-foreground/40">
-            {ctx.barsUsed}d of data
+            {ctx.dataQuality.availableTradingDays}d of data
           </span>
         </div>
 
@@ -245,7 +284,10 @@ function PriceContextPanel({ ctx }: { ctx: PriceContext }) {
           {returns.map(({ label, val }) => (
             <div key={label} className="flex flex-col items-center p-1.5 rounded-md bg-background/30">
               <span className="text-[9px] text-muted-foreground/60 uppercase tracking-widest">{label}</span>
-              <span className={`text-xs font-mono font-semibold ${returnColour(val)}`}>{fmtPct(val)}</span>
+              {val != null
+                ? <span className={`text-xs font-mono font-semibold ${returnColour(val)}`}>{fmtPct(val)}</span>
+                : <span className="text-xs text-muted-foreground/30">—</span>
+              }
             </div>
           ))}
         </div>
@@ -257,27 +299,39 @@ function PriceContextPanel({ ctx }: { ctx: PriceContext }) {
           <Badge variant={trendBadgeVariant(ctx.trend.mediumTermTrend)} className="text-[9px] px-1 py-0">{ctx.trend.mediumTermTrend} MT</Badge>
           <Badge variant={trendBadgeVariant(ctx.trend.longTermTrend)} className="text-[9px] px-1 py-0">{ctx.trend.longTermTrend} LT</Badge>
           <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest ml-2 mr-0.5">Momentum</span>
-          <span className="text-[10px] text-foreground/70">{ctx.momentum.change.replace(/([A-Z])/g, ' $1').trim()}</span>
+          <span className="text-[10px] text-foreground/70">{ctx.trend.momentumChange.replace(/([A-Z])/g, ' $1').trim()}</span>
         </div>
 
         {/* Volatility & Range */}
         <div className="flex items-center gap-3 text-[10px] text-muted-foreground/70">
           <span>
             <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">Vol</span>
-            {ctx.volatility.state}
-            <span className="text-muted-foreground/40 ml-1">({ctx.volatility.realized30d.toFixed(0)}% ann)</span>
+            {ctx.volatility.volatilityState}
+            {vol30 != null && (
+              <span className="text-muted-foreground/40 ml-1">({vol30.toFixed(0)}% ann)</span>
+            )}
           </span>
-          <span className="text-muted-foreground/30">·</span>
-          <span>
-            <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">30d range</span>
-            <span className={returnColour(ctx.rangePosition.from30dLow)}>
-              {ctx.rangePosition.from30dLow >= 0 ? "+" : ""}{ctx.rangePosition.from30dLow.toFixed(1)}% from low
-            </span>
-            <span className="text-muted-foreground/30 mx-1">/</span>
-            <span className={returnColour(-ctx.rangePosition.from30dHigh)}>
-              {ctx.rangePosition.from30dHigh.toFixed(1)}% from high
-            </span>
-          </span>
+          {(fromLow != null || fromHigh != null) && (
+            <>
+              <span className="text-muted-foreground/30">·</span>
+              <span>
+                <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">30d range</span>
+                {fromLow != null && (
+                  <span className={returnColour(fromLow)}>
+                    {fromLow >= 0 ? "+" : ""}{fromLow.toFixed(1)}% from low
+                  </span>
+                )}
+                {fromLow != null && fromHigh != null && (
+                  <span className="text-muted-foreground/30 mx-1">/</span>
+                )}
+                {fromHigh != null && (
+                  <span className={returnColour(-fromHigh)}>
+                    {fromHigh.toFixed(1)}% from high
+                  </span>
+                )}
+              </span>
+            </>
+          )}
         </div>
 
         {/* Disclaimer note */}
