@@ -119,7 +119,6 @@ async function fetchIndexValue(
   assetTypes: string,
   token: string,
   base: string,
-  fallback: number | null,
 ): Promise<number | null> {
   try {
     // Step 1 — find the instrument UIC
@@ -134,7 +133,7 @@ async function fetchIndexValue(
     const instruments = searchRes.Data ?? [];
     if (instruments.length === 0) {
       logger.warn({ keywords }, "[market-indices] No instruments found");
-      return fallback;
+      return null;
     }
 
     // Pick first result — prefer exact symbol match if possible
@@ -145,10 +144,10 @@ async function fetchIndexValue(
 
     const uic = match.Identifier;
     const assetType = match.AssetType ?? assetTypes;
-    if (!uic) return fallback;
+    if (!uic) return null;
 
     // Step 2 — fetch InfoPrice with extended field groups so we get Ask/Bid/LastTraded
-    // and DisplayAndFormat for last-close fallback
+    // and DisplayAndFormat / InstrumentPriceDetails for last-close
     const priceUrl =
       `${base}/trade/v1/infoprices` +
       `?AssetType=${encodeURIComponent(assetType)}` +
@@ -158,11 +157,11 @@ async function fetchIndexValue(
     const priceRes = await saxoGet<SaxoInfoPrice>(priceUrl, token);
     const q = priceRes.Quote;
 
-    // "NoAccess" means SIM account has no price access for this instrument.
-    // Return the mock/fallback value so the topbar still shows something useful.
+    // "NoAccess" — this account has no pricing rights for this instrument.
+    // Return null so the UI shows "—" rather than stale/incorrect data.
     if (q?.PriceTypeAsk === "NoAccess" || q?.PriceTypeBid === "NoAccess") {
-      logger.warn({ keywords, uic }, "[market-indices] NoAccess — using fallback");
-      return fallback;
+      logger.warn({ keywords, uic }, "[market-indices] NoAccess — showing —");
+      return null;
     }
 
     // Prefer live mid/last-traded, then best side, then last close
@@ -176,15 +175,14 @@ async function fetchIndexValue(
       priceRes.DisplayAndFormat?.LastClose ??
       null;
 
-    if (typeof price === "number") return price;
+    if (price !== null) {
+      logger.warn({ keywords, uic, quote: q }, "[market-indices] No price in response");
+    }
 
-    // If still no price (e.g. market closed, only OldIndicative but no value),
-    // fall back to the mock reference value rather than showing "—".
-    logger.warn({ keywords, uic, quote: q }, "[market-indices] No price in response — using fallback");
-    return fallback;
+    return typeof price === "number" ? price : null;
   } catch (err) {
     logger.warn({ err, keywords }, "[market-indices] Failed to fetch index");
-    return fallback;
+    return null;
   }
 }
 
@@ -225,11 +223,11 @@ router.get("/market-indices", async (_req, res): Promise<void> => {
   const env = saxoStore.getEnvironment();
   const base = saxoBase(env);
 
-  // Fetch all 4 indices in parallel — each failure returns fallback independently
+  // Fetch all 4 indices in parallel — each failure returns null (shows "—")
   const results = await Promise.all(
     INDEX_TARGETS.map(async (t): Promise<IndexResult> => ({
       label: t.label,
-      value: await fetchIndexValue(t.keywords, t.assetTypes, token, base, MOCK_VALUES[t.label] ?? null),
+      value: await fetchIndexValue(t.keywords, t.assetTypes, token, base),
     }))
   );
 
