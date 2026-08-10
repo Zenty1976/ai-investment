@@ -1,145 +1,5 @@
 [
   {
-    "id": "cdf77c0b-8a7e-47f6-95d7-420d9e4de5ef",
-    "timestamp": "2026-08-10T18:13:48.468Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "Updated — Howard Marks — no material change."
-  },
-  {
-    "id": "eb181a59-21bb-4f3e-9a6d-a6e0cee7f8ce",
-    "timestamp": "2026-08-10T18:13:53.208Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "be7bc329-7ace-410a-b9d3-4adfd6118f47",
-    "timestamp": "2026-08-10T18:13:57.481Z",
-    "module": "Settings",
-    "level": "info",
-    "message": "Saxo connection established in sim environment"
-  },
-  {
-    "id": "58591ffe-67c4-492e-95e6-8ed34a45430b",
-    "timestamp": "2026-08-10T18:14:00.726Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "Warren Buffett — new material view detected. (Medium change)"
-  },
-  {
-    "id": "393b8c10-9407-4cca-b0ec-6bf73cf827e7",
-    "timestamp": "2026-08-10T18:14:10.285Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "Bill Ackman — new material view detected. (Medium change)"
-  },
-  {
-    "id": "05ece0aa-7008-4393-8e38-7884e2d9f33b",
-    "timestamp": "2026-08-10T18:14:11.650Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [d63f4af5-539f-4afb-b601-57f4f237021b]"
-  },
-  {
-    "id": "9783de41-81f6-466b-b698-568b99ded32e",
-    "timestamp": "2026-08-10T18:14:11.654Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "bea2c9f0-2810-4179-b2a7-04d73f4c0133",
-    "timestamp": "2026-08-10T18:14:12.369Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Portfolio updated from Saxo: 1 account, 1 position, available cash 996.119 EUR"
-  },
-  {
-    "id": "2e8d02e7-5d26-45cd-b60c-9b985cc4235a",
-    "timestamp": "2026-08-10T18:14:12.382Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (729ms, change: High)"
-  },
-  {
-    "id": "1334f9bf-a4b6-4265-8960-990edb94b06b",
-    "timestamp": "2026-08-10T18:14:12.385Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "0900772f-3d86-4703-b7ac-ab0b9efbbd95",
-    "timestamp": "2026-08-10T18:14:13.159Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "af896a02-7907-4a12-b85d-85e1326d53a7",
-    "timestamp": "2026-08-10T18:14:13.163Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "68703472-5545-4aca-b5e6-4f721cdf96c8",
-    "timestamp": "2026-08-10T18:14:13.165Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "2b9750b2-b58f-429c-92be-f6b6af8d67de",
-    "timestamp": "2026-08-10T18:14:15.183Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Command Brief generated (2792ms): attention — Monitor key events and Novo Nordisk developments; no trades ready now."
-  },
-  {
-    "id": "d4c757c7-c0b9-448e-a3ca-f9667f79b4c5",
-    "timestamp": "2026-08-10T18:14:15.185Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief completed via Dependency (2801ms, change: Medium)"
-  },
-  {
-    "id": "e629d907-cdef-40a0-89bc-d51ed01d165f",
-    "timestamp": "2026-08-10T18:14:17.737Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: Target synthesiser: allocations are infeasible — 3 position(s) fill only 38.0% equity at their role maxes (maximum cash is 40%). The AI must return more or larger allocations to fill the equity budget."
-  },
-  {
-    "id": "6dd0bf0b-1cad-4218-b2f8-8dd08bb81437",
-    "timestamp": "2026-08-10T18:14:17.859Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
-    "id": "d8e0c4f0-5b8f-4121-9eb6-6b633103afc8",
-    "timestamp": "2026-08-10T18:14:17.862Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via RunAllNow (4707ms, change: Medium)"
-  },
-  {
-    "id": "542764b7-4e4d-4c94-b58f-0618e5616680",
-    "timestamp": "2026-08-10T18:14:18.277Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "David Tepper — new material view detected. (Medium change)"
-  },
-  {
-    "id": "8a1fd986-f189-4132-9ac0-f4240031f093",
-    "timestamp": "2026-08-10T18:14:18.281Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "investor-watch completed via Scheduled (60058ms, change: None)"
-  },
-  {
     "id": "df8299d7-9071-4c45-9f74-39e51d2a3f9d",
     "timestamp": "2026-08-10T18:14:20.163Z",
     "module": "News Monitor",
@@ -3495,6 +3355,146 @@
   {
     "id": "52764c59-4a74-4453-86d0-dd88939002fd",
     "timestamp": "2026-08-10T20:46:22.079Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "7ec8608c-95f8-4131-a0f7-7a116c2582de",
+    "timestamp": "2026-08-10T20:47:52.132Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "0725649c-87e2-4e84-9a01-52483e76ff03",
+    "timestamp": "2026-08-10T20:47:52.695Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
+  },
+  {
+    "id": "b8f55ba2-2be9-4c75-8aca-9f6a1469a6e5",
+    "timestamp": "2026-08-10T20:47:52.749Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via Scheduled (664ms, change: High)"
+  },
+  {
+    "id": "ab74b7eb-ff78-4dc7-a261-95286e581959",
+    "timestamp": "2026-08-10T20:47:59.052Z",
+    "module": "Portfolio Manager v2",
+    "level": "info",
+    "message": "CIO analysis complete — health 62/100 (C), 6 high-severity drift, confidence Low"
+  },
+  {
+    "id": "c380a278-77aa-4b73-b453-21133f66f63b",
+    "timestamp": "2026-08-10T20:48:11.068Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "55bd8b16-6644-4606-84df-390e4d8f6254",
+    "timestamp": "2026-08-10T20:48:21.781Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Watch, strength 15, meaningfulChange=High"
+  },
+  {
+    "id": "681f39d8-cba3-4691-91dd-9c501709723d",
+    "timestamp": "2026-08-10T20:48:22.089Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "421aebee-a0ea-4a54-a4bc-fe456911e89d",
+    "timestamp": "2026-08-10T20:48:22.092Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "ab704e27-1f27-4a33-b42f-00bc2792003a",
+    "timestamp": "2026-08-10T20:48:26.929Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Positive sentiment, Moderate risk"
+  },
+  {
+    "id": "f1fa0b56-e459-4f4a-9943-d21f6d2402b1",
+    "timestamp": "2026-08-10T20:48:26.932Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (4847ms, change: Medium)"
+  },
+  {
+    "id": "aa6c2bd8-5f90-4447-a46d-5e172a18ecb3",
+    "timestamp": "2026-08-10T20:48:32.165Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 5 market-moving stories found"
+  },
+  {
+    "id": "4d32e2e3-197a-41dd-a69f-5d9f4ff87b32",
+    "timestamp": "2026-08-10T20:48:32.169Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (10083ms, change: Medium)"
+  },
+  {
+    "id": "c366197b-20cd-4f4d-9791-0263c6ee0979",
+    "timestamp": "2026-08-10T20:51:22.149Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "3217887a-63d8-4468-ba3e-1640cc3b9b2c",
+    "timestamp": "2026-08-10T20:51:22.683Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "5b53c425-7cde-4542-a1a3-69b7d51adbd2",
+    "timestamp": "2026-08-10T20:51:27.712Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "6dd8680c-b463-4690-90ee-874a825a331d",
+    "timestamp": "2026-08-10T20:51:27.714Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 new alert(s): Wegovy pill launch in Germany confirmed for September 1, 2026"
+  },
+  {
+    "id": "dec0a001-f8e4-421f-8865-826dab9ffd26",
+    "timestamp": "2026-08-10T20:51:27.717Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Novo Nordisk announces interim dividend schedule; Serve Robotics’ indoor robotics expansion remains key ahead of Q2 earnings"
+  },
+  {
+    "id": "b72dd620-93e7-47cc-aac9-fb775de247f1",
+    "timestamp": "2026-08-10T20:51:27.719Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Wegovy pill launch in Germany confirmed for September 1, 2026 [Company]"
+  },
+  {
+    "id": "9aabdf12-3639-4d17-a7db-e32cc7b196c3",
+    "timestamp": "2026-08-10T20:51:27.725Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (5592ms, change: High)"
+  },
+  {
+    "id": "2c4e360b-5831-4af9-b971-4df0e7048438",
+    "timestamp": "2026-08-10T20:52:47.979Z",
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"

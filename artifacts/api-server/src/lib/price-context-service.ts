@@ -268,7 +268,21 @@ export async function fetchAndStorePriceContexts(
   await Promise.all(
     toFetch.map(async (target) => {
       try {
-        const bars = await fetchChartBars(target.uic, target.assetType, token, baseUrl);
+        // Resolve UIC + AssetType if not already provided (e.g. when called inline from a route)
+        let uic = target.uic;
+        let assetType = target.assetType;
+        if (!uic || !assetType) {
+          // Strip exchange suffix for Saxo search (e.g. "SERV:XNAS" → "SERV")
+          const searchTicker = target.symbol.includes(":") ? target.symbol.split(":")[0] : target.symbol;
+          const resolved = await resolveUicForTicker(searchTicker, token, baseUrl);
+          if (!resolved) {
+            logger.warn({ symbol: target.symbol }, "[price-context-service] UIC resolution failed — skipping");
+            return;
+          }
+          uic = resolved.uic;
+          assetType = resolved.assetType;
+        }
+        const bars = await fetchChartBars(uic, assetType, token, baseUrl);
 
         if (bars.length < 5) {
           logger.warn({ symbol: target.symbol, bars: bars.length }, "[price-context-service] Insufficient bars — skipping");
