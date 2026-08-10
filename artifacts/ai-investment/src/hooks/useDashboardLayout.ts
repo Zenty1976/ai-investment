@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
 import type { LayoutItem } from "react-grid-layout";
 
-// Grid: cols=12, rowHeight=100px, margin=[8,8].
-// w=6, h=4 → ~600×424px per tile (2 tiles per row).
-const STORAGE_KEY_BASE = "ai-dashboard-layout-v13";
-const MODULES_KEY_BASE = "ai-dashboard-modules-v13";
+// ── Storage keys (localStorage — used as fast synchronous cache) ─────────────
+const STORAGE_KEY_BASE  = "ai-dashboard-layout-v13";
+const MODULES_KEY_BASE  = "ai-dashboard-modules-v13";
 export const ACTIVE_LAYOUT_KEY = "ai-dashboard-active-v13";
-/** Default tile sizes when a module is first added. */
+
+// ── Default tile sizes ───────────────────────────────────────────────────────
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "automation":          { w: 6, h: 4 },
   "portfolio-manager":   { w: 6, h: 4 },
@@ -35,10 +35,6 @@ export const DEFAULT_MODULES = [
   "investor-watch", "command-brief",
 ];
 
-/**
- * Default 12-column layout, rowHeight=100px, margin=[8,8].
- * w=6, h=4 → ~600×424px per tile. Two tiles per row.
- */
 export const DEFAULT_LAYOUT: LayoutItem[] = [
   { i: "automation",         x: 0, y:  0, w: 6, h: 4, minW: 1, minH: 1 },
   { i: "portfolio-manager",  x: 6, y:  0, w: 6, h: 4, minW: 1, minH: 1 },
@@ -56,6 +52,8 @@ export const DEFAULT_LAYOUT: LayoutItem[] = [
   { i: "command-brief",      x: 6, y: 24, w: 6, h: 4, minW: 1, minH: 1 },
 ];
 
+// ── localStorage helpers ─────────────────────────────────────────────────────
+
 function readStorage<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -65,17 +63,86 @@ function readStorage<T>(key: string, fallback: T): T {
   }
 }
 
-/**
- * Validate that the saved layout uses 24-column scale (max w ≥ 8).
- * If all tiles have w ≤ 6, the layout was saved under the old 12-col grid
- * and must be discarded so DEFAULT_LAYOUT takes over.
- */
+function tryParse<T>(raw: string | null): T | null {
+  if (!raw) return null;
+  try { return JSON.parse(raw) as T; } catch { return null; }
+}
+
 function isValidLayout(layout: LayoutItem[]): boolean {
   if (!Array.isArray(layout) || layout.length === 0) return false;
-  // 12-col grid: valid tiles have w between 1 and 12
   const maxW = Math.max(...layout.map(l => l.w));
   return maxW >= 1 && maxW <= 12;
 }
+
+// ── Server sync ──────────────────────────────────────────────────────────────
+
+interface ServerLayoutEntry {
+  modules: string[];
+  layout: LayoutItem[];
+}
+
+interface ServerLayoutState {
+  active?: string;
+  layouts?: Record<string, ServerLayoutEntry>;
+}
+
+/** Load from server → write to localStorage → return parsed state (or null on failure). */
+async function loadFromServer(): Promise<ServerLayoutState | null> {
+  try {
+    const res = await fetch("/api/layouts");
+    if (!res.ok) return null;
+    const data = await res.json() as ServerLayoutState;
+    if (!data || typeof data !== "object") return null;
+
+    // Populate localStorage cache from server data
+    if (data.active) {
+      localStorage.setItem(ACTIVE_LAYOUT_KEY, data.active);
+    }
+    for (const id of ["1", "2", "3"] as const) {
+      const entry = data.layouts?.[id];
+      if (entry?.modules) {
+        localStorage.setItem(`${MODULES_KEY_BASE}-${id}`, JSON.stringify(entry.modules));
+      }
+      if (entry?.layout) {
+        localStorage.setItem(`${STORAGE_KEY_BASE}-${id}`, JSON.stringify(entry.layout));
+      }
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read the full state from localStorage and push to the server.
+ * Fire-and-forget — UI never waits for the response.
+ */
+function pushToServer(): void {
+  const state: ServerLayoutState = {
+    active: localStorage.getItem(ACTIVE_LAYOUT_KEY) ?? "1",
+    layouts: {
+      "1": {
+        modules: tryParse<string[]>(localStorage.getItem(`${MODULES_KEY_BASE}-1`)) ?? [],
+        layout:  tryParse<LayoutItem[]>(localStorage.getItem(`${STORAGE_KEY_BASE}-1`)) ?? [],
+      },
+      "2": {
+        modules: tryParse<string[]>(localStorage.getItem(`${MODULES_KEY_BASE}-2`)) ?? [],
+        layout:  tryParse<LayoutItem[]>(localStorage.getItem(`${STORAGE_KEY_BASE}-2`)) ?? [],
+      },
+      "3": {
+        modules: tryParse<string[]>(localStorage.getItem(`${MODULES_KEY_BASE}-3`)) ?? [],
+        layout:  tryParse<LayoutItem[]>(localStorage.getItem(`${STORAGE_KEY_BASE}-3`)) ?? [],
+      },
+    },
+  };
+  fetch("/api/layouts", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(state),
+  }).catch(() => { /* silently ignore — localStorage is the fallback */ });
+}
+
+// ── Public API ───────────────────────────────────────────────────────────────
 
 export type LayoutId = 1 | 2 | 3;
 
@@ -92,6 +159,7 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
   const storageKey = `${STORAGE_KEY_BASE}-${layoutId}`;
   const modulesKey = `${MODULES_KEY_BASE}-${layoutId}`;
 
+  // ── Initialise from localStorage synchronously (no flicker) ────────────────
   const [layout, setLayout] = useState<LayoutItem[]>(() => {
     const saved = readStorage(storageKey, DEFAULT_LAYOUT);
     return isValidLayout(saved) ? saved : DEFAULT_LAYOUT;
@@ -102,7 +170,30 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
     return readStorage(modulesKey, defaultMods);
   });
 
-  // Re-read from the appropriate storage keys whenever the active layout changes
+  // ── One-time mount: load from server and override local state ────────────────
+  // If the server has no data yet (first boot / new deployment), push what
+  // localStorage already has so the server file is bootstrapped immediately.
+  useEffect(() => {
+    loadFromServer().then((state) => {
+      const hasServerData = !!state?.layouts && Object.keys(state.layouts).some(
+        id => (state.layouts![id]?.layout?.length ?? 0) > 0
+      );
+
+      if (!hasServerData) {
+        // Bootstrap: push existing localStorage data up to the server
+        pushToServer();
+        return;
+      }
+
+      const id = String(layoutId) as "1" | "2" | "3";
+      const entry = state!.layouts![id];
+      if (entry?.layout && isValidLayout(entry.layout)) setLayout(entry.layout);
+      if (entry?.modules) setActiveModules(entry.modules);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — run once on mount only
+
+  // ── Re-read from localStorage whenever the active layout tab changes ─────────
   useEffect(() => {
     const defaultMods = layoutId === 1 ? DEFAULT_MODULES : [];
     const saved = readStorage(storageKey, DEFAULT_LAYOUT);
@@ -110,9 +201,12 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
     setActiveModules(readStorage(modulesKey, defaultMods));
   }, [storageKey, modulesKey, layoutId]);
 
+  // ── Write helpers — always write to localStorage then push to server ─────────
+
   const saveLayout = useCallback((newLayout: LayoutItem[]) => {
     setLayout(newLayout);
     localStorage.setItem(storageKey, JSON.stringify(newLayout));
+    pushToServer();
   }, [storageKey]);
 
   const addModule = useCallback((moduleId: string) => {
@@ -120,17 +214,19 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
       if (prev.includes(moduleId)) return prev;
       const next = [...prev, moduleId];
       localStorage.setItem(modulesKey, JSON.stringify(next));
+      pushToServer();
       return next;
     });
     setLayout(prev => {
       if (prev.find(l => l.i === moduleId)) return prev;
-      const { w, h } = DEFAULT_SIZES[moduleId] ?? { w: 8, h: 16 };
+      const { w, h } = DEFAULT_SIZES[moduleId] ?? { w: 6, h: 4 };
       const bottomY = prev.reduce((max, l) => Math.max(max, l.y + l.h), 0);
       const next: LayoutItem[] = [
         ...prev,
-        { i: moduleId, x: 0, y: bottomY, w, h, minW: 4, minH: 6 } as LayoutItem,
+        { i: moduleId, x: 0, y: bottomY, w, h, minW: 1, minH: 1 } as LayoutItem,
       ];
       localStorage.setItem(storageKey, JSON.stringify(next));
+      pushToServer();
       return next;
     });
   }, [modulesKey, storageKey]);
@@ -139,6 +235,7 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
     setActiveModules(prev => {
       const next = prev.filter(id => id !== moduleId);
       localStorage.setItem(modulesKey, JSON.stringify(next));
+      pushToServer();
       return next;
     });
   }, [modulesKey]);
@@ -149,6 +246,7 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
     setLayout(DEFAULT_LAYOUT);
     localStorage.setItem(modulesKey, JSON.stringify(defaultMods));
     localStorage.setItem(storageKey, JSON.stringify(DEFAULT_LAYOUT));
+    pushToServer();
   }, [layoutId, modulesKey, storageKey]);
 
   const clearLayout = useCallback(() => {
@@ -156,6 +254,7 @@ export function useDashboardLayout(layoutId: LayoutId = 1) {
     setLayout([]);
     localStorage.setItem(modulesKey, JSON.stringify([]));
     localStorage.setItem(storageKey, JSON.stringify([]));
+    pushToServer();
   }, [modulesKey, storageKey]);
 
   return { activeModules, layout, saveLayout, addModule, removeModule, resetLayout, clearLayout };
