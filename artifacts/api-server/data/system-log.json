@@ -1,89 +1,5 @@
 [
   {
-    "id": "ddd9695f-f462-4bee-9f63-5151562ed214",
-    "timestamp": "2026-08-10T10:30:16.062Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "UU. left the list (was rank 1)"
-  },
-  {
-    "id": "c2cd8b35-032f-49fd-9725-4167e6a9f988",
-    "timestamp": "2026-08-10T10:30:16.064Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "SU left the list (was rank 2)"
-  },
-  {
-    "id": "34dbf5e5-eb74-472a-a162-6e9eeac93e36",
-    "timestamp": "2026-08-10T10:30:16.066Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "ED left the list (was rank 3)"
-  },
-  {
-    "id": "509d4e60-a0b9-4319-b863-691fb4c2492f",
-    "timestamp": "2026-08-10T10:30:16.067Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "AIT left the list (was rank 4)"
-  },
-  {
-    "id": "3cfed0e7-8df2-41c1-94b4-727f63506ba0",
-    "timestamp": "2026-08-10T10:30:16.071Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder completed via RunAllNow (10660ms, change: Medium)"
-  },
-  {
-    "id": "97ef33ee-e7de-4be3-9b13-c3d9a7873bde",
-    "timestamp": "2026-08-10T10:30:16.914Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "c56dea78-04a3-4257-bdfc-230bb8ab45d2",
-    "timestamp": "2026-08-10T10:30:27.213Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Eni for energy diversification\" (ENI): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "e34ab53b-fe70-4346-ad09-0525ca6c219b",
-    "timestamp": "2026-08-10T10:30:27.216Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Halliburton for energy services exposure\" (HAL): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "3b4b7797-b751-4ae9-ba3b-bb83bfb4c2e2",
-    "timestamp": "2026-08-10T10:30:27.220Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] ENI (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "91edc5aa-9a86-466e-a5b8-d17937b00a44",
-    "timestamp": "2026-08-10T10:30:27.222Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] HAL (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "6186314e-3413-422e-a5de-dbf70e6de773",
-    "timestamp": "2026-08-10T10:30:27.239Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "44b88dd8-2bb1-47c2-84a9-8028c3128e4c",
-    "timestamp": "2026-08-10T10:30:27.240Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
     "id": "2cf8ab02-c162-4cf7-82de-1a66ba1143b5",
     "timestamp": "2026-08-10T10:30:27.243Z",
     "module": "Trade Decision Engine",
@@ -3495,6 +3411,90 @@
   {
     "id": "7a165bfa-3eb5-4097-a9bd-62ed3edf7fd1",
     "timestamp": "2026-08-10T19:02:05.787Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "d0d7c4d7-d755-492b-b81b-7660063bf566",
+    "timestamp": "2026-08-10T19:05:46.835Z",
+    "module": "Settings",
+    "level": "user",
+    "message": "User started Saxo login"
+  },
+  {
+    "id": "c554b4d5-cd05-4acc-8fd9-c5a8b8d69c44",
+    "timestamp": "2026-08-10T19:05:59.604Z",
+    "module": "Settings",
+    "level": "info",
+    "message": "Saxo connection established in sim environment"
+  },
+  {
+    "id": "dd83850f-3000-48c3-add2-38683e2a543f",
+    "timestamp": "2026-08-10T19:08:05.928Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "bd673613-fe24-4e33-9f44-57d022a76081",
+    "timestamp": "2026-08-10T19:08:11.064Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "796a382b-b837-4a45-83b7-33c22be178c7",
+    "timestamp": "2026-08-10T19:08:11.069Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (5186ms, change: Medium)"
+  },
+  {
+    "id": "798c6d61-521c-4dc4-ae5a-206a4297de38",
+    "timestamp": "2026-08-10T19:08:35.886Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "818ec08d-0869-4cc9-b3ab-24b27de83ca2",
+    "timestamp": "2026-08-10T19:08:43.480Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 3 market-moving stories found"
+  },
+  {
+    "id": "4426bf20-cc45-4d4a-93ba-cfd74497e8c6",
+    "timestamp": "2026-08-10T19:08:43.484Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (7602ms, change: Medium)"
+  },
+  {
+    "id": "bca61707-f1e7-48e6-aec6-0b7d8a703879",
+    "timestamp": "2026-08-10T19:10:35.993Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "dff4fdcc-bcd3-42d6-ba82-a53b01379f50",
+    "timestamp": "2026-08-10T19:10:39.952Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "c23feff9-7d54-4a9d-b989-a86780aa3621",
+    "timestamp": "2026-08-10T19:10:39.955Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (3966ms, change: Medium)"
+  },
+  {
+    "id": "4d84263e-1740-4ccb-8e0a-d0b6d9d2da21",
+    "timestamp": "2026-08-10T19:19:57.784Z",
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"

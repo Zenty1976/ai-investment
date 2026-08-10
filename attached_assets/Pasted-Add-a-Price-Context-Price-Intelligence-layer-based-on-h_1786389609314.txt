@@ -1,0 +1,879 @@
+Add a Price Context / Price Intelligence layer based on historical Saxo Bank market data.
+
+IMPORTANT:
+This is NOT a new independent AI analysis module and should NOT change the existing architecture.
+
+The purpose is to give the existing Company Monitor, Opportunity Finder, Trade Decision and relevant risk analysis objective context about how a stock's price has actually behaved.
+
+The important architectural principle is:
+
+Saxo historical market data
+→ deterministic backend calculations
+→ compact Price Context
+→ existing AI modules receive Price Context
+→ AI interprets it together with fundamentals/news/events/risk
+→ Trade Decision remains the final decision engine.
+
+Do NOT send long raw price histories to OpenAI and ask the model to identify chart patterns.
+
+
+==================================================
+1. SAXO HISTORICAL DATA
+==================================================
+
+Use the existing/planned Saxo integration to retrieve historical daily market data for relevant stocks.
+
+Prefer approximately 90 trading days of history rather than only 30 days if the Saxo API supports this efficiently.
+
+Use daily OHLC data and volume if available:
+
+- date/time
+- open
+- high
+- low
+- close
+- volume
+
+At minimum close prices are required.
+
+Historical data should be available for:
+
+1. Current portfolio holdings
+2. Companies currently tracked by Company Monitor
+3. Current Opportunity Finder candidates
+4. Symbols currently being evaluated by Trade Decision
+
+Do not fetch historical data separately and repeatedly for every AI module.
+
+Create/reuse one shared market-data service/cache so the same Saxo data can be reused across modules.
+
+
+==================================================
+2. PRICE CONTEXT MUST BE CALCULATED IN BACKEND
+==================================================
+
+Create a deterministic backend Price Context calculation.
+
+OpenAI should NOT calculate basic returns, trends, slopes, highs/lows or volatility from raw price arrays.
+
+Given historical prices, calculate useful objective metrics.
+
+Suggested PriceContext model:
+
+{
+  symbol: string,
+  asOf: timestamp,
+
+  currentPrice: number,
+
+  returns: {
+    oneDayPct: number | null,
+    fiveDayPct: number | null,
+    tenDayPct: number | null,
+    thirtyDayPct: number | null,
+    ninetyDayPct: number | null
+  },
+
+  range: {
+    thirtyDayHigh: number | null,
+    thirtyDayLow: number | null,
+    distanceFrom30DayHighPct: number | null,
+    distanceFrom30DayLowPct: number | null,
+
+    ninetyDayHigh: number | null,
+    ninetyDayLow: number | null,
+    distanceFrom90DayHighPct: number | null,
+    distanceFrom90DayLowPct: number | null
+  },
+
+  trend: {
+    fiveDaySlope: number | null,
+    tenDaySlope: number | null,
+    thirtyDaySlope: number | null,
+    ninetyDaySlope: number | null,
+
+    shortTermTrend: enum,
+    mediumTermTrend: enum,
+    longTermTrend: enum,
+
+    momentumChange: enum
+  },
+
+  volatility: {
+    fiveDay: number | null,
+    thirtyDay: number | null,
+    volatilityState: enum,
+    volatilityTrend: enum
+  },
+
+  structure: {
+    higherLows: boolean | null,
+    lowerHighs: boolean | null
+  },
+
+  priceState: enum,
+
+  dataQuality: {
+    availableTradingDays: number,
+    sufficientFor90DayAnalysis: boolean
+  }
+}
+
+
+==================================================
+3. RETURNS
+==================================================
+
+Calculate percentage price changes for:
+
+1 trading day
+5 trading days
+10 trading days
+30 trading days
+90 trading days
+
+Use trading observations, not calendar-day assumptions.
+
+Example:
+
+SERV:
+
+1D       +0.4%
+5D       -0.8%
+10D      -2.1%
+30D     -28.7%
+90D     -41.3%
+
+This immediately gives useful context:
+
+The stock has fallen heavily over the longer period, while the recent decline has become much smaller.
+
+But do NOT conclude from returns alone that a reversal is occurring.
+
+
+==================================================
+4. TREND / SLOPE
+==================================================
+
+Calculate objective trend slopes for multiple windows.
+
+At minimum:
+
+5 trading days
+10 trading days
+30 trading days
+90 trading days
+
+Use a simple deterministic method such as linear regression against normalized prices.
+
+IMPORTANT:
+Normalize slope so it is comparable between stocks with different absolute prices.
+
+Do NOT use raw dollars-per-day as the primary slope measurement.
+
+For example, calculate slope from percentage/normalized price development.
+
+Classify trends conservatively into something like:
+
+StrongDowntrend
+Downtrend
+Flat
+Uptrend
+StrongUptrend
+
+Keep thresholds centralized and documented so the same data always produces the same classification.
+
+Do NOT allow OpenAI to choose these classifications.
+
+
+==================================================
+5. MOMENTUM CHANGE
+==================================================
+
+The backend should compare longer and shorter trend windows.
+
+This is important for detecting situations such as:
+
+30D = strong negative trend
+10D = mild negative trend
+5D = approximately flat
+
+That means the stock is still in a longer-term downtrend, but the negative momentum is weakening.
+
+Create a deterministic momentumChange classification such as:
+
+AcceleratingNegative
+Negative
+NegativeMomentumWeakening
+Stable
+PositiveMomentumDeveloping
+Positive
+AcceleratingPositive
+
+Be conservative.
+
+"NegativeMomentumWeakening" does NOT mean "price will rise".
+
+It only means the rate of decline has reduced.
+
+
+==================================================
+6. RANGE POSITION
+==================================================
+
+Calculate:
+
+30D high
+30D low
+90D high
+90D low
+
+and percentage distance from those levels.
+
+Example:
+
+Current: $8.42
+30D low: $8.10
+Distance from 30D low: +4.0%
+
+This helps distinguish a stock trading near recent lows from one that has already rebounded substantially.
+
+
+==================================================
+7. VOLATILITY
+==================================================
+
+Calculate simple realized volatility from daily returns.
+
+At minimum compare:
+
+5D volatility
+30D volatility
+
+Classify:
+
+Low
+Normal
+Elevated
+High
+
+and volatility trend:
+
+Falling
+Stable
+Rising
+
+Again, use deterministic backend thresholds.
+
+Do not ask OpenAI to calculate volatility.
+
+
+==================================================
+8. SIMPLE PRICE STRUCTURE
+==================================================
+
+If reliable with the available daily data, derive simple structure information such as:
+
+higherLows
+lowerHighs
+
+Keep this simple.
+
+Do NOT build a complicated technical-analysis/chart-pattern engine.
+
+Do NOT attempt to identify arbitrary patterns such as:
+head-and-shoulders,
+double bottoms,
+cup-and-handle,
+etc.
+
+We currently want objective price context, not speculative chart analysis.
+
+
+==================================================
+9. PRICE STATE
+==================================================
+
+Based on the deterministic metrics above, assign one conservative descriptive PriceState.
+
+Possible values could be:
+
+StrongDowntrend
+Downtrend
+StabilizingAfterDecline
+RangeBound
+PossibleRecovery
+Uptrend
+StrongUptrend
+ExtendedAfterRally
+
+These states are DESCRIPTIVE, not predictions.
+
+Be especially conservative with:
+
+StabilizingAfterDecline
+PossibleRecovery
+
+For example, StabilizingAfterDecline should require evidence such as:
+
+- significant negative 30D/90D performance
+- long/medium trend remains negative
+- short-term slope has moved substantially toward zero
+- recent returns are much less negative than longer-term returns
+- price is no longer making rapid new lows
+- optionally volatility is falling
+
+It must NOT mean:
+
+"the stock has bottomed"
+or
+"the stock is about to rise".
+
+PossibleRecovery should require stronger evidence than stabilization, for example short-term trend turning positive after a significant decline.
+
+Centralize all thresholds/configuration so they can later be tuned.
+
+
+==================================================
+10. EXAMPLE PRICE CONTEXT
+==================================================
+
+For a stock like SERV, the backend might produce:
+
+{
+  "symbol": "SERV",
+  "currentPrice": 8.42,
+
+  "returns": {
+    "oneDayPct": 0.4,
+    "fiveDayPct": -0.8,
+    "tenDayPct": -2.1,
+    "thirtyDayPct": -28.7,
+    "ninetyDayPct": -41.3
+  },
+
+  "range": {
+    "thirtyDayHigh": 12.31,
+    "thirtyDayLow": 8.10,
+    "distanceFrom30DayHighPct": -31.6,
+    "distanceFrom30DayLowPct": 4.0
+  },
+
+  "trend": {
+    "shortTermTrend": "Flat",
+    "mediumTermTrend": "StrongDowntrend",
+    "longTermTrend": "StrongDowntrend",
+    "momentumChange": "NegativeMomentumWeakening"
+  },
+
+  "volatility": {
+    "volatilityState": "High",
+    "volatilityTrend": "Falling"
+  },
+
+  "priceState": "StabilizingAfterDecline"
+}
+
+These values are EXAMPLES ONLY.
+Do not hardcode them.
+
+
+==================================================
+11. IMPORTANT SEMANTIC DISTINCTION
+==================================================
+
+Never equate:
+
+PRICE HAS FALLEN
+with
+STOCK IS CHEAP.
+
+These are completely different concepts.
+
+Price Context describes MARKET PRICE BEHAVIOR.
+
+Valuation determines whether the security appears cheap/expensive relative to fundamentals.
+
+Company/fundamental analysis determines the quality and outlook of the business.
+
+Keep these concepts separate throughout the code and OpenAI prompts.
+
+
+==================================================
+12. COMPANY MONITOR INTEGRATION
+==================================================
+
+Add the compact PriceContext for the company to the structured input sent to Company Monitor's OpenAI analysis.
+
+Do NOT send raw historical prices.
+
+Update the Company Monitor prompt so OpenAI understands:
+
+Price Context is supporting context only.
+
+A falling share price must NOT automatically weaken:
+- investment thesis
+- InvestmentCaseStrength
+- stable profile
+- competitive position
+
+Likewise, a rising price must NOT automatically strengthen them.
+
+Company Monitor should use Price Context to ask:
+
+"Is the observed market-price behavior consistent with the fundamental/news/event changes we have observed?"
+
+Examples:
+
+Fundamentals stable + major unexplained price decline
+→ potentially important divergence worth mentioning.
+
+Fundamentals deteriorating + major price decline
+→ price behavior may be consistent with deterioration.
+
+Fundamentals improving + price stabilizing after major decline
+→ potentially interesting development, but NOT automatically a buy signal.
+
+Preserve all existing stateful Company Monitor behavior:
+FullAnalysis
+UpdateWithChanges
+NoMaterialChange
+stable thesis IDs
+stable-field preservation
+etc.
+
+Do not allow normal daily price movement alone to trigger unnecessary material thesis changes.
+
+
+==================================================
+13. OPPORTUNITY FINDER INTEGRATION
+==================================================
+
+Add Price Context to Opportunity Finder for stocks it evaluates.
+
+This is valuable because Opportunity Finder should distinguish:
+
+"interesting company"
+from
+"interesting current opportunity".
+
+Examples:
+
+A fundamentally attractive company that has already rallied +35% in 30 days may still be attractive, but current entry/timing risk is different.
+
+A fundamentally attractive company down significantly with weakening negative momentum may deserve increased attention.
+
+However:
+
+Do NOT implement simplistic rules such as:
+
+large decline = opportunity
+large rally = reject
+
+Price Context is one factor among fundamentals, catalysts, valuation, sector conditions, risks and events.
+
+Update the OpenAI prompt accordingly.
+
+
+==================================================
+14. TRADE DECISION INTEGRATION
+==================================================
+
+Price Context is especially important for Trade Decision.
+
+Add the latest PriceContext for every symbol being evaluated.
+
+Trade Decision should explicitly consider:
+
+- current price
+- recent price movement
+- medium/long trend
+- momentum change
+- position within recent range
+- volatility
+- whether a large move has already occurred
+- whether price behavior confirms or conflicts with the fundamental/catalyst thesis
+
+Examples:
+
+Strong company
++ attractive valuation/opportunity
++ major decline
++ price beginning to stabilize
++ positive new catalyst
+
+may be more interesting than the same fundamental case while price is still accelerating downward.
+
+But:
+
+StabilizingAfterDecline alone must NEVER produce Buy/Ready.
+
+Likewise:
+
+Strong recent rally alone must NEVER produce Sell.
+
+Trade Decision must combine Price Context with:
+
+fundamentals
+valuation
+news
+events
+portfolio fit
+risk
+position sizing
+current holdings
+etc.
+
+Trade Decision remains authoritative for:
+
+Hold
+Watch
+PrepareToBuy
+PrepareToReduce
+WaitForEvent
+Buy/Ready
+Sell/Ready
+
+Price Context should improve TIMING and current-action assessment, not replace the existing decision architecture.
+
+
+==================================================
+15. RISK ANALYZER
+==================================================
+
+Where appropriate, provide Price Context for CURRENT PORTFOLIO positions to Risk Analyzer.
+
+Risk Analyzer may use:
+
+- high/rising volatility
+- accelerating negative momentum
+- unusually large recent decline
+- concentration combined with volatile positions
+
+as market-risk context.
+
+Do not allow short-term price movement alone to dominate portfolio risk.
+
+For example:
+
+a highly volatile speculative SERV position can contribute more market risk than a stable core holding.
+
+But fundamental/company/portfolio risks remain separate concepts.
+
+
+==================================================
+16. PORTFOLIO ANALYZER
+==================================================
+
+If useful within the existing implementation, provide compact Price Context for portfolio holdings to Portfolio Analyzer as well.
+
+It may use this to describe things such as:
+
+- which holdings are driving recent portfolio movement
+- positions under sustained price pressure
+- positions with strong recent momentum
+- positions stabilizing after declines
+
+Again, this is descriptive context, not an independent trading signal.
+
+
+==================================================
+17. COMMAND BRIEF
+==================================================
+
+Do NOT send raw price histories to Command Brief.
+
+Normally Command Brief should receive the conclusions already produced by Trade Decision, Risk Analyzer, Portfolio Analyzer, etc.
+
+Only include direct Price Context in Command Brief if there is an unusually important price development that the higher-level modules expose as relevant.
+
+Avoid duplicating information.
+
+
+==================================================
+18. MARKET/SECTOR RELATIVE CONTEXT - FUTURE READY
+==================================================
+
+Design PriceContext so relative performance can be added later.
+
+For example:
+
+stock30DReturn: -12%
+sector30DReturn: -10%
+market30DReturn: -2%
+
+is much more informative than simply:
+
+stock30DReturn: -12%
+
+If suitable sector/index market data is already easily available, implement:
+
+relativeToMarket30D
+relativeToSector30D
+
+Otherwise make the data model extensible but do NOT add unnecessary complexity now.
+
+Do not block the initial implementation on benchmark data.
+
+
+==================================================
+19. DATA FRESHNESS
+==================================================
+
+Price Context must contain:
+
+asOf timestamp
+source
+number of observations/trading days
+data quality / completeness
+
+AI modules must know if price context is stale or incomplete.
+
+Never silently use old historical data as if it were current.
+
+If Saxo data is unavailable, the AI modules should continue without Price Context rather than inventing it.
+
+
+==================================================
+20. OPENAI PAYLOAD
+==================================================
+
+Do NOT send the complete 90-day OHLC history to OpenAI.
+
+Send only the compact calculated PriceContext.
+
+The model needs semantic facts such as:
+
+30D return: -28.7%
+90D return: -41.3%
+short trend: Flat
+medium trend: StrongDowntrend
+negative momentum: weakening
+4% above 30D low
+volatility: High but Falling
+price state: StabilizingAfterDecline
+
+This provides the useful information with very few tokens and makes the behavior deterministic.
+
+
+==================================================
+21. OPENAI PROMPT RULES
+==================================================
+
+Update relevant OpenAI system/developer prompts to explicitly explain:
+
+Price Context is deterministic market-price context produced by the backend.
+
+It is NOT a forecast.
+
+Definitions:
+
+"StabilizingAfterDecline"
+means the previous negative price momentum has materially weakened.
+
+It does NOT mean:
+- bottom confirmed
+- reversal confirmed
+- stock will rise
+- stock is cheap
+- buy
+
+"PossibleRecovery"
+means short-term price behavior has begun improving after a previous decline.
+
+It still does NOT mean a durable reversal is confirmed.
+
+"ExtendedAfterRally"
+does NOT mean sell or short.
+
+Never infer valuation purely from price movement.
+
+Never modify fundamental thesis strength solely because of normal price movement.
+
+Use Price Context together with fundamentals, valuation, news, events, portfolio/risk and catalysts.
+
+
+==================================================
+22. DEBUGGING
+==================================================
+
+For every OpenAI-based module that receives Price Context, ensure its existing debug dialog shows the Price Context as part of the exact structured input sent to OpenAI.
+
+Do NOT create a separate debug system.
+
+The existing debug functionality should make it possible to verify:
+
+raw module input
+Price Context included
+exact prompt
+OpenAI raw response
+parsed response
+validation errors/retries
+
+This is important so we can inspect whether OpenAI is using Price Context correctly.
+
+
+==================================================
+23. UI
+==================================================
+
+Do NOT create a large new dashboard module for Price Context.
+
+Price Context is primarily infrastructure/data for the existing intelligence pipeline.
+
+However, where useful in Company Monitor/company details, show a small compact Price Context section such as:
+
+PRICE CONTEXT
+
+$8.42
+1D   +0.4%
+5D   -0.8%
+30D -28.7%
+90D -41.3%
+
+Trend: ↓ Long-term
+Momentum: Stabilizing
+Volatility: High ↓
+Near 30D low (+4%)
+
+Optionally include a small sparkline/chart if the existing UI can do this simply.
+
+Do not clutter overview dashboards with technical indicators.
+
+
+==================================================
+24. DO NOT TURN THIS INTO TECHNICAL ANALYSIS
+==================================================
+
+This is important.
+
+Do NOT add:
+
+RSI
+MACD
+Bollinger Bands
+Fibonacci levels
+dozens of moving averages
+candlestick-pattern recognition
+complex technical-analysis libraries
+
+unless explicitly requested later.
+
+The purpose of this first implementation is simple:
+
+Give the AI system objective knowledge of:
+
+WHERE the price has been,
+HOW fast it has moved,
+WHETHER the trend is accelerating or weakening,
+WHERE the current price sits in its recent range,
+and HOW volatile the movement is.
+
+Keep it simple and explainable.
+
+
+==================================================
+25. ORCHESTRATOR / UPDATE FLOW
+==================================================
+
+Historical price fetching and Price Context calculation should fit into the existing central Automation Orchestrator architecture.
+
+Do NOT create frontend timers.
+
+Before an AI module that requires current Price Context runs:
+
+ensure relevant Saxo market data is sufficiently fresh
+→ calculate/update Price Context
+→ run the dependent AI analysis.
+
+Avoid making separate Saxo API requests from Company Monitor, Opportunity Finder, Trade Decision, Risk Analyzer, etc.
+
+One shared data layer should serve all of them.
+
+If historical data has already been fetched recently and is still valid, reuse it.
+
+
+==================================================
+26. IMPORTANT: CURRENT PRICE AT TRADE TIME
+==================================================
+
+Historical Price Context does NOT replace the need for a current/recent quote.
+
+When Trade Decision eventually produces a trade candidate and especially before Trade Review/execution, use a sufficiently current Saxo quote.
+
+Position sizing and estimated trade value must use the current/recent executable market context, not an old daily close from the historical series.
+
+This becomes especially important when Saxo execution is implemented.
+
+
+==================================================
+27. IMPLEMENTATION PRINCIPLE
+==================================================
+
+Before implementing this, inspect the CURRENT codebase and reuse:
+
+- existing Saxo service/integration patterns
+- module types
+- persistence
+- OpenAI client
+- schema validation
+- debug dialogs
+- Automation Orchestrator
+- dependency handling
+
+Do not create parallel infrastructure where reusable infrastructure already exists.
+
+Keep the implementation small and understandable.
+
+
+==================================================
+28. ACCEPTANCE TEST
+==================================================
+
+Use one portfolio/tracked stock as a test.
+
+The flow should be observable as:
+
+Saxo historical data
+→ PriceContext backend calculation
+→ persisted/cached PriceContext
+→ Company Monitor receives compact PriceContext
+→ Opportunity Finder receives it when evaluating the stock
+→ Trade Decision receives it when making a decision
+→ Risk/Portfolio Analyzer receive it where relevant
+→ OpenAI debug dialogs clearly show the PriceContext payload.
+
+Verify mathematically that returns, highs/lows, normalized slopes and volatility calculations match the underlying Saxo data.
+
+Then verify a scenario conceptually like:
+
+Long-term significant decline
++
+30D trend strongly negative
++
+10D decline much weaker
++
+5D approximately flat
++
+price near recent low
++
+volatility falling
+
+produces something like:
+
+priceState = StabilizingAfterDecline
+momentumChange = NegativeMomentumWeakening
+
+NOT:
+
+priceState = Uptrend
+
+and definitely NOT an automatic Buy signal.
+
+The final goal is:
+
+Fundamentals tell us WHAT we think about the company.
+Valuation tells us WHAT the security may be worth.
+Price Context tells us WHAT the market price has actually been doing.
+News/events tell us WHAT has changed.
+Trade Decision combines those dimensions to decide WHETHER anything should be done now.

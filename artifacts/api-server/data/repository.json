@@ -2,60 +2,51 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices are mixed: US markets modestly higher, Asia weaker; volatility easing. Macro backdrop includes cooling inflation, resilient earnings, and central bank caution amid geopolitical risks.",
+      "summary": "Global equity indices are mixed: U.S. markets modestly higher, Asia weaker; volatility easing. Central banks largely on hold amid energy-driven inflation risks and geopolitical uncertainty.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "Resilient corporate earnings and broadening sector participation support equity markets",
-        "Cooling inflation and stable US growth reduce near‑term monetary tightening risk"
+        "U.S. equities rising modestly, supporting risk appetite",
+        "European indices advancing, reflecting resilience amid geopolitical tensions"
       ],
       "negativeFactors": [
-        "Geopolitical tensions, especially in the Middle East, keep energy and inflation risks elevated",
-        "AI‑related sector volatility and crowded trades may trigger rotations if earnings disappoint"
+        "Asian markets under pressure, particularly Japan’s Nikkei",
+        "Central banks signaling caution amid energy-driven inflation and geopolitical risks"
       ],
       "strongSectors": [
-        "Health care (defensive resilience)",
-        "Financials and industrials (benefiting from rotation)"
+        "Healthcare",
+        "Consumer Cyclical"
       ],
       "weakSectors": [
-        "Semiconductors/AI‑heavy tech (profit‑taking and elevated expectations)"
+        "Technology",
+        "Energy"
       ],
       "keyRisks": [
-        "Middle East conflict disrupting energy markets and inflation trajectory",
-        "Summer liquidity and high earnings expectations could amplify volatility"
+        "Middle East conflict sustaining energy price volatility",
+        "Uncertainty around Fed’s policy path due to limited forward guidance"
       ],
       "sources": [
         {
-          "title": "Sector Market Perspectives: Q3 2026 | State Street",
-          "url": "https://www.ssga.com/us/en/individual/insights/sector-market-perspectives-q3-2026",
-          "published": "2026-07-08"
+          "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
+          "url": "https://www.nexqual.com/markets",
+          "published": "2026-07-29"
         },
         {
-          "title": "August 2026 - in a nutshell | LGT",
-          "url": "https://www.lgt.com/ch-en/market-assessments/market-view/august-2026-in-a-nutshell-364324",
-          "published": "2026-07-23"
-        },
-        {
-          "title": "Global Investment Views August 2026 | Amundi Research Center",
-          "url": "https://research-center.amundi.com/article/global-investment-views-august-2026",
+          "title": "Federal Reserve leaves interest rate unchanged but with 3 dissents",
+          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
           "published": "2026-07-28"
         },
         {
-          "title": "Markets data - stock market, bond, equity, commodity prices - FT.com",
-          "url": "https://markets.ft.markitdigital.com/data/",
-          "published": ""
-        },
-        {
-          "title": "Stock Market Indices - Investing.com",
-          "url": "https://www.investing.com/indices",
-          "published": ""
+          "title": "Europe’s central bank raises rates to fight inflation from Iran war, the Fed to decide next week",
+          "url": "https://apnews.com/article/2a2c26c580961a979372393706a7f93c",
+          "published": "2026-06-11"
         }
       ],
-      "timestamp": "2026-08-10T18:37:58.455Z",
-      "analysisDuration": 7173
+      "timestamp": "2026-08-10T19:08:05.933Z",
+      "analysisDuration": 4976
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-10T18:38:05.629Z"
+    "updatedAt": "2026-08-10T19:08:10.915Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -155,118 +146,69 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Markets are reacting to a tech-led rotation amid AI earnings skepticism, renewed energy-driven inflation pressures from the Strait of Hormuz crisis, and surging precious metals. Commodities and rates markets are adjusting to geopolitical shocks, while AI sector valuations face scrutiny.",
-      "overallMarketImpact": "Cautious to mixed, with defensive rotation and inflation concerns tempering risk appetite",
+      "executiveSummary": "Geopolitical tensions in the Middle East continue to drive elevated energy prices and inflation risks, while resilient U.S. growth and AI investment support equity markets. Commodity shocks and central bank caution remain key market drivers.",
+      "overallMarketImpact": "Mixed—energy and inflation pressures weigh on bonds and EM, while U.S. equities and AI sectors benefit.",
       "topStory": {
-        "title": "Tech sell‑off amid AI earnings and oil shock",
-        "summary": "AI names sold off despite strong earnings as oil‑driven inflation fears and rate pressures weigh on valuations.",
+        "title": "Middle East conflict fuels energy‑inflation shock",
+        "summary": "Ongoing Iran‑related conflict and Strait of Hormuz disruptions are sustaining energy price surges and inflation pressures globally.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "hormuz‑energy‑inflation‑pressures‑2026‑08‑10",
-          "title": "Strait of Hormuz closure keeps energy inflation elevated",
-          "summary": "Gas prices remain over $1 above pre‑war levels; oil shock continues to feed inflation concerns.",
+          "id": "middle-east-energy-inflation-2026-08-10",
+          "title": "Middle East conflict sustains energy‑inflation shock",
+          "summary": "Iran war and Strait of Hormuz disruptions continue to elevate oil and gas prices, fueling inflation globally.",
           "category": "Energy",
           "importance": "High",
           "affectedMarkets": [
-            "Oil",
-            "Inflation expectations",
-            "FX"
+            "Commodities",
+            "Inflation",
+            "Emerging Markets"
           ],
-          "whyItMatters": "Sustained energy shock pressures inflation and central bank policy outlooks.",
-          "marketImpact": "Positive for oil; negative for inflation‑sensitive assets",
-          "confidence": 0.8,
-          "source": "Reddit/TrumpGlobalWar briefing",
-          "publishedAt": "2026-08-10T20:38:00Z"
+          "whyItMatters": "Persistent energy shocks raise inflation and pressure central banks, while weighing on growth and EM currencies.",
+          "marketImpact": "Negative for bonds and EM assets; positive for oil and inflation‑hedges",
+          "confidence": 0.9,
+          "source": "World Bank",
+          "publishedAt": "2026-04-28"
         },
         {
-          "id": "tech-ai-earnings-oil‑shock-2026-08-07",
-          "title": "Tech sell‑off deepens amid AI earnings and oil shock",
-          "summary": "AI stocks fell despite strong earnings as oil price surge and rising inflation expectations pressured valuations.",
-          "category": "Equities",
-          "importance": "High",
-          "affectedMarkets": [
-            "AI/Tech equities",
-            "Treasuries",
-            "Oil"
-          ],
-          "whyItMatters": "Highlights fragility in AI valuations and cross‑asset spillovers from energy and rates.",
-          "marketImpact": "Negative for AI stocks; positive for oil and bond yields",
-          "confidence": 0.85,
-          "source": "Investing.com",
-          "publishedAt": "2026-08-07T07:41:00Z"
-        },
-        {
-          "id": "us‑jobs‑softening‑2026‑08‑09",
-          "title": "July jobs report shows surprise job losses",
-          "summary": "Unemployment ticks down but job losses signal softening labor market.",
-          "category": "Macro",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Labor‑sensitive sectors",
-            "Rates"
-          ],
-          "whyItMatters": "Weak labor data may delay Fed tightening or shift rate expectations.",
-          "marketImpact": "Mixed; dovish for rates, cautious for equities",
-          "confidence": 0.7,
-          "source": "Investopedia via Reddit briefing",
-          "publishedAt": "2026-08-09T11:52:00Z"
-        },
-        {
-          "id": "precious‑metals‑surge‑2026-08-08",
-          "title": "Precious metals rally this week",
-          "summary": "Silver and gold rose over 2–3% amid inflation and geopolitical uncertainty.",
+          "id": "el-nino-food-commodity-risk-2026-08-08",
+          "title": "El Niño threatens food commodity prices",
+          "summary": "Strong El Niño event expected to raise global food commodity prices by around 9%.",
           "category": "Commodities",
           "importance": "Medium",
           "affectedMarkets": [
-            "Precious metals",
-            "Safe‑haven assets"
+            "Agricultural Commodities",
+            "Inflation"
           ],
-          "whyItMatters": "Reflects investor demand for inflation hedges amid macro uncertainty.",
-          "marketImpact": "Positive for gold and silver",
-          "confidence": 0.75,
-          "source": "Reddit/Metricshour",
+          "whyItMatters": "Higher food prices add to inflation pressures and risk consumer stress globally.",
+          "marketImpact": "Positive for agricultural commodities; negative for inflation outlook",
+          "confidence": 0.7,
+          "source": "Reddit (ECB cited)",
           "publishedAt": "2026-08-08"
         },
         {
-          "id": "openai‑halts‑astra‑development‑2026‑08‑08",
-          "title": "OpenAI halts Astra development",
-          "summary": "Internal pause raises regulatory and reputational risks for AI deployment timelines.",
-          "category": "AI",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "AI sector",
-            "Tech equities"
-          ],
-          "whyItMatters": "Could slow AI rollout and weigh on sector sentiment.",
-          "marketImpact": "Negative for AI stocks",
-          "confidence": 0.65,
-          "source": "Reddit/EverHint",
-          "publishedAt": "2026-08-08"
-        },
-        {
-          "id": "tech‑investments‑no‑longer‑excite‑2026‑08‑06",
-          "title": "Tech investments no longer excite markets",
-          "summary": "Record tech capex and AI spending fail to buoy valuations amid losses and cautious outlooks.",
+          "id": "us-ai‑investment‑supports‑equities-2026-07-23",
+          "title": "U.S. AI investment underpins equity resilience",
+          "summary": "Resilient U.S. growth and sustained AI infrastructure investment support equity markets.",
           "category": "Technology",
           "importance": "Medium",
           "affectedMarkets": [
-            "Tech equities",
-            "AI sector"
+            "Equities",
+            "Technology"
           ],
-          "whyItMatters": "Signals investor fatigue despite continued investment growth.",
-          "marketImpact": "Negative for tech stocks",
-          "confidence": 0.7,
-          "source": "Le Monde",
-          "publishedAt": "2026-08-06"
+          "whyItMatters": "AI spending bolsters equity sentiment amid macro uncertainty.",
+          "marketImpact": "Positive for U.S. equities and AI/tech sectors",
+          "confidence": 0.8,
+          "source": "LGT Private Banking",
+          "publishedAt": "2026-07-23"
         }
       ],
-      "timestamp": "2026-08-10T18:37:58.462Z",
-      "analysisDuration": 7723
+      "timestamp": "2026-08-10T19:08:35.890Z",
+      "analysisDuration": 7583
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-10T18:38:06.185Z"
+    "updatedAt": "2026-08-10T19:08:43.474Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2868,18 +2810,37 @@
       ],
       "nothingImportantChanged": false,
       "timestamp": "2026-08-10T18:55:23.761Z",
-      "analysisDuration": 8373,
-      "lastCheckedAt": "2026-08-10T18:55:23.761Z",
+      "analysisDuration": 3946,
+      "lastCheckedAt": "2026-08-10T19:10:35.994Z",
       "lastMeaningfulUpdateAt": "2026-08-10T18:55:23.761Z",
-      "noNewDevelopmentsSinceLastCheck": false
+      "noNewDevelopmentsSinceLastCheck": true
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-10T18:55:32.135Z"
+    "updatedAt": "2026-08-10T19:10:39.941Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-10T19:10:35.994Z",
+          "overallAlertLevel": "High",
+          "headline": "Serve Robotics Q2 miss and guidance cut; Strait of Hormuz remains closed amid stalled reopening talks",
+          "alertCount": 0,
+          "alerts": [],
+          "newsIds": [
+            "middle-east-energy-inflation-2026-08-10",
+            "el-nino-food-commodity-risk-2026-08-08",
+            "us-ai‑investment‑supports‑equities-2026-07-23"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July 2026",
+            "U.S. Producer Price Index (PPI) – July 2026",
+            "FOMC Minutes – July 28–29 Meeting",
+            "U.S. Import and Export Price Indexes – July 2026"
+          ],
+          "checkResult": "NoChange"
+        },
         {
           "timestamp": "2026-08-10T18:55:23.761Z",
           "overallAlertLevel": "High",
@@ -3406,30 +3367,11 @@
             "U.S. Producer Price Index (July)"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-10T07:53:21.968Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk pivots to M&A after trial setbacks; Serve Robotics sees sharp revenue upgrade",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [
-            "middle-east-oil-volatility-2026-08-10",
-            "spacex-earnings-ai-spending-2026-08-05",
-            "equity‑record‑highs‑amid‑ai‑momentum‑2026‑08‑04"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (July)",
-            "FOMC Minutes (July 28–29 meeting)",
-            "Corporate Earnings Season Begins (Week of August 10)",
-            "U.S. Producer Price Index (July)"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-10T18:55:32.160Z"
+    "updatedAt": "2026-08-10T19:10:39.946Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -12118,6 +12060,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-10T19:08:05.933Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-10T18:37:58.455Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -12294,7 +12242,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-10T18:38:05.634Z"
+    "updatedAt": "2026-08-10T19:08:10.939Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
