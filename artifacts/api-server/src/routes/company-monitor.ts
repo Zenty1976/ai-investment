@@ -1022,7 +1022,24 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
     // ── Identity verification ────────────────────────────────────────────────
 
-    const returnedTicker = parsed.data.company.ticker.toUpperCase().trim();
+    let returnedTicker = parsed.data.company.ticker.toUpperCase().trim();
+
+    // Normalise exchange-suffix omission: models frequently strip the exchange
+    // suffix (e.g. return "SERV" instead of "SERV:XNAS").  If the returned
+    // ticker exactly matches the base symbol before the colon, treat it as
+    // correct and silently override so downstream code always uses the full
+    // ticker format.
+    const tickerBase = ticker.includes(":") ? ticker.split(":")[0] : null;
+    if (returnedTicker !== ticker && tickerBase && returnedTicker === tickerBase) {
+      req.log.info(
+        { requestedTicker: ticker, returnedTicker },
+        "Ticker: model returned base symbol without exchange suffix — normalising to full ticker",
+      );
+      // Mutate the parsed data so every downstream path sees the correct ticker.
+      (parsed.data.company as Record<string, unknown>).ticker = ticker;
+      returnedTicker = ticker;
+    }
+
     if (returnedTicker !== ticker) {
       lastWrongTickerReturned = returnedTicker;
       lastConsistencyError = null; // focus the next prompt on the ticker, not another error

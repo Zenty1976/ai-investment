@@ -1,26 +1,5 @@
 [
   {
-    "id": "7ba225d2-70b2-40e6-89a7-b0f225b3ad56",
-    "timestamp": "2026-08-10T18:13:29.384Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for NOVOB:XCSE: UpdateWithChanges, rating Buy, strength 70, meaningfulChange=Low"
-  },
-  {
-    "id": "7235e26c-c46b-45cd-be5b-03d86bb48f5b",
-    "timestamp": "2026-08-10T18:13:29.389Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via Scheduled (11163ms, change: Medium)"
-  },
-  {
-    "id": "667b9702-b3c4-428e-8e51-f82c2eaa878e",
-    "timestamp": "2026-08-10T18:13:29.826Z",
-    "module": "Investor Watch",
-    "level": "info",
-    "message": "Michael Burry — new material view detected. (Medium change)"
-  },
-  {
     "id": "a6ddffa7-a4d4-4c81-83b1-83441b5fc99d",
     "timestamp": "2026-08-10T18:13:30.700Z",
     "module": "Portfolio Analyzer",
@@ -3495,6 +3474,27 @@
   {
     "id": "0036fec9-0013-46f2-8ec7-a1af381e524c",
     "timestamp": "2026-08-10T20:09:42.224Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "4c0c28f9-284a-4628-9dd6-3d3a68dd4532",
+    "timestamp": "2026-08-10T20:10:31.368Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "dbed6d0a-b12a-4787-a42d-be49e403a940",
+    "timestamp": "2026-08-10T20:11:04.358Z",
+    "module": "Company Monitor",
+    "level": "error",
+    "message": "Company analysis failed for SERV:XNAS: AI returned wrong ticker \"SERV\" after 3 attempt(s)"
+  },
+  {
+    "id": "d90586fb-04f0-4484-b605-dfe8b97bebf4",
+    "timestamp": "2026-08-10T20:12:24.444Z",
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"
