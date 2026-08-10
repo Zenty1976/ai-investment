@@ -132,8 +132,8 @@ export interface PriceContext {
 
   priceState: PriceState;
 
-  /** Very short-term (2–3 session) behavior. Always present. */
-  recentBehavior: RecentBehavior;
+  /** Very short-term (2–3 session) behavior. Present on newly calculated entries; absent on legacy cache entries. */
+  recentBehavior?: RecentBehavior;
 
   dataQuality: {
     availableTradingDays: number;
@@ -772,8 +772,8 @@ export function formatPriceContextForPrompt(ctx: PriceContext): string {
   // Price state
   lines.push(`Price state: ${ctx.priceState}`);
 
-  // Recent behavior — always present; describes only the last 2–3 sessions
-  {
+  // Recent behavior — present on newly calculated entries
+  if (ctx.recentBehavior) {
     const rb = ctx.recentBehavior;
     const rbParts: string[] = [`State: ${rb.state}`];
     const retParts: string[] = [];
