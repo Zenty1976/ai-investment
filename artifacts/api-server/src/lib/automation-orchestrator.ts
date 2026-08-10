@@ -61,7 +61,7 @@ export type JobStatus =
 
 export type MeaningfulChange = "None" | "Low" | "Medium" | "High";
 
-export type FullCycleStatus = "InProgress" | "Completed" | "Failed" | "Aborted";
+export type FullCycleStatus = "InProgress" | "Completed" | "CompletedWithErrors" | "Failed" | "Aborted";
 
 export type ModuleFreshness =
   | "Fresh" | "DueSoon" | "Stale" | "Running" | "Failed" | "Disabled"
@@ -136,6 +136,8 @@ export interface FullCycleRecord {
   failedModuleId?: ModuleId;
   error?: string;
   completedModules: ModuleId[];
+  /** Errors per stage when CompletedWithErrors — key is moduleId or stage label */
+  stageErrors?: Record<string, string>;
 }
 
 export interface CompanyMonitorAggregate {
@@ -1259,6 +1261,7 @@ class AutomationOrchestratorService {
 
   private async _runFullCycle(cycle: FullCycleRecord, corrId: string): Promise<void> {
     const startMs = new Date(cycle.startedAt).getTime();
+    const stageErrors: Record<string, string> = {};
 
     const completeStage = (moduleId: ModuleId) => {
       if (!cycle.completedModules.includes(moduleId)) {
@@ -1266,23 +1269,41 @@ class AutomationOrchestratorService {
       }
     };
 
-    try {
-      // Stage 1: Portfolio Manager
+    /**
+     * Run a stage and isolate its failure — a stage error is logged and recorded
+     * but never aborts the cycle.  All subsequent stages always execute so that
+     * a manually-triggered RunAllNow processes every module in dependency order.
+     */
+    const runIsolated = async (label: string, fn: () => Promise<void>) => {
+      try {
+        await fn();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        stageErrors[label] = msg;
+        systemLog.logError(MODULE_NAME, `Full cycle: ${label} failed — continuing (${msg})`);
+      }
+    };
+
+    // Stage 1: Portfolio Manager
+    await runIsolated("portfolio-manager", async () => {
       await this._runStage(["portfolio-manager"], corrId, "RunAllNow");
       completeStage("portfolio-manager");
+    });
 
-      // Stage 2: Market Monitor, News Monitor, Event Monitor in parallel
+    // Stage 2: Market Monitor, News Monitor, Event Monitor in parallel
+    await runIsolated("market+news+event-monitor", async () => {
       await this._runStageParallel(["market-monitor", "news-monitor", "event-monitor"], corrId, "RunAllNow");
       completeStage("market-monitor"); completeStage("news-monitor"); completeStage("event-monitor");
+    });
 
-      // Stage 3: Sector Monitor
+    // Stage 3: Sector Monitor
+    await runIsolated("sector-monitor", async () => {
       await this._runStage(["sector-monitor"], corrId, "RunAllNow");
       completeStage("sector-monitor");
+    });
 
-      // Stage 4: Company Monitor for each target ticker (sequential, fault-isolated).
-      // A single ticker failure (e.g. transient AI error for one stock) must not
-      // abort the entire cycle.  We continue to the next ticker, log the error,
-      // and only fail the whole cycle if every ticker failed (nothing succeeded).
+    // Stage 4: Company Monitor — per-ticker fault isolation, always continue
+    await runIsolated("company-monitor", async () => {
       const tickers = this._getTargetTickers(5);
       let cmSuccesses = 0;
       let cmFailures = 0;
@@ -1299,78 +1320,81 @@ class AutomationOrchestratorService {
           );
         }
       }
-      if (tickers.length > 0 && cmSuccesses === 0) {
-        throw new Error(`company-monitor: all ${tickers.length} ticker(s) failed`);
-      }
       if (cmFailures > 0) {
         systemLog.logWarning(MODULE_NAME,
           `Full cycle: Company Monitor completed with ${cmSuccesses} success(es) and ${cmFailures} failure(s)`
         );
       }
+      if (tickers.length > 0 && cmSuccesses === 0) {
+        throw new Error(`company-monitor: all ${tickers.length} ticker(s) failed`);
+      }
       completeStage("company-monitor");
+    });
 
-      // Stage 5: Market Alerts
+    // Stage 5: Market Alerts
+    await runIsolated("market-alerts", async () => {
       await this._runStage(["market-alerts"], corrId, "RunAllNow");
       completeStage("market-alerts");
+    });
 
-      // Stage 6: Risk Analyzer
+    // Stage 6: Risk Analyzer
+    await runIsolated("risk-analyzer", async () => {
       await this._runStage(["risk-analyzer"], corrId, "RunAllNow");
       completeStage("risk-analyzer");
+    });
 
-      // Stage 7: Portfolio Analyzer
+    // Stage 7: Portfolio Analyzer
+    await runIsolated("portfolio-analyzer", async () => {
       await this._runStage(["portfolio-analyzer"], corrId, "RunAllNow");
       completeStage("portfolio-analyzer");
+    });
 
-      // Stage 8: Opportunity Finder
+    // Stage 8: Opportunity Finder
+    await runIsolated("opportunity-finder", async () => {
       await this._runStage(["opportunity-finder"], corrId, "RunAllNow");
       completeStage("opportunity-finder");
+    });
 
-      // Stage 9: Trade Decision Engine
+    // Stage 9: Trade Decision Engine
+    await runIsolated("trade-decision-engine", async () => {
       await this._runStage(["trade-decision-engine"], corrId, "RunAllNow");
       completeStage("trade-decision-engine");
+    });
 
-      // Stage 10: Trade Review
+    // Stage 10: Trade Review
+    await runIsolated("trade-review", async () => {
       await this._runStage(["trade-review"], corrId, "RunAllNow");
       completeStage("trade-review");
+    });
 
-      // Stage 11: Command Brief — summarises all preceding module outputs.
-      // Isolated: a failure here must NOT abort the full cycle.
-      try {
-        await this._runStage(["command-brief"], corrId, "RunAllNow");
-        completeStage("command-brief");
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        systemLog.logWarning(MODULE_NAME,
-          `Full cycle: Command Brief failed — continuing (${msg})`
-        );
-      }
+    // Stage 11: Command Brief — summarises all preceding module outputs
+    await runIsolated("command-brief", async () => {
+      await this._runStage(["command-brief"], corrId, "RunAllNow");
+      completeStage("command-brief");
+    });
 
-      const nowIso = new Date().toISOString();
-      this.lastFullCycleAt = nowIso;
-      cycle.status = "Completed";
-      cycle.completedAt = nowIso;
-      cycle.durationMs = Date.now() - startMs;
-      systemLog.logInfo(MODULE_NAME, `Full cycle completed in ${Math.round(cycle.durationMs / 1000)}s`);
-
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      const nowIso = new Date().toISOString();
-
-      // Identify which module failed from the error message
-      const failedMod = MODULE_DEFAULTS.find(d => msg.includes(d.moduleId))?.moduleId;
-
-      cycle.status = "Failed";
-      cycle.completedAt = nowIso;
-      cycle.durationMs = Date.now() - startMs;
-      cycle.error = msg;
-      if (failedMod) cycle.failedModuleId = failedMod;
-
-      systemLog.logError(MODULE_NAME, `Full cycle failed: ${msg}`);
-    } finally {
-      this.cycleInProgress = false;
-      this.activeCycleCorrelationId = null;
-      this._persistCycleHistory();
+    const nowIso = new Date().toISOString();
+    this.lastFullCycleAt = nowIso;
+    const hadErrors = Object.keys(stageErrors).length > 0;
+    cycle.status = hadErrors ? "CompletedWithErrors" : "Completed";
+    cycle.completedAt = nowIso;
+    cycle.durationMs = Date.now() - startMs;
+    if (hadErrors) {
+      cycle.stageErrors = stageErrors;
+      cycle.error = Object.entries(stageErrors)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("; ");
     }
+
+    systemLog.logInfo(MODULE_NAME,
+      hadErrors
+        ? `Full cycle completed with errors in ${Math.round(cycle.durationMs / 1000)}s — ${Object.keys(stageErrors).join(", ")} failed`
+        : `Full cycle completed in ${Math.round(cycle.durationMs / 1000)}s`
+    );
+
+    this.cycleInProgress = false;
+    this.activeCycleCorrelationId = null;
+    this._persistCycleHistory();
   }
 
   private async _runStage(moduleIds: ModuleId[], corrId: string, trigger: ModuleTrigger): Promise<void> {
