@@ -1,19 +1,5 @@
 [
   {
-    "id": "df8299d7-9071-4c45-9f74-39e51d2a3f9d",
-    "timestamp": "2026-08-10T18:14:20.163Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed: 5 market-moving stories found"
-  },
-  {
-    "id": "5cd7ef17-516b-4760-bc9a-af8d9625b454",
-    "timestamp": "2026-08-10T18:14:20.166Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via RunAllNow (7010ms, change: Medium)"
-  },
-  {
     "id": "c7aa7454-c3da-4826-a19c-8dcd4ee3f975",
     "timestamp": "2026-08-10T18:14:20.780Z",
     "module": "Event Monitor",
@@ -3498,5 +3484,19 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "90f980ef-3790-43c3-b52f-d6641c059e57",
+    "timestamp": "2026-08-10T20:53:35.507Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "1ecaef0e-247f-417f-a781-18851c1182ba",
+    "timestamp": "2026-08-10T20:54:00.985Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Watch, strength 10, meaningfulChange=High"
   }
 ]

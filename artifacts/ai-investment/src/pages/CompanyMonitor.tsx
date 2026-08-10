@@ -11,11 +11,13 @@
  * only calls OpenAI when the user explicitly presses "Update Analysis".
  */
 import { useState, useRef, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useSearch } from "wouter"
 import {
   useRunCompanyAnalysis,
   useGetRepositoryEntry,
   useListRepositoryEntries,
+  getGetRepositoryEntryQueryKey,
 } from "@workspace/api-client-react"
 import type {
   CompanyAnalysis,
@@ -675,11 +677,13 @@ export default function CompanyMonitor() {
   // ── Price Context (from repository, no loading state needed — just display if available) ──
   const priceCtxKey = activeTicker ? `price-context:${activeTicker}` : ""
   const { data: priceCtxEntry } = useGetRepositoryEntry(priceCtxKey, {
-    query: { retry: false, enabled: !!activeTicker, staleTime: 60_000 },
+    query: { retry: false, enabled: !!activeTicker },
   })
   const priceCtx = priceCtxEntry?.result as PriceContext | undefined
 
   // ── Update mutation ───────────────────────────────────────────────────────
+  const queryClient = useQueryClient()
+
   const {
     mutate: runAnalysis,
     data: mutationData,
@@ -693,6 +697,11 @@ export default function CompanyMonitor() {
         const d = data?._debug
         if (d) setDebugInfo(d)
         setDebugError(null)
+        // Invalidate price-context so the panel refreshes immediately without
+        // waiting for a window-focus event or polling cycle.
+        if (priceCtxKey) {
+          queryClient.invalidateQueries({ queryKey: getGetRepositoryEntryQueryKey(priceCtxKey) })
+        }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (err: any) => {
