@@ -23,6 +23,7 @@ import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import type { RepositoryEntry } from "../lib/analysis-repository.js";
 import { getActivePolicyConfig, getActivePolicyProfile } from "../lib/trade-decision-policy-store.js";
+import { getAllPriceContexts } from "../lib/price-context-service.js";
 import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
 import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
@@ -1441,6 +1442,21 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     userPromptSections.push(`\nCOMPANY MONITOR DATA (priority 5 — includes v2 fields):\n${companyContextLines}`);
   } else {
     userPromptSections.push(`\nCOMPANY MONITOR DATA (priority 5): None available. Treat this as missing evidence for every holding.`);
+  }
+
+  // Price Context — deterministic backend data from Saxo historical prices
+  const allPriceContexts = getAllPriceContexts();
+  const priceCtxEntries = Object.entries(allPriceContexts);
+  if (priceCtxEntries.length > 0) {
+    const pcLines = priceCtxEntries.map(([sym, pc]) => `[${sym}]\n${pc}`).join("\n\n");
+    userPromptSections.push(
+      `\nPRICE CONTEXT (priority 5.5 — deterministic backend data from actual Saxo historical data, NOT a forecast):\n` +
+      `Rules: Use alongside fundamentals and evidence. 'StabilizingAfterDecline' does NOT confirm a bottom or reversal. ` +
+      `'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. ` +
+      `Never change decision type or conviction solely because of normal price movement. ` +
+      `Price Context is supporting context only — it cannot on its own satisfy the ≥2 independent sources requirement.\n` +
+      pcLines
+    );
   }
 
   addCtx("OPPORTUNITY FINDER (priority 6)", opportunityContext, userPromptSections);

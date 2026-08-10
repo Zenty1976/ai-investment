@@ -7,3 +7,4 @@
 - [TDE policy config architecture](tde-policy-config.md) — evidence weights/thresholds live in trade-decision-policy-config.ts; active profile loaded synchronously via getActivePolicyConfig(); initPolicyStore() called at server startup.
 - [Test runner — vitest blocked](test-runner-node-test.md) — vitest is blocked by package firewall; use node:test with a custom esbuild runner (run-tests.mjs); set spawn cwd to a fresh tmpdir so analysis-repository starts empty.
 - [Outcome store identity model](outcome-store-identity.md) — stable subjectDecisionId ("Holding:AAPL"), exact outcomeId on proposals, "Later"→Deferred, approvedQuantity separate from executedQuantity.
+- [Price Context Architecture](price-context-architecture.md) — Saxo OHLC → deterministic metrics → repository → AI modules; Stage 1.5 in orchestrator; semantic rules in every system prompt.

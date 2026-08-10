@@ -28,6 +28,8 @@ import { RunCompanyAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { automationOrchestrator } from "../lib/automation-orchestrator";
+import { getPriceContext } from "../lib/price-context-service.js";
+import { formatPriceContextForPrompt } from "../lib/price-context-calculator.js";
 import type { z } from "zod";
 
 const router: IRouter = Router();
@@ -101,6 +103,17 @@ Do not invent financial figures, dates, guidance or events.
 
 If reliable information is unavailable, state this clearly.
 
+PRICE CONTEXT (when provided):
+You may receive a PRICE CONTEXT block for this ticker containing deterministic market-price behavior data produced by the backend from actual historical data.
+Rules for using Price Context:
+- It describes observed price behavior — NOT a forecast or valuation signal.
+- "StabilizingAfterDecline" means negative momentum has weakened materially. It does NOT confirm a bottom or reversal.
+- "PossibleRecovery" means short-term behavior has begun improving after a decline. Durable reversal is NOT confirmed.
+- "ExtendedAfterRally" means the price has risen significantly recently. It does NOT mean sell.
+- NEVER move investmentCaseStrength or change the investment view solely because of normal price movement.
+- NEVER infer valuation from price movement alone (price falling ≠ cheap, price rising ≠ expensive).
+- Use Price Context together with fundamentals, catalysts, earnings, news, and events — never in isolation.
+
 OUTPUT RULES:
 - Return a single raw JSON object only — no markdown, no code fences, no introductory text. Your entire response must begin with { and end with }
 - company.ticker MUST be exactly the ticker symbol provided in the request — do not substitute a different exchange's symbol or regional listing for the same company (e.g. if asked for "NOVO B", return "NOVO B", not "NVO" or any other variant)
@@ -129,6 +142,17 @@ ${JSON_TEMPLATE_BASE}`;
 // ---------------------------------------------------------------------------
 
 const SYSTEM_PROMPT_UPDATE = `You are a senior institutional equity analyst maintaining a continuous investment thesis on a company.
+
+PRICE CONTEXT (when provided):
+You may receive a PRICE CONTEXT block for this ticker containing deterministic market-price behavior data produced by the backend from actual historical data.
+Rules for using Price Context:
+- It describes observed price behavior — NOT a forecast or valuation signal.
+- "StabilizingAfterDecline" means negative momentum has weakened materially. It does NOT confirm a bottom or reversal.
+- "PossibleRecovery" means short-term behavior has begun improving after a decline. Durable reversal is NOT confirmed.
+- "ExtendedAfterRally" means the price has risen significantly recently. It does NOT mean sell.
+- NEVER move investmentCaseStrength or change the investment view solely because of normal price movement.
+- NEVER infer valuation from price movement alone (price falling ≠ cheap, price rising ≠ expensive).
+- Use Price Context together with fundamentals, catalysts, earnings, news, and events — never in isolation.
 
 You have been provided with the PREVIOUS ANALYSIS for this company. Your primary task is NOT to rewrite the analysis — it is to evaluate what has MATERIALLY CHANGED since the previous analysis.
 
@@ -649,7 +673,8 @@ function buildUserPrompt(
   eventContext: string | null,
   newsContext: string | null,
   sectorContext: string | null,
-  previousAnalysisSummary: string | null
+  previousAnalysisSummary: string | null,
+  priceContext: string | null
 ): string {
   const displayName = companyName ? `${companyName} (${ticker})` : ticker;
   const isUpdate = !!previousAnalysisSummary;
@@ -705,6 +730,14 @@ function buildUserPrompt(
       "",
       "Current Sector Monitor context (use for sector conditions — do not repeat this):",
       sectorContext
+    );
+  }
+
+  if (priceContext) {
+    blocks.push(
+      "",
+      `PRICE CONTEXT for ${ticker} (deterministic backend data — actual observed price behavior, NOT a forecast):`,
+      priceContext
     );
   }
 
@@ -832,11 +865,16 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
 
   // ── Choose prompt and build user message ───────────────────────────────────
 
+  // ── Read Price Context from repository ────────────────────────────────────
+  const priceCtxEntry = getPriceContext(ticker);
+  const priceContextStr = priceCtxEntry ? formatPriceContextForPrompt(priceCtxEntry) : null;
+
   const systemPrompt = isFirstRun ? SYSTEM_PROMPT_FULL : SYSTEM_PROMPT_UPDATE;
   const userPrompt = buildUserPrompt(
     ticker, companyName, nowIso,
     marketContext, eventContext, newsContext, sectorContextStr,
-    previousAnalysisSummary
+    previousAnalysisSummary,
+    priceContextStr
   );
 
   // ── AI call with retry ─────────────────────────────────────────────────────

@@ -19,6 +19,7 @@ import { RunOpportunityFinderResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
+import { getAllPriceContexts } from "../lib/price-context-service.js";
 
 const router: IRouter = Router();
 
@@ -138,7 +139,8 @@ function buildUserPrompt(
   eventContext: string | null,
   newsContext: string | null,
   sectorContext: string | null,
-  companyContexts: Record<string, string>
+  companyContexts: Record<string, string>,
+  priceContexts: Record<string, string>
 ): string {
   const blocks: string[] = [
     `Current UTC: ${nowIso}`,
@@ -195,6 +197,18 @@ function buildUserPrompt(
       `Company Monitor context for held position ${ticker} (existing holding context only — do not repeat this verbatim):`,
       ctx
     );
+  }
+
+  const priceCtxEntries = Object.entries(priceContexts);
+  if (priceCtxEntries.length > 0) {
+    blocks.push(
+      "",
+      "PRICE CONTEXT for held positions (deterministic backend data — actual price behavior computed from Saxo historical data, NOT a forecast):",
+      "Rules: Use alongside fundamentals. Never infer valuation from price movement alone. 'StabilizingAfterDecline' does NOT confirm a bottom. 'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell."
+    );
+    for (const [sym, pc] of priceCtxEntries) {
+      blocks.push(`[${sym}]`, pc);
+    }
   }
 
   return blocks.join("\n");
@@ -441,7 +455,8 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
           eventContext,
           newsContext,
           sectorContext,
-          companyContexts
+          companyContexts,
+          getAllPriceContexts()
         ),
         { model: "gpt-4o", maxTokens: 5000, temperature: 0.1 }
       ));

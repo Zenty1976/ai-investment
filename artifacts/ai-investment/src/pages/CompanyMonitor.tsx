@@ -170,6 +170,125 @@ function timeframeBadgeVariant(
   return "outline"
 }
 
+// ── Price Context types (mirrors price-context-calculator.ts) ─────────────────
+
+interface PriceContext {
+  symbol: string
+  asOf: string
+  currentPrice: number
+  returns: { d1: number; d5: number; d10: number; d30: number; d90: number }
+  trend: { shortTermTrend: string; mediumTermTrend: string; longTermTrend: string }
+  momentum: { change: string; shortTermSlope: number; mediumTermSlope: number }
+  volatility: { realized30d: number; realized90d: number; state: string; trend: string }
+  rangePosition: { from30dLow: number; from30dHigh: number; from90dLow: number; from90dHigh: number }
+  priceState: string
+  observedOn: string
+  barsUsed: number
+}
+
+function priceStateBadgeVariant(
+  state: string
+): "positive" | "negative" | "warning" | "outline" {
+  if (state.includes("Trending") && state.includes("Up")) return "positive"
+  if (state === "PossibleRecovery" || state === "StabilizingAfterDecline") return "warning"
+  if (state === "Consolidating") return "outline"
+  if (state.includes("Down") || state === "Breaking Down") return "negative"
+  if (state === "ExtendedAfterRally") return "warning"
+  return "outline"
+}
+
+function trendBadgeVariant(t: string): "positive" | "negative" | "outline" {
+  if (t === "Up" || t === "Strong Up") return "positive"
+  if (t === "Down" || t === "Strong Down") return "negative"
+  return "outline"
+}
+
+function returnColour(pct: number): string {
+  if (pct > 1) return "text-emerald-400"
+  if (pct < -1) return "text-rose-400"
+  return "text-muted-foreground"
+}
+
+function fmtPct(n: number): string {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`
+}
+
+function PriceContextPanel({ ctx }: { ctx: PriceContext }) {
+  const returns = [
+    { label: "1D",  val: ctx.returns.d1 },
+    { label: "5D",  val: ctx.returns.d5 },
+    { label: "1M",  val: ctx.returns.d30 },
+    { label: "3M",  val: ctx.returns.d90 },
+  ]
+
+  return (
+    <Card className="bg-card/40 border-card-border/40">
+      <CardContent className="p-4 space-y-3">
+        {/* Header */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+            Price Context
+          </p>
+          <Badge
+            variant={priceStateBadgeVariant(ctx.priceState)}
+            className="text-[10px] uppercase tracking-wider px-1.5 py-0"
+          >
+            {ctx.priceState.replace(/([A-Z])/g, ' $1').trim()}
+          </Badge>
+          <span className="ml-auto text-[10px] text-muted-foreground/40">
+            {ctx.barsUsed}d of data
+          </span>
+        </div>
+
+        {/* Returns row */}
+        <div className="grid grid-cols-4 gap-1">
+          {returns.map(({ label, val }) => (
+            <div key={label} className="flex flex-col items-center p-1.5 rounded-md bg-background/30">
+              <span className="text-[9px] text-muted-foreground/60 uppercase tracking-widest">{label}</span>
+              <span className={`text-xs font-mono font-semibold ${returnColour(val)}`}>{fmtPct(val)}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Trend & Momentum */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest mr-0.5">Trend</span>
+          <Badge variant={trendBadgeVariant(ctx.trend.shortTermTrend)} className="text-[9px] px-1 py-0">{ctx.trend.shortTermTrend} ST</Badge>
+          <Badge variant={trendBadgeVariant(ctx.trend.mediumTermTrend)} className="text-[9px] px-1 py-0">{ctx.trend.mediumTermTrend} MT</Badge>
+          <Badge variant={trendBadgeVariant(ctx.trend.longTermTrend)} className="text-[9px] px-1 py-0">{ctx.trend.longTermTrend} LT</Badge>
+          <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest ml-2 mr-0.5">Momentum</span>
+          <span className="text-[10px] text-foreground/70">{ctx.momentum.change.replace(/([A-Z])/g, ' $1').trim()}</span>
+        </div>
+
+        {/* Volatility & Range */}
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground/70">
+          <span>
+            <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">Vol</span>
+            {ctx.volatility.state}
+            <span className="text-muted-foreground/40 ml-1">({ctx.volatility.realized30d.toFixed(0)}% ann)</span>
+          </span>
+          <span className="text-muted-foreground/30">·</span>
+          <span>
+            <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">30d range</span>
+            <span className={returnColour(ctx.rangePosition.from30dLow)}>
+              {ctx.rangePosition.from30dLow >= 0 ? "+" : ""}{ctx.rangePosition.from30dLow.toFixed(1)}% from low
+            </span>
+            <span className="text-muted-foreground/30 mx-1">/</span>
+            <span className={returnColour(-ctx.rangePosition.from30dHigh)}>
+              {ctx.rangePosition.from30dHigh.toFixed(1)}% from high
+            </span>
+          </span>
+        </div>
+
+        {/* Disclaimer note */}
+        <p className="text-[9px] text-muted-foreground/30 leading-tight">
+          Observed price behavior — not a forecast. Do not use to infer valuation.
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Collapsible item card (catalysts / risks) ─────────────────────────────────
 
 interface CollapsibleItemProps {
@@ -419,6 +538,13 @@ export default function CompanyMonitor() {
     query: { retry: false, enabled: !!activeTicker },
   })
   const storedAnalysis = repoEntry?.result as CompanyAnalysis | undefined
+
+  // ── Price Context (from repository, no loading state needed — just display if available) ──
+  const priceCtxKey = activeTicker ? `price-context:${activeTicker}` : ""
+  const { data: priceCtxEntry } = useGetRepositoryEntry(priceCtxKey, {
+    query: { retry: false, enabled: !!activeTicker, staleTime: 60_000 },
+  })
+  const priceCtx = priceCtxEntry?.result as PriceContext | undefined
 
   // ── Update mutation ───────────────────────────────────────────────────────
   const {
@@ -974,6 +1100,9 @@ export default function CompanyMonitor() {
           <SectionCard title="Sector Context">
             <p className="text-sm text-foreground/80 leading-relaxed">{analysis.sectorContext}</p>
           </SectionCard>
+
+          {/* Price Context */}
+          {priceCtx && <PriceContextPanel ctx={priceCtx} />}
 
           {/* Valuation Assessment */}
           <Card className="bg-card/40 border-card-border/40">

@@ -18,6 +18,7 @@ import { resolve } from "path";
 import { randomUUID } from "crypto";
 import { analysisRepository } from "./analysis-repository.js";
 import { systemLog } from "./system-log.js";
+import { fetchAndStorePriceContexts, extractTargetsFromPortfolio } from "./price-context-service.js";
 
 // ── Data directory ───────────────────────────────────────────────────────────
 
@@ -1288,6 +1289,17 @@ class AutomationOrchestratorService {
     await runIsolated("portfolio-manager", async () => {
       await this._runStage(["portfolio-manager"], corrId, "RunAllNow");
       completeStage("portfolio-manager");
+    });
+
+    // Stage 1.5: Price Context — fetch Saxo OHLC + calculate for all portfolio positions
+    // Must run after Stage 1 (portfolio-manager) so position UICs are known.
+    // Uses runIsolated so a Saxo outage never aborts the full cycle.
+    await runIsolated("price-context", async () => {
+      const targets = extractTargetsFromPortfolio();
+      if (targets.length > 0) {
+        await fetchAndStorePriceContexts(targets);
+        systemLog.logInfo("Price Context", `Stored price context for ${targets.length} symbols`);
+      }
     });
 
     // Stage 2: Market Monitor, News Monitor, Event Monitor in parallel
