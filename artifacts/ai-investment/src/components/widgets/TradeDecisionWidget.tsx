@@ -76,7 +76,7 @@ export function TradeDecisionWidget() {
                 </div>
                 <div className="text-right">
                   <p className={`text-[11px] font-medium ${pColor}`}>{posture}</p>
-                  <p className="text-[10px] text-muted-foreground">{decisions.length} decisions</p>
+                  <p className="text-[10px] text-muted-foreground">{decisions.length} decisions · {timeAgo(updatedAt)}</p>
                 </div>
               </div>
               <ScoreBar score={score} color={scoreColor} />
@@ -91,7 +91,6 @@ export function TradeDecisionWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 

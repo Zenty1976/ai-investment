@@ -49,6 +49,7 @@ export function NewsMonitorWidget() {
 
           {size === "md" && (
             <div className="h-full flex flex-col gap-1.5 overflow-hidden">
+              <span className="text-[10px] text-muted-foreground shrink-0 self-end">{timeAgo(updatedAt)}</span>
               {topStory && (
                 <div className="shrink-0">
                   <div className="flex items-center gap-1 mb-0.5">
@@ -66,12 +67,12 @@ export function NewsMonitorWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              <span className="text-[10px] text-muted-foreground shrink-0 self-end">{timeAgo(updatedAt)}</span>
               {/* Top story card */}
               {topStory && (
                 <div className="rounded border border-orange-400/20 bg-orange-400/5 p-2 shrink-0">
@@ -110,7 +111,6 @@ export function NewsMonitorWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>

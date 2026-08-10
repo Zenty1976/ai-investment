@@ -66,6 +66,7 @@ export function EventMonitorWidget() {
 
           {size === "md" && (
             <div className="h-full flex flex-col gap-1.5 overflow-hidden">
+              <span className="text-[10px] text-muted-foreground shrink-0 self-end">{timeAgo(updatedAt)}</span>
               {nextEvent && (
                 <div className="rounded border border-border/50 p-1.5 shrink-0">
                   <div className="flex items-center gap-1 mb-0.5">
@@ -86,12 +87,12 @@ export function EventMonitorWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              <span className="text-[10px] text-muted-foreground shrink-0 self-end">{timeAgo(updatedAt)}</span>
               {/* Next major event card */}
               {nextEvent && (
                 <div className="rounded border border-yellow-400/20 bg-yellow-400/5 p-2 shrink-0">
@@ -131,7 +132,6 @@ export function EventMonitorWidget() {
                   );
                 })}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>

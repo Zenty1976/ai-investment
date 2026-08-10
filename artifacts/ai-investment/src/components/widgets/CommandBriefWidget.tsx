@@ -90,6 +90,8 @@ export function CommandBriefWidget() {
           {/* MD/LG: headline box + items + action status + timestamp */}
           {(size === "md" || size === "lg") && (
             <div className="h-full flex flex-col gap-1.5 overflow-hidden">
+              {/* Timestamp — top right */}
+              <span className="text-[10px] text-muted-foreground shrink-0 self-end">{timeAgo(updatedAt)}</span>
               {/* Headline — boxed status summary */}
               <div className={`shrink-0 rounded border px-2.5 py-1.5 flex items-center gap-2
                 ${overallStatus === "normal"
@@ -127,7 +129,6 @@ export function CommandBriefWidget() {
                 </div>
               )}
 
-              <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>

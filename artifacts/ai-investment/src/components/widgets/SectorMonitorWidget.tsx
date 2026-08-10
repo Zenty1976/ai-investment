@@ -156,6 +156,7 @@ export function SectorMonitorWidget() {
               <div className="flex items-center gap-1.5 shrink-0">
                 <Dot color={sentimentColor(outlook)} />
                 <span className={`text-xs font-semibold ${sentimentColor(outlook)}`}>{outlook || "—"}</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(updatedAt)}</span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
                 {sectors.map((s: any, i: number) => (
@@ -166,7 +167,6 @@ export function SectorMonitorWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 

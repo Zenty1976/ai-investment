@@ -58,7 +58,7 @@ export function PortfolioAnalyzerWidget() {
                 </div>
                 <div className="text-right">
                   <p className={`text-[11px] font-medium ${ratingColor}`}>{rating}</p>
-                  <p className={`text-[10px] ${sentimentColor(outlook)}`}>{outlook}</p>
+                  <p className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</p>
                 </div>
               </div>
               <ScoreBar score={score} color={scoreColor} />
@@ -73,7 +73,6 @@ export function PortfolioAnalyzerWidget() {
                   ))}
                 </div>
               )}
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 
@@ -86,7 +85,7 @@ export function PortfolioAnalyzerWidget() {
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-semibold ${ratingColor}`}>{rating}</p>
-                  <p className={`text-[11px] ${sentimentColor(outlook)}`}>{outlook}</p>
+                  <p className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</p>
                 </div>
               </div>
               <ScoreBar score={score} color={scoreColor} />
@@ -106,7 +105,6 @@ export function PortfolioAnalyzerWidget() {
                   ))}
                 </div>
               )}
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
         </>

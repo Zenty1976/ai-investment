@@ -62,6 +62,7 @@ export function MarketAlertsWidget() {
                 <Dot color={levelColor} />
                 <span className={`text-xs font-semibold ${levelColor}`}>{alertLevel}</span>
                 <span className="text-[10px] text-muted-foreground">· {alerts.length} alert{alerts.length !== 1 ? "s" : ""}</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(updatedAt)}</span>
               </div>
               {noChanges
                 ? <p className="text-[11px] text-muted-foreground shrink-0">No new developments since last check</p>
@@ -76,7 +77,6 @@ export function MarketAlertsWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 

@@ -115,9 +115,9 @@ export function MarketMonitorWidget() {
                 <Dot color={sentimentColor(d.marketSentiment)} />
                 <span className={`text-xs font-semibold ${sentimentColor(d.marketSentiment)}`}>{d.marketSentiment}</span>
                 <span className={`text-[11px] ${sentimentColor(d.riskLevel)}`}>· {d.riskLevel} risk</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(updatedAt)}</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3 shrink-0">{d.summary}</p>
-              <span className="text-[10px] text-muted-foreground mt-auto">{timeAgo(updatedAt)}</span>
             </div>
           )}
 

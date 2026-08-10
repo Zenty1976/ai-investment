@@ -180,6 +180,9 @@ export function InvestorWatchWidget() {
           {/* md — name + tone + headline */}
           {size === "md" && (
             <div className="h-full flex flex-col gap-1 overflow-hidden">
+              <span className="text-[9px] text-muted-foreground shrink-0 self-end">
+                {timeAgo(entries[0]?.lastCheckedAt)}
+              </span>
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
                 {sorted.map(e => (
                   <div key={e.person.id} className="flex items-start gap-1.5 text-[10px]">
@@ -199,15 +202,15 @@ export function InvestorWatchWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[9px] text-muted-foreground shrink-0">
-                {timeAgo(entries[0]?.lastCheckedAt)}
-              </span>
             </div>
           )}
 
           {/* lg — full compact briefing */}
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              <span className="text-[9px] text-muted-foreground shrink-0 self-end">
+                {timeAgo(entries[0]?.lastCheckedAt)}
+              </span>
 
               {/* ── Investor photo strip ── */}
               <div className="shrink-0 overflow-x-auto pb-1 -mx-1 px-1">

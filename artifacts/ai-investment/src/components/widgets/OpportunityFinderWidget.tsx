@@ -54,6 +54,7 @@ export function OpportunityFinderWidget() {
                 <Dot color={levelColor} />
                 <span className={`text-xs font-semibold ${levelColor}`}>{level} Opportunity</span>
                 <span className="text-muted-foreground text-[10px]">· {opps.length} candidates</span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(updatedAt)}</span>
               </div>
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
                 {opps.slice(0, 4).map((opp: any) => (
@@ -72,7 +73,6 @@ export function OpportunityFinderWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 

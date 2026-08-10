@@ -69,11 +69,12 @@ export function PortfolioManagerWidget() {
                   <span className="text-lg font-bold text-foreground">{fmtCcy(totalValue)}</span>
                   <span className="text-[10px] text-muted-foreground">DKK</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   {isMock && <span className="text-[9px] text-yellow-400 border border-yellow-400/30 px-1 rounded">SIM</span>}
                   <span className={`text-[11px] font-medium ${plColor(totalPL)}`}>
                     {totalPL >= 0 ? "+" : ""}{fmtCcy(totalPL)}
                   </span>
+                  <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
@@ -92,12 +93,12 @@ export function PortfolioManagerWidget() {
                   </div>
                 ))}
               </div>
-              <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
             </div>
           )}
 
           {size === "lg" && (
             <div className="h-full flex flex-col gap-2 overflow-hidden">
+              <span className="text-[10px] text-muted-foreground shrink-0 self-end">{timeAgo(updatedAt)}</span>
               <div className="grid grid-cols-3 gap-2 shrink-0">
                 <div className="rounded border border-border/50 p-1.5">
                   <p className="text-[10px] text-muted-foreground">Total Value</p>
@@ -134,10 +135,11 @@ export function PortfolioManagerWidget() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {isMock && <span className="text-[9px] text-yellow-400 border border-yellow-400/30 px-1.5 py-0.5 rounded">SIMULATION</span>}
-                <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(updatedAt)}</span>
-              </div>
+              {isMock && (
+                <div className="shrink-0">
+                  <span className="text-[9px] text-yellow-400 border border-yellow-400/30 px-1.5 py-0.5 rounded">SIMULATION</span>
+                </div>
+              )}
             </div>
           )}
         </>

@@ -4,8 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetTradeReview,
   useUpdateTradeProposalStatus,
+  useGetRepositoryEntry,
 } from "@workspace/api-client-react";
 import type { TradeProposal, TradeProposalStatus, WaitingTradeDecision } from "@workspace/api-client-react";
+import { timeAgo } from "@/lib/widget-utils";
 import {
   CheckCircle2, XCircle, Clock, ExternalLink,
   AlertTriangle, ClipboardList, CalendarClock, Info,
@@ -239,6 +241,9 @@ export function TradeReviewWidget() {
   const [mutatingId, setMutatingId] = useState<string | null>(null);
 
   const { data, isLoading, error, refetch, isRefetching } = useGetTradeReview();
+  const { data: repoEntry } = useGetRepositoryEntry("trade-review");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updatedAt = (repoEntry as any)?.updatedAt as string | undefined;
 
   const { mutateAsync } = useUpdateTradeProposalStatus({
     mutation: {
@@ -325,6 +330,9 @@ export function TradeReviewWidget() {
           )}
           {!hasTde && <span className="text-[11px] text-muted-foreground">No TDE analysis</span>}
         </div>
+        {updatedAt && (
+          <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
+        )}
         <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0"
           onClick={() => refetch()} disabled={isRefetching}>
           <RefreshCw className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`} />

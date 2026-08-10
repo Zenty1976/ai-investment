@@ -1,593 +1,5 @@
 [
   {
-    "id": "78adfb07-32af-4745-b564-d8ec6868c0e6",
-    "timestamp": "2026-08-09T16:14:34.042Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for SHW (trigger: RunAllNow)"
-  },
-  {
-    "id": "ec41d3a6-9e1c-44ee-bac3-57c74be0fdc2",
-    "timestamp": "2026-08-09T16:14:57.532Z",
-    "module": "Company Monitor",
-    "level": "error",
-    "message": "Analysis for SHW rejected after 3 attempts: FullAnalysis: thesis point id \"cash‑flow‑strength\" must be kebab-case (e.g. \"revenue-growth\", \"margin-risk\")"
-  },
-  {
-    "id": "b91d5f02-e2bd-4fed-be8b-3f72beecf0c0",
-    "timestamp": "2026-08-09T16:14:57.535Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "company-monitor failed after 2 attempt(s): HTTP 500: {\"error\":\"Company Monitor consistency validation failed\",\"errorStage\":\"consistency-validation\",\"validationError\":\"FullAnalysis: thesis point id \\\"cash‑flow‑strength\\\" must be kebab-case (e.g. \\\"revenu"
-  },
-  {
-    "id": "ec7b13f3-3c9d-4f14-8f35-e39a95178213",
-    "timestamp": "2026-08-09T16:14:57.641Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "Full cycle: Company Monitor failed for SHW — continuing with remaining tickers (company-monitor failed: HTTP 500: {\"error\":\"Company Monitor consistency validation failed\",\"errorStage\":\"consistency-validation\",\"validationError\":\"FullAnalysis: thesis point id \\\"cash‑flow‑strength\\\" must be kebab-case (e.g. \\\"revenu)"
-  },
-  {
-    "id": "d78f049e-fc34-43e5-a2aa-e82b758d1ed9",
-    "timestamp": "2026-08-09T16:14:57.642Z",
-    "module": "AutomationOrchestrator",
-    "level": "warning",
-    "message": "Full cycle: Company Monitor completed with 4 success(es) and 1 failure(s)"
-  },
-  {
-    "id": "b3abc694-cef7-4b77-978d-7e9959ff6b22",
-    "timestamp": "2026-08-09T16:14:57.646Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "ecf0fc48-f263-44c5-8046-a97f4dc60da3",
-    "timestamp": "2026-08-09T16:15:03.399Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "4df3a9f8-70b1-4392-b22d-20362e54dabd",
-    "timestamp": "2026-08-09T16:15:03.401Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 new alert(s): Novo Nordisk raises full‑year 2026 adjusted sales and operating profit guidance; Novo Nordisk confirms Wegovy® pill launch in Germany in August"
-  },
-  {
-    "id": "8dcf748f-f656-4f11-bd2e-6f62f37fe12a",
-    "timestamp": "2026-08-09T16:15:03.403Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 alert(s) resolved: Novo Nordisk’s Wegovy® pill approved in EU and launching in Germany; Microsoft restructures Xbox, cuts 4,800 roles amid AI investment"
-  },
-  {
-    "id": "639d99c3-3578-4f09-9ebb-394508eb4cd2",
-    "timestamp": "2026-08-09T16:15:03.405Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Novo Nordisk raises full‑year 2026 adjusted sales and operating profit guidance [Company]"
-  },
-  {
-    "id": "d700d024-6988-4087-aa8b-2144a50092fe",
-    "timestamp": "2026-08-09T16:15:03.409Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via RunAllNow (5765ms, change: High)"
-  },
-  {
-    "id": "887555d1-a1a9-4e36-919c-d97001e28a4c",
-    "timestamp": "2026-08-09T16:15:04.148Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "64576905-7483-4a68-b364-d23f4e6051da",
-    "timestamp": "2026-08-09T16:15:04.149Z",
-    "module": "Risk Analyzer",
-    "level": "warning",
-    "message": "Risk analysis performed using mock portfolio data"
-  },
-  {
-    "id": "66050175-0d1d-477f-adcb-891b80cc7cf0",
-    "timestamp": "2026-08-09T16:15:13.833Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Risk analysis completed"
-  },
-  {
-    "id": "5e4b9c3f-54d9-4272-aa4c-b3d99ba05cf2",
-    "timestamp": "2026-08-09T16:15:13.834Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk score: 58 ▼ 7 (was 65)"
-  },
-  {
-    "id": "6d76eff8-c91b-4aff-94bc-39664c456f1e",
-    "timestamp": "2026-08-09T16:15:13.838Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Highest portfolio risk: Middle East energy disruption and oil volatility [Macro, High severity]"
-  },
-  {
-    "id": "3645ded4-d10a-4a1a-87f2-c89a3f17cfb3",
-    "timestamp": "2026-08-09T16:15:13.840Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Middle East energy disruption and oil volatility"
-  },
-  {
-    "id": "8b479cc5-f129-438a-b735-2c49daf03c6e",
-    "timestamp": "2026-08-09T16:15:13.842Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk increased: El Niño‑driven food commodity inflation"
-  },
-  {
-    "id": "45b625ef-5bd3-4f92-aa24-17c4924e17d4",
-    "timestamp": "2026-08-09T16:15:13.847Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Simultaneous sector shocks to Microsoft and Novo Nordisk"
-  },
-  {
-    "id": "0d93fbe1-8254-4f45-9c53-d7aaabb3fa64",
-    "timestamp": "2026-08-09T16:15:13.849Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Currency mismatch and USD strength"
-  },
-  {
-    "id": "1829b9c4-ca0d-488e-bbcd-467eb9e11628",
-    "timestamp": "2026-08-09T16:15:13.851Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Geopolitical energy shock from Middle East conflict"
-  },
-  {
-    "id": "929ef4ce-e3f2-4c5a-b0a5-93ce4f8485a7",
-    "timestamp": "2026-08-09T16:15:13.853Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Clustered U.S. macro data volatility"
-  },
-  {
-    "id": "cb3a8a8a-1798-4b9b-8749-20d69732aec6",
-    "timestamp": "2026-08-09T16:15:13.855Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Microsoft margin pressure and guidance deceleration"
-  },
-  {
-    "id": "bb9ec252-a3f5-4105-9665-7a85a8984308",
-    "timestamp": "2026-08-09T16:15:13.859Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via RunAllNow (9711ms, change: Medium)"
-  },
-  {
-    "id": "07bdeb5d-bbde-48e1-a0f7-01eaefa84224",
-    "timestamp": "2026-08-09T16:15:14.652Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "bd9fa5f4-4533-4688-b9e9-770bd662ba98",
-    "timestamp": "2026-08-09T16:15:14.653Z",
-    "module": "Portfolio Analyzer",
-    "level": "warning",
-    "message": "Portfolio analysis is based on mock portfolio data"
-  },
-  {
-    "id": "3b3f810b-799b-4a08-852f-e00f071e9d54",
-    "timestamp": "2026-08-09T16:15:22.300Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Portfolio analysis completed"
-  },
-  {
-    "id": "068a0515-b037-4ee1-b08b-f2b4f256923e",
-    "timestamp": "2026-08-09T16:15:22.301Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Main conclusion: Portfolio is well-positioned but requires monitoring around key catalysts and execution risks"
-  },
-  {
-    "id": "e4d77914-a855-4f33-889b-e1ff6445af2a",
-    "timestamp": "2026-08-09T16:15:22.308Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall rating: Good"
-  },
-  {
-    "id": "6e932088-628b-42be-a9f7-73e6ebddf6ff",
-    "timestamp": "2026-08-09T16:15:22.310Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall outlook: Neutral"
-  },
-  {
-    "id": "e923cab9-9810-473e-aa03-d07a45c781e2",
-    "timestamp": "2026-08-09T16:15:22.312Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main concern identified: Serve Robotics execution and demand risk — Q2 revenue miss and halved guidance raise concerns about core Uber Eats volume and management forecasting."
-  },
-  {
-    "id": "30a8493a-ee8f-4c08-ab2b-93a7295b1eac",
-    "timestamp": "2026-08-09T16:15:22.314Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main opportunity identified: Novo Nordisk international expansion — EU approval and planned launches (e.g., Germany) could drive incremental volume and revenue."
-  },
-  {
-    "id": "0ae06892-2141-4f2e-a915-9c22724db389",
-    "timestamp": "2026-08-09T16:15:22.317Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Recommended highest-priority action: Monitor Serve Robotics closely ahead of Q3 results and utilization metrics"
-  },
-  {
-    "id": "3b32d442-c0d9-4e57-96cb-5566f9586285",
-    "timestamp": "2026-08-09T16:15:22.320Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer completed via RunAllNow (7670ms, change: Medium)"
-  },
-  {
-    "id": "fa7610d5-ffdb-4b50-82a2-d271b38ed36f",
-    "timestamp": "2026-08-09T16:15:23.156Z",
-    "module": "Opportunity Finder",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "3e0b51ea-a777-4350-b9eb-9bb5339206cb",
-    "timestamp": "2026-08-09T16:15:23.157Z",
-    "module": "Opportunity Finder",
-    "level": "warning",
-    "message": "Opportunity analysis performed using mock portfolio data"
-  },
-  {
-    "id": "eab27b0c-00bf-4576-b1df-1e8a16a33961",
-    "timestamp": "2026-08-09T16:15:36.386Z",
-    "module": "Opportunity Finder",
-    "level": "info",
-    "message": "Opportunity analysis completed"
-  },
-  {
-    "id": "d94e9bec-d72d-4ab2-880f-323298284c36",
-    "timestamp": "2026-08-09T16:15:36.387Z",
-    "module": "Opportunity Finder",
-    "level": "info",
-    "message": "Overall opportunity level: High"
-  },
-  {
-    "id": "e834f637-5601-4822-8168-4df227ffaf4d",
-    "timestamp": "2026-08-09T16:15:36.390Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "Highest-ranked opportunity: Amphenol Corporation (APH) — score 88 — Strong industrial exposure, AI/datacenter demand tailwinds, recent earnings beat with raised guidance, upcoming Q3 earnings within 1–3 months."
-  },
-  {
-    "id": "3ac18990-cf76-42f9-be24-0324f97370e5",
-    "timestamp": "2026-08-09T16:15:36.392Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "APH entered the list at rank 1 (score: 88)"
-  },
-  {
-    "id": "3e7279d1-9fe0-4170-9520-bf4a1f4d04c8",
-    "timestamp": "2026-08-09T16:15:36.395Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "CRWV entered the list at rank 2 (score: 82)"
-  },
-  {
-    "id": "8e2d3a95-3b35-4063-9b7d-a4effd0f76d8",
-    "timestamp": "2026-08-09T16:15:36.397Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "FCX entered the list at rank 5 (score: 72)"
-  },
-  {
-    "id": "94346f4d-78d4-4d36-bd8d-c9068d8113c1",
-    "timestamp": "2026-08-09T16:15:36.401Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "AMAT left the list (was rank 1)"
-  },
-  {
-    "id": "0ad1fd65-b759-4987-ae1f-083912658677",
-    "timestamp": "2026-08-09T16:15:36.404Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "BAC left the list (was rank 3)"
-  },
-  {
-    "id": "89e40392-987a-40d0-b181-9533b3849213",
-    "timestamp": "2026-08-09T16:15:36.407Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "CSCO left the list (was rank 4)"
-  },
-  {
-    "id": "80b4aef7-5421-412f-b575-c90f878cf5f3",
-    "timestamp": "2026-08-09T16:15:36.411Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder completed via RunAllNow (13256ms, change: Medium)"
-  },
-  {
-    "id": "e50cd05b-e52c-4d8b-a826-923038c28dc9",
-    "timestamp": "2026-08-09T16:15:36.656Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "0ca97cfb-8961-4b47-837f-09db90098a0f",
-    "timestamp": "2026-08-09T16:15:36.657Z",
-    "module": "Trade Decision Engine",
-    "level": "warning",
-    "message": "Using mock portfolio data — decisions reflect simulated positions only"
-  },
-  {
-    "id": "195578cd-4a26-4812-8e5e-c2ddd4ecef00",
-    "timestamp": "2026-08-09T16:15:47.630Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Amphenol — strong Q2 beat and cyclicals diversification\" (APH): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "8eff6622-de80-48ed-8f86-ee6a361e6bcb",
-    "timestamp": "2026-08-09T16:15:47.631Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy CoreWeave — AI infrastructure exposure ahead of Q2 earnings\" (CRWV): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "ce6dcae6-0cc9-4dde-a9d9-4f3e785f8821",
-    "timestamp": "2026-08-09T16:15:47.636Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] APH (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "d6e5e63c-c779-4eed-82c6-7bf86d773bdb",
-    "timestamp": "2026-08-09T16:15:47.638Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] CRWV (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "088de0fb-ca0c-4b87-b5d0-af6ee331cfbb",
-    "timestamp": "2026-08-09T16:15:47.648Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "04ba0454-5a5b-42ca-9046-f4048e1f86d4",
-    "timestamp": "2026-08-09T16:15:47.649Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "3dc1bcdb-1b18-456b-9b30-d1a27d2fef02",
-    "timestamp": "2026-08-09T16:15:47.652Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 75/100"
-  },
-  {
-    "id": "e6c276c2-781a-4106-b6f6-f0679661e71d",
-    "timestamp": "2026-08-09T16:15:47.654Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "1 WaitingForReevaluation"
-  },
-  {
-    "id": "14f94ecb-092f-413f-a116-6ed1a6fd8ace",
-    "timestamp": "2026-08-09T16:15:47.657Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "New: Prepare to buy Amphenol — strong Q2 beat and cyclicals diversification; Prepare to buy CoreWeave — AI infrastructure exposure ahead of Q2 earnings"
-  },
-  {
-    "id": "5c53f325-d88f-49da-82eb-224dab0a31d4",
-    "timestamp": "2026-08-09T16:15:47.659Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Withdrawn (subject absent): ETN, SHW"
-  },
-  {
-    "id": "9ef8a430-b5ad-4c0f-a515-85ec3ae44239",
-    "timestamp": "2026-08-09T16:15:47.661Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 2 decision(s) downgraded"
-  },
-  {
-    "id": "e9e59f94-0d4b-4ccd-8c98-a2d372d7569c",
-    "timestamp": "2026-08-09T16:15:47.666Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via RunAllNow (11011ms, change: High)"
-  },
-  {
-    "id": "09003b01-78c9-4e57-bab6-27582c97c8ad",
-    "timestamp": "2026-08-09T16:15:47.670Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "1b8286d3-21ca-4a12-b1e4-ea13150a7244",
-    "timestamp": "2026-08-09T16:15:47.789Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (121ms, change: Medium)"
-  },
-  {
-    "id": "8cf39a00-1033-412f-ab0f-dccd7c528153",
-    "timestamp": "2026-08-09T16:15:48.160Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
-  },
-  {
-    "id": "82bcaaa9-c2c2-4f7b-b727-272f0beed3b4",
-    "timestamp": "2026-08-09T16:15:48.165Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via RunAllNow (6ms, change: None)"
-  },
-  {
-    "id": "cf1d7981-6cb0-4d3d-be41-8bc92c85079d",
-    "timestamp": "2026-08-09T16:15:48.661Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle completed in 171s"
-  },
-  {
-    "id": "79f7a834-9aea-45b2-b3fb-58f8b297c261",
-    "timestamp": "2026-08-09T16:16:33.241Z",
-    "module": "Company Monitor",
-    "level": "user",
-    "message": "User manually started company analysis for SHW"
-  },
-  {
-    "id": "29805f60-694e-4aec-b67e-1a16da59a331",
-    "timestamp": "2026-08-09T16:16:59.875Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for SHW: FullAnalysis, rating Buy, strength 75, meaningfulChange=Medium"
-  },
-  {
-    "id": "517588db-5a18-4bec-9f66-76e47d950189",
-    "timestamp": "2026-08-09T16:24:17.689Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "0d28a48e-a4e1-4f0b-912c-8ad7c4e553bd",
-    "timestamp": "2026-08-09T16:26:14.216Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [e8c7eb48-963a-4f20-b0aa-35f5e71421bb]"
-  },
-  {
-    "id": "61928777-e044-48a9-849b-6cca1ea36c32",
-    "timestamp": "2026-08-09T16:26:14.263Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "c4249ee7-d0e5-4fc4-b504-62abe0cb6124",
-    "timestamp": "2026-08-09T16:26:14.264Z",
-    "module": "Portfolio Manager",
-    "level": "warning",
-    "message": "Portfolio update is using mock Saxo data"
-  },
-  {
-    "id": "7193b686-1786-4825-a370-ddff4eb3dc3b",
-    "timestamp": "2026-08-09T16:26:14.274Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio loaded: 2 accounts, 3 positions"
-  },
-  {
-    "id": "7fbe8f9b-33fa-49bb-b5a0-435d9565dcae",
-    "timestamp": "2026-08-09T16:26:14.281Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Mock portfolio snapshot stored"
-  },
-  {
-    "id": "39a27794-557e-4e01-ad9e-ea804745acb4",
-    "timestamp": "2026-08-09T16:26:14.326Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (108ms, change: None)"
-  },
-  {
-    "id": "2415d570-c07e-4708-945c-3d3ac8732dc1",
-    "timestamp": "2026-08-09T16:26:14.327Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "d42b8d0a-5ebc-44e2-8875-a21bfb10e0f8",
-    "timestamp": "2026-08-09T16:26:14.330Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "c77764f1-c481-4540-93a8-f92d33c3c114",
-    "timestamp": "2026-08-09T16:26:14.332Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "6a37ece1-d6cf-4571-85a9-3af580aff645",
-    "timestamp": "2026-08-09T16:26:14.334Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "6c31ac51-e812-4e3a-933b-9847292d8167",
-    "timestamp": "2026-08-09T16:26:14.337Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "f49a9637-3cfb-4ad1-a55f-57bd91b252ed",
-    "timestamp": "2026-08-09T16:26:14.759Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "5dd12dd8-b731-4f7d-8866-313604331659",
-    "timestamp": "2026-08-09T16:26:14.765Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "42b1c2a4-b10c-4e72-890c-5ec5c7233d8d",
-    "timestamp": "2026-08-09T16:26:14.768Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "728f7d52-d3e6-452c-9de2-83b99651a58d",
-    "timestamp": "2026-08-09T16:26:18.000Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: 429 You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/."
-  },
-  {
-    "id": "c1b4a67d-51ea-4c02-90a6-5b871a022e3c",
-    "timestamp": "2026-08-09T16:26:19.051Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
     "id": "a49be9e0-fbc6-4887-b5c0-910a18169da7",
     "timestamp": "2026-08-09T16:26:19.059Z",
     "module": "AutomationOrchestrator",
@@ -3498,5 +2910,593 @@
     "module": "Sector Monitor",
     "level": "info",
     "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "7da6fabd-1434-45a8-b68c-c3e7e9023e14",
+    "timestamp": "2026-08-10T08:51:45.222Z",
+    "module": "Portfolio Manager v2",
+    "level": "error",
+    "message": "CIO analysis failed: Target synthesiser: allocations are infeasible — 5 position(s) fill only 58.2% equity at their role maxes (maximum cash is 40%). The AI must return more or larger allocations to fill the equity budget."
+  },
+  {
+    "id": "8474efa7-8a67-4f6b-b236-14cc61b56f09",
+    "timestamp": "2026-08-10T08:51:51.889Z",
+    "module": "Sector Monitor",
+    "level": "info",
+    "message": "Sector analysis completed: Financials strongest, Communication Services weakest"
+  },
+  {
+    "id": "be5d663a-8f15-4822-8f1d-24554b3decd2",
+    "timestamp": "2026-08-10T08:51:51.892Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "sector-monitor completed via RunAllNow (8529ms, change: Medium)"
+  },
+  {
+    "id": "c8528d83-1455-4ea6-8130-0f1aeb059268",
+    "timestamp": "2026-08-10T08:51:52.870Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for NOVO B (trigger: RunAllNow)"
+  },
+  {
+    "id": "f054ff50-1511-4ab2-be7b-02d53a24abfd",
+    "timestamp": "2026-08-10T08:52:01.598Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for NOVO B: UpdateWithChanges, rating Buy, strength 97, meaningfulChange=Low"
+  },
+  {
+    "id": "5bd1da8e-7296-4a91-850d-707717cd32e7",
+    "timestamp": "2026-08-10T08:52:01.602Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (8734ms, change: Medium)"
+  },
+  {
+    "id": "d3e20051-5c06-4bb2-98aa-3c344b26d915",
+    "timestamp": "2026-08-10T08:52:02.374Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for MSFT (trigger: RunAllNow)"
+  },
+  {
+    "id": "f8278c28-461e-496f-bc40-53f25eb77056",
+    "timestamp": "2026-08-10T08:52:18.932Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for MSFT: UpdateWithChanges, rating Buy, strength 96, meaningfulChange=Low"
+  },
+  {
+    "id": "b409aeac-a4dd-40a2-821e-baa342c23a23",
+    "timestamp": "2026-08-10T08:52:18.935Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (16563ms, change: Medium)"
+  },
+  {
+    "id": "2c806a96-af8a-4e79-a19b-d9436182ba2b",
+    "timestamp": "2026-08-10T08:52:19.880Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for SERV (trigger: RunAllNow)"
+  },
+  {
+    "id": "5ebecd7b-b63c-4cd1-a0b8-23c5bf74236b",
+    "timestamp": "2026-08-10T08:52:29.379Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV: UpdateWithChanges, rating Watch, strength 12, meaningfulChange=Medium"
+  },
+  {
+    "id": "9bcf21ef-c890-4ad8-b9aa-f5adada2dc69",
+    "timestamp": "2026-08-10T08:52:29.382Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (9504ms, change: Medium)"
+  },
+  {
+    "id": "ee73a147-c9e1-4e13-9e7a-4994cde3df95",
+    "timestamp": "2026-08-10T08:52:29.386Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for AIT (trigger: RunAllNow)"
+  },
+  {
+    "id": "65f4629e-c940-4f2c-a90c-391814c816c8",
+    "timestamp": "2026-08-10T08:52:38.789Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for AIT: NoMaterialChange, rating Buy, strength 75, meaningfulChange=None"
+  },
+  {
+    "id": "9d5f8df6-8ca5-4a91-b2a9-42d661a29cb1",
+    "timestamp": "2026-08-10T08:52:38.792Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (9408ms, change: Medium)"
+  },
+  {
+    "id": "625bd694-1ec0-42e7-9cd2-e8423f231c11",
+    "timestamp": "2026-08-10T08:52:38.889Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for JPM (trigger: RunAllNow)"
+  },
+  {
+    "id": "c8f75a07-258a-41ee-85c4-ac2f988522d4",
+    "timestamp": "2026-08-10T08:52:56.445Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for JPM: UpdateWithChanges, rating Buy, strength 83, meaningfulChange=Low"
+  },
+  {
+    "id": "52b5b5db-2549-4faf-8564-319f8c137746",
+    "timestamp": "2026-08-10T08:52:56.451Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (17563ms, change: Medium)"
+  },
+  {
+    "id": "36d0e6b0-be55-47d3-b60f-d1b957e65309",
+    "timestamp": "2026-08-10T08:52:57.394Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "2ecc917b-6f9e-453c-9afd-3ccc4b83aef7",
+    "timestamp": "2026-08-10T08:53:01.991Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "2f915415-270b-4ba6-b527-8509781161f5",
+    "timestamp": "2026-08-10T08:53:01.992Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): Novo Nordisk raises 2026 guidance, declares interim dividend, and confirms Germany launch of Wegovy pill; Middle East conflict continues to fuel energy‑inflation risks"
+  },
+  {
+    "id": "a03008cd-a230-4107-99cf-43b714495dd6",
+    "timestamp": "2026-08-10T08:53:01.996Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Novo Nordisk CEO signals accelerated R&D and bolt‑on M&A strategy; Serve Robotics 2026 revenue forecast raised nearly tenfold"
+  },
+  {
+    "id": "e9fa95a4-567d-4179-8930-38235de5a119",
+    "timestamp": "2026-08-10T08:53:01.999Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Novo Nordisk raises 2026 guidance, declares interim dividend, and confirms Germany launch of Wegovy pill [Company]"
+  },
+  {
+    "id": "e891db15-d83e-469e-a203-cf3ee9f43eac",
+    "timestamp": "2026-08-10T08:53:02.004Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via RunAllNow (4612ms, change: High)"
+  },
+  {
+    "id": "e4a65a82-2df6-4c25-84a1-07e2c4fddda4",
+    "timestamp": "2026-08-10T08:53:02.898Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "af86339f-d4ba-4cba-8f88-aba3937fd321",
+    "timestamp": "2026-08-10T08:53:02.900Z",
+    "module": "Risk Analyzer",
+    "level": "warning",
+    "message": "Risk analysis performed using mock portfolio data"
+  },
+  {
+    "id": "44e4c4db-c248-4326-a1fa-1babd95814e4",
+    "timestamp": "2026-08-10T08:53:12.581Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Risk analysis completed"
+  },
+  {
+    "id": "1ff63c40-e427-4ff9-b7af-5c9827ac9265",
+    "timestamp": "2026-08-10T08:53:12.582Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk score: 58 ▼ 4 (was 62)"
+  },
+  {
+    "id": "33241514-08dc-4609-8c69-2e54678a3df9",
+    "timestamp": "2026-08-10T08:53:12.586Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Highest portfolio risk: Geopolitical energy shock and inflation spike [Macro, High severity]"
+  },
+  {
+    "id": "3d981a21-891b-4667-af23-b7c608f20a20",
+    "timestamp": "2026-08-10T08:53:12.589Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Geopolitical energy shock and inflation spike"
+  },
+  {
+    "id": "2dfbc415-0080-4ce5-bf84-6f77acf9d2d1",
+    "timestamp": "2026-08-10T08:53:12.591Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: U.S. inflation data surprises"
+  },
+  {
+    "id": "a02a8d54-0827-4789-9697-76638311ce04",
+    "timestamp": "2026-08-10T08:53:12.594Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Sector rotation away from AI/tech"
+  },
+  {
+    "id": "36c59f47-f5aa-4b9d-b82a-171b3c55e1d9",
+    "timestamp": "2026-08-10T08:53:12.596Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Novo Nordisk competitive pressure"
+  },
+  {
+    "id": "4246f8de-e373-4de6-b19b-565e5574997a",
+    "timestamp": "2026-08-10T08:53:12.599Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Macro policy shock from inflation or Fed pivot"
+  },
+  {
+    "id": "15adaa25-4511-4b64-90a7-800dbf44a79e",
+    "timestamp": "2026-08-10T08:53:12.601Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Middle East escalation and energy shock"
+  },
+  {
+    "id": "ab5b6d44-8202-45fe-b024-b9e3ec098ca6",
+    "timestamp": "2026-08-10T08:53:12.603Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Clustered earnings and event risk"
+  },
+  {
+    "id": "a5b13a9f-4de8-4e0f-b170-77eca3a7f1a5",
+    "timestamp": "2026-08-10T08:53:12.605Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Novo Nordisk competitive and pricing pressure"
+  },
+  {
+    "id": "87334553-5997-4fb9-946f-8946aac6af0d",
+    "timestamp": "2026-08-10T08:53:12.610Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer completed via RunAllNow (9714ms, change: Medium)"
+  },
+  {
+    "id": "dff6c249-885e-4568-97fe-9f98b71f6899",
+    "timestamp": "2026-08-10T08:53:13.404Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "97ab2f98-6234-4af9-b1dd-6db9228d176b",
+    "timestamp": "2026-08-10T08:53:13.405Z",
+    "module": "Portfolio Analyzer",
+    "level": "warning",
+    "message": "Portfolio analysis is based on mock portfolio data"
+  },
+  {
+    "id": "3b927f3f-3eaa-4192-bc90-457573f64650",
+    "timestamp": "2026-08-10T08:53:31.694Z",
+    "module": "Portfolio Analyzer",
+    "level": "error",
+    "message": "Portfolio analysis failed"
+  },
+  {
+    "id": "3e43697c-7b89-4850-ae19-09742132e1b9",
+    "timestamp": "2026-08-10T08:53:41.704Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "59cbda57-0f9b-4169-9c3b-2f6d23b1a51c",
+    "timestamp": "2026-08-10T08:53:41.705Z",
+    "module": "Portfolio Analyzer",
+    "level": "warning",
+    "message": "Portfolio analysis is based on mock portfolio data"
+  },
+  {
+    "id": "0d9a8102-083d-4665-8a34-bdb4199cbc58",
+    "timestamp": "2026-08-10T08:53:52.983Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Portfolio analysis completed"
+  },
+  {
+    "id": "69c5e5d8-8211-48d2-ba53-229d0a1b9368",
+    "timestamp": "2026-08-10T08:53:52.984Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Main conclusion: Balanced portfolio with strong healthcare anchor and elevated execution risk in robotics"
+  },
+  {
+    "id": "325d3256-9c0f-49dd-8bff-8275ca43f38c",
+    "timestamp": "2026-08-10T08:53:52.992Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Overall rating: Good"
+  },
+  {
+    "id": "b25c87ff-9f85-459d-8772-e88649cd6a31",
+    "timestamp": "2026-08-10T08:53:52.994Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Overall outlook: Moderately Bullish"
+  },
+  {
+    "id": "d79ea19b-c97f-412a-bd51-ea5f363f861a",
+    "timestamp": "2026-08-10T08:53:52.997Z",
+    "module": "Portfolio Analyzer",
+    "level": "internal",
+    "message": "Main concern identified: Serve Robotics execution and financing risk — Q2 miss and halved guidance raise risk of further cuts or need for dilutive financing."
+  },
+  {
+    "id": "3e945e5a-4b95-4d73-8f38-21bc3e4c8bdb",
+    "timestamp": "2026-08-10T08:53:53.000Z",
+    "module": "Portfolio Analyzer",
+    "level": "internal",
+    "message": "Main opportunity identified: Novo Nordisk EU commercial rollout — Launch of Wegovy pill and pen across EU could drive incremental volume and revenue."
+  },
+  {
+    "id": "2cc5da99-6eee-457b-bab8-a3363d68b44e",
+    "timestamp": "2026-08-10T08:53:53.002Z",
+    "module": "Portfolio Analyzer",
+    "level": "internal",
+    "message": "Recommended highest-priority action: Monitor Novo Nordisk EU rollout progress"
+  },
+  {
+    "id": "dbed6570-f810-4190-9a07-1074e7ba762b",
+    "timestamp": "2026-08-10T08:53:53.005Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-analyzer completed via RunAllNow (11306ms, change: Medium)"
+  },
+  {
+    "id": "c486902c-718f-4c6d-901a-c95fec05072e",
+    "timestamp": "2026-08-10T08:53:53.922Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "f22c6b81-bdd0-4e4c-ac75-9b4bb4e1887c",
+    "timestamp": "2026-08-10T08:53:53.922Z",
+    "module": "Opportunity Finder",
+    "level": "warning",
+    "message": "Opportunity analysis performed using mock portfolio data"
+  },
+  {
+    "id": "beed71bc-db37-4f13-8c62-d5dc33c5eb1e",
+    "timestamp": "2026-08-10T08:54:02.721Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Opportunity analysis completed"
+  },
+  {
+    "id": "5e3d6dcd-7de2-4688-af06-7613a370125e",
+    "timestamp": "2026-08-10T08:54:02.722Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Overall opportunity level: High"
+  },
+  {
+    "id": "70c01e0b-d17c-44d4-853a-7f95be04d54b",
+    "timestamp": "2026-08-10T08:54:02.749Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "Highest-ranked opportunity: Raymond James Financial (RJF) — score 88 — Strong financials sector momentum, upcoming operating data release, and diversification away from tech/healthcare."
+  },
+  {
+    "id": "2f5da9dd-57ce-44f3-9250-235eec9fe397",
+    "timestamp": "2026-08-10T08:54:02.752Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "RJF entered the list at rank 1 (score: 88)"
+  },
+  {
+    "id": "4ab8353b-8cbb-4690-aa5a-1b62fd8bba51",
+    "timestamp": "2026-08-10T08:54:02.754Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "DCI entered the list at rank 2 (score: 85)"
+  },
+  {
+    "id": "fbf16d1b-f857-4677-b119-0e74f64d3ad4",
+    "timestamp": "2026-08-10T08:54:02.756Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "AVGO left the list (was rank 1)"
+  },
+  {
+    "id": "28619fc1-ab08-4a87-9b70-52f7a40cfacc",
+    "timestamp": "2026-08-10T08:54:02.759Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "JPM left the list (was rank 2)"
+  },
+  {
+    "id": "ddc40a08-b60b-466a-ae64-0055f24b31c2",
+    "timestamp": "2026-08-10T08:54:02.761Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "MDT left the list (was rank 3)"
+  },
+  {
+    "id": "f32db38e-ca7b-433f-ac7c-aec69cf8f2c9",
+    "timestamp": "2026-08-10T08:54:02.766Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder completed via RunAllNow (8846ms, change: Medium)"
+  },
+  {
+    "id": "d48f51bc-6a0e-4b54-a1e0-df3d2f5bdc75",
+    "timestamp": "2026-08-10T08:54:03.427Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "83987e42-1922-425f-8b4e-55f4a5803fa3",
+    "timestamp": "2026-08-10T08:54:03.428Z",
+    "module": "Trade Decision Engine",
+    "level": "warning",
+    "message": "Using mock portfolio data — decisions reflect simulated positions only"
+  },
+  {
+    "id": "3a9c2d7c-9d41-40fb-a318-938f14ccaa92",
+    "timestamp": "2026-08-10T08:54:16.477Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Prepare to buy RJF ahead of July operating data release\" (RJF): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "8bff9701-7e92-42c5-a468-639c5fd6dba0",
+    "timestamp": "2026-08-10T08:54:16.478Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Prepare to buy DCI for industrial diversification\" (DCI): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "ae6e634b-95ee-4487-80b9-938cc23a6fc7",
+    "timestamp": "2026-08-10T08:54:16.483Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] RJF (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "a588b6c5-4f1a-4a40-a9a1-13541dd2aee2",
+    "timestamp": "2026-08-10T08:54:16.485Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] DCI (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "683101a2-4010-49bd-a155-30b9c266b927",
+    "timestamp": "2026-08-10T08:54:16.500Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "981a9925-90e7-46ff-99a2-ec50ba03ec6d",
+    "timestamp": "2026-08-10T08:54:16.501Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "acec7388-4896-441c-a10b-9f2018d16422",
+    "timestamp": "2026-08-10T08:54:16.505Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 75/100"
+  },
+  {
+    "id": "3e6741fc-53ed-41c5-ab5c-e7252caeb67e",
+    "timestamp": "2026-08-10T08:54:16.508Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "2 WaitingForReevaluation"
+  },
+  {
+    "id": "0c386cc6-df95-4baf-a4e8-dfa71f33cb80",
+    "timestamp": "2026-08-10T08:54:16.510Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "New: Prepare to buy RJF ahead of July operating data release; Prepare to buy DCI for industrial diversification"
+  },
+  {
+    "id": "8ad04fc5-87a1-4163-a748-8bd34c10796e",
+    "timestamp": "2026-08-10T08:54:16.513Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Withdrawn (subject absent): AIT, JPM"
+  },
+  {
+    "id": "65d5b703-0c60-4c8a-b470-b36bace775e6",
+    "timestamp": "2026-08-10T08:54:16.515Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Gate: 2 decision(s) downgraded"
+  },
+  {
+    "id": "de099ee8-5790-40c5-abfc-68ee8cd03a6c",
+    "timestamp": "2026-08-10T08:54:16.520Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine completed via RunAllNow (13097ms, change: High)"
+  },
+  {
+    "id": "dbabe753-aff9-4c21-8f12-cc8fe44b2611",
+    "timestamp": "2026-08-10T08:54:16.524Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
+  },
+  {
+    "id": "a9dce896-7d0d-4275-ab2d-cf66d1cdda61",
+    "timestamp": "2026-08-10T08:54:16.531Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via Dependency (9ms, change: Medium)"
+  },
+  {
+    "id": "bb8229fb-17ac-444e-9e80-b2ace3d56714",
+    "timestamp": "2026-08-10T08:54:16.536Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "0121a581-5cbb-46e1-9b7b-9eba69f2cbf0",
+    "timestamp": "2026-08-10T08:54:16.931Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
+  },
+  {
+    "id": "d6f016d6-3dc1-4eef-b761-ff6ee4d33680",
+    "timestamp": "2026-08-10T08:54:16.939Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via RunAllNow (9ms, change: None)"
+  },
+  {
+    "id": "336733d1-0ae1-4a2a-ba33-84f7528d642f",
+    "timestamp": "2026-08-10T08:54:19.494Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (2951ms): attention — Monitor Serve Robotics and upcoming U.S. CPI data; no trades require approval."
+  },
+  {
+    "id": "dfe98f33-d7cf-4e09-afbd-7f3f28bd2cd0",
+    "timestamp": "2026-08-10T08:54:19.497Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief completed via Dependency (2965ms, change: Medium)"
+  },
+  {
+    "id": "ed5da0e9-5b57-4d58-920c-cacf47bcef29",
+    "timestamp": "2026-08-10T08:54:19.932Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Full cycle completed in 166s"
   }
 ]
