@@ -313,9 +313,15 @@ export async function callAiWithWebSearch<T>(
   // Strategy (in order):
   // 1. Strip markdown fences (```json ... ```)
   // 2. Direct JSON.parse on the trimmed text
-  // 3. Extract the first complete top-level {...} object — handles cases where
+  // 3. Recovery: model sometimes wraps the response in an outer {} and places
+  //    conditional fields (e.g. investmentCaseStrengthChange) AFTER the inner
+  //    closing } but inside the outer wrapper:
+  //      { {main_object}, "conditionalField": {...} }
+  //    Fix: find where the inner object closes, merge inner content + trailing
+  //    fields into a single flat object.
+  // 4. Extract the first complete top-level {...} object — handles cases where
   //    the model prefixes the JSON with prose ("Here is the corrected JSON:")
-  // 4. Fail with a clear error including the first 400 chars of raw output
+  // 5. Fail with a clear error including the first 400 chars of raw output
   let jsonStr = rawText.trim();
   const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenceMatch) jsonStr = fenceMatch[1].trim();
@@ -324,18 +330,54 @@ export async function callAiWithWebSearch<T>(
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    // Fallback: find the first { … } that parses as an object
-    const braceStart = jsonStr.indexOf("{");
-    const braceEnd = jsonStr.lastIndexOf("}");
-    if (braceStart !== -1 && braceEnd > braceStart) {
-      const candidate = jsonStr.slice(braceStart, braceEnd + 1);
-      try {
-        parsed = JSON.parse(candidate);
-        logger.warn({ model }, "JSON extracted from surrounding prose — model did not return bare JSON");
-      } catch {
-        // fall through to hard fail
+    // Recovery step: model sometimes places conditional fields (e.g.
+    // investmentCaseStrengthChange) AFTER the main object's closing brace,
+    // followed by a spurious trailing }:
+    //   {"main":"content"},"conditionalField":{...}}
+    // Fix: find where the first complete object closes, strip the spurious
+    // trailing } from the suffix, and merge into one flat object.
+    if (parsed === undefined) {
+      let depth = 0;
+      let firstObjectEnd = -1;
+      for (let i = 0; i < jsonStr.length; i++) {
+        if (jsonStr[i] === "{") depth++;
+        else if (jsonStr[i] === "}") {
+          depth--;
+          if (depth === 0) { firstObjectEnd = i; break; }
+        }
+      }
+      if (firstObjectEnd !== -1 && firstObjectEnd < jsonStr.length - 1) {
+        // Content exists after the first complete object — trailing fields.
+        const mainWithoutClose = jsonStr.slice(0, firstObjectEnd); // no closing }
+        const afterMain = jsonStr.slice(firstObjectEnd + 1).trim().replace(/^,/, "").trim();
+        // Strip the one spurious } the model appended at the very end.
+        const trailingFields = afterMain.replace(/\}\s*$/, "").trim().replace(/,\s*$/, "").trim();
+        const merged = mainWithoutClose + (trailingFields ? "," + trailingFields : "") + "}";
+        try {
+          parsed = JSON.parse(merged);
+          logger.warn({ model }, "JSON recovered: merged trailing fields into main object");
+        } catch {
+          // fall through to prose-extraction fallback
+        }
       }
     }
+
+    // Fallback: find the first { … } that parses as an object
+    // (handles cases where the model prefixes JSON with prose)
+    if (parsed === undefined) {
+      const braceStart = jsonStr.indexOf("{");
+      const braceEnd = jsonStr.lastIndexOf("}");
+      if (braceStart !== -1 && braceEnd > braceStart) {
+        const candidate = jsonStr.slice(braceStart, braceEnd + 1);
+        try {
+          parsed = JSON.parse(candidate);
+          logger.warn({ model }, "JSON extracted from surrounding prose — model did not return bare JSON");
+        } catch {
+          // fall through to hard fail
+        }
+      }
+    }
+
     if (parsed === undefined) {
       fail(
         "json-parse",

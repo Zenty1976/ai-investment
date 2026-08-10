@@ -2723,44 +2723,89 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "Medium",
-      "executiveSummary": "Since the last analysis 0.1 hours ago, the only material new development is confirmation of the Wegovy oral pill launch in Germany on September 1, 2026. This is a meaningful commercial rollout milestone for Novo Nordisk. No new updates on Serve Robotics or geopolitical developments have emerged in the past 6 minutes.",
-      "headline": "Novo Nordisk confirms Wegovy oral pill launch in Germany; no new updates on Serve Robotics or geopolitical risks",
+      "executiveSummary": "Since the last analysis 0.3 hours ago, two developments warrant attention: (1) Iran and Oman have made progress toward reopening the Strait of Hormuz, potentially easing energy‑inflation pressures; (2) Serve Robotics’ 2026 revenue forecast of ~$26 million has been reaffirmed by external analysts, reinforcing growth expectations ahead of Q2 earnings.",
+      "headline": "Progress on Hormuz reopening and reaffirmed Serve Robotics growth forecast",
       "alerts": [
         {
-          "title": "Wegovy oral pill launch in Germany confirmed for September 1, 2026",
+          "title": "Progress toward reopening Strait of Hormuz",
+          "category": "Geopolitical",
+          "importance": "Medium",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [],
+          "summary": "Iran and Oman have made progress toward a deal to reopen the Strait of Hormuz, potentially easing the energy supply shock.",
+          "whyItMatters": "Reopening the strait could alleviate oil supply constraints, reduce energy‑driven inflation, and ease central bank policy pressure—benefiting macro‑sensitive assets.",
+          "recommendedAttention": "Watch",
+          "sourceType": "NewsMonitor",
+          "status": "New"
+        },
+        {
+          "title": "Serve Robotics 2026 revenue forecast reaffirmed at ~$26M",
           "category": "Company",
           "importance": "Medium",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [
-            "NOVOb:xcse"
+            "SERV:xnas"
           ],
-          "summary": "Novo Nordisk will launch the Wegovy® oral semaglutide pill in Germany starting September 1, 2026, marking the first EU country rollout following EU approval.",
-          "whyItMatters": "This is the first confirmed market launch in the EU, transitioning from regulatory approval to commercial availability—potentially accelerating revenue growth and market penetration in Europe.",
+          "summary": "External analysts reaffirm Serve Robotics’ revenue forecast to surge nearly tenfold to ~$26 million in 2026.",
+          "whyItMatters": "This supports the growth thesis ahead of Q2 earnings, reinforcing expectations for strong top‑line momentum.",
           "recommendedAttention": "Monitor",
-          "sourceType": "Web",
+          "sourceType": "NewsMonitor",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Uptake and reimbursement dynamics in Germany post‑launch",
-        "Further EU country rollouts and pricing/reimbursement decisions",
-        "Any Serve Robotics updates on Q2 results or new verticals"
+        "Final outcome of Iran‑Oman negotiations on Strait of Hormuz reopening",
+        "Serve Robotics Q2 earnings and management commentary"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-10T19:49:56.516Z",
-      "analysisDuration": 4950,
-      "lastCheckedAt": "2026-08-10T19:49:56.516Z",
-      "lastMeaningfulUpdateAt": "2026-08-10T19:49:56.516Z",
+      "timestamp": "2026-08-10T20:05:02.627Z",
+      "analysisDuration": 5731,
+      "lastCheckedAt": "2026-08-10T20:05:02.627Z",
+      "lastMeaningfulUpdateAt": "2026-08-10T20:05:02.627Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-10T19:50:01.467Z"
+    "updatedAt": "2026-08-10T20:05:08.358Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-10T20:05:02.627Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Progress on Hormuz reopening and reaffirmed Serve Robotics growth forecast",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Progress toward reopening Strait of Hormuz",
+              "category": "Geopolitical",
+              "importance": "Medium",
+              "summary": "Iran and Oman have made progress toward a deal to reopen the Strait of Hormuz, potentially easing the energy supply shock.",
+              "normalizedKey": "progress toward reopening strait of hormuz|geopolitical"
+            },
+            {
+              "title": "Serve Robotics 2026 revenue forecast reaffirmed at ~$26M",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "External analysts reaffirm Serve Robotics’ revenue forecast to surge nearly tenfold to ~$26 million in 2026.",
+              "normalizedKey": "serve robotics 2026 revenue forecast reaffirmed at ~$26m|company"
+            }
+          ],
+          "newsIds": [
+            "middle-east-energy-shock-2026-08-10",
+            "ecb-holds-rates-amid-energy-shock-2026-07-23",
+            "china-inflation-cools-as-oil-shock-eases-2026-08-10",
+            "us-gas-prices-remain-elevated-2026-08-09"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "U.S. Producer Price Index (PPI) – July"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-10T19:49:56.516Z",
           "overallAlertLevel": "Medium",
@@ -3274,44 +3319,11 @@
             "U.S. Producer Price Index (PPI) – July"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-10T09:23:48.248Z",
-          "overallAlertLevel": "Medium",
-          "headline": "AI‑memory sell‑off intensifies; ‘Super’ El Niño raises food‑inflation risks",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "AI‑linked memory chip and semiconductor sell‑off deepens",
-              "category": "Sector",
-              "importance": "High",
-              "summary": "Memory‑chip and AI‑related stocks are under renewed pressure as investors reassess valuations amid concerns over unsustainable AI infrastructure spending and memory shortages.",
-              "normalizedKey": "ai‑linked memory chip and semiconductor sell‑off deepens|sector"
-            },
-            {
-              "title": "‘Super’ El Niño threatens sharp rise in global food commodity prices",
-              "category": "Macro",
-              "importance": "Medium",
-              "summary": "Analysts warn that a very strong 2026‑27 El Niño could drive food commodity prices up by 10–50%, with Goldman Sachs projecting a 15.8% surge and production losses up to 14%.",
-              "normalizedKey": "‘super’ el niño threatens sharp rise in global food commodity prices|macro"
-            }
-          ],
-          "newsIds": [
-            "ai-memory-chip-selloff-2026-08-07",
-            "ai-sector-valuation-reassessment-2026-08-07",
-            "el‑nino‑food‑price‑risk‑2026-08-08",
-            "oil‑prices‑remain‑elevated‑amid‑middle‑east‑tensions-2026-04-28"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (CPI) – July",
-            "U.S. Producer Price Index (PPI) – July"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-10T19:50:01.476Z"
+    "updatedAt": "2026-08-10T20:05:08.373Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",

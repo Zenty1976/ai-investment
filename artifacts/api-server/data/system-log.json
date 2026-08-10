@@ -1,75 +1,5 @@
 [
   {
-    "id": "97064332-36f2-4525-91ef-b711fa6d0bd9",
-    "timestamp": "2026-08-10T18:13:28.845Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Middle East energy‑market volatility"
-  },
-  {
-    "id": "bbba44a3-a887-4373-b7d8-eb43e05b509a",
-    "timestamp": "2026-08-10T18:13:28.846Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Novo Nordisk Q3 earnings and EU commercial rollout"
-  },
-  {
-    "id": "76f7b70b-d8e1-45da-8b0f-d03635cd92f3",
-    "timestamp": "2026-08-10T18:13:28.848Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Competition from Eli Lilly"
-  },
-  {
-    "id": "a0b4106a-fb85-4c7a-a2d4-f7856b8f2a6a",
-    "timestamp": "2026-08-10T18:13:28.850Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Victoza discontinuation in EU"
-  },
-  {
-    "id": "0c223154-b243-4fcc-93bd-dd323f5cb48f",
-    "timestamp": "2026-08-10T18:13:28.852Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Macroeconomic/geopolitical shock"
-  },
-  {
-    "id": "fdf7cca1-67e8-4a89-ba4d-3cfca12607f6",
-    "timestamp": "2026-08-10T18:13:28.854Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: U.S. macro data volatility"
-  },
-  {
-    "id": "ef6d575c-15f6-43ba-b973-447cc879ab62",
-    "timestamp": "2026-08-10T18:13:28.856Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Currency risk upon deployment into DKK equity"
-  },
-  {
-    "id": "823ca511-d6aa-482a-875f-002c8cfdc8f4",
-    "timestamp": "2026-08-10T18:13:28.858Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Delayed diversification leading to concentration risk"
-  },
-  {
-    "id": "0876b551-5977-47ae-96ad-e31d5d416f5e",
-    "timestamp": "2026-08-10T18:13:28.862Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via Dependency (10618ms, change: Medium)"
-  },
-  {
-    "id": "6effad24-48aa-4daa-808f-3d0557d0739a",
-    "timestamp": "2026-08-10T18:13:28.863Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: market-alerts, trade-decision-engine, portfolio-manager, portfolio-analyzer"
-  },
-  {
     "id": "7ba225d2-70b2-40e6-89a7-b0f225b3ad56",
     "timestamp": "2026-08-10T18:13:29.384Z",
     "module": "Company Monitor",
@@ -3498,5 +3428,75 @@
     "module": "Settings",
     "level": "warning",
     "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "4e11cba4-c861-44b0-bd9e-13ccecf94c7e",
+    "timestamp": "2026-08-10T20:00:21.557Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "0ef404f5-0226-485a-8875-01671cfb2c85",
+    "timestamp": "2026-08-10T20:00:50.169Z",
+    "module": "Company Monitor",
+    "level": "error",
+    "message": "Company analysis failed for SERV:XNAS: AI returned wrong ticker \"SERV\" after 3 attempt(s)"
+  },
+  {
+    "id": "5c12755c-eeda-4dc3-bab5-65df4bce2e2a",
+    "timestamp": "2026-08-10T20:05:02.626Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "5b418d99-e90d-42f3-a21c-fe7d8781a433",
+    "timestamp": "2026-08-10T20:05:08.688Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "f4c3c0cc-6c5f-4f83-941e-0811d61fa91d",
+    "timestamp": "2026-08-10T20:05:08.689Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): Progress toward reopening Strait of Hormuz; Serve Robotics 2026 revenue forecast reaffirmed at ~$26M"
+  },
+  {
+    "id": "43ee9122-5d98-44a8-9d81-6711f3716655",
+    "timestamp": "2026-08-10T20:05:08.692Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 alert(s) resolved: Wegovy oral pill launch in Germany confirmed for September 1, 2026"
+  },
+  {
+    "id": "0e415f2c-cd5a-4d8e-bd5a-645d4d9eea7d",
+    "timestamp": "2026-08-10T20:05:08.693Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Progress toward reopening Strait of Hormuz [Geopolitical]"
+  },
+  {
+    "id": "3b56d36f-714e-4f77-9ad8-3f175fc92322",
+    "timestamp": "2026-08-10T20:05:08.702Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (6084ms, change: High)"
+  },
+  {
+    "id": "61a9e18d-136b-48c1-bb4e-46ab2f07e3bf",
+    "timestamp": "2026-08-10T20:09:02.725Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "0036fec9-0013-46f2-8ec7-a1af381e524c",
+    "timestamp": "2026-08-10T20:09:42.224Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
   }
 ]

@@ -1,22 +1,5 @@
 [
   {
-    "id": "f2577ed1-c6e1-45a6-91be-589362b8bf2c",
-    "correlationId": "f0e02d41-b6a4-46d9-b143-a2e8ed26d782",
-    "moduleId": "portfolio-manager",
-    "trigger": "Dependency",
-    "status": "Failed",
-    "priority": 10,
-    "requestedAt": "2026-08-10T13:08:03.849Z",
-    "startedAt": "2026-08-10T13:08:13.858Z",
-    "completedAt": "2026-08-10T13:08:13.861Z",
-    "durationMs": null,
-    "attempt": 2,
-    "maxAttempts": 2,
-    "error": "HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}",
-    "affectedTickers": [],
-    "parentJobId": null
-  },
-  {
     "id": "c9f77c89-2f5a-4785-afdb-febee2ce1b4b",
     "correlationId": "dfdf2aa6-66f9-48b3-9c31-ba996e6aa506",
     "moduleId": "portfolio-manager",
@@ -1947,5 +1930,24 @@
     "parentJobId": null,
     "resultUpdated": true,
     "meaningfulChange": "None"
+  },
+  {
+    "id": "1f32b05b-5f08-4992-b25a-769d465ec508",
+    "correlationId": "50725b5a-8bc5-48cf-80af-16c0c78b5eb4",
+    "moduleId": "market-alerts",
+    "trigger": "Scheduled",
+    "status": "Completed",
+    "priority": 40,
+    "requestedAt": "2026-08-10T20:05:02.617Z",
+    "startedAt": "2026-08-10T20:05:02.617Z",
+    "completedAt": "2026-08-10T20:05:08.701Z",
+    "durationMs": 6084,
+    "attempt": 1,
+    "maxAttempts": 2,
+    "error": null,
+    "affectedTickers": [],
+    "parentJobId": null,
+    "resultUpdated": true,
+    "meaningfulChange": "High"
   }
 ]
