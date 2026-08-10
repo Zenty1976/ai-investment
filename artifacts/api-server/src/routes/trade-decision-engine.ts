@@ -1453,6 +1453,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       `\nPRICE CONTEXT (priority 5.5 — deterministic backend data from actual Saxo historical data, NOT a forecast):\n` +
       `Rules: Use alongside fundamentals and evidence. 'StabilizingAfterDecline' does NOT confirm a bottom or reversal. ` +
       `'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. ` +
+      `recentBehavior describes only the last 2–3 sessions: Stabilizing/Recovering do NOT confirm a bottom or BUY. ` +
       `Never change decision type or conviction solely because of normal price movement. ` +
       `Price Context is supporting context only — it cannot on its own satisfy the ≥2 independent sources requirement.\n` +
       pcLines

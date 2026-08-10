@@ -110,6 +110,7 @@ Rules for using Price Context:
 - "StabilizingAfterDecline" means negative momentum has weakened materially. It does NOT confirm a bottom or reversal.
 - "PossibleRecovery" means short-term behavior has begun improving after a decline. Durable reversal is NOT confirmed.
 - "ExtendedAfterRally" means the price has risen significantly recently. It does NOT mean sell.
+- recentBehavior (when present) describes ONLY the last 2–3 trading sessions. priceState and recentBehavior can coexist: priceState=StrongDowntrend + recentBehavior=Stabilizing means the broader downtrend continues but very recent selling appears to be easing. recentBehavior=Stabilizing or Recovering does NOT confirm a bottom, reversal, or BUY signal.
 - NEVER move investmentCaseStrength or change the investment view solely because of normal price movement.
 - NEVER infer valuation from price movement alone (price falling ≠ cheap, price rising ≠ expensive).
 - Use Price Context together with fundamentals, catalysts, earnings, news, and events — never in isolation.
@@ -150,6 +151,7 @@ Rules for using Price Context:
 - "StabilizingAfterDecline" means negative momentum has weakened materially. It does NOT confirm a bottom or reversal.
 - "PossibleRecovery" means short-term behavior has begun improving after a decline. Durable reversal is NOT confirmed.
 - "ExtendedAfterRally" means the price has risen significantly recently. It does NOT mean sell.
+- recentBehavior (when present) describes ONLY the last 2–3 trading sessions. priceState and recentBehavior can coexist: priceState=StrongDowntrend + recentBehavior=Stabilizing means the broader downtrend continues but very recent selling appears to be easing. recentBehavior=Stabilizing or Recovering does NOT confirm a bottom, reversal, or BUY signal.
 - NEVER move investmentCaseStrength or change the investment view solely because of normal price movement.
 - NEVER infer valuation from price movement alone (price falling ≠ cheap, price rising ≠ expensive).
 - Use Price Context together with fundamentals, catalysts, earnings, news, and events — never in isolation.

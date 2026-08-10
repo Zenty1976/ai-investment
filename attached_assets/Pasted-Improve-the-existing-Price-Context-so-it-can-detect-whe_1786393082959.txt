@@ -1,0 +1,356 @@
+Improve the existing Price Context so it can detect when a strongly falling stock is beginning to FLATTEN OUT in the most recent trading days.
+
+IMPORTANT:
+Do NOT redesign or replace the existing Price Context implementation.
+
+Keep all existing:
+- 1D / 5D / 10D / 30D / 90D returns
+- short/medium/long trend
+- normalized slopes
+- volatility
+- range position
+- momentumChange
+- PriceState
+- OpenAI integrations
+
+The current implementation correctly describes the broader trend, but it does not capture very recent stabilization well enough.
+
+For example SERV currently shows approximately:
+
+5D: -10.27%
+1M: -15.64%
+3M: -39.93%
+Short/medium/long trend: StrongDowntrend
+Momentum: AcceleratingNegative
+
+This can all be true even if most of the 5D decline happened early in the 5-day window and the last 2-3 trading days have started moving sideways.
+
+We therefore need a separate VERY SHORT-TERM BEHAVIOR calculation.
+
+
+==================================================
+1. ADD VERY SHORT-TERM METRICS
+==================================================
+
+Extend PriceContext with something conceptually like:
+
+recentBehavior: {
+    twoDayReturnPct,
+    threeDayReturnPct,
+
+    threeDaySlope,
+    fiveDaySlope,
+
+    daysSinceRecentLow,
+    newLowLast3Days,
+    newLowLast5Days,
+
+    declineDecelerating,
+
+    state
+}
+
+Possible recentBehavior.state values:
+
+FallingFast
+Falling
+DeclineSlowing
+Stabilizing
+Recovering
+Rising
+
+These describe ONLY the most recent price behavior.
+
+They must NOT replace the existing broader PriceState.
+
+
+==================================================
+2. DETECT DECELERATION
+==================================================
+
+The important question is:
+
+"Is the negative price movement losing speed?"
+
+Compare slopes across windows.
+
+For example:
+
+10D slope = strongly negative
+5D slope  = negative
+3D slope  = near zero
+
+should indicate that the decline is DECELERATING.
+
+Do not simply compare percentage returns because a large move early in a window can dominate the total return.
+
+Use the normalized regression slopes already used by Price Context where possible.
+
+Conceptually:
+
+strong negative longer slope
+→ less negative shorter slope
+→ near-zero latest slope
+
+= declineDecelerating: true
+
+
+==================================================
+3. DETECT RECENT STABILIZATION
+==================================================
+
+Create conservative deterministic rules for:
+
+recentBehavior.state = Stabilizing
+
+It should require a combination of evidence, for example:
+
+- broader trend is Downtrend/StrongDowntrend
+- recent 2D/3D movement is small relative to the previous decline
+- 3D normalized slope is approximately flat
+- negative slope has materially weakened versus 5D/10D
+- stock is not continuing to make significant new lows
+- optionally volatility is declining
+
+Do NOT classify stabilization just because one day was positive.
+
+Centralize thresholds so they can be tuned later.
+
+
+==================================================
+4. RECENT LOW BEHAVIOR
+==================================================
+
+Calculate whether the stock continues making new lows.
+
+Add:
+
+daysSinceRecentLow
+newLowLast3Days
+newLowLast5Days
+
+Use a sensible recent comparison window such as the existing 30D range.
+
+The purpose is to distinguish:
+
+A)
+price continues making new lows
+→ decline probably still active
+
+from:
+
+B)
+large decline occurred
+→ price has remained above the low for several sessions
+→ short-term slope approaches zero
+→ possible stabilization
+
+Do not interpret this as a confirmed bottom.
+
+
+==================================================
+5. KEEP LONG-TERM AND RECENT STATE SEPARATE
+==================================================
+
+This is very important.
+
+Do NOT change:
+
+PriceState = StrongDowntrend
+
+to:
+
+PriceState = Stabilizing
+
+just because the last few days flatten.
+
+Both should be allowed simultaneously:
+
+PRICE STATE:
+StrongDowntrend
+
+RECENT BEHAVIOR:
+Stabilizing
+
+This gives us much better information:
+
+"The stock remains in a strong broader downtrend, but very recent selling pressure appears to be stabilizing."
+
+That is exactly the distinction we want.
+
+
+==================================================
+6. OPENAI INPUT
+==================================================
+
+Add the compact recentBehavior result to the existing Price Context sent to:
+
+- Company Monitor
+- Opportunity Finder
+- Trade Decision
+- Risk Analyzer / Portfolio Analyzer where Price Context is already supplied
+
+Do NOT send raw historical prices.
+
+Example:
+
+{
+  "priceState": "StrongDowntrend",
+
+  "recentBehavior": {
+    "twoDayReturnPct": 0.2,
+    "threeDayReturnPct": -0.4,
+    "threeDaySlope": -0.001,
+    "daysSinceRecentLow": 3,
+    "newLowLast3Days": false,
+    "declineDecelerating": true,
+    "state": "Stabilizing"
+  }
+}
+
+Example values only — do not hardcode.
+
+
+==================================================
+7. UPDATE OPENAI PROMPTS
+==================================================
+
+Explicitly explain the distinction:
+
+PriceState describes the broader price trend.
+
+recentBehavior describes what is happening in the latest few trading sessions.
+
+Therefore this is valid:
+
+PriceState = StrongDowntrend
+recentBehavior = Stabilizing
+
+Interpretation:
+
+"The stock remains in a strong downtrend, but the most recent price behavior indicates that negative momentum may be losing strength."
+
+IMPORTANT:
+
+Stabilizing does NOT mean:
+- bottom confirmed
+- reversal confirmed
+- stock is cheap
+- stock will rise
+- BUY
+
+Recovering also does not by itself mean BUY.
+
+Trade Decision must still combine this with:
+- fundamentals
+- valuation
+- news
+- catalysts/events
+- portfolio fit
+- risk
+- position sizing
+
+
+==================================================
+8. COMPANY MONITOR UI
+==================================================
+
+Extend the existing PRICE CONTEXT card rather than creating a new module.
+
+For example:
+
+PRICE CONTEXT              STRONG DOWNTREND
+
+1D    -0.29%
+5D   -10.27%
+1M   -15.64%
+3M   -39.93%
+
+BROADER TREND
+Strong Downtrend
+
+RECENT
+Stabilizing
+
+Decline speed      ↓ Slowing
+3D trend           → Flat
+Last new low       3d ago
+Volatility         High
+
+This should remain compact.
+
+If recent behavior is still strongly negative, show something like:
+
+RECENT
+Falling Fast
+
+Do not force a positive/stabilizing interpretation.
+
+
+==================================================
+9. IMPORTANT SERV TEST
+==================================================
+
+Use SERV as a test case using the REAL Saxo historical prices currently being received.
+
+Do NOT tune the algorithm specifically to make SERV say "Stabilizing".
+
+Calculate the result objectively.
+
+Inspect the actual last 10 daily observations and verify:
+
+- 2D return
+- 3D return
+- 3D normalized slope
+- 5D normalized slope
+- 10D normalized slope
+- date of recent low
+- whether new lows are still being made
+- whether decline speed is actually decreasing
+
+If the real data still shows rapidly falling prices, the correct result must remain:
+
+recentBehavior = Falling/FallingFast
+
+If the last few sessions have genuinely flattened despite the broader decline, it should produce:
+
+PriceState = StrongDowntrend
+recentBehavior = Stabilizing/DeclineSlowing
+
+The goal is NOT to make SERV look attractive.
+
+The goal is to make Price Context capable of objectively detecting the visual phenomenon:
+"the stock has fallen heavily, but the most recent part of the curve is beginning to flatten."
+
+
+==================================================
+10. DEBUG
+==================================================
+
+Make sure the existing OpenAI debug dialogs show recentBehavior as part of Price Context.
+
+Also make the calculated values inspectable so we can verify why a stock was classified as:
+
+DeclineSlowing
+Stabilizing
+FallingFast
+etc.
+
+Do not add another debug architecture.
+
+
+==================================================
+11. KEEP IT SIMPLE
+==================================================
+
+Do NOT add RSI, MACD, Bollinger Bands or chart-pattern recognition.
+
+This is only an extension of the existing deterministic Price Context.
+
+The objective is to capture:
+
+BROADER DIRECTION
++
+WHAT IS HAPPENING RIGHT NOW
+
+without asking OpenAI to inspect raw price history.

@@ -417,7 +417,7 @@ function buildUserPrompt(
     blocks.push(
       "",
       "PRICE CONTEXT for held positions (deterministic backend data — actual price behavior from Saxo historical data, NOT a forecast):",
-      "Rules: Use alongside fundamentals. 'StabilizingAfterDecline' does NOT confirm a bottom. 'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. Do not change risk assessments solely based on price movement."
+      "Rules: Use alongside fundamentals. 'StabilizingAfterDecline' does NOT confirm a bottom. 'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. Do not change risk assessments solely based on price movement. recentBehavior describes only the last 2–3 sessions: Stabilizing/Recovering do NOT confirm a bottom or reversal."
     );
     for (const [sym, pc] of priceCtxEntries) {
       blocks.push(`[${sym}]`, pc);

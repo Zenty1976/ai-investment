@@ -1,117 +1,5 @@
 [
   {
-    "id": "a6ddffa7-a4d4-4c81-83b1-83441b5fc99d",
-    "timestamp": "2026-08-10T18:13:30.700Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Portfolio analysis completed"
-  },
-  {
-    "id": "93ec2b46-4778-49de-94bb-8b3e1930e5b4",
-    "timestamp": "2026-08-10T18:13:30.701Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Main conclusion: Portfolio is highly concentrated with minimal exposure and requires monitoring of Novo Nordisk catalysts"
-  },
-  {
-    "id": "8be08628-9986-4eb0-ab6d-47571621d4b8",
-    "timestamp": "2026-08-10T18:13:30.707Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall rating: Fair"
-  },
-  {
-    "id": "b3496ac6-a525-44ca-ba7f-d798f6a6f71c",
-    "timestamp": "2026-08-10T18:13:30.710Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall outlook: Moderately Bullish"
-  },
-  {
-    "id": "faa55a7f-be78-4255-b3fc-3c69d2cd95d6",
-    "timestamp": "2026-08-10T18:13:30.712Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main concern identified: Macroeconomic volatility — Upcoming U.S. CPI/PPI and FOMC minutes could shift rate expectations and market sentiment."
-  },
-  {
-    "id": "d75220fb-4ecd-44a4-b1ff-f2d4d3db1de2",
-    "timestamp": "2026-08-10T18:13:30.714Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main opportunity identified: EU commercial rollout of Wegovy® pill — Approval received mid‑July; launches in Germany and other EU markets in H2 2026 could drive volume growth."
-  },
-  {
-    "id": "c164e0a8-af7a-4fdd-9300-e39cfdca0995",
-    "timestamp": "2026-08-10T18:13:30.716Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Recommended highest-priority action: Monitor Novo Nordisk EU commercial rollout and prescription uptake"
-  },
-  {
-    "id": "feee7bd8-2394-48b3-83b4-fa3fecb7402e",
-    "timestamp": "2026-08-10T18:13:30.720Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer completed via Dependency (12474ms, change: Medium)"
-  },
-  {
-    "id": "b3e7c341-cd62-40ee-b69c-32edb0098ade",
-    "timestamp": "2026-08-10T18:13:30.721Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: market-alerts, trade-decision-engine, portfolio-manager"
-  },
-  {
-    "id": "dbb27474-f2c8-4b1c-8c9b-51d2a4d16799",
-    "timestamp": "2026-08-10T18:13:31.259Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "f24451d4-c384-413d-ba3a-1d5c71831844",
-    "timestamp": "2026-08-10T18:13:31.262Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 new alert(s): Wegovy® pill launch in Germany set for September 1, 2026"
-  },
-  {
-    "id": "b0f586a7-7a5b-4069-a576-795004fde1b0",
-    "timestamp": "2026-08-10T18:13:31.263Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 alert(s) resolved: Interim dividend ex‑dividend and payment dates confirmed"
-  },
-  {
-    "id": "194f22d1-a17e-4262-8d34-6822719623eb",
-    "timestamp": "2026-08-10T18:13:31.265Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Wegovy® pill launch in Germany set for September 1, 2026 [Company]"
-  },
-  {
-    "id": "0061ff44-6016-4f07-aaa9-bb89d18f268c",
-    "timestamp": "2026-08-10T18:13:31.269Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Dependency (13026ms, change: High)"
-  },
-  {
-    "id": "776339b2-0b5e-4ad9-b912-f6e29dde8723",
-    "timestamp": "2026-08-10T18:13:31.270Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: trade-decision-engine, portfolio-manager"
-  },
-  {
-    "id": "acf78dec-c77c-482b-8203-b58a7a50f375",
-    "timestamp": "2026-08-10T18:13:34.924Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Eni for energy diversification\" (ENI): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
     "id": "a4e621d3-4616-4e4a-a55b-69f50c9191bd",
     "timestamp": "2026-08-10T18:13:34.925Z",
     "module": "Trade Decision Engine",
@@ -3495,6 +3383,118 @@
   {
     "id": "d90586fb-04f0-4484-b605-dfe8b97bebf4",
     "timestamp": "2026-08-10T20:12:24.444Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "8a5d8647-9bb8-4dc3-af1c-954f10fff9ab",
+    "timestamp": "2026-08-10T20:13:09.567Z",
+    "module": "Company Monitor",
+    "level": "user",
+    "message": "User manually started company analysis for SERV:XNAS"
+  },
+  {
+    "id": "1e7a0ec0-8eb0-485e-a502-c103683c4498",
+    "timestamp": "2026-08-10T20:13:33.391Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Watch, strength 35, meaningfulChange=High"
+  },
+  {
+    "id": "d1a1e3a3-2501-44fb-85aa-b8c94071db7b",
+    "timestamp": "2026-08-10T20:17:54.743Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "f455166f-6e57-456c-9dbb-be69599c2035",
+    "timestamp": "2026-08-10T20:17:54.754Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "21566ec5-06ea-484c-894d-3ab3bb026a72",
+    "timestamp": "2026-08-10T20:17:59.865Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "2fc79e0d-1d39-4b11-a127-bd38c3c90b7d",
+    "timestamp": "2026-08-10T20:17:59.869Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (5235ms, change: Medium)"
+  },
+  {
+    "id": "e2b33148-7fa1-47ea-8fda-89576e30dab8",
+    "timestamp": "2026-08-10T20:18:02.007Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 3 market-moving stories found"
+  },
+  {
+    "id": "7c91a116-981f-435c-ab2b-62bfcf9eb3b5",
+    "timestamp": "2026-08-10T20:18:02.010Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (7372ms, change: Medium)"
+  },
+  {
+    "id": "9b6eba00-87ed-4ba6-b763-19f1c14802a7",
+    "timestamp": "2026-08-10T20:20:24.737Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "56d39a72-44d3-4073-a3f6-282ad52a48d6",
+    "timestamp": "2026-08-10T20:20:32.444Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "bb280ce4-2467-4a02-9868-8876ca6c2662",
+    "timestamp": "2026-08-10T20:20:32.446Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): Novo Nordisk announces interim dividend schedule; Serve Robotics’ indoor robotics expansion remains key ahead of Q2 earnings"
+  },
+  {
+    "id": "13471229-a516-44c7-b2f4-09bfe340ad6b",
+    "timestamp": "2026-08-10T20:20:32.449Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Progress toward reopening Strait of Hormuz; Serve Robotics 2026 revenue forecast reaffirmed at ~$26M"
+  },
+  {
+    "id": "acb980ec-1ae4-4533-afc2-11f27f10b883",
+    "timestamp": "2026-08-10T20:20:32.451Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Novo Nordisk announces interim dividend schedule [Company]"
+  },
+  {
+    "id": "ab770da3-4bd8-46c7-a7f6-331559c5add6",
+    "timestamp": "2026-08-10T20:20:32.454Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (7730ms, change: High)"
+  },
+  {
+    "id": "bb14051e-e530-4f22-9757-691342fb768a",
+    "timestamp": "2026-08-10T20:22:24.788Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "127d14fb-9849-43b2-bfec-d0d0a0b0bd03",
+    "timestamp": "2026-08-10T20:25:52.981Z",
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"

@@ -2,51 +2,55 @@
   "market-monitor": {
     "moduleName": "market-monitor",
     "result": {
-      "summary": "Global equity indices mixed: U.S. markets modestly higher, Asian markets weaker; volatility easing. Central banks largely on hold amid inflation uncertainty and geopolitical risks.",
+      "summary": "Major global equity indices rose this week, led by US tech; volatility eased. Central banks held rates steady or modestly tightened amid easing inflation. Geopolitical tensions and upcoming US inflation data remain key uncertainties.",
       "marketSentiment": "Neutral",
       "riskLevel": "Moderate",
       "positiveFactors": [
-        "U.S. equities rising modestly, supporting risk appetite",
-        "Volatility (VIX) declining, easing investor fear"
+        "US equities supported by resilient consumer spending and AI investment",
+        "Easing inflation trends reducing near‑term rate‑hike pressure"
       ],
       "negativeFactors": [
-        "Asian markets under pressure, dragging global sentiment",
-        "Central banks withholding guidance, increasing uncertainty"
+        "Geopolitical tensions in Middle East keeping energy markets volatile",
+        "Uncertainty ahead of US inflation and jobs data raising policy risk"
       ],
       "strongSectors": [
-        "Healthcare",
-        "Financials"
-      ],
-      "weakSectors": [
-        "Technology",
+        "Information Technology",
         "Energy"
       ],
+      "weakSectors": [
+        "Consumer Discretionary"
+      ],
       "keyRisks": [
-        "Middle East conflict keeping energy and inflation risks elevated",
-        "Lack of forward guidance from central banks increasing market volatility"
+        "Middle East conflict disrupting energy supply",
+        "Upcoming US CPI and employment data could shift Fed policy expectations"
       ],
       "sources": [
         {
-          "title": "Markets Overview — Indices, Sectors, Commodities & Crypto | Nexqual",
-          "url": "https://www.nexqual.com/markets",
-          "published": "2026-07-29"
-        },
-        {
-          "title": "Markets data - stock market, bond, equity, commodity prices - FT.com",
-          "url": "https://markets.ft.markitdigital.com/data/",
-          "published": "2026-07-24"
+          "title": "Morningstar Markets Observer: Q3 2026",
+          "url": "",
+          "published": "2026-07-15"
         },
         {
           "title": "Fed leaves interest rate unchanged but with 3 dissents as Warsh praises 'good family fight'",
-          "url": "https://apnews.com/article/ad10c177cb8d96f9e3ed122e12352a74",
+          "url": "",
           "published": "2026-07-28"
+        },
+        {
+          "title": "US Suffers Unexpected Job Losses in July, Markets Dial Back Rate Hike Expectations",
+          "url": "",
+          "published": "2026-08-07"
+        },
+        {
+          "title": "Weekly Market Report (S&P 500 +3.58%, Nasdaq +5.19%, VIX 14.90)",
+          "url": "",
+          "published": "2026-08-09"
         }
       ],
-      "timestamp": "2026-08-10T19:47:40.948Z",
-      "analysisDuration": 5511
+      "timestamp": "2026-08-10T20:17:54.749Z",
+      "analysisDuration": 4978
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-10T19:47:46.461Z"
+    "updatedAt": "2026-08-10T20:17:59.727Z"
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -95,86 +99,69 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Middle East conflict continues to drive oil and energy volatility, keeping inflation and rate uncertainty elevated. ECB holds steady amid energy shock. China’s inflation cools as oil shock eases, while U.S. gas prices remain elevated.",
-      "overallMarketImpact": "Cautious, with energy-driven inflation risks tempering central bank easing hopes.",
+      "executiveSummary": "Middle East conflict continues to drive elevated energy and commodity prices, pressuring inflation and manufacturing costs. Tech sector’s massive AI infrastructure spending is raising concerns over margins and capital allocation.",
+      "overallMarketImpact": "Cautiously negative, with inflation and cost pressures weighing on markets despite strong AI investment.",
       "topStory": {
-        "title": "Middle East conflict fuels energy‑inflation risks",
-        "summary": "Ongoing Iran war and Strait of Hormuz disruptions sustain oil supply shock, keeping energy prices elevated and inflation pressures alive.",
+        "title": "Middle East conflict fuels commodity price surge",
+        "summary": "Ongoing Middle East war continues to elevate energy and commodity prices, sustaining inflation and supply‑chain pressures.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "middle-east-energy-shock-2026-08-10",
-          "title": "Middle East energy shock persists",
-          "summary": "Iran war and Strait of Hormuz closure continue to disrupt oil supply, sustaining elevated energy prices.",
-          "category": "Energy",
+          "id": "middle-east-commodity-shock-2026-08-10",
+          "title": "Middle East conflict sustains commodity price surge",
+          "summary": "War in Middle East continues to drive energy and commodity prices higher, fueling inflation and manufacturing cost pressures.",
+          "category": "Commodities",
           "importance": "High",
           "affectedMarkets": [
-            "Oil",
+            "Energy",
             "Inflation",
-            "Rates"
+            "Industrials"
           ],
-          "whyItMatters": "Prolonged supply shock keeps inflation elevated and complicates central bank policy.",
-          "marketImpact": "Positive for oil; negative for inflation-sensitive assets",
+          "whyItMatters": "Persistent supply shocks elevate input costs, inflation expectations and central bank uncertainty.",
+          "marketImpact": "Negative for manufacturing and bonds; positive for energy prices",
           "confidence": 0.9,
-          "source": "Wikipedia",
-          "publishedAt": "2026-08-10"
+          "source": "World Bank",
+          "publishedAt": "2026-04-28"
         },
         {
-          "id": "ecb-holds-rates-amid-energy-shock-2026-07-23",
-          "title": "ECB holds rates amid energy shock",
-          "summary": "ECB holds rates, citing energy‑driven commodity volatility and uncertain inflation risks.",
-          "category": "Rates",
-          "importance": "High",
+          "id": "tech-ai‑spending‑raises‑margin‑concerns-2026-08-06",
+          "title": "Tech AI spending raises margin concerns",
+          "summary": "Tech firms’ record AI infrastructure spending is pushing up costs and weighing on investor sentiment despite revenue growth.",
+          "category": "Technology",
+          "importance": "Medium",
           "affectedMarkets": [
-            "Euro bonds",
-            "Euro",
-            "Inflation expectations"
+            "Technology",
+            "Equities"
           ],
-          "whyItMatters": "ECB’s caution signals central banks remain sensitive to energy‑inflation dynamics.",
-          "marketImpact": "Negative for euro area bonds; mixed for euro",
+          "whyItMatters": "High capex may pressure margins and temper enthusiasm for AI‑driven growth.",
+          "marketImpact": "Negative for tech equities",
+          "confidence": 0.75,
+          "source": "Le Monde",
+          "publishedAt": "2026-08-06"
+        },
+        {
+          "id": "ecb-holds-rates-amid-energy-shock-2026-08-10",
+          "title": "ECB holds rates amid energy‑shock uncertainty",
+          "summary": "ECB holds rates, citing energy‑shock risks and removing balanced risk language from guidance.",
+          "category": "Rates",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Bonds",
+            "FX"
+          ],
+          "whyItMatters": "Signals caution amid inflation risks from energy volatility, reducing forward guidance clarity.",
+          "marketImpact": "Mixed; supportive for euro‑area bonds, cautious for euro FX",
           "confidence": 0.8,
           "source": "ECB",
           "publishedAt": "2026-07-23"
-        },
-        {
-          "id": "china-inflation-cools-as-oil-shock-eases-2026-08-10",
-          "title": "China inflation cools as oil shock eases",
-          "summary": "China’s inflation moderates as the initial oil‑shock impact begins to fade.",
-          "category": "Inflation",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "China equities",
-            "Commodities"
-          ],
-          "whyItMatters": "Easing inflation may reduce pressure on Chinese monetary policy and support equities.",
-          "marketImpact": "Positive for China equities; negative for oil",
-          "confidence": 0.7,
-          "source": "Bloomberg",
-          "publishedAt": "2026-08-10"
-        },
-        {
-          "id": "us-gas-prices-remain-elevated-2026-08-09",
-          "title": "U.S. gas prices remain elevated",
-          "summary": "U.S. gasoline prices stay over $1 above pre‑war levels despite global commodity easing.",
-          "category": "Commodities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Consumer discretionary",
-            "Inflation"
-          ],
-          "whyItMatters": "High fuel costs weigh on consumer spending and inflation outlook.",
-          "marketImpact": "Negative for consumer discretionary; upward pressure on inflation",
-          "confidence": 0.8,
-          "source": "CBS News",
-          "publishedAt": "2026-08-09"
         }
       ],
-      "timestamp": "2026-08-10T19:47:40.953Z",
-      "analysisDuration": 7579
+      "timestamp": "2026-08-10T20:17:54.755Z",
+      "analysisDuration": 7245
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-10T19:47:48.532Z"
+    "updatedAt": "2026-08-10T20:18:02.001Z"
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2723,24 +2710,26 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "Medium",
-      "executiveSummary": "Since the last analysis 0.3 hours ago, two developments warrant attention: (1) Iran and Oman have made progress toward reopening the Strait of Hormuz, potentially easing energy‑inflation pressures; (2) Serve Robotics’ 2026 revenue forecast of ~$26 million has been reaffirmed by external analysts, reinforcing growth expectations ahead of Q2 earnings.",
-      "headline": "Progress on Hormuz reopening and reaffirmed Serve Robotics growth forecast",
+      "executiveSummary": "Since the last check 0.3 hours ago, two meaningful developments have emerged: Novo Nordisk has announced an upcoming interim dividend with key dates, and Serve Robotics continues to expand into indoor robotics via its Diligent Robotics acquisition ahead of its Q2 earnings. Both warrant attention ahead of imminent events.",
+      "headline": "Novo Nordisk interim dividend announced; Serve Robotics’ indoor robotics expansion remains focal ahead of Q2 earnings",
       "alerts": [
         {
-          "title": "Progress toward reopening Strait of Hormuz",
-          "category": "Geopolitical",
+          "title": "Novo Nordisk announces interim dividend schedule",
+          "category": "Company",
           "importance": "Medium",
           "isNew": true,
           "requiresAttention": true,
-          "affectedHoldings": [],
-          "summary": "Iran and Oman have made progress toward a deal to reopen the Strait of Hormuz, potentially easing the energy supply shock.",
-          "whyItMatters": "Reopening the strait could alleviate oil supply constraints, reduce energy‑driven inflation, and ease central bank policy pressure—benefiting macro‑sensitive assets.",
-          "recommendedAttention": "Watch",
-          "sourceType": "NewsMonitor",
+          "affectedHoldings": [
+            "NOVOb:xcse"
+          ],
+          "summary": "Novo Nordisk has set the record date for its interim dividend at August 17, 2026, ex‑dividend date August 14, and payment date August 18 (ADR payment August 25).",
+          "whyItMatters": "Dividend timing may influence short‑term share price dynamics and cash flow expectations for holders.",
+          "recommendedAttention": "Monitor",
+          "sourceType": "Web",
           "status": "New"
         },
         {
-          "title": "Serve Robotics 2026 revenue forecast reaffirmed at ~$26M",
+          "title": "Serve Robotics’ indoor robotics expansion remains key ahead of Q2 earnings",
           "category": "Company",
           "importance": "Medium",
           "isNew": true,
@@ -2748,31 +2737,63 @@
           "affectedHoldings": [
             "SERV:xnas"
           ],
-          "summary": "External analysts reaffirm Serve Robotics’ revenue forecast to surge nearly tenfold to ~$26 million in 2026.",
-          "whyItMatters": "This supports the growth thesis ahead of Q2 earnings, reinforcing expectations for strong top‑line momentum.",
-          "recommendedAttention": "Monitor",
-          "sourceType": "NewsMonitor",
+          "summary": "Serve Robotics continues to push into indoor service robotics via its acquisition of Diligent Robotics, expanding beyond sidewalk delivery ahead of its Q2 earnings release.",
+          "whyItMatters": "Integration success of Diligent Robotics could materially affect growth trajectory and investor sentiment in the upcoming earnings.",
+          "recommendedAttention": "Watch",
+          "sourceType": "Web",
           "status": "New"
         }
       ],
       "thingsToWatch": [
-        "Final outcome of Iran‑Oman negotiations on Strait of Hormuz reopening",
-        "Serve Robotics Q2 earnings and management commentary"
+        "Novo Nordisk share movement around ex‑dividend date (August 14)",
+        "Serve Robotics Q2 earnings reaction and commentary on Diligent Robotics integration"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-10T20:05:02.627Z",
-      "analysisDuration": 5731,
-      "lastCheckedAt": "2026-08-10T20:05:02.627Z",
-      "lastMeaningfulUpdateAt": "2026-08-10T20:05:02.627Z",
+      "timestamp": "2026-08-10T20:20:24.738Z",
+      "analysisDuration": 7690,
+      "lastCheckedAt": "2026-08-10T20:20:24.738Z",
+      "lastMeaningfulUpdateAt": "2026-08-10T20:20:24.738Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-10T20:05:08.358Z"
+    "updatedAt": "2026-08-10T20:20:32.429Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-10T20:20:24.738Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Novo Nordisk interim dividend announced; Serve Robotics’ indoor robotics expansion remains focal ahead of Q2 earnings",
+          "alertCount": 2,
+          "alerts": [
+            {
+              "title": "Novo Nordisk announces interim dividend schedule",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Novo Nordisk has set the record date for its interim dividend at August 17, 2026, ex‑dividend date August 14, and payment date August 18 (ADR payment August 25).",
+              "normalizedKey": "novo nordisk announces interim dividend schedule|company"
+            },
+            {
+              "title": "Serve Robotics’ indoor robotics expansion remains key ahead of Q2 earnings",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Serve Robotics continues to push into indoor service robotics via its acquisition of Diligent Robotics, expanding beyond sidewalk delivery ahead of its Q2 earnings release.",
+              "normalizedKey": "serve robotics’ indoor robotics expansion remains key ahead of q2 earnings|company"
+            }
+          ],
+          "newsIds": [
+            "middle-east-commodity-shock-2026-08-10",
+            "tech-ai‑spending‑raises‑margin‑concerns-2026-08-06",
+            "ecb-holds-rates-amid-energy-shock-2026-08-10"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "U.S. Producer Price Index (PPI) – July"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-10T20:05:02.627Z",
           "overallAlertLevel": "Medium",
@@ -3301,29 +3322,11 @@
             "U.S. Producer Price Index (PPI) – July"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-10T09:39:18.949Z",
-          "overallAlertLevel": "Medium",
-          "headline": "AI‑memory sell‑off intensifies; ‘Super’ El Niño raises food‑inflation risks",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [
-            "ai-memory-chip-selloff-2026-08-07",
-            "ai-sector-valuation-reassessment-2026-08-07",
-            "el‑nino‑food‑price‑risk‑2026-08-08",
-            "oil‑prices‑remain‑elevated‑amid‑middle‑east‑tensions-2026-04-28"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (CPI) – July",
-            "U.S. Producer Price Index (PPI) – July"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-10T20:05:08.373Z"
+    "updatedAt": "2026-08-10T20:20:32.438Z"
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -11960,6 +11963,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-10T20:17:54.749Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-10T19:47:40.948Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -12154,7 +12163,7 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-10T19:47:46.467Z"
+    "updatedAt": "2026-08-10T20:17:59.739Z"
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
@@ -16228,34 +16237,34 @@
   "company-monitor:SERV:XNAS": {
     "moduleName": "company-monitor:SERV:XNAS",
     "result": {
-      "updateType": "FullAnalysis",
+      "updateType": "UpdateWithChanges",
       "company": {
         "name": "Serve Robotics Inc.",
         "ticker": "SERV:XNAS",
-        "sector": "Industrials",
-        "industry": "Specialty Industrial Machinery"
+        "sector": "Technology",
+        "industry": "Robotics"
       },
-      "executiveSummary": "Serve Robotics (SERV:XNAS) is a high‑growth autonomous robotics company showing strong sequential revenue acceleration and reaffirmed full‑year guidance, but remains unprofitable with high burn and execution risk. Over the next 1–3 months, the stock’s direction will hinge on Q2 earnings (due August 6), market sentiment toward AI/robotics amid macro volatility, and any updates on deployment scale or new verticals.",
+      "executiveSummary": "Serve Robotics reported disappointing Q2 2026 results, missing revenue expectations and slashing full‑year guidance, while analyst sentiment weakened. These developments materially weaken the investment case, particularly around revenue momentum and guidance stability, increasing execution and dilution risks.",
       "investmentView": {
         "rating": "Watch",
         "outlook": "Neutral",
-        "reason": "While Serve Robotics demonstrates impressive growth and guidance stability, near‑term risks from continued losses, high expenses, and macro rotation away from AI/tech warrant a cautious stance until Q2 results and forward commentary provide clarity."
+        "reason": "Q2 results missed expectations and guidance was cut sharply, reinforcing near‑term risks. Until clarity returns on growth trajectory and cost control, a cautious stance remains appropriate."
       },
       "investmentThesis": [
         {
           "id": "revenue-momentum",
           "point": "Strong sequential and year‑over‑year revenue growth (Q1 revenue up 238% sequentially, 578% YoY) indicates accelerating adoption of Serve’s autonomous delivery platform.",
-          "status": "Unchanged"
+          "status": "Weakened"
         },
         {
           "id": "guidance-stability",
           "point": "Reaffirmed full‑year 2026 revenue guidance of ~$26M provides visibility and management confidence in execution.",
-          "status": "Unchanged"
+          "status": "Invalidated"
         },
         {
           "id": "profitability-risk",
           "point": "Continued high non‑GAAP operating expenses ($160–170M) and lack of profitability pose material dilution and cash‑burn risks.",
-          "status": "Unchanged"
+          "status": "Strengthened"
         },
         {
           "id": "macro-rotation-risk",
@@ -16263,107 +16272,144 @@
           "status": "Unchanged"
         }
       ],
-      "investmentCaseStrength": 55,
+      "investmentCaseStrength": 35,
       "investmentCaseChange": {
-        "changed": false,
-        "severity": "None",
-        "summary": "First full analysis; no prior view to compare.",
-        "previousInvestmentView": "N/A",
+        "changed": true,
+        "severity": "High",
+        "summary": "Q2 miss and guidance cut materially weaken growth visibility and increase execution and dilution risk.",
+        "previousInvestmentView": "Watch",
         "currentInvestmentView": "Watch",
-        "reason": "Initial assessment based on recent results and macro context."
+        "reason": "Revenue miss and sharp guidance reduction undermine key thesis points, while analyst downgrade adds negative sentiment."
+      },
+      "investmentCaseStrengthChange": {
+        "previousScore": 55,
+        "currentScore": 35,
+        "reasons": [
+          "Q2 revenue missed expectations and full‑year guidance slashed to $9–$10M from ~$26M",
+          "Analyst downgrade citing heightened dilution and execution risk"
+        ]
       },
       "stableProfile": {
-        "businessDescription": "Designs and operates autonomous delivery robots (sidewalk and indoor) across U.S., serving restaurants and hospitals; spun off from Uber in 2021.",
-        "competitiveAdvantage": "Integrated hardware‑software platform, early scale (~2,000 robots deployed), partnerships (DoorDash, White Castle), and expansion into indoor service via Diligent Robotics acquisition.",
+        "businessDescription": "Designs and operates autonomous delivery and service robots (sidewalk and indoor) across U.S., serving restaurants, hospitals, and other verticals; spun off from Uber in 2021.",
+        "competitiveAdvantage": "Integrated hardware‑software platform with multi‑domain deployments and partnerships, but capital‑intensive and early stage.",
         "longTermStrengths": [
-          "Rapid deployment and revenue scaling",
-          "Diversified verticals (food delivery, laundry, healthcare)",
-          "Strong liquidity (~$197M)"
+          "Multi‑domain platform (sidewalk, healthcare, laundry)",
+          "Early scale with ~2,000 robots deployed",
+          "Recurring software and service revenue emerging"
         ],
         "recurringRisks": [
           "High cash burn and operating losses",
           "Execution risk in scaling operations",
-          "Valuation sensitivity to AI/robotics sentiment"
+          "Dilution risk from capital raises"
         ]
       },
-      "currentSituation": "Q1 2026 delivered revenue of $3.0M (up 238% sequentially, 578% YoY), beating estimates modestly; non‑GAAP operating expenses remain high ($160–170M guidance) and full‑year revenue guidance reaffirmed at ~$26M. Q2 earnings scheduled for August 6 will be key near‑term event.",
+      "currentSituation": "Q2 2026 results missed revenue expectations (~$3.24M vs ~$3.49M consensus) and management slashed full‑year 2026 revenue guidance to $9–$10M from prior ~$26M, citing weak Uber Eats volume and operational challenges. Analyst Freedom Broker downgraded to Hold citing heightened dilution and execution risk.",
       "catalysts": [
         {
-          "title": "Q2 2026 Earnings Release",
-          "description": "Q2 results and management commentary on growth trajectory, margins, and vertical expansion will likely drive stock direction.",
-          "timeframe": "Immediate",
-          "impact": "High"
-        },
-        {
-          "title": "New vertical or partnership announcements",
-          "description": "Further expansion beyond food delivery (e.g., healthcare, laundry) could validate diversification strategy.",
+          "title": "Operational efficiency improvements",
+          "description": "Execution on robot utilization and cost control could restore confidence.",
           "timeframe": "Within 3 months",
           "impact": "Medium"
         },
         {
-          "title": "Macro sentiment shift toward AI/robotics",
-          "description": "Improved investor appetite for robotics/AI could lift valuation multiples.",
+          "title": "Revised guidance or outlook clarity",
+          "description": "Any upward revision or stabilization of guidance would be positive.",
+          "timeframe": "Within 3 months",
+          "impact": "High"
+        },
+        {
+          "title": "New vertical traction",
+          "description": "Progress in healthcare or laundry verticals could diversify revenue.",
           "timeframe": "Within 3 months",
           "impact": "Medium"
         }
       ],
       "risks": [
         {
-          "title": "High burn and cash runway",
-          "description": "Operating expenses far exceed revenue; sustained losses may require dilution or cost cuts.",
+          "title": "Revenue trajectory deterioration",
+          "description": "Lower Uber Eats volume and weak demand may further pressure revenue.",
           "impact": "High"
         },
         {
-          "title": "Execution and scaling risk",
-          "description": "Failure to scale deployments or monetize new verticals could derail growth expectations.",
+          "title": "Cash burn and dilution",
+          "description": "High operating losses and potential equity raises increase dilution risk.",
           "impact": "High"
         },
         {
-          "title": "Sector rotation pressure",
-          "description": "Broader market rotation away from AI/robotics could suppress multiple expansion.",
+          "title": "Execution risk",
+          "description": "Scaling operations and integrating verticals may falter under cost pressure.",
           "impact": "Medium"
         }
       ],
       "earningsAndGuidance": {
-        "summary": "Q1 beat modestly; reaffirmed full‑year revenue guidance of ~$26M; high expense base remains.",
-        "trend": "Improving",
-        "nextKnownEvent": "Second Quarter 2026 Financial Results and Conference Call",
+        "summary": "Q2 missed revenue expectations; full‑year guidance cut sharply to $9–$10M from ~$26M.",
+        "trend": "Weakening",
+        "nextKnownEvent": "",
         "nextKnownEventDate": ""
       },
       "competitivePosition": {
         "assessment": "Moderate",
-        "summary": "Serve is an early mover with integrated tech and partnerships, but competes in a nascent, capital‑intensive space with emerging rivals."
+        "summary": "Serve remains an early mover with integrated platform and multi‑vertical reach, but execution and financial strain weaken its competitive footing."
       },
-      "sectorContext": "Industrials/robotics sector faces headwinds from rotation away from AI/tech, though infrastructure and automation themes remain supportive in broader cyclicals.",
-      "marketSentiment": "Mixed",
+      "sectorContext": "AI & Robotics sector sentiment remains fragmented amid rotation into defensives; Serve’s weak results further reduce its appeal in a cautious macro environment.",
+      "marketSentiment": "Negative",
       "valuationAssessment": {
         "level": "Unclear",
-        "summary": "Valuation is speculative given lack of profitability; upside depends on execution and sentiment recovery."
+        "summary": "Valuation was previously rich; with guidance cut and execution risk rising, valuation upside is now highly uncertain."
       },
-      "bullCase": "Q2 results show continued acceleration, cost discipline, and new vertical traction, prompting re‑rating and multiple expansion.",
-      "baseCase": "Growth continues but losses persist; stock remains range‑bound awaiting clearer path to profitability.",
-      "bearCase": "Execution falters or macro sentiment deteriorates, leading to downward revision of guidance and valuation contraction.",
+      "bullCase": "Operational turnaround, improved utilization, and stabilization of guidance could restore growth narrative and re‑rating.",
+      "baseCase": "Revenue remains pressured, losses continue, stock remains range‑bound with high volatility.",
+      "bearCase": "Further execution missteps or cash strain lead to deeper guidance cuts, dilution, and valuation collapse.",
       "keyThingsToWatch": [
-        "Q2 revenue growth and margin commentary",
-        "Updates on deployment scale and new verticals",
+        "Q3 revenue and margin commentary",
         "Cash burn trajectory and runway",
-        "Analyst revisions post‑earnings"
+        "Progress in healthcare/laundry verticals",
+        "Analyst revisions post‑Q2"
       ],
       "confidence": "Medium",
-      "timestamp": "2026-08-10T18:38:38.971Z",
-      "analysisDuration": 29177,
-      "meaningfulChange": "Medium",
+      "timestamp": "2026-08-10T20:13:09.568Z",
+      "analysisDuration": 23799,
+      "meaningfulChange": "High",
       "affectedTickers": [
         "SERV:XNAS"
       ]
     },
     "createdAt": "2026-08-10T18:39:08.148Z",
-    "updatedAt": "2026-08-10T18:39:08.148Z"
+    "updatedAt": "2026-08-10T20:13:33.368Z"
   },
   "company-monitor-history:SERV:XNAS": {
     "moduleName": "company-monitor-history:SERV:XNAS",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-10T20:13:09.568Z",
+          "updateType": "UpdateWithChanges",
+          "investmentViewRating": "Watch",
+          "investmentViewOutlook": "Neutral",
+          "investmentCaseStrength": 35,
+          "investmentCaseChangeSeverity": "High",
+          "investmentCaseChangeSummary": "Q2 miss and guidance cut materially weaken growth visibility and increase execution and dilution risk.",
+          "thesisPointStatuses": [
+            {
+              "id": "revenue-momentum",
+              "status": "Weakened"
+            },
+            {
+              "id": "guidance-stability",
+              "status": "Invalidated"
+            },
+            {
+              "id": "profitability-risk",
+              "status": "Strengthened"
+            },
+            {
+              "id": "macro-rotation-risk",
+              "status": "Unchanged"
+            }
+          ],
+          "confidence": "Medium",
+          "meaningfulChange": "High"
+        },
         {
           "timestamp": "2026-08-10T18:38:38.971Z",
           "updateType": "FullAnalysis",
@@ -16396,7 +16442,7 @@
       ]
     },
     "createdAt": "2026-08-10T18:39:08.272Z",
-    "updatedAt": "2026-08-10T18:39:08.272Z"
+    "updatedAt": "2026-08-10T20:13:33.375Z"
   },
   "company-monitor:ALIZY": {
     "moduleName": "company-monitor:ALIZY",

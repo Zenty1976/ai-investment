@@ -1,6 +1,6 @@
 ---
 name: Price Context Architecture
-description: How deterministic price context (from Saxo OHLC) flows into AI modules — fetch, store, inject pattern with freshness policy and incremental enrichment.
+description: How deterministic price context (from Saxo OHLC) flows into AI modules — fetch, store, inject pattern with freshness policy, incremental enrichment, and recentBehavior extension.
 ---
 
 ## Architecture
@@ -20,45 +20,84 @@ description: How deterministic price context (from Saxo OHLC) flows into AI modu
 - Calls `collectOpportunityFinderTargets()` — reads the **current** cycle's newly discovered OF candidates
 - Calls `fetchAndStorePriceContexts()` again — incremental, only new/stale symbols
 - Ensures TDE always receives Price Context for freshly discovered OF candidates in the **same** cycle
-- Safe to call twice: fresh symbols are skipped by the freshness check inside the fetch function
 
 ### Freshness policy
-- `PRICE_CONTEXT_MAX_AGE_MS = 6 * 60 * 60 * 1000` (6 hours)
-- `isPriceContextFresh(ctx)` — checks `ctx.asOf` timestamp
+- `PRICE_CONTEXT_MAX_AGE_MS = 6 hours`
 - `getPriceContext(symbol)` returns `undefined` when stale
-- `getAllPriceContexts()` silently omits stale entries
-- Stale data is **NEVER** sent to OpenAI as current
-- No re-fetch when fresh — a second fetch call within 6h skips Saxo entirely
+- `getAllPriceContexts()` silently omits stale entries — never forwarded to OpenAI
+- No re-fetch when fresh — second call within 6h skips Saxo entirely
 
 ### UIC resolution for CM/OF symbols
-- `resolveUicForTicker(ticker, token, baseUrl)` — calls Saxo `ref/v1/instruments?Keywords=<ticker>&AssetTypes=Stock,Etf,StockIndex&$top=5`
+- `resolveUicForTicker(ticker, token, baseUrl)` — Saxo `ref/v1/instruments?Keywords=<ticker>&AssetTypes=Stock,Etf,StockIndex&$top=5`
 - Prefers exact Symbol match; falls back to first result
-- Returns `null` on failure; logs reason; symbol is silently skipped
-- Never invents UICs — if resolution fails, Price Context is omitted for that symbol
+- Returns `null` on failure; symbol silently skipped
 
 ### Repository keys
-- `price-context:<SYMBOL>` (uppercase) — one entry per symbol
-- `PRICE_CONTEXT_KEY_PREFIX = "price-context"` in price-context-service.ts
+- `price-context:<SYMBOL>` (uppercase, e.g. `price-context:SERV:XNAS`)
 
 ### Key files
-- `lib/price-context-calculator.ts` — pure math: `calculatePriceContext()`, `formatPriceContextForPrompt()`, `PRICE_CONTEXT_CONFIG` thresholds
-- `lib/price-context-service.ts` — full service: Saxo fetch, freshness, UIC resolution, target collection, repository persistence
-  - `fetchAndStorePriceContexts(targets)` — core fetch, skip-if-fresh, persist
-  - `collectAllKnownTargets()` — Stage 1.5: portfolio + CM + prev-cycle OF
-  - `collectOpportunityFinderTargets()` — Stage 8.5: current-cycle OF
-  - `getPriceContext(symbol)` — freshness-checked single read
-  - `getAllPriceContexts()` — all fresh entries as formatted Record
-- `lib/automation-orchestrator.ts` — Stage 1.5 (`price-context-initial`) + Stage 8.5 (`price-context-incremental`)
-- `routes/company-monitor.ts` — `getPriceContext(ticker)` + `formatPriceContextForPrompt()`
-- `routes/opportunity-finder.ts`, `risk-analyzer.ts`, `portfolio-analyzer.ts` — `getAllPriceContexts()`
-- `routes/trade-decision-engine.ts` — `getAllPriceContexts()` as priority 5.5 section
-- `pages/CompanyMonitor.tsx` — `PriceContextPanel` component; reads `price-context:<TICKER>` via repository hook
+- `lib/price-context-calculator.ts` — pure math: all types, `PRICE_CONTEXT_CONFIG`, `calculatePriceContext()`, `formatPriceContextForPrompt()`
+- `lib/price-context-service.ts` — Saxo fetch, freshness, UIC resolution, target collection, repository persistence
+- `lib/automation-orchestrator.ts` — Stage 1.5 + Stage 8.5
 
-### Semantic rules (in every AI module system prompt)
+---
+
+## PriceContext data shape
+
+Main fields: `returns`, `range`, `trend`, `volatility`, `structure`, `priceState`, `recentBehavior`, `dataQuality`
+
+### recentBehavior (added in session Aug 2026)
+```typescript
+recentBehavior: {
+  twoDayReturnPct: number | null      // 2-session % return
+  threeDayReturnPct: number | null    // 3-session % return
+  threeDaySlope: number | null        // normalized regression slope over last 3 closes (%/day × 100)
+  daysSinceRecentLow: number | null   // within 30D window; 0 = today IS the 30D low
+  newLowLast3Days: boolean | null     // 30D low occurred in last 3 sessions
+  newLowLast5Days: boolean | null     // 30D low occurred in last 5 sessions
+  declineDecelerating: boolean        // 3D slope materially less negative than 5D slope
+  state: RecentBehaviorState          // FallingFast | Falling | DeclineSlowing | Stabilizing | Recovering | Rising
+}
+```
+
+**Key design principle**: `priceState` and `recentBehavior.state` are INDEPENDENT and can coexist:
+- `priceState=StrongDowntrend` + `recentBehavior.state=Stabilizing`
+  = "Broader downtrend ongoing, but very recent (2–3 session) selling pressure appears to be easing"
+
+**State thresholds** (raw normalized slope, fraction/day):
+- `FallingFast`: 3D slope < -0.01 (-1.0%/day)
+- `Falling`: 3D slope < -0.002 (-0.2%/day)
+- `Stabilizing`: broader downtrend + |3D slope| < 0.0015 + declineDecelerating + no new 30D low in 3 sessions + |3D return| < 5%
+- `DeclineSlowing`: broader downtrend + declineDecelerating (but not fully stabilizing)
+- `Recovering`: broader negative + 2D return > +2%
+- `Rising`: 3D slope > +0.002
+
+**Deceleration definition**: `5D slope ≤ -0.002` AND `3D slope > 5D slope × 0.5` (at least 50% less negative) AND `3D slope > -0.005`
+
+**Semantic rules in all AI system prompts:**
+- `recentBehavior` describes ONLY the last 2–3 sessions
+- `Stabilizing`/`Recovering` ≠ bottom confirmed, reversal confirmed, BUY
+- Never change investment view, risk assessment, or trade conviction solely from recentBehavior
+
+---
+
+## Known model behavior quirks (company-monitor)
+
+**Ticker identity**: Models (gpt-4o) return base symbol (`SERV`) instead of full exchange-suffix ticker (`SERV:XNAS`).
+- **Fix**: In identity check, if `returnedTicker === ticker.split(":")[0]`, accept and override silently.
+
+**JSON trailing fields**: Model occasionally places conditional fields (e.g. `investmentCaseStrengthChange`) AFTER the closing `}` of the main object, inside a spurious outer `{}` wrapper:
+- Pattern: `{main_object},"conditionalField":{...}}`
+- **Fix**: Recovery step in `ai-service.ts` — find first complete object, strip trailing `}`, merge trailing fields into main object. Logged as warn.
+
+---
+
+## Semantic safeguards (in every AI module system prompt)
 - `StabilizingAfterDecline` ≠ bottom confirmed
 - `PossibleRecovery` ≠ durable reversal
 - `ExtendedAfterRally` ≠ sell signal
-- Never move `investmentCaseStrength` solely from price movement
+- `recentBehavior.Stabilizing`/`Recovering` ≠ bottom, reversal, or BUY
+- Never move `investmentCaseStrength` or trade decision solely from price movement
 - Price falling ≠ cheap; price rising ≠ expensive
 - Price Context alone cannot satisfy the ≥2 independent sources requirement (TDE)
 

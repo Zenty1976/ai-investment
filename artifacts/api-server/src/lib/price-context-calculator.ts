@@ -42,6 +42,46 @@ export type PriceState =
   | "StrongUptrend"
   | "ExtendedAfterRally";
 
+/**
+ * Very short-term (2–3 session) price behavior.
+ * Separate from PriceState — describes what is happening RIGHT NOW,
+ * not the broader trend. Both can coexist:
+ *   priceState=StrongDowntrend + recentBehavior.state=Stabilizing
+ *   = "Still in a strong downtrend but selling pressure is easing recently."
+ */
+export type RecentBehaviorState =
+  | "FallingFast"      // 3D slope strongly negative
+  | "Falling"          // 3D slope moderately negative
+  | "DeclineSlowing"   // broader downtrend but 3D slope clearly improving
+  | "Stabilizing"      // broader downtrend, 3D near-flat, no new lows, deceleration confirmed
+  | "Recovering"       // was in decline, last 2D positive
+  | "Rising";          // 3D slope clearly positive
+
+export interface RecentBehavior {
+  /** Percentage return over last 2 trading sessions. */
+  twoDayReturnPct: number | null;
+  /** Percentage return over last 3 trading sessions. */
+  threeDayReturnPct: number | null;
+  /** Normalized regression slope over last 3 closes (%/day, × 100). */
+  threeDaySlope: number | null;
+  /**
+   * How many trading sessions ago the 30D low occurred.
+   * 0 = today is the 30D low; 3 = low was 3 sessions ago.
+   */
+  daysSinceRecentLow: number | null;
+  /** True if the 30D low occurred within the last 3 trading sessions. */
+  newLowLast3Days: boolean | null;
+  /** True if the 30D low occurred within the last 5 trading sessions. */
+  newLowLast5Days: boolean | null;
+  /**
+   * True when the 3D slope is materially less negative than the 5D slope,
+   * indicating that the speed of the decline is reducing.
+   */
+  declineDecelerating: boolean;
+  /** Conservative composite classification. */
+  state: RecentBehaviorState;
+}
+
 export interface PriceContext {
   symbol: string;
   asOf: string;
@@ -91,6 +131,9 @@ export interface PriceContext {
   };
 
   priceState: PriceState;
+
+  /** Very short-term (2–3 session) behavior. Always present. */
+  recentBehavior: RecentBehavior;
 
   dataQuality: {
     availableTradingDays: number;
@@ -156,6 +199,32 @@ export const PRICE_CONTEXT_CONFIG = {
 
   // 90-day completeness threshold
   sufficient90DayBars: 55,
+
+  // ── Very short-term (recentBehavior) thresholds ───────────────────────────
+  // All slope values in the same normalized units as PRICE_CONTEXT_CONFIG.slope
+  // (fraction of first-price per trading day; multiply by 100 for %/day).
+  recentBehavior: {
+    // 3D slope state thresholds
+    fallingFastThreshold:  -0.0100, // < -1.0%/day → FallingFast
+    fallingThreshold:      -0.0020, // < -0.2%/day → Falling
+    risingThreshold:        0.0020, // > +0.2%/day → Rising
+    nearFlatThreshold:      0.0015, // |slope| < 0.15%/day → near flat
+
+    // Deceleration: 3D slope materially less negative than 5D slope
+    decelerationMinRefSlope:        -0.0020, // 5D slope must be at least this negative
+    decelerationImprovementRatio:    0.50,   // 3D/5D ratio must be ≥ 0.5 (i.e. 50% less negative)
+    decelerationMaxRecent:          -0.0050, // 3D slope must be > -0.5%/day (not still crashing)
+
+    // Stabilizing: requires all of deceleration + no new low + small 3D range
+    stabilizingMaxAbs3dReturn: 5.0,        // |3D% return| must be < 5%
+    stabilizingMinDaysSinceLow: 2,         // 30D low must be ≥ 2 sessions old
+
+    // Recovering: 2D return shows clear bounce in a declining broader context
+    recoveringMin2dReturn: 2.0,            // 2D > +2% AND broader trend negative
+
+    // Minimum bars for each metric
+    minBars: { twoDay: 3, threeDay: 4 },
+  },
 } as const;
 
 // ── Math helpers ──────────────────────────────────────────────────────────────
@@ -303,6 +372,112 @@ function classifyVolatilityTrend(vol5: number | null, vol30: number | null): Vol
   return "Stable";
 }
 
+// ── Recent behavior helpers ───────────────────────────────────────────────────
+
+/**
+ * Returns how many trading sessions ago the 30D (windowSize) low occurred.
+ * 0 = today IS the low; 1 = yesterday was the low, etc.
+ * Returns null if insufficient data.
+ */
+function daysSinceWindowLow(closes: number[], windowSize: number): number | null {
+  if (closes.length < windowSize) return null;
+  const window = closes.slice(-windowSize);
+  let minIdx = 0;
+  for (let i = 1; i < window.length; i++) {
+    if (window[i] < window[minIdx]) minIdx = i;
+  }
+  return window.length - 1 - minIdx; // 0 = today is the minimum
+}
+
+/**
+ * Classifies very short-term (2–3 session) price behavior.
+ * Conservative by design — Stabilizing requires multiple confirming signals.
+ */
+function classifyRecentBehavior(
+  s3d: number | null,
+  s5d: number | null,
+  r2d: number | null,
+  r3d: number | null,
+  daysSinceLow: number | null,
+  broaderShortTrend: TrendLabel,
+  broaderMediumTrend: TrendLabel,
+): RecentBehavior {
+  const cfg = PRICE_CONTEXT_CONFIG.recentBehavior;
+  const s3 = s3d ?? 0;
+  const s5 = s5d ?? 0;
+
+  // ── Deceleration ──────────────────────────────────────────────────────────
+  // True when 5D slope is meaningfully negative AND 3D slope is materially
+  // less negative (at least 50% improvement) AND the recent slope is not
+  // still crashing (> -0.5%/day).
+  const declineDecelerating =
+    s5 <= cfg.decelerationMinRefSlope &&                 // reference slope is negative
+    s3 > s5 * cfg.decelerationImprovementRatio &&        // 3D is much less negative than 5D
+    s3 > cfg.decelerationMaxRecent;                      // 3D not still falling fast
+
+  // ── New-low flags (derived from daysSinceLow) ─────────────────────────────
+  const newLowLast3Days = daysSinceLow !== null ? daysSinceLow <= 2 : null;
+  const newLowLast5Days = daysSinceLow !== null ? daysSinceLow <= 4 : null;
+
+  // ── State classification ──────────────────────────────────────────────────
+  const broaderNegative =
+    broaderMediumTrend === "Downtrend" || broaderMediumTrend === "StrongDowntrend" ||
+    broaderShortTrend  === "Downtrend" || broaderShortTrend  === "StrongDowntrend";
+
+  let state: RecentBehaviorState;
+
+  // Rising: 3D slope clearly positive
+  if (s3 >= cfg.risingThreshold) {
+    state = "Rising";
+  }
+  // Recovering: broader context was negative, but last 2D clearly positive bounce
+  else if (broaderNegative && r2d !== null && r2d > cfg.recoveringMin2dReturn) {
+    state = "Recovering";
+  }
+  // FallingFast: 3D slope extremely negative
+  else if (s3 <= cfg.fallingFastThreshold) {
+    state = "FallingFast";
+  }
+  // Stabilizing: broader downtrend + near-flat 3D + deceleration confirmed + no new lows
+  else if (
+    broaderNegative &&
+    Math.abs(s3) < cfg.nearFlatThreshold &&              // 3D slope near flat
+    declineDecelerating &&                               // speed clearly reducing
+    newLowLast3Days === false &&                         // no new low in last 3 sessions
+    (daysSinceLow === null || daysSinceLow >= cfg.stabilizingMinDaysSinceLow) &&
+    r3d !== null && Math.abs(r3d) < cfg.stabilizingMaxAbs3dReturn // small 3D price range
+  ) {
+    state = "Stabilizing";
+  }
+  // DeclineSlowing: broader downtrend but deceleration is clearly present
+  else if (broaderNegative && declineDecelerating) {
+    state = "DeclineSlowing";
+  }
+  // Falling: 3D slope moderately negative
+  else if (s3 <= cfg.fallingThreshold) {
+    state = "Falling";
+  }
+  // Default: broadly negative context → Falling
+  else if (broaderNegative) {
+    state = "Falling";
+  }
+  // Positive but below risingThreshold → Rising (covers weakly positive)
+  else {
+    state = "Rising";
+  }
+
+  return {
+    twoDayReturnPct:   r2d  !== null ? +r2d.toFixed(2)          : null,
+    threeDayReturnPct: r3d  !== null ? +r3d.toFixed(2)          : null,
+    threeDaySlope:     s3d  !== null ? +(s3d * 100).toFixed(4)  : null,
+    daysSinceRecentLow: daysSinceLow,
+    newLowLast3Days,
+    newLowLast5Days,
+    declineDecelerating,
+    state,
+  };
+}
+
 // ── Price structure ───────────────────────────────────────────────────────────
 
 /**
@@ -441,8 +616,12 @@ export function calculatePriceContext(
   const n = closes.length;
   const current = n > 0 ? closes[n - 1] : 0;
 
+  const rcfg = PRICE_CONTEXT_CONFIG.recentBehavior.minBars;
+
   // Returns
   const r1d  = n >= cfg.oneDay    ? pctReturn(closes, 1)  : null;
+  const r2d  = n >= rcfg.twoDay   ? pctReturn(closes, 2)  : null;
+  const r3d  = n >= rcfg.threeDay ? pctReturn(closes, 3)  : null;
   const r5d  = n >= cfg.fiveDay   ? pctReturn(closes, 5)  : null;
   const r10d = n >= cfg.tenDay    ? pctReturn(closes, 10) : null;
   const r30d = n >= cfg.thirtyDay ? pctReturn(closes, 30) : null;
@@ -455,10 +634,11 @@ export function calculatePriceContext(
   const low90  = n >= cfg.ninetyDay ? windowLow(closes, 90)  : null;
 
   // Normalized slopes
-  const s5d  = n >= cfg.fiveDay   ? normalizedSlope(closes, 5)  : null;
-  const s10d = n >= cfg.tenDay    ? normalizedSlope(closes, 10) : null;
-  const s30d = n >= cfg.thirtyDay ? normalizedSlope(closes, 30) : null;
-  const s90d = n >= cfg.ninetyDay ? normalizedSlope(closes, 90) : null;
+  const s3d  = n >= rcfg.threeDay  ? normalizedSlope(closes, 3)  : null;
+  const s5d  = n >= cfg.fiveDay    ? normalizedSlope(closes, 5)  : null;
+  const s10d = n >= cfg.tenDay     ? normalizedSlope(closes, 10) : null;
+  const s30d = n >= cfg.thirtyDay  ? normalizedSlope(closes, 30) : null;
+  const s90d = n >= cfg.ninetyDay  ? normalizedSlope(closes, 90) : null;
 
   // Trend labels
   const shortTermTrend  = classifyTrend(s5d);
@@ -503,6 +683,13 @@ export function calculatePriceContext(
 
   const priceState = classifyPriceState(returns, trend, volatility, structure, s90d);
 
+  // Recent behavior — uses 30D window to anchor the "recent low" concept
+  const daysSinceLow30 = n >= cfg.thirtyDay ? daysSinceWindowLow(closes, 30) : null;
+  const recentBehavior = classifyRecentBehavior(
+    s3d, s5d, r2d, r3d, daysSinceLow30,
+    trend.shortTermTrend, trend.mediumTermTrend
+  );
+
   return {
     symbol,
     asOf,
@@ -523,6 +710,7 @@ export function calculatePriceContext(
     volatility,
     structure,
     priceState,
+    recentBehavior,
     dataQuality: {
       availableTradingDays:       n,
       sufficientFor90DayAnalysis: n >= PRICE_CONTEXT_CONFIG.sufficient90DayBars,
@@ -584,11 +772,30 @@ export function formatPriceContextForPrompt(ctx: PriceContext): string {
   // Price state
   lines.push(`Price state: ${ctx.priceState}`);
 
+  // Recent behavior — always present; describes only the last 2–3 sessions
+  {
+    const rb = ctx.recentBehavior;
+    const rbParts: string[] = [`State: ${rb.state}`];
+    const retParts: string[] = [];
+    if (rb.twoDayReturnPct !== null)   retParts.push(`2D ${fmt(rb.twoDayReturnPct)}`);
+    if (rb.threeDayReturnPct !== null) retParts.push(`3D ${fmt(rb.threeDayReturnPct)}`);
+    if (retParts.length > 0)           rbParts.push(retParts.join(" | "));
+    rbParts.push(`Decline decelerating: ${rb.declineDecelerating ? "Yes" : "No"}`);
+    if (rb.newLowLast3Days !== null)   rbParts.push(`New 30D low last 3 sessions: ${rb.newLowLast3Days ? "Yes" : "No"}`);
+    if (rb.daysSinceRecentLow !== null) {
+      rbParts.push(
+        `Last 30D low: ${rb.daysSinceRecentLow === 0 ? "today" : rb.daysSinceRecentLow + " session(s) ago"}`
+      );
+    }
+    lines.push(`Recent behavior (last 2–3 sessions):\n  ${rbParts.join("\n  ")}`);
+  }
+
   // Semantic reminder — always included to constrain AI interpretation
   lines.push(
-    `[Note: Price state is descriptive market-price behavior only. ` +
-    `It is NOT a forecast. "${ctx.priceState}" does NOT imply a valuation judgment or a trading signal. ` +
-    `Use this together with fundamentals, valuation, news, and events.]`
+    `[Note: priceState describes the broader price trend. recentBehavior describes the last 2–3 sessions ONLY. ` +
+    `Both are descriptive — NOT forecasts or valuation signals. ` +
+    `recentBehavior=Stabilizing/Recovering does NOT confirm a bottom, reversal, or BUY. ` +
+    `Always combine with fundamentals, valuation, news, events, and catalysts.]`
   );
 
   return lines.join("\n");

@@ -215,10 +215,29 @@ interface PriceContext {
     lowerHighs: boolean | null
   }
   priceState: string
+  recentBehavior?: {
+    twoDayReturnPct: number | null
+    threeDayReturnPct: number | null
+    threeDaySlope: number | null
+    daysSinceRecentLow: number | null
+    newLowLast3Days: boolean | null
+    newLowLast5Days: boolean | null
+    declineDecelerating: boolean
+    state: string
+  }
   dataQuality: {
     availableTradingDays: number
     sufficientFor90DayAnalysis: boolean
   }
+}
+
+function recentBehaviorBadgeVariant(
+  state: string
+): "positive" | "negative" | "warning" | "outline" {
+  if (state === "Rising" || state === "Recovering") return "positive"
+  if (state === "Stabilizing" || state === "DeclineSlowing") return "warning"
+  if (state === "FallingFast" || state === "Falling") return "negative"
+  return "outline"
 }
 
 function priceStateBadgeVariant(
@@ -333,6 +352,66 @@ function PriceContextPanel({ ctx }: { ctx: PriceContext }) {
             </>
           )}
         </div>
+
+        {/* Recent Behavior */}
+        {ctx.recentBehavior && (
+          <div className="border-t border-border/20 pt-2 space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/70">
+                Recent
+              </span>
+              <Badge
+                variant={recentBehaviorBadgeVariant(ctx.recentBehavior.state)}
+                className="text-[10px] uppercase tracking-wider px-1.5 py-0"
+              >
+                {ctx.recentBehavior.state.replace(/([A-Z])/g, ' $1').trim()}
+              </Badge>
+              {ctx.recentBehavior.declineDecelerating && (
+                <span className="text-[9px] text-amber-400/70 font-medium">↓ Slowing</span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground/70 flex-wrap">
+              {ctx.recentBehavior.twoDayReturnPct != null && (
+                <span>
+                  <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">2D</span>
+                  <span className={returnColour(ctx.recentBehavior.twoDayReturnPct)}>
+                    {fmtPct(ctx.recentBehavior.twoDayReturnPct)}
+                  </span>
+                </span>
+              )}
+              {ctx.recentBehavior.threeDayReturnPct != null && (
+                <span>
+                  <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">3D</span>
+                  <span className={returnColour(ctx.recentBehavior.threeDayReturnPct)}>
+                    {fmtPct(ctx.recentBehavior.threeDayReturnPct)}
+                  </span>
+                </span>
+              )}
+              {ctx.recentBehavior.threeDaySlope != null && (
+                <span>
+                  <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">3D trend</span>
+                  <span className={returnColour(ctx.recentBehavior.threeDaySlope)}>
+                    {Math.abs(ctx.recentBehavior.threeDaySlope) < 0.15
+                      ? "→ Flat"
+                      : ctx.recentBehavior.threeDaySlope > 0
+                        ? `↑ ${ctx.recentBehavior.threeDaySlope.toFixed(2)}%/d`
+                        : `↓ ${Math.abs(ctx.recentBehavior.threeDaySlope).toFixed(2)}%/d`
+                    }
+                  </span>
+                </span>
+              )}
+              {ctx.recentBehavior.daysSinceRecentLow != null && (
+                <span>
+                  <span className="uppercase tracking-widest mr-1 text-muted-foreground/50">Last low</span>
+                  {ctx.recentBehavior.daysSinceRecentLow === 0
+                    ? <span className="text-rose-400">today</span>
+                    : <span>{ctx.recentBehavior.daysSinceRecentLow}d ago</span>
+                  }
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Disclaimer note */}
         <p className="text-[9px] text-muted-foreground/30 leading-tight">
