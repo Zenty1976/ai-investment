@@ -330,13 +330,15 @@ export function TradeReviewWidget() {
           )}
           {!hasTde && <span className="text-[11px] text-muted-foreground">No TDE analysis</span>}
         </div>
-        {updatedAt && (
-          <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(updatedAt)}</span>
-        )}
-        <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0"
-          onClick={() => refetch()} disabled={isRefetching}>
-          <RefreshCw className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`} />
-        </Button>
+        <div className="flex items-center gap-1 shrink-0">
+          {updatedAt && (
+            <span className="text-[10px] text-muted-foreground">{timeAgo(updatedAt)}</span>
+          )}
+          <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0"
+            onClick={() => refetch()} disabled={isRefetching}>
+            <RefreshCw className={`h-3 w-3 ${isRefetching ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
       </div>
 
       {isLoading && <WidgetSpinner />}
