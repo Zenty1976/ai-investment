@@ -1177,6 +1177,56 @@ portfolioRouter.get("/portfolio-manager/live", async (_req, res): Promise<void> 
   }
 });
 
+// ── GET /portfolio-manager/price-history ─────────────────────────────────────
+// Returns 30 daily close prices for a single instrument from Saxo Chart API.
+// Query params: uic (required), assetType (required), count (default 30)
+// Returns: { uic, assetType, bars: { time: string, close: number }[] }
+
+portfolioRouter.get("/portfolio-manager/price-history", async (req, res): Promise<void> => {
+  const uic = Number(req.query.uic);
+  const assetType = String(req.query.assetType ?? "Stock");
+  const count = Math.min(Number(req.query.count ?? 30), 90);
+
+  if (!uic || isNaN(uic)) {
+    res.status(400).json({ error: "uic is required" });
+    return;
+  }
+
+  // Not connected — return null (no mock chart data, per "never show dummy data" rule)
+  if (!saxoStore.isConnected() && !saxoStore.isMockMode()) {
+    res.json(null);
+    return;
+  }
+
+  // Mock mode — no real chart data available
+  if (saxoStore.isMockMode()) {
+    res.json(null);
+    return;
+  }
+
+  const token = saxoStore.getAccessToken()!;
+  const env = saxoStore.getEnvironment();
+  const base = saxoBaseUrl(env);
+
+  try {
+    const url =
+      `${base}/chart/v3/charts` +
+      `?AssetType=${encodeURIComponent(assetType)}` +
+      `&Uic=${uic}` +
+      `&Horizon=1440` +
+      `&Count=${count}`;
+
+    const data = await saxoGet<{ Data?: Array<{ Time: string; Close: number }> }>(url, token);
+    const bars = (data.Data ?? []).map((b) => ({ time: b.Time, close: b.Close }));
+
+    res.json({ uic, assetType, bars });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn({ err, uic }, "[portfolio-manager/price-history] Chart fetch failed");
+    res.status(502).json({ error: message });
+  }
+});
+
 // ── GET /portfolio-manager ────────────────────────────────────────────────────
 
 portfolioRouter.get("/portfolio-manager", (_req, res) => {

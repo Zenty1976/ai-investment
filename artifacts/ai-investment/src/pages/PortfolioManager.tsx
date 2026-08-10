@@ -10,8 +10,8 @@
  */
 
 import { useState } from "react"
-import { useGetPortfolioLive, useUpdatePortfolio } from "@workspace/api-client-react"
-import type { PortfolioAccount, PortfolioSnapshot } from "@workspace/api-client-react"
+import { useGetPortfolioLive, useGetPortfolioPriceHistory, useUpdatePortfolio } from "@workspace/api-client-react"
+import type { PortfolioAccount, PortfolioPosition, PortfolioSnapshot } from "@workspace/api-client-react"
 import {
   RefreshCw,
   AlertCircle,
@@ -28,6 +28,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format, formatDistanceToNow } from "date-fns"
+import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts"
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -249,6 +250,63 @@ function AccountCards({ accounts }: { accounts: PortfolioAccount[] }) {
 
 // ── Positions table ───────────────────────────────────────────────────────────
 
+// ── Price Sparkline ───────────────────────────────────────────────────────────
+
+function PriceSparkline({ pos }: { pos: PortfolioPosition }) {
+  const { data, isLoading } = useGetPortfolioPriceHistory(pos.uic, pos.assetType)
+  const bars = data?.bars ?? []
+
+  if (isLoading) {
+    return <div className="w-20 h-8 rounded bg-muted/20 animate-pulse" />
+  }
+  if (bars.length < 2) {
+    return <span className="text-muted-foreground/30 text-[10px]">—</span>
+  }
+
+  const first = bars[0].close
+  const last = bars[bars.length - 1].close
+  const trend = last >= first ? "up" : "down"
+  const color = trend === "up" ? "#34d399" : "#f87171"
+  const chartData = bars.map((b) => ({ v: b.close }))
+  const minV = Math.min(...bars.map((b) => b.close))
+  const maxV = Math.max(...bars.map((b) => b.close))
+  const pct = ((last - first) / first) * 100
+
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <div className="w-20 h-8">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+            <Tooltip
+              content={({ active, payload }) =>
+                active && payload?.[0] ? (
+                  <div className="bg-card border border-border/40 rounded px-2 py-1 text-[10px] text-foreground shadow">
+                    {Number(payload[0].value).toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                ) : null
+              }
+            />
+            <Line
+              type="monotone"
+              dataKey="v"
+              stroke={color}
+              strokeWidth={1.5}
+              dot={false}
+              isAnimationActive={false}
+              domain={[minV, maxV]}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <span className={`text-[9px] font-mono tabular-nums ${trend === "up" ? "text-emerald-400/70" : "text-red-400/70"}`}>
+        {pct >= 0 ? "+" : ""}{pct.toFixed(1)}%
+      </span>
+    </div>
+  )
+}
+
+// ── Positions Table ───────────────────────────────────────────────────────────
+
 function PositionsTable({ snapshot }: { snapshot: PortfolioSnapshot }) {
   const allPositions = (snapshot.accounts ?? [])
     .flatMap((a) => a.positions)
@@ -284,6 +342,7 @@ function PositionsTable({ snapshot }: { snapshot: PortfolioSnapshot }) {
               <th className="text-right px-3 py-2.5">Market value</th>
               <th className="text-right px-3 py-2.5">P/L</th>
               <th className="text-right px-3 py-2.5">Day %</th>
+              <th className="text-right px-3 py-2.5">30d</th>
               <th className="text-center px-3 py-2.5">Market</th>
             </tr>
           </thead>
@@ -373,6 +432,11 @@ function PositionsTable({ snapshot }: { snapshot: PortfolioSnapshot }) {
                   {/* Day % */}
                   <td className="px-3 py-2.5 text-right">
                     <DayChangeBadge value={pos.dayChangePercent} />
+                  </td>
+
+                  {/* 30-day sparkline */}
+                  <td className="px-3 py-2.5 text-right">
+                    <PriceSparkline pos={pos} />
                   </td>
 
                   {/* Market open */}

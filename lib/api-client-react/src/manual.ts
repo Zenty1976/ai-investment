@@ -306,6 +306,26 @@ export function useGetPortfolioLive(options?: { query?: Parameters<typeof useQue
   });
 }
 
+interface PriceBar { time: string; close: number }
+interface PriceHistory { uic: number; assetType: string; bars: PriceBar[] }
+
+/**
+ * Fetches 30 daily close prices for a single instrument via Saxo Chart API.
+ * Returns null when not connected or when chart data is unavailable.
+ */
+export function useGetPortfolioPriceHistory(uic: number | undefined, assetType: string | undefined) {
+  return useQuery({
+    queryKey: ["portfolio-price-history", uic, assetType],
+    queryFn: () =>
+      customFetch<PriceHistory | null>(
+        `/api/portfolio-manager/price-history?uic=${uic}&assetType=${encodeURIComponent(assetType ?? "Stock")}`,
+      ),
+    enabled: !!uic && !!assetType,
+    staleTime: 5 * 60 * 1000, // chart data is stable for 5 minutes
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
 export function useUpdatePortfolio(options?: {
   mutation?: Parameters<typeof useMutation>[0];
 }) {
