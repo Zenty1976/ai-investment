@@ -1,28 +1,5 @@
 [
   {
-    "id": "fbdfa739-e04e-49f6-bb4d-a8a07895ef6d",
-    "correlationId": "58ea26e3-1f0b-44d2-9a78-db8fc04472fc",
-    "trigger": "RunAllNow",
-    "startedAt": "2026-08-02T20:16:27.155Z",
-    "completedAt": "2026-08-02T20:19:13.250Z",
-    "durationMs": 166095,
-    "status": "Completed",
-    "completedModules": [
-      "portfolio-manager",
-      "market-monitor",
-      "news-monitor",
-      "event-monitor",
-      "sector-monitor",
-      "company-monitor",
-      "market-alerts",
-      "risk-analyzer",
-      "portfolio-analyzer",
-      "opportunity-finder",
-      "trade-decision-engine",
-      "trade-review"
-    ]
-  },
-  {
     "id": "038f79b8-2495-415f-aea6-68aa6766c674",
     "correlationId": "f07f74a9-3a9d-4910-8423-4fee53b5c71c",
     "trigger": "RunAllNow",
@@ -459,5 +436,32 @@
       "portfolio-analyzer": "portfolio-analyzer failed: HTTP 500: {\"error\":\"AI returned an invalid response structure. Please try again.\",\"_debug\":{\"request\":{\"model\":\"gpt-4o\",\"max_output_tokens\":4000,\"temperature\":0.1,\"tools\":[{\"type\":\"web_search\",\"search_context_s"
     },
     "error": "portfolio-analyzer: portfolio-analyzer failed: HTTP 500: {\"error\":\"AI returned an invalid response structure. Please try again.\",\"_debug\":{\"request\":{\"model\":\"gpt-4o\",\"max_output_tokens\":4000,\"temperature\":0.1,\"tools\":[{\"type\":\"web_search\",\"search_context_s"
+  },
+  {
+    "id": "90cd3372-234f-4f89-b5ea-ff976ccedc20",
+    "correlationId": "69a8ce7b-0630-415d-820d-127a7bc94676",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-11T18:13:37.128Z",
+    "completedAt": "2026-08-11T18:16:41.442Z",
+    "durationMs": 184314,
+    "status": "CompletedWithErrors",
+    "completedModules": [
+      "portfolio-manager",
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor",
+      "company-monitor",
+      "market-alerts",
+      "risk-analyzer",
+      "portfolio-analyzer",
+      "opportunity-finder",
+      "trade-decision-engine",
+      "trade-review"
+    ],
+    "stageErrors": {
+      "command-brief": "command-brief failed: HTTP 500: {\"error\":\"Schema validation failed: items.4.category: Invalid enum value. Expected 'system' | 'portfolio' | 'risk' | 'market' | 'stock' | 'event' | 'opportunity' | 'action', received 'alerts'\",\"_debug"
+    },
+    "error": "command-brief: command-brief failed: HTTP 500: {\"error\":\"Schema validation failed: items.4.category: Invalid enum value. Expected 'system' | 'portfolio' | 'risk' | 'market' | 'stock' | 'event' | 'opportunity' | 'action', received 'alerts'\",\"_debug"
   }
 ]

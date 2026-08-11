@@ -356,7 +356,7 @@ export function useGetPortfolioV2History() {
 
 export interface PortfolioAnalysis {
   mainConclusion: { title: string; reason: string };
-  scoreDrivers: Array<{ factor: string; impact: "Positive" | "Negative"; reason: string }>;
+  scoreDrivers: Array<{ factor: string; impact: "Positive" | "Negative" | "Neutral"; reason: string }>;
   executiveSummary: string;
   overallRating: "Excellent" | "Good" | "Fair" | "Weak";
   overallOutlook: "Bullish" | "Moderately Bullish" | "Neutral" | "Moderately Bearish" | "Bearish";
@@ -486,7 +486,7 @@ export interface RiskAnalysis {
   overallRiskLevel: "Low" | "Moderate" | "High";
   mainConclusion: { title: string; reason: string };
   riskScore: number;
-  scoreDrivers: Array<{ factor: string; impact: "Positive" | "Negative"; reason: string }>;
+  scoreDrivers: Array<{ factor: string; impact: "Positive" | "Negative" | "Neutral"; reason: string }>;
   riskProfile: RiskProfileItem[];
   topRisks: RiskItem[];
   riskInteractions: RiskInteraction[];
@@ -600,7 +600,7 @@ export interface TradeDecisionEngineAnalysis {
   executiveSummary: string;
   overallDecisionPosture: TradeDecisionPosture;
   decisionReadinessScore: number;
-  readinessDrivers: Array<{ factor: string; impact: "Positive" | "Negative"; reason: string }>;
+  readinessDrivers: Array<{ factor: string; impact: "Positive" | "Negative" | "Neutral"; reason: string }>;
   decisions: TradeDecision[];
   conflictsResolved: Array<{ topic: string; conflict: string; resolution: string }>;
   nextReviewTriggers: Array<{ trigger: string; date: string; affectedDecisions: string[] }>;

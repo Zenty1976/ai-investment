@@ -19,7 +19,7 @@ export const RunPortfolioAnalysisResponse = zod.object({
     .array(
       zod.object({
         factor: zod.string(),
-        impact: zod.enum(["Positive", "Negative"]),
+        impact: zod.enum(["Positive", "Negative", "Neutral"]),
         reason: zod.string(),
       })
     )
@@ -142,7 +142,7 @@ export const RunRiskAnalyzerResponse = zod.object({
   scoreDrivers: zod.array(
     zod.object({
       factor: zod.string(),
-      impact: zod.enum(["Positive", "Negative"]),
+      impact: zod.enum(["Positive", "Negative", "Neutral"]),
       reason: zod.string(),
     })
   ),
@@ -266,7 +266,7 @@ export const RunTradeDecisionEngineResponse = zod.object({
   readinessDrivers: zod.array(
     zod.object({
       factor: zod.string(),
-      impact: zod.enum(["Positive", "Negative"]),
+      impact: zod.enum(["Positive", "Negative", "Neutral"]),
       reason: zod.string(),
     })
   ),
