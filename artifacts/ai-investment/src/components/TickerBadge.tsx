@@ -41,7 +41,7 @@ interface PriceHistoryEntry {
 async function fetchPriceHistory(ticker: string): Promise<PriceHistoryEntry | null> {
   // Strip exchange suffix for cleaner URL (server handles both forms)
   const clean = ticker.includes(":") ? ticker.split(":")[0] : ticker
-  const res = await fetch(`/price-history/${encodeURIComponent(clean)}`)
+  const res = await fetch(`/api/price-history/${encodeURIComponent(clean)}`)
   if (!res.ok) return null
   return res.json()
 }

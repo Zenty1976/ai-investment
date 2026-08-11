@@ -4,6 +4,7 @@ import { customFetch } from "@workspace/api-client-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo } from "@/lib/widget-utils";
 import { WidgetSpinner, WidgetNoData, ScoreBar } from "@/lib/widget-components";
+import { TickerBadge } from "@/components/TickerBadge";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -164,7 +165,7 @@ export function CompanyMonitorWidget() {
               <div className="space-y-0.5">
                 {companies.slice(0, 2).map(c => (
                   <div key={c.ticker} className="flex items-center gap-1.5 text-[10px]">
-                    <span className="font-medium text-foreground w-12 truncate">{c.ticker}</span>
+                    <TickerBadge ticker={c.ticker} className="font-medium text-foreground w-12 truncate" />
                     <span className={`truncate flex-1 ${ratingColor(c.rating)}`}>{c.rating}</span>
                   </div>
                 ))}
@@ -179,7 +180,7 @@ export function CompanyMonitorWidget() {
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
                 {companies.map(c => (
                   <div key={c.ticker} className="flex items-center gap-1.5 text-[10px]">
-                    <span className="font-semibold text-foreground w-14 shrink-0 truncate">{c.ticker}</span>
+                    <TickerBadge ticker={c.ticker} className="font-semibold text-foreground w-14 shrink-0 truncate" />
                     {c.strength !== null && (
                       <div className="w-16 shrink-0">
                         <ScoreBar
@@ -227,7 +228,7 @@ export function CompanyMonitorWidget() {
                   {companies.map(c => (
                     <div key={c.ticker} className="rounded border border-border/50 px-2 py-1.5 flex items-center gap-2">
                       <div className="w-16 shrink-0">
-                        <p className="text-[11px] font-bold text-foreground truncate">{c.ticker}</p>
+                        <TickerBadge ticker={c.ticker} className="text-[11px] font-bold text-foreground truncate block" />
                         <p className="text-[9px] text-muted-foreground truncate">{c.name}</p>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -260,9 +261,7 @@ export function CompanyMonitorWidget() {
                         className="rounded-lg border border-border/50 bg-card/40 px-1.5 py-1 flex flex-col gap-1"
                       >
                         {/* Row 1: Ticker name */}
-                        <span className="text-[13px] font-bold text-foreground leading-none truncate">
-                          {c.ticker}
-                        </span>
+                        <TickerBadge ticker={c.ticker} className="text-[13px] font-bold text-foreground leading-none truncate block" />
 
                         {/* Row 2: Logo left, rating badge right */}
                         <div className="flex items-center gap-1.5">

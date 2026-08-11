@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
+import { TickerBadge } from "@/components/TickerBadge";
 import {
   useGetTradeReview,
   useUpdateTradeProposalStatus,
@@ -103,7 +104,7 @@ function ProposalRow({ proposal, qty, onQtyChange, onAction, onNavigate, isMutat
         </span>
         <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
         <span className="text-[11px] font-medium truncate flex-1">{proposal.company}</span>
-        <span className="text-[11px] font-mono text-muted-foreground/60 shrink-0">{proposal.ticker}</span>
+        <TickerBadge ticker={proposal.ticker} className="text-[11px] font-mono text-muted-foreground/60 shrink-0" />
         <Badge variant={statusVariant(proposal.status)} className="text-[9px] px-1 py-0 h-3.5 shrink-0 ml-1">
           {proposal.status}
         </Badge>
@@ -202,7 +203,7 @@ function WaitingRow({ item, isLast, onNavigate }: { item: WaitingTradeDecision; 
       <span className={`text-[10px] font-bold tracking-widest shrink-0 ${actionColor}`}>
         {item.action === "BUY" ? "BUY" : "SELL"}
       </span>
-      <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0">{item.ticker}</span>
+      <TickerBadge ticker={item.ticker} className="text-[10px] font-mono text-muted-foreground/60 shrink-0" />
       <Badge variant={labelVariant} className="text-[9px] px-1 py-0 h-3.5 shrink-0">{item.waitingLabel}</Badge>
       {item.blockingEvent && (
         <span className="text-[10px] text-muted-foreground/60 truncate">

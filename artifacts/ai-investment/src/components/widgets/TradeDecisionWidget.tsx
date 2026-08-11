@@ -3,6 +3,7 @@ import { useGetRepositoryEntry } from "@workspace/api-client-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo, sentimentColor, safeText } from "@/lib/widget-utils";
 import { WidgetSpinner, WidgetNoData, Dot, ScoreBar } from "@/lib/widget-components";
+import { TickerBadge } from "@/components/TickerBadge";
 
 function postureColor(p: string) {
   if (/active|buy/i.test(p)) return "text-green-400";
@@ -86,7 +87,7 @@ export function TradeDecisionWidget() {
                     <span className={`shrink-0 font-bold ${decisionColor(dec.decisionType ?? dec.decision ?? "")}`}>
                       {decisionIcon(dec.decisionType ?? dec.decision ?? "")}
                     </span>
-                    <span className="font-medium text-foreground w-12 truncate">{dec.ticker}</span>
+                    <TickerBadge ticker={dec.ticker} className="font-medium text-foreground w-12 truncate" />
                     <span className="text-muted-foreground truncate flex-1">{dec.title}</span>
                   </div>
                 ))}
@@ -123,7 +124,7 @@ export function TradeDecisionWidget() {
                         <span className={`text-base font-bold shrink-0 w-4 ${decisionColor(dtype)}`}>
                           {decisionIcon(dtype)}
                         </span>
-                        <span className="text-[11px] font-semibold text-foreground">{dec.ticker}</span>
+                        <TickerBadge ticker={dec.ticker} className="text-[11px] font-semibold text-foreground" />
                         <span className="text-[10px] text-muted-foreground truncate flex-1">{dtype}</span>
                         <span className={`text-[10px] shrink-0 ${
                           dec.confidence === "High" ? "text-green-400"

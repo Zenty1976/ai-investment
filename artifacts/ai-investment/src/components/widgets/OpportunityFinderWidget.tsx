@@ -3,6 +3,7 @@ import { useGetRepositoryEntry } from "@workspace/api-client-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo, sentimentColor, safeText } from "@/lib/widget-utils";
 import { WidgetSpinner, WidgetNoData, Dot, ScoreBar } from "@/lib/widget-components";
+import { TickerBadge } from "@/components/TickerBadge";
 
 export function OpportunityFinderWidget() {
   const ref = useRef<HTMLDivElement>(null);
@@ -40,7 +41,7 @@ export function OpportunityFinderWidget() {
               </div>
               {opps[0] && (
                 <p className="text-[10px] text-foreground/80 truncate">
-                  Top: <span className="font-medium">{opps[0].ticker}</span>
+                  Top: <TickerBadge ticker={opps[0].ticker} className="font-medium" />
                   {opps[0].overallScore !== undefined && ` · ${opps[0].overallScore}/100`}
                 </p>
               )}
@@ -59,7 +60,7 @@ export function OpportunityFinderWidget() {
               <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
                 {opps.slice(0, 4).map((opp: any) => (
                   <div key={opp.ticker} className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-medium text-foreground w-14 shrink-0 truncate">{opp.ticker}</span>
+                    <TickerBadge ticker={opp.ticker} className="text-[11px] font-medium text-foreground w-14 shrink-0 truncate" />
                     <div className="flex-1 min-w-0">
                       <ScoreBar
                         score={opp.overallScore ?? 0}
@@ -92,7 +93,7 @@ export function OpportunityFinderWidget() {
                 {opps.map((opp: any) => (
                   <div key={opp.ticker} className="rounded border border-border/50 p-1.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[11px] font-semibold text-foreground">{opp.ticker}</span>
+                      <TickerBadge ticker={opp.ticker} className="text-[11px] font-semibold text-foreground" />
                       <span className="text-[10px] text-muted-foreground truncate flex-1">{opp.company}</span>
                       <span className="text-[10px] font-medium text-foreground shrink-0">{opp.overallScore}/100</span>
                     </div>

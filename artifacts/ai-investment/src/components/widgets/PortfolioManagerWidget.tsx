@@ -3,6 +3,7 @@ import { useGetPortfolioLive } from "@workspace/api-client-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo } from "@/lib/widget-utils";
 import { WidgetSpinner, WidgetNoData, ScoreBar } from "@/lib/widget-components";
+import { TickerBadge } from "@/components/TickerBadge";
 
 function fmtCcy(n: number, decimals = 0) {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -82,7 +83,7 @@ export function PortfolioManagerWidget() {
               <div className="flex-1 overflow-y-auto space-y-0.5 min-h-0">
                 {totalPositions.slice(0, 5).map((pos: any) => (
                   <div key={pos.id} className="flex items-center gap-1.5 text-[10px]">
-                    <span className="font-medium text-foreground/90 w-14 truncate">{pos.symbol}</span>
+                    <TickerBadge ticker={pos.symbol} className="font-medium text-foreground/90 w-14 truncate" />
                     <div className="flex-1 min-w-0">
                       <ScoreBar
                         score={Math.abs(pos.dayChangePercent ?? 0) * 10}
@@ -128,7 +129,7 @@ export function PortfolioManagerWidget() {
                   <tbody>
                     {totalPositions.map((pos: any) => (
                       <tr key={pos.id} className="border-t border-border/30">
-                        <td className="py-0.5 text-foreground/90 font-medium">{pos.symbol}</td>
+                        <td className="py-0.5 text-foreground/90 font-medium"><TickerBadge ticker={pos.symbol} /></td>
                         <td className="py-0.5 text-right text-foreground/80">{fmtCcy(pos.marketValueBaseCurrency ?? pos.marketValue)}</td>
                         <td className={`py-0.5 text-right ${plColor(pos.dayChangePercent)}`}>{pos.dayChangePercent >= 0 ? "+" : ""}{pos.dayChangePercent?.toFixed(2)}%</td>
                         <td className={`py-0.5 text-right ${plColor(pos.profitLoss)}`}>{pos.profitLoss >= 0 ? "+" : ""}{fmtCcy(pos.profitLoss)}</td>

@@ -3,6 +3,7 @@ import { useGetRepositoryEntry } from "@workspace/api-client-react";
 import { useTileSize } from "@/hooks/useTileSize";
 import { timeAgo } from "@/lib/widget-utils";
 import { WidgetSpinner, WidgetNoData, Dot } from "@/lib/widget-components";
+import { TickerBadge } from "@/components/TickerBadge";
 
 type ItemSeverity = "positive" | "neutral" | "watch" | "warning" | "critical";
 type OverallStatus = "normal" | "attention" | "action";
@@ -113,7 +114,7 @@ export function CommandBriefWidget() {
                       {severityIcon(item.severity as ItemSeverity)}
                     </span>
                     {item.symbol && (
-                      <span className="text-foreground/80 font-semibold shrink-0">{item.symbol}</span>
+                      <TickerBadge ticker={item.symbol} className="text-foreground/80 font-semibold shrink-0" />
                     )}
                     <span className="text-foreground/70 truncate">{item.text}</span>
                   </div>
