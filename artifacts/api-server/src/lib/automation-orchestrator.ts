@@ -1051,8 +1051,9 @@ class AutomationOrchestratorService {
         `${job.moduleId} completed via ${job.trigger} (${job.durationMs}ms, change: ${meaningfulChange})`
       );
 
-      // Trigger downstream modules, gated on meaningfulChange level
-      void this._triggerDownstream(job.moduleId, job.correlationId, job.id, meaningfulChange, forceAI);
+      // Trigger downstream modules, gated on meaningfulChange level.
+      // Pass job.ticker so company-monitor holding-change propagation works correctly.
+      void this._triggerDownstream(job.moduleId, job.correlationId, job.id, meaningfulChange, forceAI, job.ticker);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -1172,7 +1173,9 @@ class AutomationOrchestratorService {
     correlationId: string,
     parentJobId: string,
     meaningfulChange: MeaningfulChange = "Medium",
-    forceAI = false
+    forceAI = false,
+    /** For company-monitor jobs: the specific ticker that just completed */
+    completedTicker?: string
   ): void {
     // Only auto-chain in SemiAutomatic (non-paused)
     if (this.settings.mode !== "SemiAutomatic" || this.settings.paused) return;
@@ -1228,6 +1231,68 @@ class AutomationOrchestratorService {
         void this._dispatchCompanyMonitorScheduled("Dependency", correlationId, parentJobId, forceAI);
       } else {
         void this.triggerModule(def.moduleId, "Dependency", { correlationId, parentJobId, forceAI });
+      }
+    }
+
+    // ── §3 Dirty propagation: company-monitor (holding ticker) → investment pipeline ──
+    //
+    // company-monitor is NOT listed as a formal dependency of portfolio-analyzer,
+    // risk-analyzer, or trade-decision-engine (they depend on aggregated upstream
+    // outputs, not per-ticker CM results). But when a PORTFOLIO HOLDING's company
+    // analysis changes materially, those modules should re-run promptly rather than
+    // waiting for their own scheduled interval.
+    //
+    // Conditions for immediate propagation:
+    //   1. The completed module is company-monitor with a specific ticker
+    //   2. That ticker is a current portfolio holding
+    //   3. The change was Medium or High
+    //   4. The target module is stale/due and not already running
+    //   5. All the target module's declared deps are fresh
+    if (
+      completedModuleId === "company-monitor" &&
+      completedTicker &&
+      (meaningfulChange === "Medium" || meaningfulChange === "High")
+    ) {
+      const holdingTickers = new Set(
+        this._getPortfolioTickers().map(t => t.toUpperCase().replace(/:[^:]+$/, ""))
+      );
+      const normalizedTicker = completedTicker.toUpperCase().replace(/:[^:]+$/, "");
+
+      if (holdingTickers.has(normalizedTicker)) {
+        // Ordered: risk first (portfolio-analyzer depends on risk, TDE depends on both)
+        const holdingDownstream: ModuleId[] = ["risk-analyzer", "portfolio-analyzer", "trade-decision-engine"];
+
+        for (const moduleId of holdingDownstream) {
+          if (this._hasActiveJob(moduleId)) continue;
+          const settings = this._moduleSettings(moduleId);
+          if (!settings.enabled || !settings.supportsAutomaticRun) continue;
+
+          const freshness = this._freshness(moduleId);
+          const isStale = freshness === "Stale" || freshness === "NeverRun" || freshness === "DueSoon";
+          if (!isStale) continue; // still fresh — don't interrupt
+
+          const st = this.runtimeState.get(moduleId)!;
+          if (st.nextRunAt && new Date(st.nextRunAt).getTime() > now) continue;
+
+          const def = MODULE_DEFAULTS.find(d => d.moduleId === moduleId)!;
+          const staleDeps = def.dependencies.filter(d => !this._isFresh(d));
+          if (staleDeps.length > 0) {
+            systemLog.logInternal(MODULE_NAME,
+              `${moduleId} not woken by holding-CM change (${completedTicker}) — waiting for: ${staleDeps.join(", ")}`
+            );
+            continue;
+          }
+
+          st.waitingForDeps = [];
+          systemLog.logInternal(MODULE_NAME,
+            `${moduleId} triggered by material company-monitor change for holding ${completedTicker} (${meaningfulChange})`
+          );
+          void this.triggerModule(moduleId, "Dependency", { correlationId, parentJobId, forceAI });
+        }
+      } else {
+        systemLog.logInternal(MODULE_NAME,
+          `company-monitor:${completedTicker} changed (${meaningfulChange}) — not a holding, investment pipeline not woken`
+        );
       }
     }
   }
