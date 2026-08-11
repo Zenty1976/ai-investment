@@ -1,0 +1,367 @@
+Now implement CHANGE-AWARE AI EXECUTION in the Automation Orchestrator.
+
+IMPORTANT:
+
+The previous optimization reduced prompt sizes.
+
+This task is different:
+
+DO NOT CALL OPENAI AT ALL when a module's relevant inputs have not materially changed and the previous analysis is still valid.
+
+Do not redesign the architecture.
+
+We already have a stateful system and central Automation Orchestrator.
+
+Extend that architecture.
+
+
+==================================================
+1. CORE PRINCIPLE
+==================================================
+
+A scheduled module run does NOT automatically mean:
+
+"Call OpenAI again."
+
+Instead it means:
+
+"Check whether this module needs recomputation."
+
+For each AI analysis module:
+
+1. collect relevant dependencies
+2. determine whether relevant input changed
+3. if unchanged and previous result is valid:
+       SKIP AI CALL
+4. reuse previous analysis
+5. record that the module was checked successfully
+
+This must be distinguishable from a failure.
+
+
+==================================================
+2. DEPENDENCY VERSIONS / FINGERPRINT
+==================================================
+
+Create a deterministic dependency fingerprint for each AI module.
+
+Do NOT use OpenAI for this.
+
+Use stable serialization + hashing/version IDs.
+
+Example conceptually:
+
+PortfolioAnalyzer:
+
+portfolioVersion
+marketMonitorMaterialVersion
+eventMonitorMaterialVersion
+relevantCompanyVersions
+sectorMonitorMaterialVersion
+
+→ dependencyFingerprint
+
+
+TradeDecision:
+
+portfolioVersion
+portfolioAnalyzerVersion
+riskAnalyzerVersion
+opportunityFinderVersion
+relevantCompanyVersions
+relevantPriceContextVersions
+eventMonitorMaterialVersion
+marketAlertsMaterialVersion
+
+→ dependencyFingerprint
+
+
+If the fingerprint is identical to the fingerprint used for the previous successful AI analysis:
+
+skip OpenAI.
+
+However, do NOT include meaningless fields such as:
+
+- generatedAt timestamps
+- last checked timestamp
+- UI metadata
+- runtime IDs
+
+otherwise every run will appear changed.
+
+
+==================================================
+3. MATERIAL VERSION VS REFRESH VERSION
+==================================================
+
+This distinction is important.
+
+A monitor may refresh and find:
+
+"No material change."
+
+That should NOT automatically invalidate every downstream module.
+
+Therefore distinguish conceptually between:
+
+refreshVersion
+and
+materialVersion
+
+Example:
+
+News Monitor searches again at 14:00.
+
+No material new information found.
+
+refreshVersion changes.
+
+materialVersion does NOT.
+
+Risk Analyzer should therefore NOT rerun just because News Monitor checked the web again.
+
+
+==================================================
+4. MODULE DEPENDENCIES
+==================================================
+
+Use the existing Orchestrator dependency graph where possible.
+
+Do not create duplicate scheduling systems.
+
+Define which MATERIAL outputs invalidate which downstream modules.
+
+Conceptually:
+
+Market/News/Event/Sector/Company changes
+            ↓
+Portfolio/Risk/Opportunity
+            ↓
+Trade Decision
+            ↓
+Command Brief
+
+But use the ACTUAL existing architecture and dependencies.
+
+Do not mechanically rerun every downstream module for every upstream change.
+
+Only invalidate modules whose inputs are relevant.
+
+
+==================================================
+5. COMPANY RELEVANCE
+==================================================
+
+Company updates should invalidate downstream analysis only where relevant.
+
+Example:
+
+A material SERV change matters if:
+
+- SERV is held
+- SERV is an active opportunity
+- SERV has an active decision/watch state
+
+An unrelated analyzed company should not automatically invalidate Portfolio Analyzer or Trade Decision.
+
+
+==================================================
+6. PRICE CONTEXT CHANGES
+==================================================
+
+Do not invalidate analysis because a price changed by an insignificant amount.
+
+Create a deterministic material-change rule for Price Context.
+
+Examples of meaningful changes:
+
+- PriceState changed
+- recentBehavior state changed
+- volatility regime changed materially
+- meaningful move beyond configurable threshold
+- significant new low/high behavior
+- relevant decision threshold crossed
+
+Do not use tiny price fluctuations as automatic reasons to rerun the whole AI pipeline.
+
+
+==================================================
+7. TIME-BASED SAFETY REFRESH
+==================================================
+
+Fingerprint equality must NOT mean an analysis can live forever.
+
+Add configurable maximum-age safety refreshes.
+
+Example conceptually:
+
+A module may be skipped while inputs are unchanged, but after its configured maximum analysis age it must perform a fresh analysis.
+
+Use sensible per-module configuration.
+
+Do not hardcode scheduling logic throughout individual modules.
+
+Keep this centrally configurable.
+
+
+==================================================
+8. FORCE RUN
+==================================================
+
+We need two concepts:
+
+NORMAL SCHEDULED RUN:
+may skip OpenAI when unchanged.
+
+FORCE AI REFRESH:
+explicitly reruns analysis regardless of fingerprint.
+
+Be careful with the existing "Run All Now".
+
+For normal production behavior, Run All should preferably run the dependency pipeline and allow unchanged AI analyses to be skipped.
+
+But provide a clearly separate debug/admin ability to FORCE all AI analyses when we intentionally need to test them.
+
+Do not make normal Run All automatically expensive forever.
+
+
+==================================================
+9. STATUS
+==================================================
+
+Add a non-error execution status such as:
+
+SKIPPED_UNCHANGED
+
+or equivalent.
+
+Automation should be able to show:
+
+Company Monitor       Fresh
+Risk Analyzer         Fresh — unchanged
+Portfolio Analyzer    Fresh — unchanged
+Trade Decision        Fresh — unchanged
+
+A skipped AI call is a successful optimization, NOT stale and NOT failed.
+
+
+==================================================
+10. STATEFUL COMPANY MONITOR
+==================================================
+
+Do not break Company Monitor's existing stateful semantics.
+
+Company Monitor already understands:
+
+FullAnalysis
+UpdateWithChanges
+NoMaterialChange
+
+Preserve this.
+
+If a fresh external-data check is necessary, it can still happen.
+
+But do not repeatedly send a huge full company analysis to OpenAI when there is no reason.
+
+
+==================================================
+11. CASCADE BEHAVIOR
+==================================================
+
+Example:
+
+News Monitor refreshes.
+
+It finds no material change.
+
+Then:
+
+News refreshVersion changes
+News materialVersion unchanged
+
+Therefore:
+
+Portfolio Analyzer → skip
+Risk Analyzer → skip
+Opportunity Finder → skip unless other inputs changed
+Trade Decision → skip
+Command Brief → skip
+
+Another example:
+
+SERV Company Monitor changes from:
+
+recentBehavior = FallingFast
+
+to:
+
+recentBehavior = Stabilizing
+
+and SERV is a portfolio holding.
+
+This IS relevant.
+
+Then affected downstream modules should become dirty and be reevaluated.
+
+
+==================================================
+12. LOGGING
+==================================================
+
+For every skipped OpenAI call log:
+
+module
+timestamp
+reason
+dependencyFingerprint
+previousFingerprint
+lastAIAnalysisAt
+
+Example:
+
+TradeDecision
+SKIPPED_UNCHANGED
+Reason: No material dependency changes since previous analysis.
+
+
+==================================================
+13. DO NOT USE OPENAI TO DECIDE WHETHER TO CALL OPENAI
+==================================================
+
+Change detection must primarily be deterministic.
+
+Do not solve token usage by adding a separate GPT call asking:
+
+"Has anything changed?"
+
+That defeats the purpose.
+
+
+==================================================
+14. TEST
+==================================================
+
+Test this scenario:
+
+Run All once.
+
+Allow all required analyses to complete.
+
+Immediately run normal Run All again with no changed inputs.
+
+The second run should produce dramatically fewer OpenAI calls.
+
+Verify exactly:
+
+- modules executed
+- modules checked
+- OpenAI calls made
+- OpenAI calls skipped
+- reason for each call
+- reason for each skip
+
+Then introduce ONE material input change.
+
+Verify that only the correct affected dependency chain reruns.
+
+Report the results.
