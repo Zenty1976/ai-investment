@@ -1,0 +1,289 @@
+REDUCE OPENAI COST — CHANGE-DRIVEN EXECUTION AND SELECTIVE WEB SEARCH
+
+Now optimize WHEN OpenAI is called.
+
+The system should not repeatedly pay OpenAI to reach the same conclusion when relevant inputs have not materially changed.
+
+IMPORTANT:
+
+Do not make the system less responsive to genuinely important changes.
+
+This must be dependency/change driven, not simply "run less often".
+
+==================================================
+1. INPUT / DEPENDENCY FINGERPRINTS
+==================================================
+
+For analysis modules, calculate a deterministic fingerprint/version from the relevant upstream inputs.
+
+Examples:
+
+Portfolio Analyzer depends on:
+- portfolio state/version
+- relevant Company Monitor versions
+- Market context version
+- Event context version
+- relevant News context version
+- Sector context
+- relevant Price Context versions
+
+Risk Analyzer similarly depends on its relevant inputs.
+
+Trade Decision depends on:
+- relevant portfolio state
+- risk analysis
+- portfolio analysis
+- relevant company analyses
+- opportunities
+- blockers/events
+- relevant price contexts
+- alerts
+
+Do NOT hash timestamps or irrelevant metadata that changes every run.
+
+Fingerprint the MATERIAL INPUT.
+
+==================================================
+2. SKIP UNCHANGED AI ANALYSIS
+==================================================
+
+Before making an OpenAI request:
+
+Compare current material input fingerprint with the fingerprint used for the last successful analysis.
+
+If unchanged:
+
+DO NOT call OpenAI.
+
+Reuse the previous valid analysis.
+
+Record:
+
+executionStatus = SkippedNoMaterialInputChange
+
+or equivalent.
+
+The Orchestrator UI should distinguish:
+
+Fresh
+Skipped — no material changes
+
+from:
+
+Failed
+Stale
+
+Skipping an unnecessary AI call is a SUCCESS, not a failure.
+
+==================================================
+3. DIRTY PROPAGATION
+==================================================
+
+Use the dependency graph.
+
+If News Monitor materially changes something relevant to SERV:
+
+Company Monitor SERV may become dirty.
+
+If Company Monitor SERV changes materially and SERV is a holding:
+
+Portfolio Analyzer
+Risk Analyzer
+Trade Decision
+
+may become dirty.
+
+But unrelated Company Monitor analyses should not automatically rerun.
+
+Do not blindly propagate every upstream refresh.
+
+Propagate MATERIAL changes.
+
+==================================================
+4. PRICE-ONLY CHANGES
+==================================================
+
+Price data changes frequently.
+
+Do not trigger expensive full fundamental analyses for insignificant price movements.
+
+Use the deterministic Price Context.
+
+Only mark relevant downstream AI modules dirty when price behavior changes meaningfully, for example:
+
+- PriceState changes
+- recentBehavior state changes
+- meaningful volatility regime change
+- meaningful range/trend threshold crossed
+- material price move according to centralized thresholds
+
+Normal tiny price movements should not cause the whole AI pipeline to rerun.
+
+==================================================
+5. WEB SEARCH RESPONSIBILITIES
+==================================================
+
+Currently too many modules perform their own required web search.
+
+Align web search with module responsibilities.
+
+Modules that OBSERVE external reality may use web search:
+
+- Market Monitor
+- News Monitor
+- Event Monitor
+- Sector Monitor
+- Company Monitor
+- Investor Watch
+- Opportunity Finder where external discovery is genuinely needed
+
+Review Market Alerts depending on whether it is discovering information or deriving alerts from existing monitor data.
+
+Modules whose primary role is SYNTHESIS/DECISION should normally NOT perform another mandatory broad web search:
+
+- Portfolio Analyzer
+- Risk Analyzer
+- Trade Decision
+- Command Brief
+
+These modules should primarily reason over the verified/current information already produced by upstream monitors.
+
+Remove:
+
+tool_choice = required
+
+for modules where web search is not fundamentally required.
+
+If there is a genuine exceptional need for verification, allow a targeted fallback rather than mandatory search on every run.
+
+==================================================
+6. TRADE DECISION
+==================================================
+
+Trade Decision should become a decision engine, not another research monitor.
+
+It should normally receive:
+
+Portfolio state
+Portfolio Analyzer compact context
+Risk Analyzer compact context
+relevant Company contexts
+relevant Opportunity candidates
+relevant Events/blockers
+relevant Alerts
+relevant Price Context
+
+It should NOT normally perform a new broad web search.
+
+If required information is stale/missing, Trade Decision should prefer:
+
+NotReady / NeedsRefresh
+
+and identify the required upstream module.
+
+It must not silently compensate by performing broad research itself.
+
+==================================================
+7. INVESTOR WATCH
+==================================================
+
+Investor Watch currently has multiple investors and can become expensive.
+
+Do not perform a full deep analysis for every investor every scheduled cycle when nothing new exists.
+
+Implement a lightweight change-detection/discovery stage.
+
+Determine whether there are new relevant sources/events since the investor's previous successful analysis.
+
+Examples:
+
+new filing
+new interview
+new letter/memo
+new verified statement
+new reliable reporting about positioning
+new material 13F filing
+
+If nothing relevant is found:
+
+retain previous analysis
+mark NoMaterialChange
+do not perform the expensive full analysis stage.
+
+IMPORTANT:
+Do not falsely interpret absence of new search results as a change in investor opinion.
+
+==================================================
+8. RUN ALL
+==================================================
+
+"Run All" should mean:
+
+Evaluate all modules in dependency order.
+
+It should NOT mean:
+
+Force an expensive OpenAI request for every module regardless of state.
+
+During Run All:
+
+- evaluate dependencies
+- refresh sources where appropriate
+- determine dirty/material-change state
+- call OpenAI only where needed
+- skip unchanged analyses
+
+If we need a developer/test option that truly forces every OpenAI call, create:
+
+Force Full Run
+
+inside debug/developer controls.
+
+Do not make Force Full Run the normal behavior.
+
+==================================================
+9. UI
+==================================================
+
+Automation Recent Jobs should show examples like:
+
+News Monitor       Updated
+Company SERV       No material change
+Portfolio Analyzer Skipped — inputs unchanged
+Risk Analyzer      Skipped — inputs unchanged
+Trade Decision     Skipped — inputs unchanged
+
+Also show:
+
+AI calls avoided
+Tokens avoided
+
+where this can be calculated reliably.
+
+==================================================
+10. TEST
+==================================================
+
+Test these scenarios:
+
+A)
+Run All twice with no meaningful changes.
+
+Second run should use dramatically fewer OpenAI tokens.
+
+B)
+Only SERV Company Monitor materially changes.
+
+Only downstream modules affected by SERV should become dirty.
+
+C)
+Small irrelevant price movement.
+
+Should not trigger expensive pipeline-wide analysis.
+
+D)
+Major portfolio holding event.
+
+Relevant Company Monitor and downstream Portfolio/Risk/Decision analysis should run.
+
+Report actual OpenAI token usage for these tests.
