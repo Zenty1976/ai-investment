@@ -1,656 +1,5 @@
 [
   {
-    "id": "13289562-e8a0-4e33-9012-e8fe39b00216",
-    "timestamp": "2026-08-11T16:57:37.963Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "5851f8a0-34be-4aa4-8d00-1ec4609b0637",
-    "timestamp": "2026-08-11T16:58:07.978Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "6172d88b-57ab-42f8-bc16-f710c1aa4bde",
-    "timestamp": "2026-08-11T16:58:37.998Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "a9e30602-4f70-40ba-a473-568d83e7c343",
-    "timestamp": "2026-08-11T16:59:08.000Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "52001cb1-474a-45b2-a155-a70f2245f88c",
-    "timestamp": "2026-08-11T16:59:27.999Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "1c0ce0d0-d7fa-48c7-8af2-fe0d7d253ef4",
-    "timestamp": "2026-08-11T16:59:28.006Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "9a9d0801-9127-404a-bf54-c07203cb806c",
-    "timestamp": "2026-08-11T16:59:28.011Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "21ea7d8f-2e20-44b3-91e6-1972fd84f557",
-    "timestamp": "2026-08-11T16:59:37.430Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Event analysis completed: 3 upcoming events, 2 high importance"
-  },
-  {
-    "id": "9af167af-a6b3-4966-b4bb-adc074ddddc9",
-    "timestamp": "2026-08-11T16:59:37.435Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "event-monitor completed via Scheduled (9446ms, change: Medium)"
-  },
-  {
-    "id": "56e2da0b-e003-4024-8127-5fb812d9488a",
-    "timestamp": "2026-08-11T16:59:37.495Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: trade-decision-engine, portfolio-manager, risk-analyzer"
-  },
-  {
-    "id": "418d90a9-5d5e-45f7-bffe-2be82155b866",
-    "timestamp": "2026-08-11T16:59:38.009Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "8656ef01-2b52-4c18-8f40-0dab13b83024",
-    "timestamp": "2026-08-11T16:59:41.825Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy ArcelorMittal ahead of Q3 earnings\" (MT): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "52ba7147-3007-433b-b096-94cc3e6c4ce6",
-    "timestamp": "2026-08-11T16:59:41.826Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Solvay ahead of Q3 earnings\" (SOLB): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "ed4c7266-f104-4388-b275-c192b65225ce",
-    "timestamp": "2026-08-11T16:59:41.832Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] MT (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "58fb86f7-a9e4-4801-8a89-7f2a57701116",
-    "timestamp": "2026-08-11T16:59:41.838Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] SOLB (Review): score=20 band=Weak supporting=[OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "fdf10b14-a4c2-489a-8b57-59d7fc02d4fa",
-    "timestamp": "2026-08-11T16:59:41.841Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] UCG (PrepareToBuy): score=45 band=Adequate supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "fc6cdebb-dfe0-4646-971e-7e821538b7db",
-    "timestamp": "2026-08-11T16:59:41.973Z",
-    "module": "TradeDecisionOutcome",
-    "level": "internal",
-    "message": "Opportunity:UCG: v1 created (New)"
-  },
-  {
-    "id": "7f39eb91-a0d6-478a-9804-3f12ae764416",
-    "timestamp": "2026-08-11T16:59:41.974Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "c2f601a7-e3af-49ce-ac6e-e15f7b7f823e",
-    "timestamp": "2026-08-11T16:59:41.979Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "4156cf5e-d0ed-49ff-804f-9e6cb58c7333",
-    "timestamp": "2026-08-11T16:59:41.981Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 60/100"
-  },
-  {
-    "id": "08c7cc4a-4542-412a-bbb6-8364e3272494",
-    "timestamp": "2026-08-11T16:59:41.984Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "1 decision(s) ReadyForReview: UCG"
-  },
-  {
-    "id": "5aa402d6-b60f-45f6-aeb9-42a13224657f",
-    "timestamp": "2026-08-11T16:59:41.986Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "1 WaitingForReevaluation"
-  },
-  {
-    "id": "f33d8941-cf88-4917-979f-098b3fa8d596",
-    "timestamp": "2026-08-11T16:59:41.989Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "New: Prepare to buy ArcelorMittal ahead of Q3 earnings; Prepare to buy Solvay ahead of Q3 earnings; Prepare to buy UniCredit for financials exposure"
-  },
-  {
-    "id": "a026c113-47fe-4787-bb4c-7878d328f5fb",
-    "timestamp": "2026-08-11T16:59:41.991Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Changed: Strengthened Wait for U.S. CPI/PPI data before deploying further capital; Weakened Hold Novo Nordisk while monitoring upcoming catalysts"
-  },
-  {
-    "id": "015cf20e-5c1a-4600-9071-82697197b6e8",
-    "timestamp": "2026-08-11T16:59:41.993Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Withdrawn (subject absent): HON, CARR"
-  },
-  {
-    "id": "92d31d31-510d-4e1d-b70a-ecd0b697632d",
-    "timestamp": "2026-08-11T16:59:41.996Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 2 decision(s) downgraded"
-  },
-  {
-    "id": "4eac2bf8-6c22-43e5-9089-89783ab7675e",
-    "timestamp": "2026-08-11T16:59:42.001Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via Dependency (14005ms, change: High)"
-  },
-  {
-    "id": "43e5e38b-c398-461d-9131-d7c556cbc389",
-    "timestamp": "2026-08-11T16:59:42.003Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: trade-review, portfolio-manager, risk-analyzer"
-  },
-  {
-    "id": "b55583b2-a020-4c16-b0a9-6902139b7d2d",
-    "timestamp": "2026-08-11T16:59:42.006Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "00914b2d-747e-473e-b6ad-cebdbc140b60",
-    "timestamp": "2026-08-11T16:59:42.007Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Trade Review proposal created: BUY UCG → Waiting (new outcome version: Opportunity:UCG:v1)"
-  },
-  {
-    "id": "e85ba123-68b4-47be-b860-a16991d57646",
-    "timestamp": "2026-08-11T16:59:42.017Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (14ms, change: Medium)"
-  },
-  {
-    "id": "db56d0f3-0501-4e18-8235-8e80a28ab216",
-    "timestamp": "2026-08-11T16:59:42.018Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: portfolio-manager, risk-analyzer"
-  },
-  {
-    "id": "990f17ca-aef9-46f5-bedc-933b2c88a7d5",
-    "timestamp": "2026-08-11T16:59:42.133Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Risk analysis completed"
-  },
-  {
-    "id": "599f85ac-508e-447e-92b8-5101a7238fa4",
-    "timestamp": "2026-08-11T16:59:42.134Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk score: 45 ▲ 10 (was 35)"
-  },
-  {
-    "id": "2c973b2e-c6d9-4816-b2c0-b921a5d74d8f",
-    "timestamp": "2026-08-11T16:59:42.138Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Highest portfolio risk: Serve Robotics Q2 earnings miss and guidance cut [Company, High severity]"
-  },
-  {
-    "id": "f1c10bf1-8263-4877-9b98-c28719403f16",
-    "timestamp": "2026-08-11T16:59:42.249Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Serve Robotics Q2 earnings miss and guidance cut"
-  },
-  {
-    "id": "09f038ab-d9e3-4e48-94f0-ceaec83f97ba",
-    "timestamp": "2026-08-11T16:59:42.251Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Novo Nordisk regulatory and earnings catalysts"
-  },
-  {
-    "id": "b47ff4e9-471e-447b-8639-8aba48048e4d",
-    "timestamp": "2026-08-11T16:59:42.253Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Strait of Hormuz geopolitical disruption"
-  },
-  {
-    "id": "acdf4d23-a29c-42a6-95b9-073177af565f",
-    "timestamp": "2026-08-11T16:59:42.256Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Lack of diversification limits offsetting exposures"
-  },
-  {
-    "id": "72631af1-df46-4532-a6f8-4be9ff675cb0",
-    "timestamp": "2026-08-11T16:59:42.258Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Macro inflation and central bank policy shifts"
-  },
-  {
-    "id": "25d0b6d4-471d-459d-a776-cc40e33a0737",
-    "timestamp": "2026-08-11T16:59:42.261Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: U.S. inflation surprises and Fed policy shifts"
-  },
-  {
-    "id": "51c035fd-3db6-4efd-9466-314917287549",
-    "timestamp": "2026-08-11T16:59:42.263Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: AI/memory chip sector sell‑off and tech sentiment deterioration"
-  },
-  {
-    "id": "f42aacd1-eb0f-433c-bde9-fa4b9523cc83",
-    "timestamp": "2026-08-11T16:59:42.266Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Serve Robotics execution and dilution risk"
-  },
-  {
-    "id": "18a0087f-cef4-4703-9a18-f19fb5e453e5",
-    "timestamp": "2026-08-11T16:59:42.269Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Strait of Hormuz geopolitical instability"
-  },
-  {
-    "id": "749e69de-0335-4f7c-bdda-236a96706534",
-    "timestamp": "2026-08-11T16:59:42.273Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk resolved: Novo Nordisk pricing and competitive pressure"
-  },
-  {
-    "id": "f89e6c3d-51db-4513-8f49-7b249c6663c7",
-    "timestamp": "2026-08-11T16:59:42.278Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via Dependency (14285ms, change: Medium)"
-  },
-  {
-    "id": "4e23202f-e13d-4357-a3b0-f271276986e3",
-    "timestamp": "2026-08-11T16:59:42.280Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "7f5c5aa9-a965-4b28-b709-3ecf5921c027",
-    "timestamp": "2026-08-11T17:00:08.003Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "e8be4ea0-5d9d-4162-8bef-74645f8a263b",
-    "timestamp": "2026-08-11T17:00:38.034Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "c497482d-4694-4354-ad21-614946265f16",
-    "timestamp": "2026-08-11T17:00:58.466Z",
-    "module": "Settings",
-    "level": "error",
-    "message": "Saxo login failed: token refresh"
-  },
-  {
-    "id": "fec84564-a20a-47e0-b9f3-d7eb28509d55",
-    "timestamp": "2026-08-11T17:01:07.998Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "50ee9492-ee38-44a2-a94a-53733efa7e49",
-    "timestamp": "2026-08-11T17:01:38.014Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "6459e428-03ae-4d79-aeaa-6697ddcb7376",
-    "timestamp": "2026-08-11T17:02:08.093Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "34cf78fa-13d3-4542-858e-5d57804d8f67",
-    "timestamp": "2026-08-11T17:02:38.071Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "37b255c5-71d9-45c1-a777-8f551a15bf04",
-    "timestamp": "2026-08-11T17:03:08.099Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "b8d1bd68-aa10-4493-a421-8092f54808d6",
-    "timestamp": "2026-08-11T17:03:38.061Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "6646b76e-da00-4c12-b07d-1304872f3e39",
-    "timestamp": "2026-08-11T17:04:08.075Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "f616ac12-a8bc-436f-8946-526de59ae594",
-    "timestamp": "2026-08-11T17:04:38.096Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "d35b866e-636e-45ba-970a-2436835d0715",
-    "timestamp": "2026-08-11T17:05:08.104Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "d31d1a1e-20bf-41ad-829f-5043a65b6f79",
-    "timestamp": "2026-08-11T17:05:38.185Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "6ef0d23c-5e6f-44d1-8422-e91693fefcf2",
-    "timestamp": "2026-08-11T17:06:08.484Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "8cdc8b36-3cf9-4132-acec-da31fd1d6ae5",
-    "timestamp": "2026-08-11T17:06:38.132Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "b15ebe2b-3cca-4dcf-9232-dcf484c6c5d6",
-    "timestamp": "2026-08-11T17:31:20.017Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "95abe501-5a8d-4dd3-bba6-ed035026bc32",
-    "timestamp": "2026-08-11T17:31:25.078Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "a3b0b9b9-a9cc-4b56-be92-2fbdb1aff50f",
-    "timestamp": "2026-08-11T17:31:25.121Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "f40a5214-19f7-477a-8422-85c0f2feca11",
-    "timestamp": "2026-08-11T17:31:25.126Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "4b07dfed-c09b-4aff-bb3a-e0e6453c5886",
-    "timestamp": "2026-08-11T17:31:30.802Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
-  },
-  {
-    "id": "fcb425ce-1d89-4764-99c2-5ab6f52c5c40",
-    "timestamp": "2026-08-11T17:31:30.806Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via Scheduled (5784ms, change: Medium)"
-  },
-  {
-    "id": "d874fb98-5327-45be-9443-0ed9777065e2",
-    "timestamp": "2026-08-11T17:31:32.362Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed: 4 market-moving stories found"
-  },
-  {
-    "id": "6fbf8e67-4775-48d4-a906-ac2aada8623f",
-    "timestamp": "2026-08-11T17:31:32.366Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via Scheduled (7317ms, change: Medium)"
-  },
-  {
-    "id": "01819984-c0c7-4c8d-af00-81ef7997c7ce",
-    "timestamp": "2026-08-11T17:31:32.597Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts analysis completed"
-  },
-  {
-    "id": "c850cb37-d8ef-4bcd-8bbb-ac3c37f98c77",
-    "timestamp": "2026-08-11T17:31:32.599Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 new alert(s): Novo Nordisk Q2 beat, raises 2026 outlook and declares interim dividend; Novo Nordisk shifts U.S. media account to Omnicom starting Q4"
-  },
-  {
-    "id": "04f8d872-3258-468c-b99d-47d603a0a41c",
-    "timestamp": "2026-08-11T17:31:32.602Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "2 alert(s) resolved: Strait of Hormuz tensions escalate, keeping oil prices elevated; Treasury yields remain elevated amid Middle East tensions"
-  },
-  {
-    "id": "8e60c9ce-b9e7-4469-b9c5-097e5341816f",
-    "timestamp": "2026-08-11T17:31:32.605Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: Novo Nordisk Q2 beat, raises 2026 outlook and declares interim dividend [Company]"
-  },
-  {
-    "id": "d421f877-1de6-4e89-8ae6-fe261bdd74e1",
-    "timestamp": "2026-08-11T17:31:32.609Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Dependency (7548ms, change: High)"
-  },
-  {
-    "id": "b71e1733-cd05-443e-bd23-369cb780cb87",
-    "timestamp": "2026-08-11T17:31:32.610Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "b3c7478c-397e-4e4d-86dd-e36e30c74c36",
-    "timestamp": "2026-08-11T17:31:34.344Z",
-    "module": "Settings",
-    "level": "user",
-    "message": "User started Saxo login"
-  },
-  {
-    "id": "17afaf45-3194-479d-b93d-25d564649766",
-    "timestamp": "2026-08-11T17:31:35.157Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "524ac58e-19df-4f5a-acca-4694d3856b9c",
-    "timestamp": "2026-08-11T17:31:59.209Z",
-    "module": "Settings",
-    "level": "user",
-    "message": "User started Saxo login"
-  },
-  {
-    "id": "7bc91500-7c17-47e6-b468-99722df00b92",
-    "timestamp": "2026-08-11T17:32:00.031Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "0ba4d54a-7e46-45f6-930d-40b5ad34dad4",
-    "timestamp": "2026-08-11T17:32:29.200Z",
-    "module": "Settings",
-    "level": "info",
-    "message": "Saxo connection established in sim environment"
-  },
-  {
-    "id": "d1900de6-d6ae-4309-9e98-f0a735cd3d32",
-    "timestamp": "2026-08-11T17:32:30.031Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "a8e5c2d1-24f0-484c-bb2c-48f8d746e7f8",
-    "timestamp": "2026-08-11T17:32:30.884Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
-  },
-  {
-    "id": "5f451166-d659-4502-89b3-d3ad5e65cf15",
-    "timestamp": "2026-08-11T17:32:30.897Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via Dependency (872ms, change: High)"
-  },
-  {
-    "id": "c6b58c28-fe48-4134-bda6-1df685f5a064",
-    "timestamp": "2026-08-11T17:32:30.900Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: portfolio-analyzer"
-  },
-  {
-    "id": "c4ff6c3b-d2bd-4e34-90c7-8e80dc8dcebd",
-    "timestamp": "2026-08-11T17:32:30.978Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "7e2ed7fe-3803-4bac-ad6f-5267f33ac5c7",
-    "timestamp": "2026-08-11T17:32:38.330Z",
-    "module": "Portfolio Manager v2",
-    "level": "error",
-    "message": "CIO analysis failed: Target synthesiser: allocations are infeasible — 4 position(s) fill only 50.1% equity at their role maxes (maximum cash is 40%). The AI must return more or larger allocations to fill the equity budget."
-  },
-  {
-    "id": "946ca5b7-f521-4a3e-8ad3-0b829e524bdc",
-    "timestamp": "2026-08-11T17:32:45.705Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Portfolio analysis completed"
-  },
-  {
-    "id": "2fe450cb-f3c1-4299-8ca4-9248764a2577",
-    "timestamp": "2026-08-11T17:32:45.705Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Main conclusion: Portfolio is highly concentrated in two small positions with limited liquidity and high event risk"
-  },
-  {
-    "id": "5e534a99-4440-4178-aaf8-3ee820790e51",
-    "timestamp": "2026-08-11T17:32:45.714Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall rating: Fair"
-  },
-  {
-    "id": "cdc9df9e-54b2-4e1a-bd2c-d5d9182b2091",
-    "timestamp": "2026-08-11T17:32:45.716Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall outlook: Neutral"
-  },
-  {
-    "id": "d8e4080e-ecb8-4f83-ac32-937479b94d30",
-    "timestamp": "2026-08-11T17:32:45.719Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main concern identified: Serve Robotics Q2 earnings fallout — Guidance cut and earnings miss increase downside risk and investor skepticism."
-  },
-  {
-    "id": "a07b1662-16c9-4555-a5cd-57318c6e94e4",
-    "timestamp": "2026-08-11T17:32:45.721Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main opportunity identified: Novo Nordisk denecimig regulatory decisions — Positive approval or favorable data could boost sentiment and share price."
-  },
-  {
     "id": "2b3ee79b-954b-40b7-937e-cdd209bed5c4",
     "timestamp": "2026-08-11T17:32:45.728Z",
     "module": "Portfolio Analyzer",
@@ -3498,5 +2847,656 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "211dc36d-2e24-4104-8542-a52cfff5fa53",
+    "timestamp": "2026-08-11T18:32:09.975Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Full cycle started (Run all now) [84d5c72c-1bca-425c-95ac-1a5d0c6006aa]"
+  },
+  {
+    "id": "8231b6fb-4a9a-496e-85dd-cff74b8e3de5",
+    "timestamp": "2026-08-11T18:32:09.991Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "e12be44a-845f-464b-b874-594c7e43930f",
+    "timestamp": "2026-08-11T18:32:10.461Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
+  },
+  {
+    "id": "9a72ef79-23b1-4875-8b88-587dfbb0dddf",
+    "timestamp": "2026-08-11T18:32:10.487Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via RunAllNow (509ms, change: High)"
+  },
+  {
+    "id": "b2855c18-7171-474d-8ddb-40e66946c6ea",
+    "timestamp": "2026-08-11T18:32:11.686Z",
+    "module": "Price Context",
+    "level": "info",
+    "message": "Stage 1.5: 2 symbol(s) refreshed from 2 known targets"
+  },
+  {
+    "id": "1cad8f9a-fc96-4513-82ec-10ed3f1fc4dc",
+    "timestamp": "2026-08-11T18:32:11.694Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "4c1f852a-5059-4b08-ad37-aed57ef82dd6",
+    "timestamp": "2026-08-11T18:32:11.698Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "626a2854-bad8-4fb1-9b0e-ea23a73a0d98",
+    "timestamp": "2026-08-11T18:32:11.702Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "a7b0b2d6-7d09-49fb-aa1c-687899f4cb95",
+    "timestamp": "2026-08-11T18:32:16.019Z",
+    "module": "Portfolio Manager v2",
+    "level": "error",
+    "message": "CIO analysis failed: Target synthesiser: allocations are infeasible — 4 position(s) fill only 44.0% equity at their role maxes (maximum cash is 40%). The AI must return more or larger allocations to fill the equity budget."
+  },
+  {
+    "id": "1ae6c543-a571-4ce5-82f3-cfb6ad7b2df4",
+    "timestamp": "2026-08-11T18:32:18.926Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed: 5 market-moving stories found"
+  },
+  {
+    "id": "6346cb08-be79-41ea-a88e-4c3f0daa37e4",
+    "timestamp": "2026-08-11T18:32:18.929Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via RunAllNow (7240ms, change: Medium)"
+  },
+  {
+    "id": "75171683-f757-4606-8a4f-f68df72d5e10",
+    "timestamp": "2026-08-11T18:32:19.352Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed: Neutral sentiment, Moderate risk"
+  },
+  {
+    "id": "173b0492-ac47-4303-912a-5abe09dd7a78",
+    "timestamp": "2026-08-11T18:32:19.355Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via RunAllNow (7667ms, change: Medium)"
+  },
+  {
+    "id": "433f41b6-f8d9-4519-80c8-217e28cdb647",
+    "timestamp": "2026-08-11T18:32:21.578Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Event analysis completed: 2 upcoming events, 1 high importance"
+  },
+  {
+    "id": "dee35756-743a-4256-aa85-f307afb09fab",
+    "timestamp": "2026-08-11T18:32:21.581Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "event-monitor completed via RunAllNow (9889ms, change: Medium)"
+  },
+  {
+    "id": "662f8b74-bee1-45b1-a76d-011bbee89227",
+    "timestamp": "2026-08-11T18:32:22.200Z",
+    "module": "Sector Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "ba49eb68-2921-43fa-b4bb-866512d2d247",
+    "timestamp": "2026-08-11T18:32:30.960Z",
+    "module": "Sector Monitor",
+    "level": "info",
+    "message": "Sector analysis completed: AI & Software strongest, Biotechnology weakest"
+  },
+  {
+    "id": "4a7664e1-3d16-48a3-8036-f641dd17c842",
+    "timestamp": "2026-08-11T18:32:30.964Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "sector-monitor completed via RunAllNow (8767ms, change: Medium)"
+  },
+  {
+    "id": "8ab7771b-05ec-4f5a-9928-cc58c57cb729",
+    "timestamp": "2026-08-11T18:32:31.705Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for NOVOB:XCSE (trigger: RunAllNow)"
+  },
+  {
+    "id": "bc2383b8-8319-4016-b380-aca69c09fc8b",
+    "timestamp": "2026-08-11T18:32:50.268Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for NOVOB:XCSE: UpdateWithChanges, rating Buy, strength 87, meaningfulChange=Low"
+  },
+  {
+    "id": "5cb90c14-fc8c-4bc2-ad50-ce54940dc69e",
+    "timestamp": "2026-08-11T18:32:50.271Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (18569ms, change: Medium)"
+  },
+  {
+    "id": "1660b30d-f62e-4fa4-b7a3-9e8c8037a8c3",
+    "timestamp": "2026-08-11T18:32:51.273Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for SERV:XNAS (trigger: RunAllNow)"
+  },
+  {
+    "id": "06f1624d-fc75-4e98-b6ce-7422c642dbc8",
+    "timestamp": "2026-08-11T18:33:19.043Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for SERV:XNAS: UpdateWithChanges, rating Avoid, strength 1, meaningfulChange=High"
+  },
+  {
+    "id": "8b567846-ab49-44b0-a711-cb78c0402593",
+    "timestamp": "2026-08-11T18:33:19.049Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (27778ms, change: Medium)"
+  },
+  {
+    "id": "33fc2fa3-7f84-485d-a054-af02a09e5ece",
+    "timestamp": "2026-08-11T18:33:19.782Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for RF (trigger: RunAllNow)"
+  },
+  {
+    "id": "61585300-a111-4ac8-9dd2-b1516c57a73c",
+    "timestamp": "2026-08-11T18:33:29.132Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for RF: FullAnalysis, rating Buy, strength 75, meaningfulChange=Medium"
+  },
+  {
+    "id": "b447253c-4a69-4486-aaf3-99c5f1cb90fa",
+    "timestamp": "2026-08-11T18:33:29.137Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (9357ms, change: High)"
+  },
+  {
+    "id": "dddebd09-3c3d-4b36-87f8-3ecd412b167a",
+    "timestamp": "2026-08-11T18:33:29.286Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for HD (trigger: RunAllNow)"
+  },
+  {
+    "id": "709e92ce-3044-40d9-be94-86bf773bc50a",
+    "timestamp": "2026-08-11T18:33:36.861Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Company analysis completed for HD: NoMaterialChange, rating Watch, strength 62, meaningfulChange=None"
+  },
+  {
+    "id": "873dbd69-6c74-47ae-a5bb-6d079b3338ab",
+    "timestamp": "2026-08-11T18:33:36.865Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (7581ms, change: Medium)"
+  },
+  {
+    "id": "f4f93186-57d7-48df-af2b-07f2b2e59a7d",
+    "timestamp": "2026-08-11T18:33:37.793Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "6f4409d8-16e6-4a9f-a2a2-c12470ee25b4",
+    "timestamp": "2026-08-11T18:33:45.829Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts analysis completed"
+  },
+  {
+    "id": "3c4eec27-5f92-45a5-ad74-41d54f25590b",
+    "timestamp": "2026-08-11T18:33:45.830Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 new alert(s): Nvidia assembles $500 billion AI infrastructure financing consortium; Oil prices surge on renewed Strait of Hormuz tensions"
+  },
+  {
+    "id": "abf7f6dd-4c98-4a6f-9aa0-736c4ff438ef",
+    "timestamp": "2026-08-11T18:33:45.834Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Novo Nordisk ramps up production of oral Wegovy®; Serve Robotics revenue forecast accelerates with healthcare expansion"
+  },
+  {
+    "id": "597024f1-20a0-4716-9736-39c91b6f726b",
+    "timestamp": "2026-08-11T18:33:45.837Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Nvidia assembles $500 billion AI infrastructure financing consortium [Sector]"
+  },
+  {
+    "id": "f5c93163-0e28-4209-9b10-5833ff807da9",
+    "timestamp": "2026-08-11T18:33:45.840Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via RunAllNow (8051ms, change: High)"
+  },
+  {
+    "id": "af1c4ea9-4b87-489e-a5d1-f83a94cd337b",
+    "timestamp": "2026-08-11T18:33:46.294Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "daa8efc9-c57e-474c-ad1e-8c656a3af133",
+    "timestamp": "2026-08-11T18:34:02.126Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Risk analysis completed"
+  },
+  {
+    "id": "72763577-9f66-4613-9561-342ecaaf62d9",
+    "timestamp": "2026-08-11T18:34:02.127Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk score: 78 ▲ 33 (was 45)"
+  },
+  {
+    "id": "5db00f47-b578-46a4-bc36-4972ad667bfd",
+    "timestamp": "2026-08-11T18:34:02.130Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Highest portfolio risk: Clustered company‑specific event risk [Company, High severity]"
+  },
+  {
+    "id": "ee8fd47e-4096-4d3a-8dcf-5d546710fe23",
+    "timestamp": "2026-08-11T18:34:02.133Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Clustered company‑specific event risk"
+  },
+  {
+    "id": "9a27e0b2-13f3-4ba6-9f61-339871e3d48f",
+    "timestamp": "2026-08-11T18:34:02.134Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Geopolitical energy shock and inflation spike"
+  },
+  {
+    "id": "03eff492-4f96-4b8b-b18c-3bb2ad442e25",
+    "timestamp": "2026-08-11T18:34:02.136Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Serve Robotics liquidity and execution risk"
+  },
+  {
+    "id": "383b2128-d9ac-4cc5-b259-d80c1b93747b",
+    "timestamp": "2026-08-11T18:34:02.138Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Sentiment reversal or pipeline disappointment at Novo Nordisk"
+  },
+  {
+    "id": "20968adc-291a-45c7-a662-23542f0913bc",
+    "timestamp": "2026-08-11T18:34:02.140Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Euro area financial stability shock"
+  },
+  {
+    "id": "90da4ec3-54c1-45ce-adb8-bff065335111",
+    "timestamp": "2026-08-11T18:34:02.142Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Serve Robotics execution and liquidity risk"
+  },
+  {
+    "id": "2f1ea92c-434b-4451-ae2d-7a3ef06f9218",
+    "timestamp": "2026-08-11T18:34:02.144Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Macro‑geopolitical shock (Middle East energy/inflation)"
+  },
+  {
+    "id": "b59cbc4f-b51d-45dd-8987-f5819c91f100",
+    "timestamp": "2026-08-11T18:34:02.146Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Clustered equity event volatility"
+  },
+  {
+    "id": "53d5e990-24ec-43c3-b47c-f0374819146a",
+    "timestamp": "2026-08-11T18:34:02.148Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Novo Nordisk margin pressure and sentiment"
+  },
+  {
+    "id": "48ed95d7-6058-45f3-b74d-8b8d8d5b0bcb",
+    "timestamp": "2026-08-11T18:34:02.153Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer completed via RunAllNow (15860ms, change: Medium)"
+  },
+  {
+    "id": "8bf0c9e5-3c03-4355-89e1-b3ae1c48efe8",
+    "timestamp": "2026-08-11T18:34:02.802Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "5eee81b0-44e8-40be-b807-18a0e7a1c46c",
+    "timestamp": "2026-08-11T18:34:17.054Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Portfolio analysis completed"
+  },
+  {
+    "id": "37540fde-3d8d-4124-83e2-61e580db47cb",
+    "timestamp": "2026-08-11T18:34:17.056Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Main conclusion: Portfolio is highly concentrated in two high‑volatility, event‑driven equities with minimal diversification"
+  },
+  {
+    "id": "a419f708-63ec-44ea-b847-ee6a41b9b9f7",
+    "timestamp": "2026-08-11T18:34:17.064Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Overall rating: Fair"
+  },
+  {
+    "id": "a4e2a678-dbcb-4ddc-b006-ca8b7327717b",
+    "timestamp": "2026-08-11T18:34:17.066Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Overall outlook: Neutral"
+  },
+  {
+    "id": "01bb5b39-c91c-441f-9f7a-1f3e047782d9",
+    "timestamp": "2026-08-11T18:34:17.070Z",
+    "module": "Portfolio Analyzer",
+    "level": "internal",
+    "message": "Main concern identified: Serve Robotics execution and liquidity risk — Guidance cut and high burn raise risk of further downgrades or dilution."
+  },
+  {
+    "id": "5ea35d7d-7893-4829-9c51-ef51cf3bfade",
+    "timestamp": "2026-08-11T18:34:17.073Z",
+    "module": "Portfolio Analyzer",
+    "level": "internal",
+    "message": "Main opportunity identified: Novo Nordisk pipeline and regulatory catalysts — Upcoming Denecimig regulatory decisions, Capital Markets Day, and trial updates could re‑energize sentiment."
+  },
+  {
+    "id": "e4b850d1-0726-4f94-8698-373df1f1b5fa",
+    "timestamp": "2026-08-11T18:34:17.074Z",
+    "module": "Portfolio Analyzer",
+    "level": "internal",
+    "message": "Recommended highest-priority action: Monitor Serve Robotics closely ahead of Q3 earnings and any liquidity updates"
+  },
+  {
+    "id": "de3210c8-6272-436e-856e-205498c3ee1b",
+    "timestamp": "2026-08-11T18:34:17.079Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-analyzer completed via RunAllNow (14279ms, change: Medium)"
+  },
+  {
+    "id": "bc7a1d1f-9fef-47bc-89db-2589d8c9091f",
+    "timestamp": "2026-08-11T18:34:17.308Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "32e027db-f507-49a3-9b23-e94238ea878d",
+    "timestamp": "2026-08-11T18:34:29.500Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Opportunity analysis completed"
+  },
+  {
+    "id": "9976334a-2a57-4d6b-a4fa-5e2238990f75",
+    "timestamp": "2026-08-11T18:34:29.501Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Overall opportunity level: High"
+  },
+  {
+    "id": "d20587e0-4bfc-4d84-9127-14c85d305e68",
+    "timestamp": "2026-08-11T18:34:29.505Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "Highest-ranked opportunity: Synopsys, Inc. (SNPS) — score 88 — Strong AI infrastructure momentum, upcoming Investor Day, and raised guidance provide a timely entry into software-driven AI exposure, diversifying away from healthcare and robotics."
+  },
+  {
+    "id": "9f70414e-0998-4405-b6a4-3c57fc9407a7",
+    "timestamp": "2026-08-11T18:34:29.508Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "SNPS entered the list at rank 1 (score: 88)"
+  },
+  {
+    "id": "e57d9fc3-29ca-4aa5-ac79-92afd9690cd1",
+    "timestamp": "2026-08-11T18:34:29.510Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "AMAT entered the list at rank 2 (score: 85)"
+  },
+  {
+    "id": "b2686252-9718-4080-8a10-eb0db6dcb4c6",
+    "timestamp": "2026-08-11T18:34:29.512Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "MU entered the list at rank 3 (score: 82)"
+  },
+  {
+    "id": "9d0719f2-3a3f-4a5c-92b6-bde513aa3ae0",
+    "timestamp": "2026-08-11T18:34:29.515Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "ROK entered the list at rank 4 (score: 78)"
+  },
+  {
+    "id": "c6e0bf16-ffe1-4a1b-90e2-10b42741ac00",
+    "timestamp": "2026-08-11T18:34:29.517Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "RF left the list (was rank 1)"
+  },
+  {
+    "id": "747e9d66-d15d-4bee-9303-a8571dfc2ffa",
+    "timestamp": "2026-08-11T18:34:29.520Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "HD left the list (was rank 2)"
+  },
+  {
+    "id": "27740134-c0b7-435b-8311-6feebfed10b3",
+    "timestamp": "2026-08-11T18:34:29.525Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder completed via RunAllNow (12219ms, change: Medium)"
+  },
+  {
+    "id": "c8df02ae-51f5-4a6c-9dcc-e7bb8c8c32ad",
+    "timestamp": "2026-08-11T18:34:30.211Z",
+    "module": "Price Context",
+    "level": "info",
+    "message": "Stage 8.5: 1 new candidate(s) enriched"
+  },
+  {
+    "id": "6ee23790-4346-412e-bca7-dbf40430a9ab",
+    "timestamp": "2026-08-11T18:34:30.216Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "bb95d9fc-55e2-4278-8881-c9fb6320b5fd",
+    "timestamp": "2026-08-11T18:34:44.355Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Prepare to buy Applied Materials on Q3 earnings confirmation\" (AMAT): Multi-source gate failed (Critical Opposing modules: RiskAnalyzer). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "728c2daf-b5d4-4644-a7e1-ab63cc8a8359",
+    "timestamp": "2026-08-11T18:34:44.356Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[gate] \"Prepare to buy Synopsys ahead of Investor Day and Q3 earnings\" (SNPS): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder); Critical Opposing modules: RiskAnalyzer). Downgraded from PrepareToBuy to Review."
+  },
+  {
+    "id": "39580ed6-bb1f-4fc8-af81-5e3d6dd84123",
+    "timestamp": "2026-08-11T18:34:44.364Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] AMAT (Review): score=35 band=Adequate supporting=[CompanyMonitor,OpportunityFinder] opposing=[RiskAnalyzer]"
+  },
+  {
+    "id": "a05f35de-b60f-457b-a10b-7d9e502e45ac",
+    "timestamp": "2026-08-11T18:34:44.366Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] SNPS (Review): score=0 band=Insufficient supporting=[OpportunityFinder] opposing=[RiskAnalyzer]"
+  },
+  {
+    "id": "c602cf65-5c70-4f33-93d8-3dac204f7c14",
+    "timestamp": "2026-08-11T18:34:44.384Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "89e47cbe-89cd-4822-ac8d-b488e55d771b",
+    "timestamp": "2026-08-11T18:34:44.385Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "d220c7be-952b-46d9-8199-26d4912a1faf",
+    "timestamp": "2026-08-11T18:34:44.393Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 65/100"
+  },
+  {
+    "id": "6ab2aefc-8874-4342-8b92-733c5cea4b07",
+    "timestamp": "2026-08-11T18:34:44.395Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "4 WaitingForReevaluation"
+  },
+  {
+    "id": "ab3d00fb-d201-40b2-9d1f-4dc31fb150c7",
+    "timestamp": "2026-08-11T18:34:44.397Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "New: Prepare to buy Applied Materials on Q3 earnings confirmation; Prepare to buy Synopsys ahead of Investor Day and Q3 earnings; Review Micron pending Q4 earnings and supply commentary"
+  },
+  {
+    "id": "001e001b-19b9-4c0a-ae55-a13984a480a2",
+    "timestamp": "2026-08-11T18:34:44.399Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Changed: Strengthened Wait for U.S. CPI data before deploying cash broadly"
+  },
+  {
+    "id": "e296a6d4-17b9-4f9b-a6db-f59acfb45c61",
+    "timestamp": "2026-08-11T18:34:44.401Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Withdrawn (subject absent): RF, HD"
+  },
+  {
+    "id": "600ff65a-52b7-4707-9248-1425277ea889",
+    "timestamp": "2026-08-11T18:34:44.403Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Gate: 2 decision(s) downgraded"
+  },
+  {
+    "id": "88e0b74a-c8e6-4f17-8ddf-d1079c53c2ea",
+    "timestamp": "2026-08-11T18:34:44.408Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine completed via RunAllNow (14196ms, change: High)"
+  },
+  {
+    "id": "924c9b2b-68c7-4491-9234-28d2a5dcf097",
+    "timestamp": "2026-08-11T18:34:44.412Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
+  },
+  {
+    "id": "632bf3d6-fdde-4a08-8938-59e0df808903",
+    "timestamp": "2026-08-11T18:34:44.419Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via Dependency (9ms, change: Medium)"
+  },
+  {
+    "id": "672b9bd2-30ce-4177-82d3-ee53130d9653",
+    "timestamp": "2026-08-11T18:34:44.426Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "650a21c6-1ab4-485f-a1b3-235e8122e227",
+    "timestamp": "2026-08-11T18:34:44.730Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
+  },
+  {
+    "id": "d727f63d-d464-43e0-a839-ff43669e95f1",
+    "timestamp": "2026-08-11T18:34:44.739Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via RunAllNow (11ms, change: None)"
+  },
+  {
+    "id": "eb5918e5-6137-43ea-aa43-e69c8fa11c4b",
+    "timestamp": "2026-08-11T18:34:49.884Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (5450ms): attention — High risk due to concentrated positions and geopolitical tensions; no trades ready for approval."
+  },
+  {
+    "id": "66949aca-71c8-444b-8e6e-48f6824cee59",
+    "timestamp": "2026-08-11T18:34:49.887Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief completed via Dependency (5467ms, change: Medium)"
+  },
+  {
+    "id": "c801870e-b709-4f55-aa3d-639383ce311f",
+    "timestamp": "2026-08-11T18:34:50.732Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Full cycle completed in 161s"
   }
 ]
