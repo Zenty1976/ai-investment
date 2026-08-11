@@ -18,7 +18,7 @@ import { RunRiskAnalyzerResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
-import { buildPriceContextBlock } from "../lib/price-context-service.js";
+import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
 
 const router: IRouter = Router();
 
@@ -372,7 +372,6 @@ function buildUserPrompt(
   nowIso: string,
   portfolioProfile: string,
   portfolioAnalyzerContext: string | null,
-  opportunityFinderContext: string | null,
   marketContext: string | null,
   eventContext: string | null,
   newsContext: string | null,
@@ -380,6 +379,9 @@ function buildUserPrompt(
   companyContexts: Record<string, string>,
   priceContexts: Record<string, string>
 ): string {
+  // §5: Opportunity Finder removed — RA assesses current portfolio risk,
+  // not potential future candidates. Opportunity context is irrelevant to
+  // risk analysis unless an OF candidate has become a live trade decision.
   const blocks: string[] = [
     `Current UTC: ${nowIso}`,
     "",
@@ -405,15 +407,15 @@ function buildUserPrompt(
     );
   }
 
+  // §7: Compact price context — prose rules are in the system prompt.
   const priceCtxEntries = Object.entries(priceContexts);
   if (priceCtxEntries.length > 0) {
     blocks.push(
       "",
-      "PRICE CONTEXT for held positions (deterministic backend data — actual price behavior from Saxo historical data, NOT a forecast):",
-      "Rules: Use alongside fundamentals. 'StabilizingAfterDecline' does NOT confirm a bottom. 'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. Do not change risk assessments solely based on price movement. recentBehavior describes only the last 2–3 sessions: Stabilizing/Recovering do NOT confirm a bottom or reversal."
+      "PRICE CONTEXT for held positions (compact — actual Saxo data, NOT a forecast; semantic rules in system prompt):"
     );
     for (const [sym, pc] of priceCtxEntries) {
-      blocks.push(`[${sym}]`, pc);
+      blocks.push(`${sym}: ${pc}`);
     }
   }
 
@@ -446,14 +448,6 @@ function buildUserPrompt(
       "",
       "News Monitor (recent news — do not repeat verbatim):",
       newsContext
-    );
-  }
-
-  if (opportunityFinderContext) {
-    blocks.push(
-      "",
-      "Opportunity Finder (possible future investments only — candidates are NOT current holdings):",
-      opportunityFinderContext
     );
   }
 
@@ -680,13 +674,12 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
           nowIso,
           portfolioProfile,
           portfolioAnalyzerContext,
-          opportunityFinderContext,
           marketContext,
           eventContext,
           newsContext,
           sectorContext,
           companyContexts,
-          buildPriceContextBlock(
+          buildPriceContextBlockCompact(
             accounts.flatMap(a =>
               Array.isArray(a.positions)
                 ? (a.positions as Array<Record<string, unknown>>).map(p => String(p.symbol ?? "").toUpperCase()).filter(Boolean)

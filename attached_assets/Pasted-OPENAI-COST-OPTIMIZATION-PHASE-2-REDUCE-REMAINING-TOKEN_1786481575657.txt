@@ -1,0 +1,596 @@
+OPENAI COST OPTIMIZATION PHASE 2 — REDUCE REMAINING TOKEN DUPLICATION
+
+The previous optimization work is largely correct.
+
+DO NOT redesign the architecture.
+DO NOT remove dependency fingerprinting.
+DO NOT remove OpenAI usage tracking.
+DO NOT change investment logic unless explicitly described below.
+
+I have reviewed the implementation and there are still several significant token-cost opportunities.
+
+The purpose of this task is to reduce INPUT TOKENS and WEB SEARCH COST while preserving analytical quality.
+
+==================================================
+1. FIX callAiWithWebSearch — SEARCH CONTEXT MUST NOT ALWAYS BE HIGH
+==================================================
+
+Currently ai-service.ts hardcodes:
+
+tools: [{ type: "web_search", search_context_size: "high" }]
+tool_choice: "required"
+
+This means every call using callAiWithWebSearch performs a HIGH-context web search.
+
+Change AiServiceOptions to support:
+
+webSearchContextSize:
+"low" | "medium" | "high"
+
+and:
+
+webSearchRequired:
+boolean
+
+Use sensible defaults.
+
+Do NOT hardcode "high" globally.
+
+Recommended initial configuration:
+
+Market Monitor:
+medium
+
+News Monitor:
+medium
+
+Event Monitor:
+low or medium
+
+Sector Monitor:
+medium
+
+Investor Watch discovery:
+low
+
+Investor Watch full material analysis:
+medium
+
+Company Monitor:
+medium
+
+Opportunity Finder:
+medium
+
+HIGH should only be used when a module explicitly needs unusually broad/deep research.
+
+Keep this configurable centrally.
+
+==================================================
+2. IMPLEMENT A REAL DOWNSTREAM AI CONTEXT LAYER
+==================================================
+
+The current implementation manually creates smaller JSON objects inside several downstream modules.
+
+This is better than sending full results, but it still causes duplicated and inconsistent context construction.
+
+Create a deterministic backend context layer.
+
+Example location:
+
+src/lib/downstream-ai-context.ts
+
+It must NOT call OpenAI.
+
+It should expose functions such as:
+
+getMarketAiContext()
+getNewsAiContext()
+getEventAiContext()
+getSectorAiContext()
+getCompanyAiContext(symbol)
+getPortfolioAnalyzerAiContext()
+getRiskAnalyzerAiContext()
+getOpportunityAiContext()
+getMarketAlertsAiContext()
+
+These functions must return small structured objects specifically intended for machine-to-machine AI reasoning.
+
+The existing full repository results remain unchanged.
+
+==================================================
+3. CONTEXT MUST BE SEMANTICALLY MINIMAL
+==================================================
+
+Do not simply copy most fields from the original result.
+
+For example, Market Monitor downstream context should resemble:
+
+{
+  sentiment,
+  riskLevel,
+  materialDrivers,
+  keyRisks,
+  materialVersion
+}
+
+NOT:
+
+summary
+executiveSummary
+positiveFactors
+negativeFactors
+strongSectors
+weakSectors
+keyRisks
+long descriptions
+etc.
+
+News context should contain only MATERIAL current developments.
+
+Example:
+
+{
+  materialNews: [
+    {
+      id,
+      category,
+      importance,
+      affectedSymbols,
+      impact
+    }
+  ],
+  materialVersion
+}
+
+Do not send long article summaries unless required.
+
+Event context:
+
+{
+  upcomingMaterialEvents: [
+    {
+      id,
+      date,
+      importance,
+      affectedSymbolsOrMarkets,
+      impactType
+    }
+  ]
+}
+
+Company context should be compact.
+
+Example:
+
+{
+  symbol,
+  view,
+  outlook,
+  caseStrength,
+  materialChange,
+  thesisChanges,
+  topRisks,
+  topCatalysts,
+  nextEvent,
+  valuation,
+  priceState,
+  recentPriceBehavior,
+  confidence,
+  materialVersion
+}
+
+Do NOT send full:
+
+executiveSummary
+stableProfile
+businessDescription
+bullCase
+baseCase
+bearCase
+competitivePosition prose
+sectorContext prose
+all thesis prose
+
+to every downstream module.
+
+Those remain available in the full Company Monitor result/UI.
+
+==================================================
+4. TRADE DECISION NEEDS PARTICULAR ATTENTION
+==================================================
+
+Trade Decision currently receives context from many modules.
+
+Reduce this aggressively but safely.
+
+Trade Decision should primarily receive:
+
+portfolio state
+Portfolio Analyzer compact context
+Risk Analyzer compact context
+Market Alerts compact context
+Opportunity Finder compact candidates
+relevant Company compact contexts
+relevant blockers/events
+relevant Price Context
+previous active decisions
+
+Do NOT send Market Monitor, News Monitor and Sector Monitor separately when their material implications are already represented by Portfolio Analyzer, Risk Analyzer, Alerts or Company Monitor.
+
+Only include raw upstream monitor context when it contains a MATERIAL item that is not represented by those higher-level analyses.
+
+Avoid information fan-out where the same market fact reaches Trade Decision through 3-5 different module outputs.
+
+==================================================
+5. RISK ANALYZER
+==================================================
+
+Risk Analyzer currently receives:
+
+Portfolio Analyzer
+Company Monitor
+Price Context
+Events
+Sector
+Market
+News
+Opportunity Finder
+
+Review whether all are required.
+
+Opportunity Finder should generally NOT be needed for portfolio risk unless a candidate has become relevant to an actual proposed portfolio action.
+
+Risk Analyzer's primary context should be:
+
+portfolio
+Portfolio Analyzer compact context
+held-company compact contexts
+material market risks
+material events
+material price states
+
+Remove irrelevant opportunity candidate context from normal Risk Analyzer prompts.
+
+==================================================
+6. PORTFOLIO ANALYZER
+==================================================
+
+Portfolio Analyzer should receive:
+
+portfolio
+held-company compact contexts
+material macro context
+material sector context
+material upcoming events
+relevant price contexts
+
+News Monitor should only contribute news that affects:
+
+- a current holding
+- a material portfolio sector
+- a material macro factor
+
+Do not send a general list of market news.
+
+==================================================
+7. PRICE CONTEXT
+==================================================
+
+Price Context is deterministic backend data.
+
+Keep it.
+
+But reduce its textual representation.
+
+Do not repeatedly send explanatory prose such as:
+
+"StabilizingAfterDecline does NOT confirm a bottom..."
+"PossibleRecovery does NOT confirm..."
+etc.
+
+These rules belong in the SYSTEM PROMPT once.
+
+Price data sent in the user prompt should be compact structured data.
+
+Example:
+
+SERV:
+{
+  state:"StrongDowntrend",
+  recent:"Stabilizing",
+  r5d:-10.27,
+  r1m:-15.64,
+  r3m:-39.93,
+  volatility:"High"
+}
+
+Do not send verbose explanations for every ticker.
+
+==================================================
+8. REMOVE JSON PRETTY PRINTING FROM AI PROMPTS
+==================================================
+
+When JSON is sent to OpenAI, do not use:
+
+JSON.stringify(data, null, 2)
+
+unless humans need to read that exact prompt.
+
+Use:
+
+JSON.stringify(data)
+
+for production AI requests.
+
+Pretty printing adds unnecessary whitespace tokens.
+
+Debug UI may pretty-print the stored request separately for human readability.
+
+This is a small optimization but essentially free.
+
+==================================================
+9. PREVIOUS ANALYSIS CONTEXT
+==================================================
+
+Do not send complete previous analyses back to OpenAI just to detect changes.
+
+Create compact previous-state representations.
+
+For Company Monitor, send primarily:
+
+previous view
+case strength
+thesis IDs + statuses
+top risks
+top catalysts
+next event
+last material update
+
+Stable profile information should not be resent every time unless required.
+
+If the model returns NoMaterialChange, backend code already preserves previous stable fields.
+
+Exploit this architecture.
+
+==================================================
+10. COMPANY MONITOR NO-CHANGE PATH
+==================================================
+
+Company Monitor remains potentially expensive because every qualifying refresh performs a full web-search analysis.
+
+Add an optional lightweight discovery stage similar to Investor Watch.
+
+For an existing company analysis:
+
+Stage 1:
+cheap targeted web-search discovery using a small model and LOW search context.
+
+Question only:
+
+"Are there new MATERIAL company-specific developments since lastMaterialUpdateAt?"
+
+Look for:
+earnings
+guidance
+regulatory decisions
+material analyst revisions
+major contracts
+capital raises
+material corporate announcements
+other thesis-changing developments
+
+Return only:
+
+{
+  materialDevelopmentFound: boolean,
+  categories: [],
+  shortReason: ""
+}
+
+Maximum output approximately 100-150 tokens.
+
+If FALSE and Price Context has not materially changed:
+
+DO NOT run full Company Monitor analysis.
+
+Preserve existing analysis.
+Update lastCheckedAt.
+Record NoMaterialChange.
+
+If TRUE:
+
+run full Company Monitor analysis.
+
+IMPORTANT:
+Price Context changes may independently require re-evaluation according to existing material price-state thresholds.
+
+Do not use the discovery stage to ignore meaningful price-state changes.
+
+==================================================
+11. COMPANY MONITOR MANUAL REFRESH
+==================================================
+
+A manual user refresh should still be able to request full analysis.
+
+But normal orchestrator refreshes should use the cheap discovery gate.
+
+Add debug information showing:
+
+Discovery performed
+Discovery tokens
+Material development found
+Full analysis performed yes/no
+
+==================================================
+12. MODEL CONFIGURATION
+==================================================
+
+There are still many hardcoded:
+
+model: "gpt-4o"
+
+throughout the routes.
+
+Create centralized configuration, for example:
+
+AI_MODEL_CONFIG
+
+with categories:
+
+discovery
+monitor
+analysis
+decision
+brief
+repair
+
+Do not change every model blindly in this task.
+
+First centralize configuration.
+
+Then make it possible to compare cost/quality safely.
+
+At minimum, lightweight discovery and simple Command Brief generation should not require the same expensive model configuration as Trade Decision or deep Company analysis.
+
+==================================================
+13. COMMAND BRIEF
+==================================================
+
+Command Brief is highly structured and receives already-analyzed information.
+
+It should be extremely cheap.
+
+Its input is already reasonably compact.
+
+Further minimize it.
+
+Do not include information that cannot possibly appear in the maximum six output items.
+
+Use a lightweight configured model for Command Brief.
+
+Keep max output small.
+
+Target output should normally be well below 500 tokens.
+
+==================================================
+14. OUTPUT TOKEN LIMITS
+==================================================
+
+Current limits are still large in several places:
+
+Company Monitor: 4000
+Opportunity Finder: 3500
+Trade Decision: 3500
+Risk Analyzer: 3000
+Portfolio Analyzer: 2500
+Market Alerts: 2500
+Sector Monitor: 2500
+Investor Watch: 2200
+
+Do NOT arbitrarily cut them in half.
+
+Measure actual completion-token usage from the OpenAI usage log.
+
+For each module calculate:
+
+P50 completion tokens
+P90 completion tokens
+P95 completion tokens
+maximum successful completion tokens
+
+Then choose a max output limit with reasonable headroom above normal successful responses.
+
+The configured maximum should be based on observed usage, not guesses.
+
+Report the recommended values before/after changing them.
+
+==================================================
+15. TOKEN BUDGET GUARDRAILS
+==================================================
+
+Add configurable per-module token budgets.
+
+Example concept:
+
+CompanyMonitor:
+maxInputTokens
+maxOutputTokens
+
+TradeDecision:
+maxInputTokens
+maxOutputTokens
+
+Before sending an OpenAI request:
+
+estimate prompt size.
+
+If significantly above the module budget:
+
+DO NOT silently truncate arbitrary text.
+
+Instead reduce optional context according to priority.
+
+Example Trade Decision context priority:
+
+1 portfolio
+2 risk
+3 portfolio analyzer
+4 relevant company contexts
+5 active alerts
+6 active opportunity candidates
+7 events
+8 price context
+9 raw market/sector/news fallback
+
+Log whenever context was removed due to token budget.
+
+==================================================
+16. VERIFY WITH REAL TOKEN NUMBERS
+==================================================
+
+After implementation perform controlled testing.
+
+Use the existing OpenAI usage service.
+
+TEST A:
+Run All after meaningful changes.
+
+TEST B:
+Run All immediately again with no meaningful changes.
+
+Report for both:
+
+total AI calls
+input tokens
+cached input tokens
+output tokens
+total tokens
+web searches
+estimated cost
+skipped AI calls
+
+Also report per module sorted by token consumption.
+
+Then specifically report:
+
+Company Monitor discovery calls
+Company Monitor full-analysis calls
+Investor Watch discovery calls
+Investor Watch full-analysis calls
+
+==================================================
+17. SUCCESS CRITERIA
+==================================================
+
+Do not consider this task complete merely because the code compiles.
+
+Success means:
+
+- unchanged Run All produces very few expensive AI calls
+- Company Monitor does not perform full analysis when nothing material changed
+- downstream prompts contain compact structured contexts
+- Trade Decision does not receive duplicated versions of the same information
+- web search context is not globally hardcoded to HIGH
+- actual measured input-token usage is materially lower
+- investment-relevant information is still preserved

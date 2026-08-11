@@ -23,7 +23,7 @@ import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import type { RepositoryEntry } from "../lib/analysis-repository.js";
 import { getActivePolicyConfig, getActivePolicyProfile } from "../lib/trade-decision-policy-store.js";
-import { buildPriceContextBlock } from "../lib/price-context-service.js";
+import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
 import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
 import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
@@ -1073,9 +1073,10 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   const riskEntry        = analysisRepository.get<Record<string, unknown>>("risk-analyzer");
   const alertsEntry      = analysisRepository.get<Record<string, unknown>>("market-alerts");
   const eventEntry       = analysisRepository.get<Record<string, unknown>>("event-monitor");
-  const newsEntry        = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const sectorEntry      = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-  const marketEntry      = analysisRepository.get<Record<string, unknown>>("market-monitor");
+  // §4: Market, News, Sector are synthesized by Portfolio Analyzer, Risk Analyzer, and
+  // Market Alerts. Sending them separately causes information fan-out where the same
+  // market fact reaches Trade Decision through 3–5 different module outputs.
+  // Remove them from the user prompt; PA/RA/Alerts already represent their implications.
   const opportunityEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
 
   const allRepoEntries = analysisRepository.getAll();
@@ -1331,41 +1332,11 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     updatedAt: eventEntry.updatedAt,
   }) : null;
 
-  const sectorContext = sectorEntry ? JSON.stringify({
-    executiveSummary: sectorEntry.result.executiveSummary,
-    overallOutlook:   sectorEntry.result.overallOutlook,
-    sectors:          Array.isArray(sectorEntry.result.sectors)
-      ? (sectorEntry.result.sectors as Array<Record<string, unknown>>).map(s => ({
-          name: s.name, rating: s.rating, trend: s.trend, summary: s.summary,
-        }))
-      : [],
-    updatedAt: sectorEntry.updatedAt,
-  }) : null;
+  // §4: Market, News, Sector removed from user prompt — their material implications
+  // are already represented by Portfolio Analyzer, Risk Analyzer, and Market Alerts.
+  // Sending them separately causes information fan-out.
 
-  const marketContext = marketEntry ? JSON.stringify({
-    marketSentiment: marketEntry.result.marketSentiment,
-    riskLevel:       marketEntry.result.riskLevel,
-    summary:         marketEntry.result.summary,
-    positiveFactors: marketEntry.result.positiveFactors,
-    negativeFactors: marketEntry.result.negativeFactors,
-    keyRisks:        marketEntry.result.keyRisks,
-    updatedAt:       marketEntry.updatedAt,
-  }) : null;
-
-  const newsContext = newsEntry ? JSON.stringify({
-    executiveSummary:    newsEntry.result.executiveSummary,
-    overallMarketImpact: newsEntry.result.overallMarketImpact,
-    topStory:            newsEntry.result.topStory,
-    news:                Array.isArray(newsEntry.result.news)
-      ? (newsEntry.result.news as Array<Record<string, unknown>>).slice(0, 5).map(n => ({
-          title: n.title, category: n.category, importance: n.importance,
-          whyItMatters: n.whyItMatters, marketImpact: n.marketImpact,
-        }))
-      : [],
-    updatedAt: newsEntry.updatedAt,
-  }) : null;
-
-  // Company Monitor context — full v2 fields
+  // Company Monitor context — §3 compact format (removes prose summaries)
   const relevantCmEntries = allCmEntries.filter(e => relevantCmKeys.has(e.moduleName));
 
   const companyContextLines = relevantCmEntries.map(e => {
@@ -1378,24 +1349,26 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     const thesisSummary = Array.isArray(result.investmentThesis)
       ? (result.investmentThesis as Array<Record<string, unknown>>).map(p => ({ id: p.id, status: p.status }))
       : [];
+    // §3: Compact — remove executiveSummary, currentSituation, bullCase, baseCase,
+    // bearCase, competitivePosition. Keep only actionable decision-relevant fields.
+    const topCatalysts = Array.isArray(result.catalysts)
+      ? (result.catalysts as Array<Record<string, unknown>>).slice(0, 3).map(c => c.title ?? c)
+      : result.catalysts;
+    const topRisks = Array.isArray(result.risks)
+      ? (result.risks as Array<Record<string, unknown>>).slice(0, 3).map(r => r.title ?? r)
+      : result.risks;
     return `COMPANY MONITOR — ${matchLabel} (updated: ${e.updatedAt}, freshness: ${formatAge(e)}):\n${JSON.stringify({
-      company:                result.company,
+      company:                { ticker: (result.company as Record<string, unknown> | undefined)?.ticker, name: (result.company as Record<string, unknown> | undefined)?.name },
       updateType:             result.updateType,
       investmentView:         result.investmentView,
       investmentCaseStrength: result.investmentCaseStrength,
       investmentCaseChange:   result.investmentCaseChange,
       investmentThesis:       thesisSummary,
       meaningfulChange:       result.meaningfulChange,
-      executiveSummary:       result.executiveSummary,
-      currentSituation:       result.currentSituation,
-      catalysts:              result.catalysts,
-      risks:                  result.risks,
+      topCatalysts,
+      topRisks,
       earningsAndGuidance:    result.earningsAndGuidance,
-      competitivePosition:    result.competitivePosition,
       valuationAssessment:    result.valuationAssessment,
-      bullCase:               result.bullCase,
-      baseCase:               result.baseCase,
-      bearCase:               result.bearCase,
       keyThingsToWatch:       result.keyThingsToWatch,
       confidence:             result.confidence,
     })}`;
@@ -1428,7 +1401,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
   const userPromptSections: string[] = [
     `ANALYSIS DATE: ${nowIso}`,
-    `\nBACKEND DECISION PROFILE (server-calculated — treat as highest-priority input):\n${JSON.stringify(decisionProfile, null, 2)}`,
+    `\nBACKEND DECISION PROFILE (server-calculated — treat as highest-priority input):\n${JSON.stringify(decisionProfile)}`,
   ];
 
   addCtx("RISK ANALYZER (priority 2)",      riskContext,       userPromptSections);
@@ -1446,31 +1419,26 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     ...allPositions.map(p => p.ticker),
     ...rawOpportunities.map(o => String(o.ticker ?? "").toUpperCase()).filter(Boolean),
   ])];
-  const relevantPriceContexts = buildPriceContextBlock(relevantPriceSymbols);
+  // §7: Compact price context — one JSON line per symbol
+  const relevantPriceContexts = buildPriceContextBlockCompact(relevantPriceSymbols);
   const priceCtxEntries = Object.entries(relevantPriceContexts);
   if (priceCtxEntries.length > 0) {
-    const pcLines = priceCtxEntries.map(([sym, pc]) => `[${sym}]\n${pc}`).join("\n\n");
+    const pcLines = priceCtxEntries.map(([sym, pc]) => `${sym}: ${pc}`).join("\n");
     userPromptSections.push(
-      `\nPRICE CONTEXT (priority 5.5 — deterministic backend data from actual Saxo historical data, NOT a forecast):\n` +
-      `Rules: Use alongside fundamentals and evidence. 'StabilizingAfterDecline' does NOT confirm a bottom or reversal. ` +
-      `'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. ` +
-      `recentBehavior describes only the last 2–3 sessions: Stabilizing/Recovering do NOT confirm a bottom or BUY. ` +
-      `Never change decision type or conviction solely because of normal price movement. ` +
-      `Price Context is supporting context only — it cannot on its own satisfy the ≥2 independent sources requirement.\n` +
+      `\nPRICE CONTEXT (priority 5.5 — compact Saxo data, NOT a forecast; fields: state/recent/r5d/r1m/r3m/volatility):\n` +
+      `Price Context is supporting context only — it cannot satisfy the ≥2 independent sources requirement.\n` +
       pcLines
     );
   }
 
+  // §4: Market, News, Sector removed — their implications are in PA, RA, Alerts above.
   addCtx("OPPORTUNITY FINDER (priority 6)", opportunityContext, userPromptSections);
   addCtx("EVENT MONITOR (priority 7)",      eventContext,       userPromptSections);
-  addCtx("SECTOR MONITOR (priority 8)",     sectorContext,      userPromptSections);
-  addCtx("MARKET MONITOR (priority 9)",     marketContext,      userPromptSections);
-  addCtx("NEWS MONITOR (priority 10)",      newsContext,        userPromptSections);
 
   if (prevDecisionsSummary) {
     userPromptSections.push(
       `\nPREVIOUS TRADE DECISIONS (from ${prevTdeEntry?.updatedAt ?? "unknown"}):\n` +
-      JSON.stringify(prevDecisionsSummary, null, 2) +
+      JSON.stringify(prevDecisionsSummary) +
       `\n\nGUIDELINE: Only generate decisions that are new or materially changed. ` +
       `If a previous PrepareToBuy or PrepareToReduce remains valid with unchanged evidence, ` +
       `return it with the same content — the backend will preserve the original recommendation.`

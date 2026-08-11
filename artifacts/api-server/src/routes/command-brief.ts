@@ -65,7 +65,7 @@ Return a valid JSON object matching the required schema exactly. Do not include 
 function buildUserPrompt(input: Record<string, unknown>, nowIso: string): string {
   return `Generate the Command Brief for the following system state.
 
-${JSON.stringify(input, null, 2)}
+${JSON.stringify(input)}
 
 Return a JSON object with EXACTLY this shape — no extra fields:
 {
@@ -333,7 +333,7 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       const { result: raw, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(input, nowIso),
-        { model: "gpt-4o", maxTokens: 1200, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
+        { model: "gpt-4o-mini", maxTokens: 800, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
       );
       lastDebug = debug;
 

@@ -30,6 +30,7 @@ import { analysisRepository } from "../lib/analysis-repository";
 import { automationOrchestrator } from "../lib/automation-orchestrator";
 import { getPriceContext, fetchAndStorePriceContexts } from "../lib/price-context-service.js";
 import { formatPriceContextForPrompt } from "../lib/price-context-calculator.js";
+import { trackSkipped } from "../lib/openai-usage-service.js";
 import type { z } from "zod";
 
 const router: IRouter = Router();
@@ -275,24 +276,119 @@ function normalizeRawResponse(raw: unknown): NormalizationResult {
 // Previous analysis summary for the update prompt
 // ---------------------------------------------------------------------------
 
+/**
+ * §9: Compact previous analysis summary.
+ * Sends only what the AI needs to check whether the investment case has changed.
+ * Strips all prose: executiveSummary, currentSituation, stableProfile, bullCase,
+ * baseCase, bearCase, competitivePosition.  Those remain in the full repository
+ * result and are available in the UI — they just don't need to be resent to OpenAI.
+ */
 function buildPreviousAnalysisSummary(prev: Record<string, unknown>): string {
+  // Compact thesis: only id + status
+  const thesisSummary = Array.isArray(prev.investmentThesis)
+    ? (prev.investmentThesis as Array<Record<string, unknown>>).map(p => ({
+        id: p.id,
+        status: p.status,
+        point: typeof p.point === "string" ? p.point.slice(0, 80) : undefined,
+      }))
+    : [];
+
   return JSON.stringify({
-    analyzedAt:            prev.timestamp,
-    updateType:            prev.updateType,
-    investmentView:        prev.investmentView,
+    analyzedAt:             prev.timestamp,
+    updateType:             prev.updateType,
+    investmentView:         prev.investmentView,
     investmentCaseStrength: prev.investmentCaseStrength ?? null,
-    investmentThesis:      prev.investmentThesis ?? [],
-    investmentCaseChange:  prev.investmentCaseChange ?? null,
-    executiveSummary:      prev.executiveSummary,
-    currentSituation:      prev.currentSituation,
-    stableProfile:         prev.stableProfile ?? null,
-    bullCase:              prev.bullCase,
-    baseCase:              prev.baseCase,
-    bearCase:              prev.bearCase,
-    keyThingsToWatch:      prev.keyThingsToWatch,
-    earningsAndGuidance:   prev.earningsAndGuidance,
-    competitivePosition:   prev.competitivePosition,
+    investmentCaseChange:   prev.investmentCaseChange ?? null,
+    investmentThesis:       thesisSummary,
+    keyThingsToWatch:       prev.keyThingsToWatch,
+    earningsAndGuidance:    prev.earningsAndGuidance,
   });
+}
+
+// ---------------------------------------------------------------------------
+// §10: Lightweight discovery stage (orchestrator-triggered runs only)
+// ---------------------------------------------------------------------------
+
+interface CompanyDiscoveryResult {
+  materialDevelopmentFound: boolean;
+  categories: string[];
+  shortReason: string;
+  discoveryTokens: number;
+  discoveryDurationMs: number;
+}
+
+async function discoverCompanyDevelopments(
+  ticker: string,
+  companyName: string | undefined,
+  lastAnalyzedAt: string | undefined,
+  nowIso: string
+): Promise<CompanyDiscoveryResult> {
+  const displayName = companyName ? `${companyName} (${ticker})` : ticker;
+  const sinceDate = lastAnalyzedAt
+    ? lastAnalyzedAt.substring(0, 10)
+    : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10);
+
+  const discoverySystemPrompt =
+    `You are a financial news scanner for ${displayName}.
+Search for NEW MATERIAL company-specific developments published AFTER ${sinceDate}.
+
+INCLUDE only:
+- earnings results or guidance changes
+- regulatory decisions or government actions
+- material analyst upgrades/downgrades (price target changes ≥10%)
+- major contracts won or lost
+- capital raises, M&A, or significant buybacks
+- material corporate announcements (CEO/CFO changes, restructuring, spin-offs)
+- thesis-changing product or technology developments
+
+DO NOT flag:
+- routine analyst notes with minor adjustments
+- general market or sector news not specific to this company
+- news that was already known before ${sinceDate}
+- normal intra-day price movements
+
+Return ONLY this JSON object — no prose:
+{"materialDevelopmentFound": true, "categories": ["earnings","guidance","regulatory","analyst","contract","capital","corporate","product"], "shortReason": "brief reason"}
+or:
+{"materialDevelopmentFound": false, "categories": [], "shortReason": "No new material company-specific developments found since ${sinceDate}"}`;
+
+  const discoveryUserPrompt =
+    `Company: ${displayName}
+Check period: After ${sinceDate} (today: ${nowIso.substring(0, 10)})
+Return the JSON object only.`;
+
+  const discStart = Date.now();
+  try {
+    const { result, debug } = await callAiWithWebSearch<{
+      materialDevelopmentFound: boolean;
+      categories: string[];
+      shortReason: string;
+    }>(discoverySystemPrompt, discoveryUserPrompt, {
+      model: "gpt-4o-mini",
+      maxTokens: 150,
+      temperature: 0.1,
+      module: "company-monitor",
+      operation: "discovery",
+      retryNumber: 1,
+      webSearchContextSize: "low",
+    });
+    return {
+      materialDevelopmentFound: result.materialDevelopmentFound === true,
+      categories: Array.isArray(result.categories) ? result.categories as string[] : [],
+      shortReason: typeof result.shortReason === "string" ? result.shortReason : "",
+      discoveryTokens: debug.usage.total_tokens ?? 0,
+      discoveryDurationMs: Date.now() - discStart,
+    };
+  } catch {
+    // Discovery error — default to full analysis to be safe
+    return {
+      materialDevelopmentFound: true,
+      categories: [],
+      shortReason: "Discovery stage failed — defaulting to full analysis",
+      discoveryTokens: 0,
+      discoveryDurationMs: Date.now() - discStart,
+    };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -793,6 +889,83 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     );
   }
 
+  // ── §10: Discovery gate (orchestrator-triggered, non-first runs only) ─────────
+  // Runs a cheap targeted web-search to detect material new developments.
+  // If nothing material is found AND the price state has not changed category,
+  // preserve the existing analysis and skip the expensive full analysis.
+
+  let discoveryInfo: {
+    performed: boolean;
+    materialDevelopmentFound: boolean | null;
+    categories?: string[];
+    shortReason?: string;
+    discoveryTokens?: number;
+    fullAnalysisPerformed: boolean;
+  } = { performed: false, materialDevelopmentFound: null, fullAnalysisPerformed: true };
+
+  if (orchestratorTrigger && !isFirstRun) {
+    // Check if price state changed since last analysis
+    const currentPriceCtxForGate = getPriceContext(ticker);
+    const prevPriceState = (prevAnalysis as Record<string, unknown>)._priceStateAtAnalysis as string | undefined;
+    const currentPriceState = currentPriceCtxForGate?.priceState;
+    const priceStateChanged = prevPriceState !== undefined && currentPriceState !== undefined && prevPriceState !== currentPriceState;
+
+    if (!priceStateChanged) {
+      const discovery = await discoverCompanyDevelopments(
+        ticker,
+        companyName,
+        prevAnalysis?.timestamp as string | undefined,
+        nowIso
+      );
+
+      discoveryInfo = {
+        performed: true,
+        materialDevelopmentFound: discovery.materialDevelopmentFound,
+        categories: discovery.categories,
+        shortReason: discovery.shortReason,
+        discoveryTokens: discovery.discoveryTokens,
+        fullAnalysisPerformed: discovery.materialDevelopmentFound,
+      };
+
+      if (!discovery.materialDevelopmentFound) {
+        req.log.info(
+          { ticker, shortReason: discovery.shortReason, discoveryTokens: discovery.discoveryTokens },
+          "[company-monitor] Discovery: no material development — preserving existing analysis"
+        );
+        systemLog.logInfo(
+          "Company Monitor",
+          `${ticker}: No material change detected by discovery gate — skipping full analysis`
+        );
+
+        // Update lastCheckedAt and record the priceState for next cycle
+        const updatedResult = {
+          ...(prevAnalysis as Record<string, unknown>),
+          lastCheckedAt: nowIso,
+          _priceStateAtAnalysis: currentPriceState ?? prevPriceState,
+        };
+        analysisRepository.save(repositoryKey, updatedResult);
+        trackSkipped("company-monitor", "fingerprint_unchanged");
+
+        res.json({
+          ...updatedResult,
+          analysisDuration: Date.now() - startTime,
+          _discoveryInfo: discoveryInfo,
+        });
+        return;
+      }
+
+      req.log.info(
+        { ticker, categories: discovery.categories, shortReason: discovery.shortReason },
+        "[company-monitor] Discovery: material development found — proceeding with full analysis"
+      );
+    } else {
+      req.log.info(
+        { ticker, prevPriceState, currentPriceState },
+        "[company-monitor] Price state changed — skipping discovery gate, running full analysis"
+      );
+    }
+  }
+
   // ── Read context from Analysis Repository ──────────────────────────────────
 
   const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
@@ -992,7 +1165,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
         // rejects text.format.json_object when a web_search tool is active.
         // JSON robustness is handled by the prose-extraction fallback in
         // ai-service.ts and the explicit "begin with {" instruction in retries.
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1, module: "company-monitor", operation: "analyze", retryNumber: attempt }
+        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1, module: "company-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -1163,10 +1336,12 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     // ── Compute orchestration metadata ───────────────────────────────────────
 
     const meaningfulChange = computeMeaningfulChange(finalData, prevAnalysis);
-    const withMeta: ParsedAnalysis & { meaningfulChange: MeaningfulChange; affectedTickers: string[] } = {
+    const withMeta: ParsedAnalysis & { meaningfulChange: MeaningfulChange; affectedTickers: string[]; _priceStateAtAnalysis?: string } = {
       ...finalData,
       meaningfulChange,
       affectedTickers: [ticker],
+      // §10: Record price state so the next discovery gate can detect categorical changes
+      _priceStateAtAnalysis: priceCtxEntry?.priceState ?? undefined,
     };
 
     // ── Persist ──────────────────────────────────────────────────────────────

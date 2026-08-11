@@ -343,7 +343,8 @@ Return the JSON object only.`;
       discoverySystemPrompt,
       discoveryUserPrompt,
       { model: "gpt-4o-mini", maxTokens: 150, temperature: 0.1,
-        module: "investor-watch", operation: "discovery", retryNumber: 1 }
+        module: "investor-watch", operation: "discovery", retryNumber: 1,
+        webSearchContextSize: "low" }
     );
     return {
       hasNewDevelopments: result.hasNewDevelopments === true,
@@ -477,7 +478,7 @@ async function analyzeInvestor(
       ({ result: raw, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
         effectiveUserPrompt,
-        { model: "gpt-4o", maxTokens: 2200, temperature: 0.1, module: "investor-watch", operation: "analyze", retryNumber: attempt }
+        { model: "gpt-4o", maxTokens: 2200, temperature: 0.1, module: "investor-watch", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       if (attempt >= MAX_ATTEMPTS) {

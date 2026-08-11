@@ -39,7 +39,7 @@
 import { analysisRepository } from "./analysis-repository.js";
 import { saxoStore } from "./saxo-store.js";
 import { logger } from "./logger.js";
-import { calculatePriceContext, formatPriceContextForPrompt, type PriceContext } from "./price-context-calculator.js";
+import { calculatePriceContext, formatPriceContextForPrompt, formatPriceContextCompact, type PriceContext } from "./price-context-calculator.js";
 
 // ── Freshness policy ──────────────────────────────────────────────────────────
 
@@ -685,6 +685,30 @@ export function buildPriceContextBlock(symbols: string[]): Record<string, string
     const ctx = getPriceContext(sym);
     if (ctx) {
       block[sym.toUpperCase()] = formatPriceContextForPrompt(ctx);
+    }
+  }
+  return block;
+}
+
+/**
+ * Compact price context block for downstream synthesis modules.
+ *
+ * Returns a Record<symbol, compact-JSON-string> using the minimal format:
+ *   {"state":"StrongDowntrend","recent":"Stabilizing","r5d":-10.27,"r1m":-15.64,"r3m":-39.93,"volatility":"High"}
+ *
+ * Use this in Portfolio Analyzer, Risk Analyzer, and Trade Decision Engine
+ * where the verbose format is unnecessary. The explanatory prose rules belong
+ * in the module's system prompt — not repeated per-symbol in the user prompt.
+ *
+ * Use buildPriceContextBlock (verbose) in Company Monitor which performs
+ * primary analysis and needs full context.
+ */
+export function buildPriceContextBlockCompact(symbols: string[]): Record<string, string> {
+  const block: Record<string, string> = {};
+  for (const sym of symbols) {
+    const ctx = getPriceContext(sym);
+    if (ctx) {
+      block[sym.toUpperCase()] = formatPriceContextCompact(ctx);
     }
   }
   return block;

@@ -46,6 +46,19 @@ export interface AiServiceOptions {
    * Each attempt is recorded as a separate usage record.
    */
   retryNumber?: number;
+  /**
+   * Web search context depth. Defaults to "medium".
+   * "high" should only be used for unusually broad/deep research needs.
+   * "low" is suitable for lightweight discovery/pre-screening.
+   * Only applies to callAiWithWebSearch — ignored by callAi.
+   */
+  webSearchContextSize?: "low" | "medium" | "high";
+  /**
+   * When true (default), web search is required (tool_choice = "required").
+   * Set false to allow the model to decide whether to search (tool_choice = "auto").
+   * Only applies to callAiWithWebSearch — ignored by callAi.
+   */
+  webSearchRequired?: boolean;
 }
 
 // ── Debug metadata ────────────────────────────────────────────────────────────
@@ -243,6 +256,7 @@ export async function callAiWithWebSearch<T>(
   const {
     model = "gpt-4o-mini", maxTokens = 1200, temperature = 0.3, jsonMode = false,
     module: mod = "unknown", operation = "analyze", retryNumber = 1,
+    webSearchContextSize = "medium", webSearchRequired = true,
   } = options;
   const client = getClient();
   const calledAt = new Date().toISOString();
@@ -254,11 +268,10 @@ export async function callAiWithWebSearch<T>(
     model,
     max_output_tokens: maxTokens,
     temperature,
-    tools: [{ type: "web_search", search_context_size: "high" }],
+    tools: [{ type: "web_search", search_context_size: webSearchContextSize }],
     // "required" forces the model to invoke at least one tool before answering.
-    // Because web_search is the only configured tool this guarantees a web-search
-    // call on every attempt rather than relying on prompt instructions alone.
-    tool_choice: "required",
+    // "auto" lets the model decide whether a search is warranted.
+    tool_choice: webSearchRequired ? "required" : "auto",
     input: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },

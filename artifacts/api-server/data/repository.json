@@ -56,9 +56,9 @@
       "analysisDuration": 3721
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-11T20:32:51.807Z",
+    "updatedAt": "2026-08-11T21:03:17.549Z",
     "materialVersion": 5,
-    "refreshVersion": 8
+    "refreshVersion": 9
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -147,70 +147,106 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Nvidia’s massive $500 billion AI infrastructure deal and surging oil prices amid Strait of Hormuz tensions dominate market moves, ahead of tomorrow’s U.S. CPI release.",
-      "overallMarketImpact": "Cautiously bullish equities offset by energy-driven inflation concerns.",
+      "executiveSummary": "Middle East conflict continues to drive energy price volatility, keeping inflation and central bank caution in focus. Markets await U.S. CPI data due tomorrow, which could shift Fed expectations.",
+      "overallMarketImpact": "Cautious-to-neutral, with elevated risk from energy-driven inflation and policy uncertainty.",
       "topStory": {
-        "title": "Nvidia $500B AI infrastructure deal",
-        "summary": "Nvidia secures $500 billion AI infrastructure financing consortium, validating AI capex cycle despite stock dip.",
+        "title": "Middle East conflict fuels energy price volatility",
+        "summary": "Ongoing Strait of Hormuz tensions sustain oil supply fears and inflation risks.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "nvidia-ai-infrastructure-megadeal-2026-08-10",
-          "title": "Nvidia $500B AI infrastructure deal",
-          "summary": "Nvidia lines up $500 billion AI infrastructure financing consortium, validating AI capex supercycle despite stock dip.",
-          "category": "AI",
+          "id": "us-cpi-anticipation-2026-08-11",
+          "title": "Markets await U.S. CPI release",
+          "summary": "U.S. CPI data due August 12 could shift Fed rate expectations depending on surprise.",
+          "category": "Inflation",
           "importance": "High",
           "affectedMarkets": [
-            "Technology",
-            "Equities"
-          ],
-          "whyItMatters": "Massive financing underscores AI investment boom and influences tech sector sentiment.",
-          "marketImpact": "Positive for AI and tech stocks broadly, though Nvidia stock dipped on dilution concerns",
-          "confidence": 0.85,
-          "source": "Reddit (EverHint)",
-          "publishedAt": "2026-08-11T00:00:00Z"
-        },
-        {
-          "id": "oil-surge-strait-of-hormuz-2026-08-10",
-          "title": "Oil jumps on Hormuz tensions",
-          "summary": "Oil prices rise ~5% as Strait of Hormuz standoff escalates, boosting energy sector.",
-          "category": "Energy",
-          "importance": "High",
-          "affectedMarkets": [
-            "Energy",
-            "Commodities"
-          ],
-          "whyItMatters": "Supply disruption risk lifts oil prices, stoking inflation and energy sector gains.",
-          "marketImpact": "Positive for oil and energy stocks, inflationary pressure",
-          "confidence": 0.8,
-          "source": "Reddit (EverHint)",
-          "publishedAt": "2026-08-11T00:00:00Z"
-        },
-        {
-          "id": "markets-hold-before-cpi-2026-08-11",
-          "title": "Markets hold ahead of CPI",
-          "summary": "Markets tread water ahead of U.S. CPI release, with indices near highs in tight pre‑inflation holding pattern.",
-          "category": "Macro",
-          "importance": "Medium",
-          "affectedMarkets": [
+            "Bonds",
             "Equities",
             "Rates"
           ],
-          "whyItMatters": "CPI data could shift Fed rate expectations and market direction.",
-          "marketImpact": "Mixed; cautious positioning ahead of inflation data",
-          "confidence": 0.75,
-          "source": "Reddit (EverHint)",
-          "publishedAt": "2026-08-11T00:00:00Z"
+          "whyItMatters": "CPI surprise could alter Fed policy outlook and market direction.",
+          "marketImpact": "Potentially negative for bonds if inflation surprises high; positive for equities if soft",
+          "confidence": 0.8,
+          "source": "Event Monitor",
+          "publishedAt": "2026-08-11"
+        },
+        {
+          "id": "middle-east-energy-shock-2026-08-11",
+          "title": "Middle East conflict sustains oil supply fears",
+          "summary": "Renewed tensions around the Strait of Hormuz keep oil markets volatile and inflation pressures elevated.",
+          "category": "Energy",
+          "importance": "High",
+          "affectedMarkets": [
+            "Oil",
+            "Inflation",
+            "Central banks"
+          ],
+          "whyItMatters": "Persistent energy supply risks feed inflation and complicate monetary policy globally.",
+          "marketImpact": "Positive for oil prices; negative for inflation-sensitive assets",
+          "confidence": 0.9,
+          "source": "World Bank",
+          "publishedAt": "2026-04-28"
+        },
+        {
+          "id": "fed-operational-update-2026-07-29",
+          "title": "Fed maintains rates and operational stance",
+          "summary": "Fed holds interest rate on reserves at 3.65%, signals continued ample reserves via Treasury bill purchases.",
+          "category": "Rates",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Bonds",
+            "Rates"
+          ],
+          "whyItMatters": "Reinforces Fed’s steady policy stance amid inflation uncertainty.",
+          "marketImpact": "Neutral to slightly negative for bonds",
+          "confidence": 0.7,
+          "source": "Federal Reserve",
+          "publishedAt": "2026-07-29"
+        },
+        {
+          "id": "ecb-holds-rates-amid-energy-shock-2026-07-23",
+          "title": "ECB holds rates amid energy shock",
+          "summary": "ECB keeps key rates unchanged, monitoring energy-driven inflation risks.",
+          "category": "Rates",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Bonds",
+            "Rates",
+            "Eurozone equities"
+          ],
+          "whyItMatters": "Signals caution in face of inflation risks from energy volatility.",
+          "marketImpact": "Neutral to slightly negative for eurozone bonds",
+          "confidence": 0.7,
+          "source": "ECB",
+          "publishedAt": "2026-07-23"
+        },
+        {
+          "id": "commodity-price-outlook-2026-04-28",
+          "title": "World Bank sees broad commodity price surge",
+          "summary": "Commodity prices forecast to rise 16% in 2026, energy up 24%, driven by Middle East war.",
+          "category": "Commodities",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Commodities",
+            "Inflation",
+            "Emerging markets"
+          ],
+          "whyItMatters": "Broad-based commodity inflation pressures could weigh on global growth and EMs.",
+          "marketImpact": "Positive for commodities; negative for EM bonds",
+          "confidence": 0.8,
+          "source": "World Bank",
+          "publishedAt": "2026-04-28"
         }
       ],
-      "timestamp": "2026-08-11T20:32:46.562Z",
-      "analysisDuration": 5994
+      "timestamp": "2026-08-11T21:03:12.573Z",
+      "analysisDuration": 6737
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-11T20:32:52.556Z",
-    "materialVersion": 8,
-    "refreshVersion": 8
+    "updatedAt": "2026-08-11T21:03:19.311Z",
+    "materialVersion": 9,
+    "refreshVersion": 9
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -447,10 +483,10 @@
   "portfolio-manager": {
     "moduleName": "portfolio-manager",
     "result": {
-      "updatedAt": "2026-08-11T20:02:17.633Z",
+      "updatedAt": "2026-08-11T21:02:44.664Z",
       "environment": "sim",
       "baseCurrency": "EUR",
-      "totalValue": 1000053.41,
+      "totalValue": 1000053.4,
       "totalAvailableCash": 995739.29,
       "totalUnrealizedProfitLoss": 0,
       "accounts": [
@@ -461,8 +497,8 @@
           "accountType": "Normal",
           "currency": "EUR",
           "availableCash": 995739.29,
-          "accountValue": 1000053.41,
-          "unrealizedProfitLoss": 503.97999999999996,
+          "accountValue": 1000053.4,
+          "unrealizedProfitLoss": 503.55,
           "positions": [
             {
               "id": "15629__Share",
@@ -499,7 +535,7 @@
               "currentPrice": 0,
               "marketValue": 0,
               "marketValueBaseCurrency": 0,
-              "profitLoss": 4.78,
+              "profitLoss": 4.35,
               "dayChangePercent": 0,
               "priceDelayMinutes": 15,
               "isMarketOpen": false
@@ -510,9 +546,9 @@
       "isMockData": false
     },
     "createdAt": "2026-08-01T15:14:57.937Z",
-    "updatedAt": "2026-08-11T20:02:17.634Z",
-    "materialVersion": 6,
-    "refreshVersion": 6
+    "updatedAt": "2026-08-11T21:02:44.692Z",
+    "materialVersion": 7,
+    "refreshVersion": 7
   },
   "portfolio-analyzer": {
     "moduleName": "portfolio-analyzer",
@@ -2664,22 +2700,42 @@
       ],
       "nothingImportantChanged": false,
       "timestamp": "2026-08-11T19:48:45.520Z",
-      "analysisDuration": 2933,
-      "lastCheckedAt": "2026-08-11T20:34:16.387Z",
+      "analysisDuration": 2392,
+      "lastCheckedAt": "2026-08-11T21:04:42.612Z",
       "lastMeaningfulUpdateAt": "2026-08-11T19:48:45.520Z",
       "noNewDevelopmentsSinceLastCheck": true
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-11T20:34:19.320Z",
-    "materialVersion": 10,
-    "refreshVersion": 10,
-    "dependencyFingerprint": "1mdwal9",
-    "lastAIAnalysisAt": "2026-08-11T20:34:16.381Z"
+    "updatedAt": "2026-08-11T21:04:45.005Z",
+    "materialVersion": 11,
+    "refreshVersion": 12,
+    "dependencyFingerprint": "10chbfh",
+    "lastAIAnalysisAt": "2026-08-11T21:04:42.607Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-11T21:04:42.612Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Riot Platforms lands $9.1B AI data-center deal, signaling sector convergence",
+          "alertCount": 0,
+          "alerts": [],
+          "newsIds": [
+            "us-cpi-anticipation-2026-08-11",
+            "middle-east-energy-shock-2026-08-11",
+            "fed-operational-update-2026-07-29",
+            "ecb-holds-rates-amid-energy-shock-2026-07-23",
+            "commodity-price-outlook-2026-04-28"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "FOMC Minutes – July Meeting",
+            "U.S. Producer Price Index (PPI) – July"
+          ],
+          "checkResult": "NoChange"
+        },
         {
           "timestamp": "2026-08-11T20:34:16.387Z",
           "overallAlertLevel": "Medium",
@@ -3113,45 +3169,13 @@
             "U.S. Producer Price Index (PPI) – July"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-11T17:31:25.128Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Novo Nordisk Q2 beat, raised outlook and dividend; media-agency shift in U.S.",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "Novo Nordisk Q2 beat, raises 2026 outlook and declares interim dividend",
-              "category": "Company",
-              "importance": "High",
-              "summary": "Novo Nordisk reported Q2 2026 adjusted operating profit up 11% at constant exchange rates, raised its full‑year adjusted sales and operating profit outlook, and announced an interim dividend (DKK 3.75 per share) with ex‑dividend date August 14, record date August 17, and payment August 18 (ADR August 25).",
-              "normalizedKey": "novo nordisk q2 beat, raises 2026 outlook and declares interim dividend|company"
-            },
-            {
-              "title": "Novo Nordisk shifts U.S. media account to Omnicom starting Q4",
-              "category": "Company",
-              "importance": "Medium",
-              "summary": "Novo Nordisk has selected Omnicom as its agency‑of‑record for U.S. media buying beginning in Q4 2026, replacing WPP.",
-              "normalizedKey": "novo nordisk shifts u.s. media account to omnicom starting q4|company"
-            }
-          ],
-          "newsIds": [
-            "hormuz-oil‑risk‑2026‑08‑10",
-            "ai-megadeals-2026-08-10"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (CPI) – July",
-            "FOMC Minutes – July Meeting",
-            "U.S. Producer Price Index (PPI) – July"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-11T20:34:19.328Z",
-    "materialVersion": 10,
-    "refreshVersion": 10
+    "updatedAt": "2026-08-11T21:04:45.013Z",
+    "materialVersion": 11,
+    "refreshVersion": 11
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -12880,6 +12904,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-11T21:03:12.569Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-11T20:32:46.425Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -13194,9 +13224,9 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-11T20:32:51.821Z",
-    "materialVersion": 8,
-    "refreshVersion": 8
+    "updatedAt": "2026-08-11T21:03:17.559Z",
+    "materialVersion": 9,
+    "refreshVersion": 9
   },
   "company-monitor:CSCO": {
     "materialVersion": 1,
@@ -14235,9 +14265,9 @@
   "portfolio-manager-v2": {
     "moduleName": "portfolio-manager-v2",
     "result": {
-      "generatedAt": "2026-08-11T20:02:23.818Z",
-      "durationMs": 6175,
-      "snapshotUpdatedAt": "2026-08-11T20:02:17.633Z",
+      "generatedAt": "2026-08-11T21:02:52.748Z",
+      "durationMs": 8047,
+      "snapshotUpdatedAt": "2026-08-11T21:02:44.664Z",
       "health": {
         "overall": 62,
         "grade": "C",
@@ -14271,13 +14301,13 @@
             "name": "Cash vs Target Alignment",
             "score": 5,
             "weight": 0.11,
-            "reason": "Cash 99.6% is 74.6pp above CIO target 25.0%."
+            "reason": "Cash 99.6% is 82.1pp above CIO target 17.5%."
           },
           {
             "name": "Event Concentration",
             "score": 100,
             "weight": 0.09,
-            "reason": "SERV:XNAS blocked by events — 0% of portfolio. Moderate impact."
+            "reason": "No holdings are event-blocked — good event-risk spread."
           },
           {
             "name": "Risk Concentration",
@@ -14305,27 +14335,27 @@
             "reason": "Only 2 positions — highly concentrated."
           }
         ],
-        "computedAt": "2026-08-11T20:02:23.818Z",
+        "computedAt": "2026-08-11T21:02:52.748Z",
         "classifiedPositionPercent": 0,
         "unknownSectorPercent": 0,
         "sectorCoverageConfidence": "Low"
       },
       "target": {
-        "generatedAt": "2026-08-11T20:02:23.817Z",
-        "totalEquityTargetPercent": 75,
-        "cashTargetPercent": 25,
+        "generatedAt": "2026-08-11T21:02:52.745Z",
+        "totalEquityTargetPercent": 82.5,
+        "cashTargetPercent": 17.5,
         "allocations": [
           {
             "ticker": "NOVOB:XCSE",
             "company": "Novo Nordisk B A/S",
-            "role": "CoreHolding",
-            "targetPercent": 20,
-            "minPercent": 16,
-            "maxPercent": 20,
-            "rationale": "Novo Nordisk is well-positioned with strong fundamentals and sector support, bolstered by recent EU approval of Wegovy® and pipeline advancements.",
+            "role": "GrowthCore",
+            "targetPercent": 15,
+            "minPercent": 7.5,
+            "maxPercent": 15,
+            "rationale": "Novo Nordisk is positioned for growth with strong performance and upcoming EU product launches.",
             "conviction": "High",
             "allocationStatus": "StrategicTarget",
-            "reasonForStatus": "Novo Nordisk is a buy with strong fundamentals and no blocking factors.",
+            "reasonForStatus": "Strong buy rating and no blocking factors.",
             "blockingFactors": [],
             "supportingModules": [
               "CompanyMonitor",
@@ -14333,37 +14363,18 @@
             ]
           },
           {
-            "ticker": "AMAT",
-            "company": "Applied Materials, Inc.",
-            "role": "GrowthCore",
-            "targetPercent": 15,
-            "minPercent": 10,
-            "maxPercent": 15,
-            "rationale": "Applied Materials benefits from the AI infrastructure build-out, with strong demand for semiconductor equipment.",
-            "conviction": "High",
-            "allocationStatus": "Provisional",
-            "reasonForStatus": "Awaiting reevaluation post-U.S. CPI data.",
-            "blockingFactors": [
-              "U.S. Consumer Price Index (July)"
-            ],
-            "supportingModules": [
-              "OpportunityFinder",
-              "TradeDecisionEngine"
-            ]
-          },
-          {
             "ticker": "JPM",
             "company": "JPMorgan Chase & Co.",
-            "role": "GrowthCore",
-            "targetPercent": 15,
-            "minPercent": 10,
-            "maxPercent": 15,
-            "rationale": "JPMorgan is expected to deliver solid earnings driven by resilient NII and strong capital markets revenue.",
+            "role": "CoreHolding",
+            "targetPercent": 20,
+            "minPercent": 15,
+            "maxPercent": 20,
+            "rationale": "JPMorgan offers diversified revenue streams and benefits from improving loan demand.",
             "conviction": "High",
-            "allocationStatus": "Provisional",
-            "reasonForStatus": "Awaiting reevaluation post-U.S. CPI data.",
+            "allocationStatus": "Blocked",
+            "reasonForStatus": "Blocked by upcoming U.S. CPI data release.",
             "blockingFactors": [
-              "U.S. Consumer Price Index (July)"
+              "U.S. Consumer Price Index (CPI) – July"
             ],
             "supportingModules": [
               "OpportunityFinder",
@@ -14371,285 +14382,456 @@
             ]
           },
           {
-            "ticker": "MU",
-            "company": "Micron Technology, Inc.",
-            "role": "GrowthCore",
+            "ticker": "BAC",
+            "company": "Bank of America Corporation",
+            "role": "CoreHolding",
             "targetPercent": 15,
-            "minPercent": 10,
-            "maxPercent": 15,
-            "rationale": "Micron is a key memory supplier benefiting from AI-driven demand and memory shortages.",
+            "minPercent": 12,
+            "maxPercent": 20,
+            "rationale": "Bank of America is well-positioned with solid fundamentals and lending growth potential.",
             "conviction": "Medium",
-            "allocationStatus": "Provisional",
-            "reasonForStatus": "Evidence is strong but pending further industry conference insights.",
+            "allocationStatus": "StrategicTarget",
+            "reasonForStatus": "Buy rating with no immediate blocking factors.",
             "blockingFactors": [],
             "supportingModules": [
-              "OpportunityFinder",
-              "SectorMonitor"
+              "CompanyMonitor",
+              "OpportunityFinder"
             ]
           },
           {
-            "ticker": "EVRG",
-            "company": "Evergy, Inc.",
+            "ticker": "XOM",
+            "company": "Exxon Mobil Corporation",
             "role": "IncomeDividend",
-            "targetPercent": 10,
-            "minPercent": 6,
+            "targetPercent": 12,
+            "minPercent": 7.5,
             "maxPercent": 12,
-            "rationale": "Evergy offers stability with reaffirmed EPS guidance and a solid dividend, supported by a large customer agreement.",
+            "rationale": "Exxon Mobil provides inflation-hedged exposure and benefits from elevated oil prices.",
             "conviction": "Medium",
-            "allocationStatus": "Provisional",
-            "reasonForStatus": "Awaiting further clarity from upcoming earnings release.",
+            "allocationStatus": "StrategicTarget",
+            "reasonForStatus": "Moderately strong sector outlook supports allocation.",
             "blockingFactors": [],
             "supportingModules": [
-              "OpportunityFinder",
-              "CompanyMonitor"
+              "CompanyMonitor",
+              "OpportunityFinder"
+            ]
+          },
+          {
+            "ticker": "NEE",
+            "company": "NextEra Energy, Inc.",
+            "role": "Defensive",
+            "targetPercent": 10.5,
+            "minPercent": 7.5,
+            "maxPercent": 12,
+            "rationale": "NextEra Energy offers stable utility exposure with renewable growth potential.",
+            "conviction": "Medium",
+            "allocationStatus": "StrategicTarget",
+            "reasonForStatus": "Stable sector outlook and buy rating support allocation.",
+            "blockingFactors": [],
+            "supportingModules": [
+              "CompanyMonitor",
+              "OpportunityFinder"
+            ]
+          },
+          {
+            "ticker": "USB",
+            "company": "U.S. Bancorp",
+            "role": "CyclicalExposure",
+            "targetPercent": 10,
+            "minPercent": 7.5,
+            "maxPercent": 10,
+            "rationale": "U.S. Bancorp provides regional banking exposure with a stable deposit base.",
+            "conviction": "Medium",
+            "allocationStatus": "StrategicTarget",
+            "reasonForStatus": "Buy rating and no blocking factors.",
+            "blockingFactors": [],
+            "supportingModules": [
+              "CompanyMonitor",
+              "OpportunityFinder"
             ]
           }
         ],
-        "strategicRationale": "The portfolio aims to balance growth potential with risk management by allocating to high-conviction opportunities in semiconductors, financials, and healthcare, while maintaining a prudent cash reserve for flexibility.",
+        "strategicRationale": "The portfolio aims to balance growth potential with defensive positions, leveraging high-conviction opportunities in financials and healthcare while maintaining liquidity for flexibility.",
         "keyAssumptions": [
-          "The semiconductor sector will continue to benefit from the AI infrastructure build-out.",
-          "Healthcare remains a stable sector with growth potential, particularly through Novo Nordisk.",
-          "Financials are supported by steady interest rates and moderate risk appetite.",
-          "Macro events such as inflation data will influence market sentiment but are expected to remain stable.",
-          "The portfolio's high cash position provides flexibility to capitalize on emerging opportunities."
+          "Moderate economic growth with stable interest rates",
+          "Continued demand for healthcare innovations",
+          "Financial sector benefits from rate stability",
+          "Energy sector supported by high oil prices",
+          "Utilities gain from infrastructure demand"
         ]
       },
       "drift": [
         {
           "type": "CashTooHigh",
           "currentPercent": 99.6,
-          "targetPercent": 25,
-          "deviationPercent": 74.6,
+          "targetPercent": 17.5,
+          "deviationPercent": 82.1,
           "severity": "High",
-          "action": "Deploy 74.6% of portfolio from cash into positions"
-        },
-        {
-          "type": "Missing",
-          "ticker": "NOVOB:XCSE",
-          "currentPercent": 0,
-          "targetPercent": 20,
-          "deviationPercent": -20,
-          "severity": "High",
-          "action": "Initiate position in NOVOB:XCSE — target allocation 20.0%"
-        },
-        {
-          "type": "SectorUnderweight",
-          "sector": "Healthcare",
-          "currentPercent": 0,
-          "targetPercent": 20,
-          "deviationPercent": -20,
-          "severity": "High",
-          "action": "Increase Healthcare exposure from 0.0% toward 20.0%"
-        },
-        {
-          "type": "Missing",
-          "ticker": "AMAT",
-          "currentPercent": 0,
-          "targetPercent": 15,
-          "deviationPercent": -15,
-          "severity": "High",
-          "action": "Initiate position in AMAT — target allocation 15.0%"
+          "action": "Deploy 82.1% of portfolio from cash into positions"
         },
         {
           "type": "Missing",
           "ticker": "JPM",
           "currentPercent": 0,
-          "targetPercent": 15,
-          "deviationPercent": -15,
+          "targetPercent": 20,
+          "deviationPercent": -20,
           "severity": "High",
-          "action": "Initiate position in JPM — target allocation 15.0%"
+          "action": "Initiate position in JPM — target allocation 20.0%"
         },
         {
           "type": "Missing",
-          "ticker": "MU",
+          "ticker": "NOVOB:XCSE",
           "currentPercent": 0,
           "targetPercent": 15,
           "deviationPercent": -15,
           "severity": "High",
-          "action": "Initiate position in MU — target allocation 15.0%"
+          "action": "Initiate position in NOVOB:XCSE — target allocation 15.0%"
         },
         {
           "type": "Missing",
-          "ticker": "EVRG",
+          "ticker": "BAC",
+          "currentPercent": 0,
+          "targetPercent": 15,
+          "deviationPercent": -15,
+          "severity": "High",
+          "action": "Initiate position in BAC — target allocation 15.0%"
+        },
+        {
+          "type": "SectorUnderweight",
+          "sector": "Healthcare",
+          "currentPercent": 0,
+          "targetPercent": 15,
+          "deviationPercent": -15,
+          "severity": "High",
+          "action": "Increase Healthcare exposure from 0.0% toward 15.0%"
+        },
+        {
+          "type": "Missing",
+          "ticker": "XOM",
+          "currentPercent": 0,
+          "targetPercent": 12,
+          "deviationPercent": -12,
+          "severity": "High",
+          "action": "Initiate position in XOM — target allocation 12.0%"
+        },
+        {
+          "type": "Missing",
+          "ticker": "NEE",
+          "currentPercent": 0,
+          "targetPercent": 10.5,
+          "deviationPercent": -10.5,
+          "severity": "High",
+          "action": "Initiate position in NEE — target allocation 10.5%"
+        },
+        {
+          "type": "Missing",
+          "ticker": "USB",
           "currentPercent": 0,
           "targetPercent": 10,
           "deviationPercent": -10,
           "severity": "High",
-          "action": "Initiate position in EVRG — target allocation 10.0%"
+          "action": "Initiate position in USB — target allocation 10.0%"
         }
       ],
       "capitalAllocation": {
         "availableCashBase": 995739,
         "totalPortfolioBase": 1000053,
         "cashPercent": 99.6,
-        "cashTargetPercent": 25,
-        "deployableCashBase": 745726,
-        "items": [],
-        "actionableItems": [],
-        "blockedItems": [],
-        "provisionalItems": [
+        "cashTargetPercent": 17.5,
+        "deployableCashBase": 820730,
+        "items": [
           {
-            "ticker": "NOVOB:XCSE",
-            "company": "Novo Nordisk B A/S",
+            "ticker": "BAC",
+            "company": "Bank of America Corporation",
+            "role": "CoreHolding",
+            "currentPercent": 0,
+            "targetPercent": 15,
+            "gapPercent": 15,
+            "suggestedAmountBase": 150008,
+            "priority": "High",
+            "rationale": "BAC is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          },
+          {
+            "ticker": "XOM",
+            "company": "Exxon Mobil Corporation",
+            "role": "IncomeDividend",
+            "currentPercent": 0,
+            "targetPercent": 12,
+            "gapPercent": 12,
+            "suggestedAmountBase": 120006,
+            "priority": "High",
+            "rationale": "XOM is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          },
+          {
+            "ticker": "NEE",
+            "company": "NextEra Energy, Inc.",
+            "role": "Defensive",
+            "currentPercent": 0,
+            "targetPercent": 10.5,
+            "gapPercent": 10.5,
+            "suggestedAmountBase": 105006,
+            "priority": "High",
+            "rationale": "NEE is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          },
+          {
+            "ticker": "USB",
+            "company": "U.S. Bancorp",
+            "role": "CyclicalExposure",
+            "currentPercent": 0,
+            "targetPercent": 10,
+            "gapPercent": 10,
+            "suggestedAmountBase": 100005,
+            "priority": "High",
+            "rationale": "USB is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          }
+        ],
+        "actionableItems": [
+          {
+            "ticker": "BAC",
+            "company": "Bank of America Corporation",
+            "role": "CoreHolding",
+            "currentPercent": 0,
+            "targetPercent": 15,
+            "gapPercent": 15,
+            "suggestedAmountBase": 150008,
+            "priority": "High",
+            "rationale": "BAC is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          },
+          {
+            "ticker": "XOM",
+            "company": "Exxon Mobil Corporation",
+            "role": "IncomeDividend",
+            "currentPercent": 0,
+            "targetPercent": 12,
+            "gapPercent": 12,
+            "suggestedAmountBase": 120006,
+            "priority": "High",
+            "rationale": "XOM is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          },
+          {
+            "ticker": "NEE",
+            "company": "NextEra Energy, Inc.",
+            "role": "Defensive",
+            "currentPercent": 0,
+            "targetPercent": 10.5,
+            "gapPercent": 10.5,
+            "suggestedAmountBase": 105006,
+            "priority": "High",
+            "rationale": "NEE is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          },
+          {
+            "ticker": "USB",
+            "company": "U.S. Bancorp",
+            "role": "CyclicalExposure",
+            "currentPercent": 0,
+            "targetPercent": 10,
+            "gapPercent": 10,
+            "suggestedAmountBase": 100005,
+            "priority": "High",
+            "rationale": "USB is a target position with no current holding — open a new position",
+            "allocationStatus": "StrategicTarget"
+          }
+        ],
+        "blockedItems": [
+          {
+            "ticker": "JPM",
+            "company": "JPMorgan Chase & Co.",
             "role": "CoreHolding",
             "currentPercent": 0,
             "targetPercent": 20,
             "gapPercent": 20,
             "suggestedAmountBase": 0,
             "priority": "Low",
+            "rationale": "U.S. Consumer Price Index (CPI) – July",
+            "allocationStatus": "Blocked",
+            "blockingReason": "U.S. Consumer Price Index (CPI) – July"
+          }
+        ],
+        "provisionalItems": [
+          {
+            "ticker": "NOVOB:XCSE",
+            "company": "Novo Nordisk B A/S",
+            "role": "GrowthCore",
+            "currentPercent": 0,
+            "targetPercent": 15,
+            "gapPercent": 15,
+            "suggestedAmountBase": 0,
+            "priority": "Low",
             "rationale": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview.",
             "allocationStatus": "Provisional",
             "blockingReason": "Trade Decision readiness is \"Informational\" — not yet ReadyForReview."
-          },
-          {
-            "ticker": "AMAT",
-            "company": "Applied Materials, Inc.",
-            "role": "GrowthCore",
-            "currentPercent": 0,
-            "targetPercent": 15,
-            "gapPercent": 15,
-            "suggestedAmountBase": 0,
-            "priority": "Low",
-            "rationale": "Awaiting reevaluation post-U.S. CPI data.",
-            "allocationStatus": "Provisional",
-            "blockingReason": "Awaiting reevaluation post-U.S. CPI data."
-          },
-          {
-            "ticker": "JPM",
-            "company": "JPMorgan Chase & Co.",
-            "role": "GrowthCore",
-            "currentPercent": 0,
-            "targetPercent": 15,
-            "gapPercent": 15,
-            "suggestedAmountBase": 0,
-            "priority": "Low",
-            "rationale": "Awaiting reevaluation post-U.S. CPI data.",
-            "allocationStatus": "Provisional",
-            "blockingReason": "Awaiting reevaluation post-U.S. CPI data."
-          },
-          {
-            "ticker": "MU",
-            "company": "Micron Technology, Inc.",
-            "role": "GrowthCore",
-            "currentPercent": 0,
-            "targetPercent": 15,
-            "gapPercent": 15,
-            "suggestedAmountBase": 0,
-            "priority": "Low",
-            "rationale": "Evidence is strong but pending further industry conference insights.",
-            "allocationStatus": "Provisional",
-            "blockingReason": "Evidence is strong but pending further industry conference insights."
-          },
-          {
-            "ticker": "EVRG",
-            "company": "Evergy, Inc.",
-            "role": "IncomeDividend",
-            "currentPercent": 0,
-            "targetPercent": 10,
-            "gapPercent": 10,
-            "suggestedAmountBase": 0,
-            "priority": "Low",
-            "rationale": "Awaiting further clarity from upcoming earnings release.",
-            "allocationStatus": "Provisional",
-            "blockingReason": "Awaiting further clarity from upcoming earnings release."
           }
         ],
         "excludedItems": [],
-        "totalSuggestedDeploymentBase": 0,
-        "residualCashAfterDeploymentBase": 995739,
-        "computedAt": "2026-08-11T20:02:23.817Z"
+        "totalSuggestedDeploymentBase": 475025,
+        "residualCashAfterDeploymentBase": 520714,
+        "computedAt": "2026-08-11T21:02:52.746Z"
       },
       "replacements": [
         {
           "holdingTicker": "SERV:XNAS",
           "holdingCompany": "Serve Robotics Inc.",
           "holdingCurrentPercent": 0,
-          "holdingScore": 0,
+          "holdingScore": 10,
           "holdingCaseStrength": 0,
           "holdingInvestmentView": "Avoid",
-          "holdingThesisDirection": "High",
-          "candidateTicker": "MU",
-          "candidateCompany": "Micron Technology, Inc.",
-          "candidateOverallScore": 70,
+          "candidateTicker": "USB",
+          "candidateCompany": "U.S. Bancorp",
+          "candidateOverallScore": 80,
           "candidateCaseStrength": 81,
           "candidateInvestmentView": "Buy",
-          "scoreDelta": 76,
-          "rationale": "SERV:XNAS (Avoid) scores 0; MU (Buy) scores 76 (+76). Catalyst: Industry conferences (August 19‑20) and memory demand updates.. Micron is a key memory supplier benefiting from AI‑driven demand and memory shortages.. [Provisional: Missing Trade Decision validation for candidate MU]",
+          "scoreDelta": 71,
+          "rationale": "SERV:XNAS (Avoid) scores 10; USB (Buy) scores 81 (+71). Catalyst: Q3 2026 earnings release. Offers regional banking exposure with stable deposit base. [Provisional: Missing Trade Decision validation for candidate USB]",
           "priority": "High",
           "isProvisional": true,
           "provisionalReasons": [
-            "Missing Trade Decision validation for candidate MU"
+            "Missing Trade Decision validation for candidate USB"
           ]
         },
         {
           "holdingTicker": "SERV:XNAS",
           "holdingCompany": "Serve Robotics Inc.",
           "holdingCurrentPercent": 0,
-          "holdingScore": 0,
+          "holdingScore": 10,
           "holdingCaseStrength": 0,
           "holdingInvestmentView": "Avoid",
-          "holdingThesisDirection": "High",
-          "candidateTicker": "EVRG",
-          "candidateCompany": "Evergy, Inc.",
-          "candidateOverallScore": 75,
-          "candidateCaseStrength": 55,
-          "candidateInvestmentView": "Watch",
-          "scoreDelta": 65,
-          "rationale": "SERV:XNAS (Avoid) scores 0; EVRG (Watch) scores 65 (+65). Catalyst: Q2 2026 earnings release (date TBD).. Evergy reaffirmed 2026 EPS guidance and declared a solid quarterly dividend, signaling stability.. [Provisional: Missing Trade Decision validation for candidate EVRG]",
+          "candidateTicker": "BAC",
+          "candidateCompany": "Bank of America Corporation",
+          "candidateOverallScore": 85,
+          "candidateCaseStrength": 70,
+          "candidateInvestmentView": "Buy",
+          "scoreDelta": 68,
+          "rationale": "SERV:XNAS (Avoid) scores 10; BAC (Buy) scores 78 (+68). Catalyst: Q3 2026 earnings release. Solid fundamentals with improving operating cash flow. [Provisional: Missing Trade Decision validation for candidate BAC]",
           "priority": "High",
           "isProvisional": true,
           "provisionalReasons": [
-            "Missing Trade Decision validation for candidate EVRG"
+            "Missing Trade Decision validation for candidate BAC"
+          ]
+        },
+        {
+          "holdingTicker": "SERV:XNAS",
+          "holdingCompany": "Serve Robotics Inc.",
+          "holdingCurrentPercent": 0,
+          "holdingScore": 10,
+          "holdingCaseStrength": 0,
+          "holdingInvestmentView": "Avoid",
+          "candidateTicker": "XOM",
+          "candidateCompany": "Exxon Mobil Corporation",
+          "candidateOverallScore": 78,
+          "candidateCaseStrength": 75,
+          "candidateInvestmentView": "Buy",
+          "scoreDelta": 67,
+          "rationale": "SERV:XNAS (Avoid) scores 10; XOM (Buy) scores 77 (+67). Catalyst: Q3 2026 earnings release. Provides inflation‑hedged exposure and dividend income. [Provisional: Missing Trade Decision validation for candidate XOM]",
+          "priority": "High",
+          "isProvisional": true,
+          "provisionalReasons": [
+            "Missing Trade Decision validation for candidate XOM"
+          ]
+        },
+        {
+          "holdingTicker": "SERV:XNAS",
+          "holdingCompany": "Serve Robotics Inc.",
+          "holdingCurrentPercent": 0,
+          "holdingScore": 10,
+          "holdingCaseStrength": 0,
+          "holdingInvestmentView": "Avoid",
+          "candidateTicker": "NEE",
+          "candidateCompany": "NextEra Energy, Inc.",
+          "candidateOverallScore": 75,
+          "candidateCaseStrength": 75,
+          "candidateInvestmentView": "Buy",
+          "scoreDelta": 65,
+          "rationale": "SERV:XNAS (Avoid) scores 10; NEE (Buy) scores 75 (+65). Catalyst: Q3 2026 earnings release. Stable regulated utility with renewable growth exposure. [Provisional: Missing Trade Decision validation for candidate NEE]",
+          "priority": "High",
+          "isProvisional": true,
+          "provisionalReasons": [
+            "Missing Trade Decision validation for candidate NEE"
           ]
         }
       ],
       "changes": [
         {
           "type": "RemovedPosition",
-          "ticker": "AVGO",
-          "description": "AVGO (Broadcom Inc.) removed from target (was 15.0%)",
+          "ticker": "AMAT",
+          "description": "AMAT (Applied Materials, Inc.) removed from target (was 15.0%)",
           "previousValue": 15
         },
         {
           "type": "RemovedPosition",
-          "ticker": "SIE",
-          "description": "SIE (Siemens AG) removed from target (was 15.0%)",
-          "previousValue": 15
+          "ticker": "EVRG",
+          "description": "EVRG (Evergy, Inc.) removed from target (was 10.0%)",
+          "previousValue": 10
         },
         {
           "type": "RemovedPosition",
-          "ticker": "SNPS",
-          "description": "SNPS (Synopsys, Inc.) removed from target (was 8.0%)",
-          "previousValue": 8
+          "ticker": "MU",
+          "description": "MU (Micron Technology, Inc.) removed from target (was 15.0%)",
+          "previousValue": 15
         },
         {
           "type": "AddedPosition",
-          "ticker": "AMAT",
-          "description": "AMAT (Applied Materials, Inc.) added to target at 15.0% as GrowthCore [Provisional]",
+          "ticker": "BAC",
+          "description": "BAC (Bank of America Corporation) added to target at 15.0% as CoreHolding",
           "newValue": 15
         },
         {
           "type": "AddedPosition",
-          "ticker": "EVRG",
-          "description": "EVRG (Evergy, Inc.) added to target at 10.0% as IncomeDividend [Provisional]",
+          "ticker": "NEE",
+          "description": "NEE (NextEra Energy, Inc.) added to target at 10.5% as Defensive",
+          "newValue": 10.5
+        },
+        {
+          "type": "AddedPosition",
+          "ticker": "USB",
+          "description": "USB (U.S. Bancorp) added to target at 10.0% as CyclicalExposure",
           "newValue": 10
         },
         {
           "type": "AddedPosition",
-          "ticker": "JPM",
-          "description": "JPM (JPMorgan Chase & Co.) added to target at 15.0% as GrowthCore [Provisional]",
-          "newValue": 15
+          "ticker": "XOM",
+          "description": "XOM (Exxon Mobil Corporation) added to target at 12.0% as IncomeDividend",
+          "newValue": 12
         },
         {
           "type": "CashTargetChanged",
-          "description": "Cash target lowered from 27.0% to 25.0%",
-          "previousValue": 27,
-          "newValue": 25
+          "description": "Cash target lowered from 25.0% to 17.5%",
+          "previousValue": 25,
+          "newValue": 17.5
         },
         {
           "type": "StatusChanged",
-          "ticker": "MU",
-          "description": "MU allocation status changed from StrategicTarget to Provisional"
+          "ticker": "JPM",
+          "description": "JPM allocation status changed from Provisional to Blocked"
+        },
+        {
+          "type": "TargetIncreased",
+          "ticker": "JPM",
+          "description": "JPM target increased from 15.0% to 20.0%",
+          "previousValue": 15,
+          "newValue": 20
+        },
+        {
+          "type": "TargetDecreased",
+          "ticker": "NOVOB:XCSE",
+          "description": "NOVOB:XCSE target decreased from 20.0% to 15.0%",
+          "previousValue": 20,
+          "newValue": 15
+        },
+        {
+          "type": "RoleChanged",
+          "ticker": "JPM",
+          "description": "JPM role changed from GrowthCore to CoreHolding"
+        },
+        {
+          "type": "RoleChanged",
+          "ticker": "NOVOB:XCSE",
+          "description": "NOVOB:XCSE role changed from CoreHolding to GrowthCore"
         }
       ],
       "provenance": {
@@ -14661,12 +14843,13 @@
           "SectorMonitor",
           "MarketAlerts",
           "MarketMonitor",
-          "CompanyMonitor:EVRG",
+          "CompanyMonitor:NEE",
+          "CompanyMonitor:XOM",
+          "CompanyMonitor:BAC",
           "CompanyMonitor:JPM",
-          "CompanyMonitor:MU",
           "CompanyMonitor:SERV:XNAS",
           "CompanyMonitor:NOVOB:XCSE",
-          "CompanyMonitor:AMAT"
+          "CompanyMonitor:USB"
         ],
         "sourceUpdatedAt": {
           "PortfolioAnalyzer": "",
@@ -14676,12 +14859,13 @@
           "SectorMonitor": "",
           "MarketAlerts": "",
           "MarketMonitor": "",
-          "CompanyMonitor:EVRG": "",
+          "CompanyMonitor:NEE": "",
+          "CompanyMonitor:XOM": "",
+          "CompanyMonitor:BAC": "",
           "CompanyMonitor:JPM": "",
-          "CompanyMonitor:MU": "",
           "CompanyMonitor:SERV:XNAS": "",
           "CompanyMonitor:NOVOB:XCSE": "",
-          "CompanyMonitor:AMAT": ""
+          "CompanyMonitor:USB": ""
         },
         "staleSources": [
           "PortfolioAnalyzer",
@@ -14691,26 +14875,87 @@
           "SectorMonitor",
           "MarketAlerts",
           "MarketMonitor",
-          "CompanyMonitor:EVRG",
+          "CompanyMonitor:NEE",
+          "CompanyMonitor:XOM",
+          "CompanyMonitor:BAC",
           "CompanyMonitor:JPM",
-          "CompanyMonitor:MU",
           "CompanyMonitor:SERV:XNAS",
           "CompanyMonitor:NOVOB:XCSE",
-          "CompanyMonitor:AMAT"
+          "CompanyMonitor:USB"
         ],
         "missingSources": [],
         "targetConfidence": "Low",
-        "inputFingerprint": "d71cab4e"
+        "inputFingerprint": "52b269f4"
       }
     },
     "createdAt": "2026-08-09T20:32:59.137Z",
-    "updatedAt": "2026-08-11T20:02:23.818Z",
-    "materialVersion": 5,
-    "refreshVersion": 5
+    "updatedAt": "2026-08-11T21:02:52.748Z",
+    "materialVersion": 6,
+    "refreshVersion": 6
   },
   "portfolio-manager-v2-history": {
     "moduleName": "portfolio-manager-v2-history",
     "result": [
+      {
+        "snapshotAt": "2026-08-11T21:02:52.748Z",
+        "healthOverall": 62,
+        "healthGrade": "C",
+        "driftItemCount": 8,
+        "highSeverityDriftCount": 8,
+        "cashPercent": 99.6,
+        "cashTargetPercent": 17.5,
+        "totalValue": 1000053.4,
+        "positionCount": 2,
+        "targetFingerprint": "52b269f4",
+        "targetConfidence": "Low",
+        "targetAllocations": [
+          {
+            "ticker": "NOVOB:XCSE",
+            "percent": 15,
+            "role": "GrowthCore",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "JPM",
+            "percent": 20,
+            "role": "CoreHolding",
+            "status": "Blocked"
+          },
+          {
+            "ticker": "BAC",
+            "percent": 15,
+            "role": "CoreHolding",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "XOM",
+            "percent": 12,
+            "role": "IncomeDividend",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "NEE",
+            "percent": 10.5,
+            "role": "Defensive",
+            "status": "StrategicTarget"
+          },
+          {
+            "ticker": "USB",
+            "percent": 10,
+            "role": "CyclicalExposure",
+            "status": "StrategicTarget"
+          }
+        ],
+        "sourceFreshnessSummary": "0/14 fresh, 14 stale, 0 missing",
+        "majorChanges": [
+          "AMAT (Applied Materials, Inc.) removed from target (was 15.0%)",
+          "EVRG (Evergy, Inc.) removed from target (was 10.0%)",
+          "MU (Micron Technology, Inc.) removed from target (was 15.0%)",
+          "BAC (Bank of America Corporation) added to target at 15.0% as CoreHolding",
+          "NEE (NextEra Energy, Inc.) added to target at 10.5% as Defensive"
+        ],
+        "strategicRationaleSummary": "The portfolio aims to balance growth potential with defensive positions, leveraging high-conviction opportunities in fin…"
+      },
       {
         "snapshotAt": "2026-08-11T20:02:23.818Z",
         "healthOverall": 62,
@@ -15417,9 +15662,9 @@
       }
     ],
     "createdAt": "2026-08-09T20:32:59.141Z",
-    "updatedAt": "2026-08-11T20:02:23.827Z",
-    "materialVersion": 5,
-    "refreshVersion": 5
+    "updatedAt": "2026-08-11T21:02:52.757Z",
+    "materialVersion": 6,
+    "refreshVersion": 6
   },
   "company-monitor:AIT": {
     "materialVersion": 1,

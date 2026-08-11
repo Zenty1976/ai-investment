@@ -18,7 +18,7 @@ import { RunPortfolioAnalysisResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
-import { buildPriceContextBlock } from "../lib/price-context-service.js";
+import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
 
 const router: IRouter = Router();
 
@@ -138,15 +138,15 @@ function buildUserPrompt(
     );
   }
 
+  // §7: Compact price context — one JSON line per symbol; prose rules in system prompt
   const priceCtxEntries = Object.entries(priceContexts);
   if (priceCtxEntries.length > 0) {
     blocks.push(
       "",
-      "PRICE CONTEXT for held positions (deterministic backend data — actual price behavior from Saxo historical data, NOT a forecast):",
-      "Rules: Use alongside fundamentals. 'StabilizingAfterDecline' does NOT confirm a bottom. 'PossibleRecovery' does NOT confirm a durable reversal. 'ExtendedAfterRally' does NOT mean sell. Do not alter position attention levels solely because of normal price movement. recentBehavior describes only the last 2–3 sessions: Stabilizing/Recovering do NOT confirm a bottom or reversal."
+      "PRICE CONTEXT for held positions (compact Saxo data — fields: state, recent, r5d, r1m, r3m, volatility):"
     );
     for (const [sym, pc] of priceCtxEntries) {
-      blocks.push(`[${sym}]`, pc);
+      blocks.push(`${sym}: ${pc}`);
     }
   }
 
@@ -256,15 +256,24 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
       const entry = analysisRepository.get<Record<string, unknown>>(resolved.key);
       if (entry) {
         const r = entry.result as Record<string, unknown>;
+        // §3: Compact company context — omit prose summaries; keep actionable fields
+        const thesis = Array.isArray(r.investmentThesis)
+          ? (r.investmentThesis as Array<Record<string, unknown>>).map(p => ({ id: p.id, status: p.status }))
+          : [];
         companyContexts[ticker] = JSON.stringify({
-          executiveSummary: r.executiveSummary,
           investmentView: r.investmentView,
-          currentSituation: r.currentSituation,
-          catalysts: r.catalysts,
-          risks: r.risks,
+          investmentCaseStrength: r.investmentCaseStrength,
+          investmentCaseChange: r.investmentCaseChange,
+          thesis,
+          catalysts: Array.isArray(r.catalysts)
+            ? (r.catalysts as Array<Record<string, unknown>>).slice(0, 3).map(c => c.title ?? c)
+            : r.catalysts,
+          risks: Array.isArray(r.risks)
+            ? (r.risks as Array<Record<string, unknown>>).slice(0, 3).map(ri => ri.title ?? ri)
+            : r.risks,
           earningsAndGuidance: r.earningsAndGuidance,
-          marketSentiment: r.marketSentiment,
           keyThingsToWatch: r.keyThingsToWatch,
+          confidence: r.confidence,
         });
         matchLog.push({ symbol: ticker, key: resolved.key, method: resolved.method });
       } else {
@@ -344,24 +353,30 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
+  // §6: Only send news relevant to current holdings or explicitly High-importance
+  // items. Do not send a general list of market news to Portfolio Analyzer —
+  // macro context is already captured by Market Monitor and Sector Monitor.
+  const tickersLower = tickers.map((t) => t.toLowerCase());
   const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const newsContext = newsEntry
-    ? JSON.stringify({
-        executiveSummary: newsEntry.result.executiveSummary,
-        overallMarketImpact: newsEntry.result.overallMarketImpact,
-        topStory: newsEntry.result.topStory,
-        news: Array.isArray(newsEntry.result.news)
-          ? (newsEntry.result.news as Array<Record<string, unknown>>).map(
-              (n) => ({
-                title: n.title,
-                category: n.category,
-                importance: n.importance,
-                marketImpact: n.marketImpact,
-                affectedMarkets: n.affectedMarkets,
-              })
-            )
-          : [],
+  const filteredNews = newsEntry && Array.isArray(newsEntry.result.news)
+    ? (newsEntry.result.news as Array<Record<string, unknown>>).filter((n) => {
+        if (n.importance === "High") return true;
+        const hay = [
+          String(n.title ?? ""),
+          String(n.marketImpact ?? ""),
+          ...(Array.isArray(n.affectedSymbols) ? (n.affectedSymbols as string[]) : []),
+          ...(Array.isArray(n.affectedMarkets) ? (n.affectedMarkets as string[]) : []),
+        ].join(" ").toLowerCase();
+        return tickersLower.some((t) => hay.includes(t));
       })
+    : [];
+  const newsContext = filteredNews.length > 0
+    ? JSON.stringify(filteredNews.map((n) => ({
+        category: n.category,
+        importance: n.importance,
+        affectedSymbols: n.affectedSymbols ?? n.affectedMarkets,
+        impact: n.marketImpact,
+      })))
     : null;
 
   const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
@@ -412,10 +427,10 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
           newsContext,
           sectorContext,
           companyContexts,
-          buildPriceContextBlock(tickers)
+          buildPriceContextBlockCompact(tickers)
         ),
         { model: "gpt-4o", maxTokens: 2500, temperature: 0.1, module: "portfolio-analyzer", operation: "analyze", retryNumber: attempt }
-      ));
+      )); // §7: buildPriceContextBlockCompact replaces buildPriceContextBlock inside buildUserPrompt
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
       req.log[isLastAttempt ? "error" : "warn"](

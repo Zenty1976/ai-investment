@@ -800,3 +800,27 @@ export function formatPriceContextForPrompt(ctx: PriceContext): string {
 
   return lines.join("\n");
 }
+
+/**
+ * Returns a compact single-line JSON string suitable for downstream AI prompts.
+ *
+ * Format:  {"state":"StrongDowntrend","recent":"Stabilizing","r5d":-10.27,"r1m":-15.64,"r3m":-39.93,"volatility":"High"}
+ *
+ * Use this in downstream synthesis modules (Portfolio Analyzer, Risk Analyzer,
+ * Trade Decision Engine) where the verbose format is unnecessary.
+ * Use formatPriceContextForPrompt in modules that perform primary analysis
+ * (Company Monitor) where full detail is needed.
+ *
+ * Rules prose belongs in the system prompt — do NOT repeat it per-symbol.
+ */
+export function formatPriceContextCompact(ctx: PriceContext): string {
+  const round1 = (n: number | null) => n !== null ? Math.round(n * 10) / 10 : null;
+  return JSON.stringify({
+    state: ctx.priceState,
+    recent: ctx.recentBehavior?.state ?? null,
+    r5d: round1(ctx.returns.fiveDayPct),
+    r1m: round1(ctx.returns.thirtyDayPct),
+    r3m: round1(ctx.returns.ninetyDayPct),
+    volatility: ctx.volatility.volatilityState,
+  });
+}

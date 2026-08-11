@@ -458,7 +458,7 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
           companyContexts,
           getAllPriceContexts()
         ),
-        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1, module: "opportunity-finder", operation: "analyze", retryNumber: attempt }
+        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1, module: "opportunity-finder", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
