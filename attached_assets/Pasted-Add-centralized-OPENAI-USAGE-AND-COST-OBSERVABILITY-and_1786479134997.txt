@@ -1,0 +1,151 @@
+Add centralized OPENAI USAGE AND COST OBSERVABILITY and optimize Investor Watch execution.
+
+Do not change the analytical architecture.
+
+
+==================================================
+1. CENTRAL OPENAI USAGE TRACKING
+==================================================
+
+The existing AI service already receives OpenAI usage information such as:
+
+prompt_tokens
+completion_tokens
+total_tokens
+
+Persist usage for EVERY OpenAI request.
+
+Track at minimum:
+
+timestamp
+module
+operation
+model
+promptTokens
+completionTokens
+totalTokens
+webSearchUsed
+retryNumber
+success/failure
+skipped/not skipped
+duration
+
+If cached-token information is available from the API response, store it too.
+
+Do not estimate tokens when actual API usage is available.
+
+
+==================================================
+2. RETRIES
+==================================================
+
+Retries must be recorded as separate API usage.
+
+This is important.
+
+If Company Monitor performs:
+
+initial call
+schema retry
+repair retry
+
+we need to see the token cost of ALL calls.
+
+Never hide retry costs inside one aggregate request.
+
+
+==================================================
+3. DAILY USAGE VIEW
+==================================================
+
+Add an OpenAI Usage section to Automation/System Health or its Details dialog.
+
+Keep the main dashboard compact.
+
+Show something like:
+
+OPENAI TODAY
+
+Input tokens
+Output tokens
+Total tokens
+API calls
+Web searches
+Retries
+Skipped AI calls
+
+Then module breakdown:
+
+Company Monitor
+News Monitor
+Investor Watch
+Trade Decision
+Risk Analyzer
+...
+
+For each:
+
+calls
+input tokens
+output tokens
+total tokens
+retries
+web searches
+skipped calls
+
+
+==================================================
+4. COST
+==================================================
+
+If reliable model pricing is configured in the application, calculate estimated cost.
+
+Do NOT hardcode pricing deep inside modules.
+
+Create centralized model pricing configuration so prices can be updated easily.
+
+If pricing is unknown/outdated, show token usage without pretending the cost estimate is exact.
+
+Label calculated cost:
+
+Estimated cost
+
+
+==================================================
+5. TIME WINDOWS
+==================================================
+
+Support:
+
+Today
+Last 24h
+7 days
+30 days
+
+Also show:
+
+average tokens per successful analysis
+
+for each module.
+
+
+==================================================
+6. IDENTIFY EXPENSIVE MODULES
+==================================================
+
+Show:
+
+Top token-consuming modules
+
+and optionally:
+
+Top individual OpenAI requests
+
+This should make it easy to discover unexpected expensive behavior.
+
+
+==================================================
+7. INVESTOR WATCH
+==================================================
+
+Investor Watch currently analyzes
