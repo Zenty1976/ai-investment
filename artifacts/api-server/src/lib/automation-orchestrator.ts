@@ -1295,6 +1295,63 @@ class AutomationOrchestratorService {
         );
       }
     }
+
+    // ── §3 Dirty propagation: news-monitor / event-monitor (High) → company-monitor ──
+    //
+    // When news-monitor or event-monitor fires with a High-significance change,
+    // immediately trigger company-monitor for portfolio holding tickers that are
+    // stale or due — rather than waiting up to 6 hours for their next scheduled run.
+    //
+    // This completes the full dirty-propagation chain defined in the spec:
+    //   news-monitor/event-monitor (High) → company-monitor (holdings, if due)
+    //   → risk-analyzer / portfolio-analyzer / TDE (if due, via company-monitor holding chain above)
+    //
+    // Gate: only when the upstream changed at High level (Medium news changes are
+    // not significant enough to warrant an immediate company re-analysis).
+    if (
+      (completedModuleId === "news-monitor" || completedModuleId === "event-monitor") &&
+      meaningfulChange === "High"
+    ) {
+      const holdingTickers = this._getPortfolioTickers();
+      const cmDefaults = MODULE_DEFAULTS.find(d => d.moduleId === "company-monitor")!;
+      const cmSettings = this._moduleSettings("company-monitor");
+
+      if (cmSettings.enabled && cmSettings.supportsAutomaticRun && holdingTickers.length > 0) {
+        const minIntervalMs = cmDefaults.minimumIntervalMinutes * 60_000;
+
+        for (const ticker of holdingTickers) {
+          // Skip if this ticker's company-monitor ran too recently (minimum interval gate)
+          const cmEntry = analysisRepository.get(`company-monitor:${ticker.toUpperCase()}`);
+          const lastRunMs = cmEntry?.lastAIAnalysisAt
+            ? new Date(cmEntry.lastAIAnalysisAt).getTime()
+            : 0;
+          if (Date.now() - lastRunMs < minIntervalMs) {
+            systemLog.logInternal(MODULE_NAME,
+              `company-monitor:${ticker} not woken by ${completedModuleId} High — within minimum interval`
+            );
+            continue;
+          }
+
+          // Skip if already queued or running for this ticker
+          const alreadyQueued = this.jobs.some(j =>
+            j.moduleId === "company-monitor" &&
+            j.ticker?.toUpperCase() === ticker.toUpperCase() &&
+            (j.status === "Running" || j.status === "Pending")
+          );
+          if (alreadyQueued) continue;
+
+          systemLog.logInternal(MODULE_NAME,
+            `company-monitor:${ticker} triggered by ${completedModuleId} High change (holding — breaking news propagation)`
+          );
+          void this.triggerModule("company-monitor", "Dependency", {
+            ticker,
+            correlationId,
+            parentJobId,
+            forceAI,
+          });
+        }
+      }
+    }
   }
 
   // ── Company Monitor targeting ───────────────────────────────────────────────
