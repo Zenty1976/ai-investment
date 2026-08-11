@@ -1403,6 +1403,36 @@ class AutomationOrchestratorService {
       completeStage("trade-decision-engine");
     });
 
+    // Stage 9.5: Company Monitor — incremental pass for tickers TDE just introduced.
+    //
+    // TDE runs *after* Company Monitor in the cycle (it needs CM data as input).
+    // This means any ticker TDE newly surfaces in Stage 9 was not covered by the
+    // Stage 4 CM run.  We do a targeted follow-up here — only for tickers that are
+    // still stale or missing after Stage 4 — so the next modules (Trade Review,
+    // Command Brief) and the freshness indicator all see a fully-covered set.
+    await runIsolated("company-monitor-incremental", async () => {
+      const cmSettings = this._moduleSettings("company-monitor");
+      const agg = this._companyMonitorAggregate(cmSettings.staleAfterMinutes);
+      const needsCoverage = [...agg.staleTickers, ...agg.missingTickers];
+      if (needsCoverage.length === 0) return;
+
+      systemLog.logInfo(MODULE_NAME,
+        `Stage 9.5: Company Monitor covering ${needsCoverage.length} ticker(s) introduced by TDE — ${needsCoverage.join(", ")}`
+      );
+
+      for (const ticker of needsCoverage) {
+        try {
+          const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId });
+          await this._waitForJob(job.id, 300_000);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          systemLog.logWarning(MODULE_NAME,
+            `Stage 9.5: Company Monitor failed for ${ticker} — ${msg}`
+          );
+        }
+      }
+    });
+
     // Stage 10: Trade Review
     await runIsolated("trade-review", async () => {
       await this._runStage(["trade-review"], corrId, "RunAllNow");
