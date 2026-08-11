@@ -146,7 +146,12 @@ export interface CompanyMonitorAggregate {
   freshTargetCount: number;
   staleTargetCount: number;
   missingTargetCount: number;
+  /** @deprecated Use staleTickers + missingTickers for finer-grained checks */
   staleOrMissingTickers: string[];
+  /** Tickers that have an entry but it is past the stale window */
+  staleTickers: string[];
+  /** Tickers that have never been analysed */
+  missingTickers: string[];
 }
 
 export interface OrchestratorSettings {
@@ -687,25 +692,21 @@ class AutomationOrchestratorService {
       // opportunistic candidates (OF / TDE tickers added after CM already ran).
       //
       // Rule:
-      //  • Portfolio holding is stale/missing  → "Stale"   (critical gap)
-      //  • Only OF/TDE-only tickers are missing → "DueSoon" (next run will cover them)
-      //  • Any ticker (portfolio or not) is past its stale window → "Stale"
-      if (agg.staleTargetCount > 0) return "Stale";
-
-      if (agg.missingTargetCount > 0) {
-        // Are any of the missing tickers portfolio holdings?
+      //  • Portfolio holding is stale or missing → "Stale"   (critical gap)
+      //  • Only OF/TDE-only tickers are stale    → "DueSoon" (will be covered next cycle)
+      //  • Only OF/TDE-only tickers are missing  → "Fresh"   (discovered after this cycle ran)
+      if (agg.staleTargetCount > 0 || agg.missingTargetCount > 0) {
         const portfolioSet = new Set(this._getPortfolioTickers());
-        const missingPortfolioHolding = agg.staleOrMissingTickers.some(
-          t => portfolioSet.has(t)
-        );
-        // Portfolio holding missing → Stale.
-        // Only OF/TDE candidates missing → Fresh. These tickers were discovered by
-        // Opportunity Finder *after* Company Monitor already ran in the same cycle,
-        // so they can never be covered in the same cycle. They are opportunistic
-        // targets and will be picked up in the next scheduled cycle. Showing
-        // "DueSoon" immediately after a successful run is misleading and the
-        // scheduler treats Fresh and DueSoon identically anyway (_isFresh).
-        return missingPortfolioHolding ? "Stale" : "Fresh";
+        const hasStalePortfolioHolding = agg.staleTickers.some(t => portfolioSet.has(t));
+        const hasMissingPortfolioHolding = agg.missingTickers.some(t => portfolioSet.has(t));
+
+        if (hasStalePortfolioHolding || hasMissingPortfolioHolding) return "Stale";
+
+        // Only TDE/OF candidates are stale or missing — not a critical gap.
+        // Stale non-holdings → DueSoon (scheduler will pick them up next cycle).
+        // Missing non-holdings → Fresh (discovered by OF/TDE after this cycle ran).
+        if (agg.staleTargetCount > 0) return "DueSoon";
+        return "Fresh";
       }
 
       // All required targets are fresh.  Check DueSoon (≥ 85 % of stale window).
@@ -745,18 +746,19 @@ class AutomationOrchestratorService {
     let freshTargetCount = 0;
     let staleTargetCount = 0;
     let missingTargetCount = 0;
-    const staleOrMissingTickers: string[] = [];
+    const staleTickers: string[] = [];
+    const missingTickers: string[] = [];
 
     for (const ticker of tickers) {
       const entry = allEntries.find(e => e.moduleName === `company-monitor:${ticker}`);
       if (!entry) {
         missingTargetCount++;
-        staleOrMissingTickers.push(ticker);
+        missingTickers.push(ticker);
       } else {
         const ageMs = now - new Date(entry.updatedAt).getTime();
         if (ageMs >= staleMs) {
           staleTargetCount++;
-          staleOrMissingTickers.push(ticker);
+          staleTickers.push(ticker);
         } else {
           freshTargetCount++;
         }
@@ -768,7 +770,9 @@ class AutomationOrchestratorService {
       freshTargetCount,
       staleTargetCount,
       missingTargetCount,
-      staleOrMissingTickers,
+      staleOrMissingTickers: [...staleTickers, ...missingTickers],
+      staleTickers,
+      missingTickers,
     };
   }
 
