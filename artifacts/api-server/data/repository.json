@@ -56,9 +56,9 @@
       "analysisDuration": 3721
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-11T20:02:22.143Z",
+    "updatedAt": "2026-08-11T20:32:51.807Z",
     "materialVersion": 5,
-    "refreshVersion": 7
+    "refreshVersion": 8
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -147,85 +147,70 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Markets await U.S. July CPI amid surprise July job losses and persistent Middle East tensions disrupting energy markets.",
-      "overallMarketImpact": "Cautious—markets are holding steady ahead of key inflation data, with geopolitical risks and labor softness weighing.",
+      "executiveSummary": "Nvidia’s massive $500 billion AI infrastructure deal and surging oil prices amid Strait of Hormuz tensions dominate market moves, ahead of tomorrow’s U.S. CPI release.",
+      "overallMarketImpact": "Cautiously bullish equities offset by energy-driven inflation concerns.",
       "topStory": {
-        "title": "U.S. July CPI due amid labor weakness",
-        "summary": "July CPI release tomorrow will shape Fed expectations after surprise job losses.",
+        "title": "Nvidia $500B AI infrastructure deal",
+        "summary": "Nvidia secures $500 billion AI infrastructure financing consortium, validating AI capex cycle despite stock dip.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "us-july-jobs-surprise-2026-08-07",
-          "title": "U.S. unexpectedly lost 23,000 jobs in July",
-          "summary": "U.S. economy shed 23,000 jobs in July, missing expectations for gains.",
-          "category": "Macro",
+          "id": "nvidia-ai-infrastructure-megadeal-2026-08-10",
+          "title": "Nvidia $500B AI infrastructure deal",
+          "summary": "Nvidia lines up $500 billion AI infrastructure financing consortium, validating AI capex supercycle despite stock dip.",
+          "category": "AI",
           "importance": "High",
           "affectedMarkets": [
-            "Rates",
+            "Technology",
             "Equities"
           ],
-          "whyItMatters": "Weak labor data reduces odds of near‑term Fed rate hikes.",
-          "marketImpact": "Negative for rate‑hike expectations, supportive for equities",
+          "whyItMatters": "Massive financing underscores AI investment boom and influences tech sector sentiment.",
+          "marketImpact": "Positive for AI and tech stocks broadly, though Nvidia stock dipped on dilution concerns",
           "confidence": 0.85,
-          "source": "Reuters",
-          "publishedAt": "2026-08-07"
+          "source": "Reddit (EverHint)",
+          "publishedAt": "2026-08-11T00:00:00Z"
         },
         {
-          "id": "middle-east-tensions-oil-risk-2026-07-13",
-          "title": "Middle East tensions keep oil elevated",
-          "summary": "Escalating U.S.–Iran tensions and Strait of Hormuz risks lift oil prices.",
+          "id": "oil-surge-strait-of-hormuz-2026-08-10",
+          "title": "Oil jumps on Hormuz tensions",
+          "summary": "Oil prices rise ~5% as Strait of Hormuz standoff escalates, boosting energy sector.",
           "category": "Energy",
           "importance": "High",
           "affectedMarkets": [
-            "Commodities",
-            "Inflation"
+            "Energy",
+            "Commodities"
           ],
-          "whyItMatters": "Higher oil raises inflation risks and complicates central bank policy.",
-          "marketImpact": "Positive for oil, inflationary pressure",
+          "whyItMatters": "Supply disruption risk lifts oil prices, stoking inflation and energy sector gains.",
+          "marketImpact": "Positive for oil and energy stocks, inflationary pressure",
           "confidence": 0.8,
-          "source": "Reuters",
-          "publishedAt": "2026-07-13"
+          "source": "Reddit (EverHint)",
+          "publishedAt": "2026-08-11T00:00:00Z"
         },
         {
           "id": "markets-hold-before-cpi-2026-08-11",
-          "title": "Markets hold ahead of CPI print",
-          "summary": "S&P 500 and Nasdaq coiling below highs ahead of CPI; short positions vulnerable.",
-          "category": "Equities",
+          "title": "Markets hold ahead of CPI",
+          "summary": "Markets tread water ahead of U.S. CPI release, with indices near highs in tight pre‑inflation holding pattern.",
+          "category": "Macro",
           "importance": "Medium",
           "affectedMarkets": [
-            "Equities"
+            "Equities",
+            "Rates"
           ],
-          "whyItMatters": "Positioning suggests potential sharp moves on CPI surprise.",
-          "marketImpact": "Mixed—equities poised for volatility",
-          "confidence": 0.7,
-          "source": "Reddit",
-          "publishedAt": "2026-08-11"
-        },
-        {
-          "id": "what-to-expect-cpi-report-2026-08-10",
-          "title": "What to expect from July CPI report",
-          "summary": "Preview of July CPI ahead of Wednesday’s release.",
-          "category": "Inflation",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Rates",
-            "Inflation"
-          ],
-          "whyItMatters": "CPI outcome will influence Fed rate path.",
-          "marketImpact": "Potentially positive if cooler-than-expected",
+          "whyItMatters": "CPI data could shift Fed rate expectations and market direction.",
+          "marketImpact": "Mixed; cautious positioning ahead of inflation data",
           "confidence": 0.75,
-          "source": "Kiplinger",
-          "publishedAt": "2026-08-10"
+          "source": "Reddit (EverHint)",
+          "publishedAt": "2026-08-11T00:00:00Z"
         }
       ],
-      "timestamp": "2026-08-11T20:02:18.054Z",
-      "analysisDuration": 7991
+      "timestamp": "2026-08-11T20:32:46.562Z",
+      "analysisDuration": 5994
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-11T20:02:26.045Z",
-    "materialVersion": 7,
-    "refreshVersion": 7
+    "updatedAt": "2026-08-11T20:32:52.556Z",
+    "materialVersion": 8,
+    "refreshVersion": 8
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2679,22 +2664,40 @@
       ],
       "nothingImportantChanged": false,
       "timestamp": "2026-08-11T19:48:45.520Z",
-      "analysisDuration": 1592,
-      "lastCheckedAt": "2026-08-11T20:18:52.886Z",
+      "analysisDuration": 2933,
+      "lastCheckedAt": "2026-08-11T20:34:16.387Z",
       "lastMeaningfulUpdateAt": "2026-08-11T19:48:45.520Z",
       "noNewDevelopmentsSinceLastCheck": true
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-11T20:18:54.478Z",
-    "materialVersion": 9,
-    "refreshVersion": 9,
-    "dependencyFingerprint": "1fafzqq",
-    "lastAIAnalysisAt": "2026-08-11T20:18:52.881Z"
+    "updatedAt": "2026-08-11T20:34:19.320Z",
+    "materialVersion": 10,
+    "refreshVersion": 10,
+    "dependencyFingerprint": "1mdwal9",
+    "lastAIAnalysisAt": "2026-08-11T20:34:16.381Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-11T20:34:16.387Z",
+          "overallAlertLevel": "Medium",
+          "headline": "Riot Platforms lands $9.1B AI data-center deal, signaling sector convergence",
+          "alertCount": 0,
+          "alerts": [],
+          "newsIds": [
+            "nvidia-ai-infrastructure-megadeal-2026-08-10",
+            "oil-surge-strait-of-hormuz-2026-08-10",
+            "markets-hold-before-cpi-2026-08-11"
+          ],
+          "eventTitles": [
+            "U.S. Consumer Price Index (CPI) – July",
+            "FOMC Minutes – July Meeting",
+            "U.S. Producer Price Index (PPI) – July"
+          ],
+          "checkResult": "NoChange"
+        },
         {
           "timestamp": "2026-08-11T20:18:52.886Z",
           "overallAlertLevel": "Medium",
@@ -3142,49 +3145,13 @@
             "U.S. Producer Price Index (PPI) – July"
           ],
           "checkResult": "Meaningful"
-        },
-        {
-          "timestamp": "2026-08-11T16:56:03.026Z",
-          "overallAlertLevel": "High",
-          "headline": "Renewed Strait of Hormuz tensions elevate oil and bond markets, raising inflation and rate‑risk concerns",
-          "alertCount": 2,
-          "alerts": [
-            {
-              "title": "Strait of Hormuz tensions escalate, keeping oil prices elevated",
-              "category": "Geopolitical",
-              "importance": "High",
-              "summary": "Renewed closure risk of the Strait of Hormuz continues to disrupt oil flows, keeping Brent crude volatile above $87–90/barrel.",
-              "normalizedKey": "strait of hormuz tensions escalate, keeping oil prices elevated|geopolitical"
-            },
-            {
-              "title": "Treasury yields remain elevated amid Middle East tensions",
-              "category": "Macro",
-              "importance": "High",
-              "summary": "U.S. Treasury yields, particularly the 10‑year, remain near multi‑week highs (~4.7%), tracking oil‑driven inflation concerns.",
-              "normalizedKey": "treasury yields remain elevated amid middle east tensions|macro"
-            }
-          ],
-          "newsIds": [
-            "strait-of-hormuz-oil-supply-risk-2026-08-11",
-            "treasury-yields-rise-on-middle-east-tensions-2026-08-10",
-            "china-inflation-cools-as-oil-shock-eases-2026-08-10",
-            "fed-rate-hike-odds-rise-on-energy-shock-2026-07-29",
-            "bok-raises-rate-on-inflation-energy-2026-07-16",
-            "agricultural-commodities-rise-on-geopolitics-climate-2026-07-07"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (CPI) for July",
-            "U.S. Producer Price Index (PPI) for July",
-            "U.S. Import and Export Price Indexes (July)"
-          ],
-          "checkResult": "Meaningful"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-11T20:18:54.493Z",
-    "materialVersion": 9,
-    "refreshVersion": 9
+    "updatedAt": "2026-08-11T20:34:19.328Z",
+    "materialVersion": 10,
+    "refreshVersion": 10
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -12913,6 +12880,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-11T20:32:46.425Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-11T20:02:18.049Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -13221,9 +13194,9 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-11T20:02:22.152Z",
-    "materialVersion": 7,
-    "refreshVersion": 7
+    "updatedAt": "2026-08-11T20:32:51.821Z",
+    "materialVersion": 8,
+    "refreshVersion": 8
   },
   "company-monitor:CSCO": {
     "materialVersion": 1,

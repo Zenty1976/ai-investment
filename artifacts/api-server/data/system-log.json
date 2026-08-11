@@ -1,96 +1,5 @@
 [
   {
-    "id": "cb17c0cd-871e-41cc-9269-1452a2437d25",
-    "timestamp": "2026-08-11T19:17:54.940Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for AVGO (trigger: RunAllNow)"
-  },
-  {
-    "id": "ee297227-3ae3-49d1-a3cd-6a0cf3c7077d",
-    "timestamp": "2026-08-11T19:18:12.013Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for AVGO: NoMaterialChange, rating Buy, strength 83, meaningfulChange=None"
-  },
-  {
-    "id": "75160037-7e3c-46b7-8831-c86750aecb29",
-    "timestamp": "2026-08-11T19:18:12.019Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (17081ms, change: Medium)"
-  },
-  {
-    "id": "bf9073f9-d220-41d3-aa3a-22e37ec494e7",
-    "timestamp": "2026-08-11T19:18:12.448Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "05623caa-9bd3-4472-9377-61f1949dcfc5",
-    "timestamp": "2026-08-11T19:18:14.376Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked: no new material developments"
-  },
-  {
-    "id": "bbd4a0e4-eeba-4407-b495-d33350cca810",
-    "timestamp": "2026-08-11T19:18:14.394Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via RunAllNow (1950ms, change: Medium)"
-  },
-  {
-    "id": "126beec5-7026-463e-bace-c310f58b544a",
-    "timestamp": "2026-08-11T19:18:14.950Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "e3bc1cde-0bde-4b60-8014-bae53d9130ea",
-    "timestamp": "2026-08-11T19:18:28.950Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Risk analysis completed"
-  },
-  {
-    "id": "7112299a-ac2a-4318-95e1-26538535e668",
-    "timestamp": "2026-08-11T19:18:28.953Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Risk score: 50 ▲ 30 (was 20)"
-  },
-  {
-    "id": "34cbd569-cb4f-4594-8fbb-7efd393412b9",
-    "timestamp": "2026-08-11T19:18:28.957Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Highest portfolio risk: Serve Robotics Operational Challenges [Company, High severity]"
-  },
-  {
-    "id": "5f5c2e17-de50-471d-879f-7feaa3484716",
-    "timestamp": "2026-08-11T19:18:28.959Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Serve Robotics Operational Challenges"
-  },
-  {
-    "id": "b1df930f-631e-47bb-a3d5-6c9a0987399e",
-    "timestamp": "2026-08-11T19:18:28.961Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Macroeconomic Event Risk"
-  },
-  {
-    "id": "44eddf64-adca-400c-93df-248ac1d94262",
-    "timestamp": "2026-08-11T19:18:28.966Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "New risk detected: Geopolitical Tensions Impacting Inflation"
-  },
-  {
     "id": "4778d71e-3bfc-4541-805c-74e66984c3d1",
     "timestamp": "2026-08-11T19:18:28.969Z",
     "module": "Risk Analyzer",
@@ -3498,5 +3407,96 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "663dc31b-22ae-4466-a27b-d2701aa998ab",
+    "timestamp": "2026-08-11T20:32:46.423Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "410c695b-3c31-4e5c-baa2-84b2bbb68075",
+    "timestamp": "2026-08-11T20:32:46.433Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "c3d5d45b-c506-4d6d-bbb4-26d89500ce46",
+    "timestamp": "2026-08-11T20:32:46.820Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "a7e1d654-043b-4c87-a891-145fabcacac3",
+    "timestamp": "2026-08-11T20:32:51.819Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed (no material change): Neutral sentiment, Moderate risk — materialVersion unchanged"
+  },
+  {
+    "id": "7b1c418a-c4b0-4dda-b7b5-bf67d6c2355a",
+    "timestamp": "2026-08-11T20:32:51.847Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (5469ms, change: None)"
+  },
+  {
+    "id": "48f511c9-a623-45cd-90c6-b9a929e73803",
+    "timestamp": "2026-08-11T20:32:51.848Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "sector-monitor downstream skipped — upstream change was None"
+  },
+  {
+    "id": "1f9d5e2f-0650-47db-bffe-7f62d7a108c5",
+    "timestamp": "2026-08-11T20:32:51.850Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts downstream skipped — upstream change was None"
+  },
+  {
+    "id": "3cdbb271-3112-4b30-ab6a-1b1a475192e9",
+    "timestamp": "2026-08-11T20:32:51.951Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "8f9140d7-c035-4843-b005-fab169fb52d5",
+    "timestamp": "2026-08-11T20:32:52.564Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed (MATERIAL CHANGE): 3 market-moving stories found"
+  },
+  {
+    "id": "c41f0426-daba-4330-b823-3e2e260c78d5",
+    "timestamp": "2026-08-11T20:32:52.567Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (6178ms, change: Medium)"
+  },
+  {
+    "id": "cb22fb89-94ac-465a-87db-d6fba6d01c1e",
+    "timestamp": "2026-08-11T20:34:16.386Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "306752fb-21b9-4de5-b0f5-0b515d1d9642",
+    "timestamp": "2026-08-11T20:34:19.414Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked: no new material developments"
+  },
+  {
+    "id": "6b424a4e-8a8d-4f0c-afbe-5a2fc1850146",
+    "timestamp": "2026-08-11T20:34:19.429Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (3048ms, change: Medium)"
   }
 ]
