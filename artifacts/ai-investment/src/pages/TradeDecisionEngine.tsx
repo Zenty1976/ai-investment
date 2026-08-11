@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { format } from "date-fns"
+import { TickerBadge } from "@/components/TickerBadge"
 
 interface AiDebugInfo {
   request?: Record<string, unknown>
@@ -213,7 +214,9 @@ function DecisionCard({ decision }: { decision: TradeDecision }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 {(decision.ticker || decision.company) && (
                   <Badge variant="secondary" className="text-[10px] px-1.5 font-mono">
-                    {decision.ticker || decision.company}
+                    {decision.ticker
+                      ? <TickerBadge ticker={decision.ticker}>{decision.ticker}</TickerBadge>
+                      : decision.company}
                   </Badge>
                 )}
                 <Badge variant="secondary" className="text-[10px] px-1.5">

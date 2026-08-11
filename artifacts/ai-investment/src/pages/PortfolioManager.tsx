@@ -11,6 +11,7 @@
 
 import { useState } from "react"
 import { useGetPortfolioLive, useGetPortfolioPriceHistory, useUpdatePortfolio } from "@workspace/api-client-react"
+import { TickerBadge } from "@/components/TickerBadge"
 import type { PortfolioAccount, PortfolioPosition, PortfolioSnapshot } from "@workspace/api-client-react"
 import {
   RefreshCw,
@@ -356,9 +357,10 @@ function PositionsTable({ snapshot }: { snapshot: PortfolioSnapshot }) {
                   {/* Instrument */}
                   <td className="px-3 py-2.5">
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-semibold text-foreground">
-                        {pos.symbol || pos.name}
-                      </span>
+                      <TickerBadge
+                        ticker={pos.symbol || pos.name}
+                        className="font-semibold text-foreground"
+                      />
                       {pos.symbol && pos.name !== pos.symbol && (
                         <span className="text-[10px] text-muted-foreground/50 truncate max-w-[14rem]">
                           {pos.name}

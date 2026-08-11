@@ -39,6 +39,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { format, parseISO } from "date-fns"
+import { TickerBadge } from "@/components/TickerBadge"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -187,7 +188,7 @@ function WaitingDecisionRow({ item, isLast, onDetails }: WaitingRowProps) {
         <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
         <span className="text-[11px] font-medium text-foreground/80 truncate">{item.company}</span>
         <span className="text-[11px] text-muted-foreground/40 shrink-0">·</span>
-        <span className="text-[11px] text-muted-foreground/60 font-mono shrink-0">{item.ticker}</span>
+        <TickerBadge ticker={item.ticker} className="text-[11px] text-muted-foreground/60 font-mono shrink-0" />
         <span className="ml-auto text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors shrink-0 pl-2">
           Details →
         </span>
@@ -257,7 +258,7 @@ function ProposalCard({ proposal, qty, onQtyChange, onAction, onDetails, isMutat
             </span>
             <div className="min-w-0">
               <p className="text-sm font-semibold leading-tight truncate">{proposal.company}</p>
-              <p className="text-[11px] text-muted-foreground font-mono">{proposal.ticker}</p>
+              <TickerBadge ticker={proposal.ticker} className="text-[11px] text-muted-foreground font-mono" />
             </div>
           </div>
           <Badge variant={statusVariant(proposal.status)} className="text-[10px] px-1.5 py-0 shrink-0 mt-0.5">

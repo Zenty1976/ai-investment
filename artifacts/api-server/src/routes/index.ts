@@ -20,6 +20,7 @@ import repositoryRouter from "./repository";
 import settingsRouter from "./settings";
 import systemLogRouter from "./system-log";
 import automationRouter from "./automation";
+import priceHistoryRouter from "./price-history";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use(repositoryRouter);
 router.use(settingsRouter);
 router.use(systemLogRouter);
 router.use(automationRouter);
+router.use(priceHistoryRouter);
 
 export default router;

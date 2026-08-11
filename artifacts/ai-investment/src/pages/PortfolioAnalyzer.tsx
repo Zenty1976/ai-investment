@@ -11,6 +11,7 @@
  */
 import { useState } from "react"
 import { useRunPortfolioAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
+import { TickerBadge } from "@/components/TickerBadge"
 import type { PortfolioAnalysis } from "@workspace/api-client-react"
 import {
   AlertCircle,
@@ -572,9 +573,7 @@ export default function PortfolioAnalyzer() {
               {analysis.positionComments.map((pos, i) => (
                 <li key={i} className="px-4 py-3">
                   <div className="flex items-start gap-2.5">
-                    <span className="text-xs font-bold font-mono text-primary/80 shrink-0 mt-0.5 w-16 truncate">
-                      {pos.ticker}
-                    </span>
+                    <TickerBadge ticker={pos.ticker} className="text-xs font-bold font-mono text-primary/80 shrink-0 mt-0.5 w-16 truncate" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Badge

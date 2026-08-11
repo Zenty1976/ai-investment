@@ -84,12 +84,39 @@ interface SaxoInstrumentSearchResponse {
   Data?: SaxoInstrument[];
 }
 
-// ── Repository key ────────────────────────────────────────────────────────────
+// ── Repository keys ───────────────────────────────────────────────────────────
 
 export const PRICE_CONTEXT_KEY_PREFIX = "price-context";
 
 export function priceContextKey(symbol: string): string {
   return `${PRICE_CONTEXT_KEY_PREFIX}:${symbol.toUpperCase()}`;
+}
+
+export const PRICE_HISTORY_KEY_PREFIX = "price-history";
+
+export function priceHistoryKey(symbol: string): string {
+  return `${PRICE_HISTORY_KEY_PREFIX}:${symbol.toUpperCase()}`;
+}
+
+// ── Price History types ───────────────────────────────────────────────────────
+
+export interface PriceHistoryBar {
+  /** ISO date string (YYYY-MM-DD) */
+  date: string;
+  close: number;
+}
+
+export interface PriceHistoryEntry {
+  ticker: string;
+  bars: PriceHistoryBar[];
+  fetchedAt: string;
+}
+
+/** Price history is fresh for 4 hours */
+const PRICE_HISTORY_MAX_AGE_MS = 4 * 60 * 60 * 1000;
+
+function isPriceHistoryFresh(entry: PriceHistoryEntry): boolean {
+  return Date.now() - new Date(entry.fetchedAt).getTime() < PRICE_HISTORY_MAX_AGE_MS;
 }
 
 // ── Input descriptor ──────────────────────────────────────────────────────────
@@ -317,6 +344,84 @@ export async function fetchAndStorePriceContexts(
   );
 
   return result;
+}
+
+// ── Price History fetch + cache ───────────────────────────────────────────────
+
+/**
+ * Fetch 30 daily close prices for a ticker from Saxo and cache them in the
+ * repository as "price-history:<TICKER>".
+ *
+ * Shared across all modules — if the entry is already fresh (< 4 h old) the
+ * cached version is returned immediately without a Saxo API call.
+ *
+ * Returns null when:
+ *  - Saxo is not connected / is in mock mode
+ *  - UIC resolution fails
+ *  - Saxo chart fetch fails
+ */
+export async function fetchAndStorePriceHistory(
+  ticker: string
+): Promise<PriceHistoryEntry | null> {
+  const symbol = ticker.toUpperCase();
+  const key = priceHistoryKey(symbol);
+
+  // Return cached fresh entry immediately
+  const cached = analysisRepository.get<PriceHistoryEntry>(key);
+  if (cached && isPriceHistoryFresh(cached.result)) {
+    return cached.result;
+  }
+
+  // Require a live Saxo connection — never invent data
+  if (!saxoStore.isConnected() || saxoStore.isMockMode()) {
+    logger.warn({ symbol }, "[price-history] Saxo not connected — skipping");
+    return null;
+  }
+
+  const token = saxoStore.getAccessToken()!;
+  const env = saxoStore.getEnvironment();
+  const baseUrl = saxoBaseUrl(env);
+
+  // Strip exchange suffix for Saxo instrument search (e.g. "SERV:XNAS" → "SERV")
+  const searchTicker = symbol.includes(":") ? symbol.split(":")[0] : symbol;
+
+  const resolved = await resolveUicForTicker(searchTicker, token, baseUrl);
+  if (!resolved) {
+    logger.warn({ symbol }, "[price-history] UIC resolution failed — skipping");
+    return null;
+  }
+
+  try {
+    const bars = await fetchChartBars(resolved.uic, resolved.assetType, token, baseUrl, 32);
+
+    const validBars: PriceHistoryBar[] = bars
+      .filter((b) => typeof b.Close === "number" && b.Close > 0)
+      .slice(-30)  // last 30 trading days
+      .map((b) => ({
+        // Saxo Time format: "2025-01-15T00:00:00.000000Z" — keep date part only
+        date: b.Time.slice(0, 10),
+        close: b.Close,
+      }));
+
+    if (validBars.length < 3) {
+      logger.warn({ symbol, bars: validBars.length }, "[price-history] Too few bars — skipping");
+      return null;
+    }
+
+    const entry: PriceHistoryEntry = {
+      ticker: symbol,
+      bars: validBars,
+      fetchedAt: new Date().toISOString(),
+    };
+
+    analysisRepository.save(key, entry);
+
+    logger.info({ symbol, bars: validBars.length }, "[price-history] Stored price history");
+    return entry;
+  } catch (err) {
+    logger.warn({ err, symbol }, "[price-history] Chart fetch failed");
+    return null;
+  }
 }
 
 // ── Target extraction ─────────────────────────────────────────────────────────
