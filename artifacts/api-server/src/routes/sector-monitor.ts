@@ -222,9 +222,25 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
-      analysisRepository.save("sector-monitor", parsed.data);
+      // ── Deterministic materiality check — no AI involved ────────────────
+      // Compare the sorted sector name+rating+trend fingerprint. If the
+      // institutional view is unchanged, downstream AI modules should not re-run.
+      const prevEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
+      const prevKey = (Array.isArray(prevEntry?.result?.sectors)
+        ? (prevEntry!.result!.sectors as Array<Record<string, unknown>>)
+        : []
+      ).map(s => `${String(s["name"] ?? "")}:${String(s["rating"] ?? "")}:${String(s["trend"] ?? "")}`).sort().join(";");
+      const newKey = parsed.data.sectors.map(s => `${s.name}:${s.rating}:${s.trend}`).sort().join(";");
+      const isMaterial = prevKey !== newKey;
+
       const weakest = parsed.data.sectors[parsed.data.sectors.length - 1];
-      systemLog.logInfo("Sector Monitor", `Sector analysis completed: ${parsed.data.topSector.name} strongest, ${weakest?.name ?? "—"} weakest`);
+      if (isMaterial) {
+        analysisRepository.save("sector-monitor", parsed.data);
+        systemLog.logInfo("Sector Monitor", `Sector analysis completed (MATERIAL CHANGE): ${parsed.data.topSector.name} strongest, ${weakest?.name ?? "—"} weakest`);
+      } else {
+        analysisRepository.saveSkipped("sector-monitor", parsed.data);
+        systemLog.logInfo("Sector Monitor", `Sector analysis completed (no material change): same sector ratings — materialVersion unchanged`);
+      }
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

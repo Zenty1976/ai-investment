@@ -226,8 +226,24 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
-      analysisRepository.save("news-monitor", parsed.data);
-      systemLog.logInfo("News Monitor", `News analysis completed: ${parsed.data.news.length} market-moving stor${parsed.data.news.length !== 1 ? "ies" : "y"} found`);
+      // ── Deterministic materiality check — no AI involved ────────────────
+      // Compare sorted news-item IDs (stable kebab-case slugs). If the set of
+      // stories is unchanged, downstream AI modules should not re-run.
+      const prevEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
+      const prevIds = (Array.isArray(prevEntry?.result?.news)
+        ? (prevEntry!.result!.news as Array<Record<string, unknown>>)
+        : []
+      ).map(n => String(n["id"] ?? "")).sort().join(",");
+      const newIds = parsed.data.news.map(n => n.id).sort().join(",");
+      const isMaterial = prevIds !== newIds;
+
+      if (isMaterial) {
+        analysisRepository.save("news-monitor", parsed.data);
+        systemLog.logInfo("News Monitor", `News analysis completed (MATERIAL CHANGE): ${parsed.data.news.length} market-moving stor${parsed.data.news.length !== 1 ? "ies" : "y"} found`);
+      } else {
+        analysisRepository.saveSkipped("news-monitor", parsed.data);
+        systemLog.logInfo("News Monitor", `News analysis completed (no material change): same ${parsed.data.news.length} stor${parsed.data.news.length !== 1 ? "ies" : "y"} — materialVersion unchanged`);
+      }
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

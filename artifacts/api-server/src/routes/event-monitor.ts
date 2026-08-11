@@ -263,9 +263,25 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
-      analysisRepository.save("event-monitor", parsed.data);
+      // ── Deterministic materiality check — no AI involved ────────────────
+      // Compare the sorted set of event title+date pairs. If the scheduled
+      // events are unchanged, downstream AI modules should not re-run.
+      const prevEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
+      const prevKey = (Array.isArray(prevEntry?.result?.events)
+        ? (prevEntry!.result!.events as Array<Record<string, unknown>>)
+        : []
+      ).map(e => `${String(e["title"] ?? "")}|${String(e["date"] ?? "")}`).sort().join(";");
+      const newKey = parsed.data.events.map(e => `${e.title}|${e.date}`).sort().join(";");
+      const isMaterial = prevKey !== newKey;
+
       const highCount = parsed.data.events.filter((e) => e.importance === "High").length;
-      systemLog.logInfo("Event Monitor", `Event analysis completed: ${parsed.data.events.length} upcoming event${parsed.data.events.length !== 1 ? "s" : ""}, ${highCount} high importance`);
+      if (isMaterial) {
+        analysisRepository.save("event-monitor", parsed.data);
+        systemLog.logInfo("Event Monitor", `Event analysis completed (MATERIAL CHANGE): ${parsed.data.events.length} event${parsed.data.events.length !== 1 ? "s" : ""}, ${highCount} high importance`);
+      } else {
+        analysisRepository.saveSkipped("event-monitor", parsed.data);
+        systemLog.logInfo("Event Monitor", `Event analysis completed (no material change): same ${parsed.data.events.length} event${parsed.data.events.length !== 1 ? "s" : ""} — materialVersion unchanged`);
+      }
       res.json({ ...parsed.data, _debug: debug });
       return;
     }

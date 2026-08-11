@@ -122,7 +122,23 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
-      analysisRepository.save("market-monitor", parsed.data);
+      // ── Deterministic materiality check — no AI involved ────────────────
+      // materialVersion only increments when sentiment or risk regime changes.
+      // A run that finds the same macro state calls saveSkipped() so downstream
+      // fingerprints stay stable and AI analysis modules are not re-triggered.
+      const prev = analysisRepository.get<Record<string, unknown>>("market-monitor")?.result;
+      const isMaterial =
+        !prev ||
+        parsed.data.marketSentiment !== prev["marketSentiment"] ||
+        parsed.data.riskLevel !== prev["riskLevel"];
+
+      if (isMaterial) {
+        analysisRepository.save("market-monitor", parsed.data);
+        systemLog.logInfo("Market Monitor", `Market analysis completed (MATERIAL CHANGE): ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk`);
+      } else {
+        analysisRepository.saveSkipped("market-monitor", parsed.data);
+        systemLog.logInfo("Market Monitor", `Market analysis completed (no material change): ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk — materialVersion unchanged`);
+      }
 
       // ── Append compact history snapshot ─────────────────────────────────
       const sentimentScore =
@@ -142,7 +158,6 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
         entries: [newEntry, ...existingEntries].slice(0, MAX_HISTORY),
       });
 
-      systemLog.logInfo("Market Monitor", `Market analysis completed: ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk`);
       res.json({ ...parsed.data, _debug: debug });
       return;
     }
