@@ -952,6 +952,8 @@ export interface OrchestratorModuleStatus {
     lastError: string | null;
     currentJobId: string | null;
     waitingForDeps: OrchestratorModuleId[];
+    /** True when the most recent completed job was skipped due to unchanged inputs */
+    lastSkippedUnchanged?: boolean;
   };
   lastUpdatedAt: string | null;
   nextRunAt: string | null;
@@ -983,6 +985,10 @@ export interface OrchestratorJob {
   parentJobId: string | null;
   resultUpdated?: boolean;
   meaningfulChange?: "None" | "Low" | "Medium" | "High";
+  /** True when the AI call was skipped because dependency inputs were unchanged */
+  skippedUnchanged?: boolean;
+  /** The skip reason code, e.g. "SKIPPED_UNCHANGED" */
+  skipReason?: string;
 }
 
 // ── Trade Decision Policy ─────────────────────────────────────────────────────

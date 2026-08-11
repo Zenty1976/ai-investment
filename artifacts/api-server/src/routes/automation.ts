@@ -74,6 +74,22 @@ router.post("/automation/run-all", (_req, res): void => {
   }
 });
 
+// ── POST /automation/run-all-force ────────────────────────────────────────────
+//
+// Same as run-all but bypasses the fingerprint-skip check — every AI module
+// will make an OpenAI call regardless of whether its inputs have changed.
+// Intended for manual debugging/validation; not called by the scheduler.
+
+router.post("/automation/run-all-force", (_req, res): void => {
+  try {
+    const correlationId = automationOrchestrator.startRunAllNow({ forceAI: true });
+    res.json({ ok: true, message: "Full cycle started (force AI refresh)", correlationId });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(409).json({ error: msg });
+  }
+});
+
 // ── POST /automation/run/:moduleId ────────────────────────────────────────────
 
 router.post("/automation/run/:moduleId", (req, res): void => {

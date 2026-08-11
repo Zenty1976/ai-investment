@@ -102,6 +102,14 @@ function useRunAll() {
   })
 }
 
+function useForceRunAll() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => customFetch("/api/automation/run-all-force", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: STATUS_KEY }),
+  })
+}
+
 function useRunModule() {
   const qc = useQueryClient()
   return useMutation({
@@ -246,6 +254,9 @@ function ModuleRow({ mod, now, runModule, updateSettings, resetSettings }: Modul
             <div className="text-[10px] text-amber-400 mt-0.5">
               Waiting for: {mod.runtime.waitingForDeps.join(", ")}
             </div>
+          )}
+          {mod.runtime.lastSkippedUnchanged && mod.freshness === "Fresh" && (
+            <div className="text-[10px] text-blue-400/70 mt-0.5">Skipped — unchanged</div>
           )}
         </div>
 
@@ -483,6 +494,7 @@ export default function Automation() {
   const pause = usePause()
   const resume = useResume()
   const runAll = useRunAll()
+  const forceRunAll = useForceRunAll()
   const runModule = useRunModule()
   const updateSettings = useUpdateSettings()
   const resetSettings = useResetSettings()
@@ -647,6 +659,19 @@ export default function Automation() {
                 </Button>
               )}
 
+              {/* Force AI Refresh — bypasses fingerprint skip check */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => forceRunAll.mutate()}
+                disabled={forceRunAll.isPending || runAll.isPending || status.cycleInProgress}
+                title="Force every AI module to rerun even if inputs are unchanged. Use for debugging."
+                className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${forceRunAll.isPending ? "animate-spin" : ""}`} />
+                Force AI refresh
+              </Button>
+
               {/* Last cycle */}
               <span className="text-[10px] text-muted-foreground ml-auto w-36 text-right shrink-0 tabular-nums">
                 {status.lastFullCycleAt ? `Last cycle: ${formatRelative(status.lastFullCycleAt)}` : ""}
@@ -776,7 +801,7 @@ export default function Automation() {
                     {job.status === "Running"   && <Loader2 className="h-3.5 w-3.5 text-blue-400 animate-spin" />}
                     {job.status === "Pending"   && <Clock className="h-3.5 w-3.5 text-muted-foreground" />}
                     {job.status === "Cancelled" && <XCircle className="h-3.5 w-3.5 text-muted-foreground" />}
-                    {job.status === "Skipped"   && <Info className="h-3.5 w-3.5 text-muted-foreground" />}
+                    {job.status === "Skipped"   && <Info className={`h-3.5 w-3.5 ${job.skippedUnchanged ? "text-blue-400/60" : "text-muted-foreground"}`} />}
                   </div>
 
                   {/* Module + ticker */}

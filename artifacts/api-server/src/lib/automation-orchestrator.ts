@@ -19,6 +19,7 @@ import { randomUUID } from "crypto";
 import { analysisRepository } from "./analysis-repository.js";
 import { systemLog } from "./system-log.js";
 import { fetchAndStorePriceContexts, collectAllKnownTargets, collectOpportunityFinderTargets } from "./price-context-service.js";
+import { computeFingerprint, AI_MODULE_MAX_AGE_MINUTES } from "./dependency-fingerprint-service.js";
 
 // ── Data directory ───────────────────────────────────────────────────────────
 
@@ -101,6 +102,8 @@ export interface ModuleRuntimeState {
   lastError: string | null;
   currentJobId: string | null;
   waitingForDeps: ModuleId[];
+  /** True when the most recent completed job was skipped due to unchanged inputs */
+  lastSkippedUnchanged?: boolean;
 }
 
 export interface OrchestratorJob {
@@ -124,6 +127,10 @@ export interface OrchestratorJob {
   resultUpdated?: boolean;
   /** How materially the result changed relative to the previous stored result */
   meaningfulChange?: MeaningfulChange;
+  /** True when the AI call was skipped because dependency inputs were unchanged */
+  skippedUnchanged?: boolean;
+  /** The skip reason code, e.g. "SKIPPED_UNCHANGED" */
+  skipReason?: string;
 }
 
 export interface FullCycleRecord {
@@ -847,7 +854,7 @@ class AutomationOrchestratorService {
   async triggerModule(
     moduleId: ModuleId,
     trigger: ModuleTrigger,
-    options: { ticker?: string; parentJobId?: string; correlationId?: string } = {}
+    options: { ticker?: string; parentJobId?: string; correlationId?: string; forceAI?: boolean } = {}
   ): Promise<OrchestratorJob> {
     // Dedup: skip if already running/pending (unless ticker-specific company-monitor)
     if (moduleId !== "company-monitor" && this._hasActiveJob(moduleId)) {
@@ -878,14 +885,81 @@ class AutomationOrchestratorService {
     };
 
     this._addJob(job);
-    void this._executeJob(job);
+    void this._executeJob(job, 0, options.forceAI ?? false);
     return job;
   }
 
-  private async _executeJob(job: OrchestratorJob, retryDelay = 0): Promise<void> {
+  private async _executeJob(job: OrchestratorJob, retryDelay = 0, forceAI = false): Promise<void> {
     if (retryDelay > 0) {
       await new Promise(r => setTimeout(r, retryDelay));
     }
+
+    // ── Fingerprint skip check ─────────────────────────────────────────────────
+    // Only on the first attempt (job.attempt === 0) and when forceAI is false.
+    // Retries must always proceed — something went wrong last time.
+    if (!forceAI && job.attempt === 0) {
+      const maxAgeMin = AI_MODULE_MAX_AGE_MINUTES[job.moduleId];
+      if (maxAgeMin !== undefined) {
+        const repoKey = job.moduleId === "company-monitor" && job.ticker
+          ? `company-monitor:${job.ticker}`
+          : job.moduleId;
+        const entry = analysisRepository.get(repoKey);
+        if (entry?.dependencyFingerprint && entry?.lastAIAnalysisAt) {
+          const ageMs = Date.now() - new Date(entry.lastAIAnalysisAt).getTime();
+          if (ageMs < maxAgeMin * 60_000) {
+            // For per-ticker modules, only include the specific ticker so unrelated
+            // company changes don't cause a false fingerprint mismatch.
+            const relevantTickers = job.moduleId === "company-monitor" && job.ticker
+              ? [job.ticker]
+              : this._getTargetTickers(10);
+            const currentFingerprint = computeFingerprint(job.moduleId, relevantTickers);
+            if (currentFingerprint && currentFingerprint === entry.dependencyFingerprint) {
+              // ── SKIP: inputs unchanged within max age ────────────────────────
+              const now = new Date().toISOString();
+              job.status = "Skipped";
+              job.skippedUnchanged = true;
+              job.skipReason = "SKIPPED_UNCHANGED";
+              job.completedAt = now;
+              job.durationMs = 0;
+
+              // Refresh updatedAt so _freshness() continues to return "Fresh"
+              analysisRepository.saveSkipped(repoKey);
+
+              // Update runtime state as if the module completed successfully
+              const st = this.runtimeState.get(job.moduleId);
+              if (st) {
+                st.status = "Idle";
+                st.lastSuccessfulRunAt = now;
+                st.lastError = null;
+                st.currentJobId = null;
+                const intervalMs = this._moduleSettings(job.moduleId).intervalMinutes * 60_000;
+                st.nextRunAt = new Date(Date.now() + intervalMs).toISOString();
+                st.waitingForDeps = [];
+                st.lastSkippedUnchanged = true;
+              }
+
+              this._persist();
+              systemLog.logInternal(MODULE_NAME,
+                `${job.moduleId} SKIPPED_UNCHANGED — fingerprint: ${currentFingerprint}, ` +
+                `last AI: ${entry.lastAIAnalysisAt}, age: ${Math.round(ageMs / 60_000)}min`
+              );
+              return;
+            }
+          }
+        }
+      }
+    }
+    // ── End fingerprint skip check ─────────────────────────────────────────────
+
+    // Compute fingerprint NOW (before the AI call) so we capture the exact
+    // input state that drove this analysis, even if a dep updates mid-call.
+    // For per-ticker modules (company-monitor), only include that ticker so
+    // unrelated company changes don't pollute this ticker's fingerprint.
+    const relevantTickersForFP = job.moduleId === "company-monitor" && job.ticker
+      ? [job.ticker]
+      : this._getTargetTickers(10);
+    const pendingFingerprint = computeFingerprint(job.moduleId, relevantTickersForFP);
+    const aiCallAt = new Date().toISOString();
 
     job.status = "Running";
     job.startedAt = new Date().toISOString();
@@ -896,6 +970,7 @@ class AutomationOrchestratorService {
       st.status = "Running";
       st.currentJobId = job.id;
       st.lastRunAt = job.startedAt;
+      st.lastSkippedUnchanged = false;
     }
     this._persist();
 
@@ -941,6 +1016,15 @@ class AutomationOrchestratorService {
         ? this._computeMeaningfulChange(job.moduleId, prevEntry?.result, newEntry?.result, job.ticker)
         : "None" as MeaningfulChange;
 
+      // Store the dependency fingerprint used for this AI call so future
+      // runs can skip if inputs haven't materially changed.
+      if (pendingFingerprint) {
+        const fpKey = job.moduleId === "company-monitor" && job.ticker
+          ? `company-monitor:${job.ticker}`
+          : job.moduleId;
+        analysisRepository.setFingerprint(fpKey, pendingFingerprint, aiCallAt);
+      }
+
       // Success
       const completedMs = Date.now();
       job.status = "Completed";
@@ -966,17 +1050,17 @@ class AutomationOrchestratorService {
       );
 
       // Trigger downstream modules, gated on meaningfulChange level
-      void this._triggerDownstream(job.moduleId, job.correlationId, job.id, meaningfulChange);
+      void this._triggerDownstream(job.moduleId, job.correlationId, job.id, meaningfulChange, forceAI);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
 
       if (job.attempt < job.maxAttempts) {
-        // Exponential backoff retry
+        // Exponential backoff retry — always forceAI on retries to avoid skip check
         const backoff = 10_000 * job.attempt;
         job.status = "Pending";
         this._persist();
-        void this._executeJob(job, backoff);
+        void this._executeJob(job, backoff, true);
         return;
       }
 
@@ -1085,7 +1169,8 @@ class AutomationOrchestratorService {
     completedModuleId: ModuleId,
     correlationId: string,
     parentJobId: string,
-    meaningfulChange: MeaningfulChange = "Medium"
+    meaningfulChange: MeaningfulChange = "Medium",
+    forceAI = false
   ): void {
     // Only auto-chain in SemiAutomatic (non-paused)
     if (this.settings.mode !== "SemiAutomatic" || this.settings.paused) return;
@@ -1138,9 +1223,9 @@ class AutomationOrchestratorService {
       st.waitingForDeps = [];
 
       if (def.moduleId === "company-monitor") {
-        void this._dispatchCompanyMonitorScheduled("Dependency", correlationId, parentJobId);
+        void this._dispatchCompanyMonitorScheduled("Dependency", correlationId, parentJobId, forceAI);
       } else {
-        void this.triggerModule(def.moduleId, "Dependency", { correlationId, parentJobId });
+        void this.triggerModule(def.moduleId, "Dependency", { correlationId, parentJobId, forceAI });
       }
     }
   }
@@ -1187,11 +1272,13 @@ class AutomationOrchestratorService {
       }
     } catch { /* ignore */ }
 
-    // Opportunity Finder candidates (up to configured target limit)
+    // Opportunity Finder candidates — stored under topOpportunities in the result schema
     try {
       const of_ = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
-      const candidates = Array.isArray(of_?.result?.candidates) ? of_!.result!.candidates as Array<Record<string, unknown>> : [];
-      for (const c of candidates.slice(0, maxCount)) {
+      const tops = Array.isArray(of_?.result?.topOpportunities)
+        ? of_!.result!.topOpportunities as Array<Record<string, unknown>>
+        : [];
+      for (const c of tops.slice(0, maxCount)) {
         const ticker = String(c.ticker ?? "").toUpperCase();
         if (ticker) tickers.add(ticker);
       }
@@ -1212,7 +1299,8 @@ class AutomationOrchestratorService {
   private async _dispatchCompanyMonitorScheduled(
     trigger: ModuleTrigger,
     correlationId?: string,
-    parentJobId?: string
+    parentJobId?: string,
+    forceAI = false
   ): Promise<void> {
     const tickers = this._getTargetTickers(5);
     if (tickers.length === 0) return;
@@ -1223,6 +1311,7 @@ class AutomationOrchestratorService {
         ticker,
         correlationId: corrId,
         parentJobId,
+        forceAI,
       });
     }
   }
@@ -1234,7 +1323,7 @@ class AutomationOrchestratorService {
    * Returns the correlationId immediately; the cycle runs asynchronously.
    * Throws synchronously if a cycle is already in progress.
    */
-  startRunAllNow(): string {
+  startRunAllNow(options: { forceAI?: boolean } = {}): string {
     if (this.cycleInProgress) {
       throw new Error("A full analysis cycle is already in progress.");
     }
@@ -1260,11 +1349,11 @@ class AutomationOrchestratorService {
     systemLog.logInfo(MODULE_NAME, `Full cycle started (Run all now) [${corrId}]`);
 
     // Run asynchronously; errors are captured in the cycle record
-    void this._runFullCycle(cycle, corrId);
+    void this._runFullCycle(cycle, corrId, options.forceAI ?? false);
     return corrId;
   }
 
-  private async _runFullCycle(cycle: FullCycleRecord, corrId: string): Promise<void> {
+  private async _runFullCycle(cycle: FullCycleRecord, corrId: string, forceAI = false): Promise<void> {
     const startMs = new Date(cycle.startedAt).getTime();
     const stageErrors: Record<string, string> = {};
 
@@ -1291,7 +1380,7 @@ class AutomationOrchestratorService {
 
     // Stage 1: Portfolio Manager
     await runIsolated("portfolio-manager", async () => {
-      await this._runStage(["portfolio-manager"], corrId, "RunAllNow");
+      await this._runStage(["portfolio-manager"], corrId, "RunAllNow", forceAI);
       completeStage("portfolio-manager");
     });
 
@@ -1317,13 +1406,13 @@ class AutomationOrchestratorService {
 
     // Stage 2: Market Monitor, News Monitor, Event Monitor in parallel
     await runIsolated("market+news+event-monitor", async () => {
-      await this._runStageParallel(["market-monitor", "news-monitor", "event-monitor"], corrId, "RunAllNow");
+      await this._runStageParallel(["market-monitor", "news-monitor", "event-monitor"], corrId, "RunAllNow", forceAI);
       completeStage("market-monitor"); completeStage("news-monitor"); completeStage("event-monitor");
     });
 
     // Stage 3: Sector Monitor
     await runIsolated("sector-monitor", async () => {
-      await this._runStage(["sector-monitor"], corrId, "RunAllNow");
+      await this._runStage(["sector-monitor"], corrId, "RunAllNow", forceAI);
       completeStage("sector-monitor");
     });
 
@@ -1334,7 +1423,7 @@ class AutomationOrchestratorService {
       let cmFailures = 0;
       for (const ticker of tickers) {
         try {
-          const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId });
+          const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId, forceAI });
           await this._waitForJob(job.id, 300_000);
           cmSuccesses++;
         } catch (err) {
@@ -1358,25 +1447,25 @@ class AutomationOrchestratorService {
 
     // Stage 5: Market Alerts
     await runIsolated("market-alerts", async () => {
-      await this._runStage(["market-alerts"], corrId, "RunAllNow");
+      await this._runStage(["market-alerts"], corrId, "RunAllNow", forceAI);
       completeStage("market-alerts");
     });
 
     // Stage 6: Risk Analyzer
     await runIsolated("risk-analyzer", async () => {
-      await this._runStage(["risk-analyzer"], corrId, "RunAllNow");
+      await this._runStage(["risk-analyzer"], corrId, "RunAllNow", forceAI);
       completeStage("risk-analyzer");
     });
 
     // Stage 7: Portfolio Analyzer
     await runIsolated("portfolio-analyzer", async () => {
-      await this._runStage(["portfolio-analyzer"], corrId, "RunAllNow");
+      await this._runStage(["portfolio-analyzer"], corrId, "RunAllNow", forceAI);
       completeStage("portfolio-analyzer");
     });
 
     // Stage 8: Opportunity Finder
     await runIsolated("opportunity-finder", async () => {
-      await this._runStage(["opportunity-finder"], corrId, "RunAllNow");
+      await this._runStage(["opportunity-finder"], corrId, "RunAllNow", forceAI);
       completeStage("opportunity-finder");
     });
 
@@ -1399,7 +1488,7 @@ class AutomationOrchestratorService {
 
     // Stage 9: Trade Decision Engine
     await runIsolated("trade-decision-engine", async () => {
-      await this._runStage(["trade-decision-engine"], corrId, "RunAllNow");
+      await this._runStage(["trade-decision-engine"], corrId, "RunAllNow", forceAI);
       completeStage("trade-decision-engine");
     });
 
@@ -1422,7 +1511,7 @@ class AutomationOrchestratorService {
 
       for (const ticker of needsCoverage) {
         try {
-          const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId });
+          const job = await this.triggerModule("company-monitor", "RunAllNow", { ticker, correlationId: corrId, forceAI });
           await this._waitForJob(job.id, 300_000);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
@@ -1435,13 +1524,13 @@ class AutomationOrchestratorService {
 
     // Stage 10: Trade Review
     await runIsolated("trade-review", async () => {
-      await this._runStage(["trade-review"], corrId, "RunAllNow");
+      await this._runStage(["trade-review"], corrId, "RunAllNow", forceAI);
       completeStage("trade-review");
     });
 
     // Stage 11: Command Brief — summarises all preceding module outputs
     await runIsolated("command-brief", async () => {
-      await this._runStage(["command-brief"], corrId, "RunAllNow");
+      await this._runStage(["command-brief"], corrId, "RunAllNow", forceAI);
       completeStage("command-brief");
     });
 
@@ -1469,20 +1558,20 @@ class AutomationOrchestratorService {
     this._persistCycleHistory();
   }
 
-  private async _runStage(moduleIds: ModuleId[], corrId: string, trigger: ModuleTrigger): Promise<void> {
+  private async _runStage(moduleIds: ModuleId[], corrId: string, trigger: ModuleTrigger, forceAI = false): Promise<void> {
     for (const moduleId of moduleIds) {
       const settings = this._moduleSettings(moduleId);
       if (!settings.enabled) continue;
-      const job = await this.triggerModule(moduleId, trigger, { correlationId: corrId });
+      const job = await this.triggerModule(moduleId, trigger, { correlationId: corrId, forceAI });
       await this._waitForJob(job.id, 300_000);
     }
   }
 
-  private async _runStageParallel(moduleIds: ModuleId[], corrId: string, trigger: ModuleTrigger): Promise<void> {
+  private async _runStageParallel(moduleIds: ModuleId[], corrId: string, trigger: ModuleTrigger, forceAI = false): Promise<void> {
     const jobs = await Promise.all(
       moduleIds
         .filter(id => this._moduleSettings(id).enabled)
-        .map(id => this.triggerModule(id, trigger, { correlationId: corrId }))
+        .map(id => this.triggerModule(id, trigger, { correlationId: corrId, forceAI }))
     );
     await Promise.all(jobs.map(j => this._waitForJob(j.id, 300_000)));
   }

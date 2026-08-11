@@ -10,6 +10,13 @@
  * file. The in-memory Map is always the source of truth at runtime; the file
  * is purely for durability across server restarts.
  *
+ * Versioning:
+ *   materialVersion — incremented when content changes materially (timestamps
+ *     stripped, price-context entries use a categorical-only comparison).
+ *     Used by the dependency fingerprint service to detect meaningful changes.
+ *   refreshVersion  — incremented on every save, including no-op saves where
+ *     the result is unchanged. Useful for tracking refresh cadence.
+ *
  * The public API (save / get / getAll / has) is unchanged — callers never
  * need to know whether persistence is backed by a file or a database.
  */
@@ -17,8 +24,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 
-// process.cwd() is the api-server package directory when the dev/start scripts
-// run via pnpm --filter, so this resolves to artifacts/api-server/data/
 const DATA_DIR = resolve(process.cwd(), "data");
 const DATA_FILE = resolve(DATA_DIR, "repository.json");
 
@@ -29,8 +34,32 @@ export interface RepositoryEntry<T = unknown> {
   result: T;
   /** ISO 8601 — when this module first saved a result */
   createdAt: string;
-  /** ISO 8601 — when this module last saved a result */
+  /** ISO 8601 — when this module last saved a result (or was refreshed) */
   updatedAt: string;
+  /**
+   * Incremented when the stored result changes materially.
+   * Used by the dependency fingerprint service: when a downstream module's
+   * fingerprint includes this entry's materialVersion and it changes, the
+   * downstream module must rerun its AI call.
+   *
+   * For price-context entries: only bumped on categorical state changes
+   * (priceState, recentBehavior.state, volatilityRegime) or a ≥3% move
+   * in changePercent1W — minor daily price fluctuations are NOT material.
+   */
+  materialVersion: number;
+  /** Incremented on every save, including no-material-change saves */
+  refreshVersion: number;
+  /**
+   * Fingerprint of the dependency materialVersions used for the last AI call.
+   * Set by the orchestrator after a successful AI-backed analysis.
+   * If this matches the current fingerprint → AI call can be skipped.
+   */
+  dependencyFingerprint?: string;
+  /**
+   * ISO timestamp of the last actual OpenAI/AI call for this module.
+   * May differ from updatedAt when the orchestrator skips (SKIPPED_UNCHANGED).
+   */
+  lastAIAnalysisAt?: string;
 }
 
 class AnalysisRepository {
@@ -48,7 +77,14 @@ class AnalysisRepository {
       const raw = readFileSync(DATA_FILE, "utf-8");
       const data = JSON.parse(raw) as Record<string, RepositoryEntry>;
       for (const [key, entry] of Object.entries(data)) {
-        this.store.set(key, entry);
+        // Back-fill version fields for entries persisted before this feature was added.
+        // Spread entry first so stored values are preserved; defaults apply only when
+        // the field is absent (legacy entries written before versioning was introduced).
+        this.store.set(key, {
+          ...entry,
+          materialVersion: entry.materialVersion ?? 1,
+          refreshVersion:  entry.refreshVersion  ?? 1,
+        });
       }
       console.info(
         `[repository] Loaded ${this.store.size} module(s) from ${DATA_FILE}`
@@ -77,25 +113,149 @@ class AnalysisRepository {
     }
   }
 
+  // ── Materiality helpers ──────────────────────────────────────────────────────
+
+  /** Strip common timestamp-only fields before deep-equality comparison. */
+  private _stripTimestamps(o: unknown): unknown {
+    if (!o || typeof o !== "object") return o;
+    const obj = o as Record<string, unknown>;
+    const {
+      timestamp, generatedAt, updatedAt, lastRunAt,
+      fetchedAt, analyzedAt, asOf,
+      ...rest
+    } = obj;
+    void timestamp; void generatedAt; void updatedAt; void lastRunAt;
+    void fetchedAt; void analyzedAt; void asOf;
+    return rest;
+  }
+
+  /**
+   * Determine whether a new result is materially different from the previous
+   * one for a price-context entry.
+   *
+   * Field names are taken directly from PriceContext (price-context-calculator.ts):
+   *   priceState          — top-level string field
+   *   recentBehavior.state — categorical (RecentBehaviorState)
+   *   volatility.volatilityState  — categorical (VolatilityState)
+   *   volatility.volatilityTrend  — categorical (VolatilityTrend)
+   *   returns.fiveDayPct  — number | null
+   *
+   * Material = any categorical state change OR a ≥3 percentage-point move in
+   * the 5-day return.  Minor daily fluctuations that leave all categories
+   * unchanged are intentionally NOT material so they don't cascade AI reruns.
+   */
+  private _isPriceContextMaterial(prev: unknown, next: unknown): boolean {
+    const p = prev as Record<string, unknown>;
+    const n = next as Record<string, unknown>;
+
+    // Primary categorical state (PriceState enum)
+    if (p.priceState !== n.priceState) return true;
+
+    // Recent behaviour categorical state (RecentBehaviorState)
+    const pRb = p.recentBehavior as Record<string, unknown> | null | undefined;
+    const nRb = n.recentBehavior as Record<string, unknown> | null | undefined;
+    if ((pRb?.state ?? null) !== (nRb?.state ?? null)) return true;
+
+    // Volatility state and trend (both categorical, inside the `volatility` object)
+    const pVol = p.volatility as Record<string, unknown> | undefined;
+    const nVol = n.volatility as Record<string, unknown> | undefined;
+    if ((pVol?.volatilityState ?? null) !== (nVol?.volatilityState ?? null)) return true;
+    if ((pVol?.volatilityTrend ?? null) !== (nVol?.volatilityTrend ?? null)) return true;
+
+    // 5-day return: material if it moved ≥3 percentage points
+    const pReturns = p.returns as Record<string, unknown> | undefined;
+    const nReturns = n.returns as Record<string, unknown> | undefined;
+    const pPct = typeof pReturns?.fiveDayPct === "number" ? pReturns.fiveDayPct : 0;
+    const nPct = typeof nReturns?.fiveDayPct === "number" ? nReturns.fiveDayPct : 0;
+    if (Math.abs(nPct - pPct) >= 3) return true;
+
+    return false;
+  }
+
+  private _isMaterialChange(moduleName: string, prev: unknown, next: unknown): boolean {
+    if (!prev) return true; // first-ever save is always material
+
+    if (moduleName.startsWith("price-context:")) {
+      return this._isPriceContextMaterial(prev, next);
+    }
+
+    // Default: compare after stripping timestamps
+    const prevStr = JSON.stringify(this._stripTimestamps(prev));
+    const nextStr = JSON.stringify(this._stripTimestamps(next));
+    return prevStr !== nextStr;
+  }
+
   // ── Public API ───────────────────────────────────────────────────────────────
 
   /**
    * Save or update a module's latest result.
-   * `createdAt` is preserved on subsequent saves; only `updatedAt` changes.
+   *
+   * Always bumps refreshVersion.
+   * Bumps materialVersion only when the result changes materially
+   * (timestamps stripped; price-context uses categorical comparison).
+   *
    * Immediately writes the complete store to disk.
    */
   save<T>(moduleName: string, result: T): RepositoryEntry<T> {
     const existing = this.store.get(moduleName);
     const now = new Date().toISOString();
+
+    const prevMaterial = existing?.materialVersion ?? 0;
+    const prevRefresh  = existing?.refreshVersion  ?? 0;
+    const isMaterial   = this._isMaterialChange(moduleName, existing?.result, result);
+
     const entry: RepositoryEntry<T> = {
       moduleName,
       result,
-      createdAt: existing?.createdAt ?? now,
-      updatedAt: now,
+      createdAt:            existing?.createdAt ?? now,
+      updatedAt:            now,
+      materialVersion:      isMaterial ? prevMaterial + 1 : prevMaterial,
+      refreshVersion:       prevRefresh + 1,
+      dependencyFingerprint: existing?.dependencyFingerprint,
+      lastAIAnalysisAt:     existing?.lastAIAnalysisAt,
     };
     this.store.set(moduleName, entry as RepositoryEntry);
     this._persistToDisk();
     return entry;
+  }
+
+  /**
+   * Record a successful orchestrator check where no AI call was needed
+   * (the dependency fingerprint was unchanged).
+   *
+   * Bumps refreshVersion and updatedAt so _freshness() continues to return
+   * "Fresh". Does NOT change result, materialVersion, dependencyFingerprint,
+   * or lastAIAnalysisAt.
+   */
+  saveSkipped(moduleName: string): void {
+    const existing = this.store.get(moduleName);
+    if (!existing) return;
+    const entry: RepositoryEntry = {
+      ...existing,
+      updatedAt:      new Date().toISOString(),
+      refreshVersion: (existing.refreshVersion ?? 0) + 1,
+    };
+    this.store.set(moduleName, entry);
+    this._persistToDisk();
+  }
+
+  /**
+   * Store the dependency fingerprint and AI analysis timestamp after a
+   * successful AI-backed analysis completes. Does not change result or
+   * version numbers.
+   *
+   * Called by the orchestrator after each successful HTTP call.
+   */
+  setFingerprint(moduleName: string, fingerprint: string, lastAIAnalysisAt: string): void {
+    const existing = this.store.get(moduleName);
+    if (!existing) return;
+    const entry: RepositoryEntry = {
+      ...existing,
+      dependencyFingerprint: fingerprint,
+      lastAIAnalysisAt,
+    };
+    this.store.set(moduleName, entry);
+    this._persistToDisk();
   }
 
   /** Retrieve the latest entry for a module, or undefined if none exists. */

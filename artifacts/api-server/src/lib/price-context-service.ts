@@ -124,10 +124,17 @@ function isPriceHistoryFresh(entry: PriceHistoryEntry): boolean {
 export interface PriceContextTarget {
   /** Display symbol / repository key (e.g. "NOVO B", "AVGO"). Always stored uppercase. */
   symbol: string;
-  /** Saxo UIC for the instrument. */
-  uic: number;
-  /** Saxo AssetType (e.g. "Stock", "Etf"). */
-  assetType: string;
+  /**
+   * Saxo UIC for the instrument.
+   * Optional — if absent, resolved automatically via Saxo ref/v1/instruments search.
+   * Callers such as Company Monitor that only have a display ticker may omit this.
+   */
+  uic?: number;
+  /**
+   * Saxo AssetType (e.g. "Stock", "Etf").
+   * Optional — resolved alongside uic when absent.
+   */
+  assetType?: string;
 }
 
 // ── Saxo helpers ──────────────────────────────────────────────────────────────
