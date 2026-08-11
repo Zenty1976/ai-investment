@@ -1039,6 +1039,65 @@ export function useSetTradePolicyProfile(options?: {
   });
 }
 
+// ── OpenAI usage tracking ─────────────────────────────────────────────────────
+
+export type OpenAITimeWindow = "today" | "24h" | "7d" | "30d";
+
+export interface OpenAIModuleStats {
+  module: string;
+  calls: number;
+  successCalls: number;
+  failedCalls: number;
+  retries: number;
+  webSearches: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  cachedTokens: number;
+  /** null when model pricing is unknown */
+  estimatedCostUsd: number | null;
+  /** null when no successful calls in window */
+  avgPromptTokens: number | null;
+  avgCompletionTokens: number | null;
+  skippedCalls: number;
+}
+
+export interface OpenAIUsageStats {
+  window: OpenAITimeWindow;
+  windowStart: string;
+  totalCalls: number;
+  successCalls: number;
+  failedCalls: number;
+  retries: number;
+  webSearches: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  cachedTokens: number;
+  /** null when no calls have known pricing */
+  estimatedCostUsd: number | null;
+  skippedCalls: number;
+  byModule: OpenAIModuleStats[];
+  topModulesByTokens: Array<{
+    module: string;
+    totalTokens: number;
+    estimatedCostUsd: number | null;
+  }>;
+}
+
+export function useOpenAIUsageStats(window: OpenAITimeWindow = "today") {
+  return useQuery<OpenAIUsageStats>({
+    queryKey: ["openai-usage", window],
+    queryFn: async () => {
+      const res = await customFetch(`api/openai-usage/stats?window=${window}`);
+      if (!res.ok) throw new Error("Failed to fetch OpenAI usage stats");
+      return res.json() as Promise<OpenAIUsageStats>;
+    },
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  });
+}
+
 export interface OrchestratorStatus {
   mode: AutomationMode;
   paused: boolean;

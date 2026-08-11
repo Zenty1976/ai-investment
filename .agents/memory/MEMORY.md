@@ -8,3 +8,5 @@
 - [Test runner — vitest blocked](test-runner-node-test.md) — vitest is blocked by package firewall; use node:test with a custom esbuild runner (run-tests.mjs); set spawn cwd to a fresh tmpdir so analysis-repository starts empty.
 - [Outcome store identity model](outcome-store-identity.md) — stable subjectDecisionId ("Holding:AAPL"), exact outcomeId on proposals, "Later"→Deferred, approvedQuantity separate from executedQuantity.
 - [Price Context Architecture](price-context-architecture.md) — Saxo OHLC → deterministic metrics → repository → AI modules; Stage 1.5 in orchestrator; semantic rules in every system prompt.
+- [OpenAI Usage Tracking Architecture](openai-usage-tracking.md) — per-call tracking inside ai-service.ts; routes pass module/operation/retryNumber; skips tracked separately; MODEL_PRICING is the single pricing source.
+- [Investor Watch Two-Stage Execution](investor-watch-two-stage.md) — cheap discovery call before expensive full analysis; orchestrator-triggered only; fails-safe to full analysis if discovery errors.

@@ -77,7 +77,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso),
-        { model: "gpt-4o", maxTokens: 900, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 900, temperature: 0.1, module: "market-monitor", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -136,7 +136,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
         analysisRepository.save("market-monitor", parsed.data);
         systemLog.logInfo("Market Monitor", `Market analysis completed (MATERIAL CHANGE): ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk`);
       } else {
-        analysisRepository.saveSkipped("market-monitor", parsed.data);
+        analysisRepository.saveSkipped("market-monitor");
         systemLog.logInfo("Market Monitor", `Market analysis completed (no material change): ${parsed.data.marketSentiment} sentiment, ${parsed.data.riskLevel} risk — materialVersion unchanged`);
       }
 

@@ -333,7 +333,7 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       const { result: raw, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(input, nowIso),
-        { model: "gpt-4o", maxTokens: 1200, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 1200, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
       );
       lastDebug = debug;
 

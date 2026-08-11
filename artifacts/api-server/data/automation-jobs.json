@@ -1,27 +1,5 @@
 [
   {
-    "id": "b93cdcd4-dfef-4fce-b01d-3664113d9138",
-    "correlationId": "f76ddf94-6da4-4f1c-8879-905d92f58668",
-    "moduleId": "company-monitor",
-    "ticker": "NOVOB:XCSE",
-    "trigger": "RunAllNow",
-    "status": "Completed",
-    "priority": 35,
-    "requestedAt": "2026-08-11T19:17:30.421Z",
-    "startedAt": "2026-08-11T19:17:30.421Z",
-    "completedAt": "2026-08-11T19:17:38.389Z",
-    "durationMs": 7968,
-    "attempt": 1,
-    "maxAttempts": 2,
-    "error": null,
-    "affectedTickers": [
-      "NOVOB:XCSE"
-    ],
-    "parentJobId": null,
-    "resultUpdated": true,
-    "meaningfulChange": "Medium"
-  },
-  {
     "id": "56f0b3f2-b935-46fa-a73a-fd1c15781686",
     "correlationId": "f76ddf94-6da4-4f1c-8879-905d92f58668",
     "moduleId": "company-monitor",
@@ -1996,6 +1974,25 @@
     "error": null,
     "affectedTickers": [],
     "parentJobId": "98130432-600e-48c5-bf63-50898cd43a2b",
+    "resultUpdated": true,
+    "meaningfulChange": "Medium"
+  },
+  {
+    "id": "700ef8e5-cf25-4dae-bf80-f068213c4ec9",
+    "correlationId": "ae66e9ce-9195-4549-a72a-a316d3d9262e",
+    "moduleId": "market-alerts",
+    "trigger": "Scheduled",
+    "status": "Completed",
+    "priority": 40,
+    "requestedAt": "2026-08-11T20:18:52.880Z",
+    "startedAt": "2026-08-11T20:18:52.881Z",
+    "completedAt": "2026-08-11T20:18:54.557Z",
+    "durationMs": 1684,
+    "attempt": 1,
+    "maxAttempts": 2,
+    "error": null,
+    "affectedTickers": [],
+    "parentJobId": null,
     "resultUpdated": true,
     "meaningfulChange": "Medium"
   }

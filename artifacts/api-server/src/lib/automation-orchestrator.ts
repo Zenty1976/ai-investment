@@ -20,6 +20,7 @@ import { analysisRepository } from "./analysis-repository.js";
 import { systemLog } from "./system-log.js";
 import { fetchAndStorePriceContexts, collectAllKnownTargets, collectOpportunityFinderTargets } from "./price-context-service.js";
 import { computeFingerprint, AI_MODULE_MAX_AGE_MINUTES } from "./dependency-fingerprint-service.js";
+import { trackSkipped } from "./openai-usage-service.js";
 
 // ── Data directory ───────────────────────────────────────────────────────────
 
@@ -924,6 +925,7 @@ class AutomationOrchestratorService {
 
               // Refresh updatedAt so _freshness() continues to return "Fresh"
               analysisRepository.saveSkipped(repoKey);
+              trackSkipped(job.moduleId, "fingerprint_unchanged");
 
               // Update runtime state as if the module completed successfully
               const st = this.runtimeState.get(job.moduleId);

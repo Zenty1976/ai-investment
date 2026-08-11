@@ -1493,7 +1493,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       const { result, debug } = await callAi(
         SYSTEM_PROMPT,
         userPrompt,
-        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1, module: "trade-decision-engine", operation: "analyze", retryNumber: attempt }
       );
 
       if (res.headersSent) { clearTimeout(routeTimeoutHandle); return; }

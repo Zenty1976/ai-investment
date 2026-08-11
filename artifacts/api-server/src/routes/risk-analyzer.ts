@@ -694,7 +694,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
             )
           )
         ),
-        { model: "gpt-4o", maxTokens: 3000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 3000, temperature: 0.1, module: "risk-analyzer", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

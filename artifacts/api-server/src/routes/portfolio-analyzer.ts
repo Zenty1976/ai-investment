@@ -414,7 +414,7 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
           companyContexts,
           buildPriceContextBlock(tickers)
         ),
-        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1, module: "portfolio-analyzer", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

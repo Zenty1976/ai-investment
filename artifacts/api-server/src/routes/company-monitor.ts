@@ -992,7 +992,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
         // rejects text.format.json_object when a web_search tool is active.
         // JSON robustness is handled by the prose-extraction fallback in
         // ai-service.ts and the explicit "begin with {" instruction in retries.
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1, module: "company-monitor", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

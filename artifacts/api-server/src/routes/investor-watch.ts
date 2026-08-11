@@ -26,6 +26,7 @@ import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
+import { trackSkipped } from "../lib/openai-usage-service.js";
 import {
   INVESTOR_WATCH_CONFIG,
   getEnabledInvestors,
@@ -123,6 +124,11 @@ const MAX_ATTEMPTS = 2;
 const HISTORY_MAX = 20;
 const REPO_KEY = "investor-watch";
 const REPO_HISTORY_KEY = "investor-watch-history";
+
+// Discovery stage: skip full analysis if this many hours have passed without
+// a previous check AND the investor has been checked recently enough that we
+// can run a cheap pre-screen first.
+const DISCOVERY_MIN_AGE_HOURS = 6;
 
 // ---------------------------------------------------------------------------
 // Prompts
@@ -288,6 +294,68 @@ function buildPreviousSummary(prev: InvestorResult): string {
 }
 
 // ---------------------------------------------------------------------------
+// Discovery stage (lightweight pre-screen before expensive full analysis)
+// ---------------------------------------------------------------------------
+
+/**
+ * Stage 1: cheap web search to determine whether any new primary sources have
+ * appeared about this investor since their last analysis.
+ *
+ * Returns { hasNewDevelopments: true } → proceed with full analysis.
+ * Returns { hasNewDevelopments: false } → skip full analysis, mark NoMaterialChange.
+ *
+ * On any error the function returns { hasNewDevelopments: true } so the full
+ * analysis still runs — a failed discovery is never a reason to skip.
+ */
+async function discoverNewDevelopments(
+  investor: InvestorConfig,
+  lastCheckedAt: string
+): Promise<{ hasNewDevelopments: boolean; summary: string }> {
+  const sinceDate = lastCheckedAt.slice(0, 10); // YYYY-MM-DD
+
+  const discoverySystemPrompt =
+    `You are a research assistant checking for new public information about a specific investor.
+Search the web for any PRIMARY SOURCES published AFTER ${sinceDate}.
+
+Primary sources that count:
+- New investor letters or memos published after ${sinceDate}
+- New regulatory filings (13F, SEC filings) with a filing date after ${sinceDate}
+- Direct interviews, verified statements, or official fund communications published after ${sinceDate}
+- Reliable financial reporting (Reuters, Bloomberg, FT, WSJ, CNBC) about the investor's views or positioning published after ${sinceDate}
+
+Do NOT count:
+- General background articles about the investor not tied to a specific new event
+- Republished or recycled content originally from before ${sinceDate}
+- Speculation or aggregator summaries without a primary source date
+
+Return ONLY this JSON — no prose or markdown:
+{"hasNewDevelopments": true or false, "summary": "one sentence describing what was found, or 'No new primary sources found since ${sinceDate}'"}`;
+
+  const discoveryUserPrompt =
+    `Investor: ${investor.name} (${investor.organization})
+Check period: After ${sinceDate} (today: ${new Date().toISOString().slice(0, 10)})
+
+Search for new primary sources about this investor published after ${sinceDate}.
+Return the JSON object only.`;
+
+  try {
+    const { result } = await callAiWithWebSearch<{ hasNewDevelopments: boolean; summary: string }>(
+      discoverySystemPrompt,
+      discoveryUserPrompt,
+      { model: "gpt-4o-mini", maxTokens: 150, temperature: 0.1,
+        module: "investor-watch", operation: "discovery", retryNumber: 1 }
+    );
+    return {
+      hasNewDevelopments: result.hasNewDevelopments === true,
+      summary: typeof result.summary === "string" ? result.summary : "",
+    };
+  } catch {
+    // Discovery failed — default to running full analysis to be safe
+    return { hasNewDevelopments: true, summary: "Discovery stage failed — defaulting to full analysis" };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Repository helpers
 // ---------------------------------------------------------------------------
 
@@ -348,6 +416,38 @@ async function analyzeInvestor(
   const previousSummary = prevResult ? buildPreviousSummary(prevResult) : null;
   const isFirstRun = !prevResult;
 
+  // ── Stage 1: Lightweight discovery (orchestrator-triggered runs only) ─────────
+  // Skip expensive full analysis when no new primary sources exist since
+  // the previous check.  Manual/user-triggered runs always run a full analysis.
+  if (prevResult && isOrchestratorTrigger) {
+    const hoursSinceLast = (Date.now() - new Date(prevResult.lastCheckedAt).getTime()) / 3_600_000;
+    if (hoursSinceLast >= DISCOVERY_MIN_AGE_HOURS) {
+      systemLog.logInfo("Investor Watch",
+        `[${investor.name}] Running discovery stage (last checked ${Math.round(hoursSinceLast)}h ago)...`);
+
+      const { hasNewDevelopments, summary } = await discoverNewDevelopments(investor, prevResult.lastCheckedAt);
+
+      if (!hasNewDevelopments) {
+        systemLog.logInfo("Investor Watch",
+          `[${investor.name}] Discovery: no new primary sources — skipping full analysis. ${summary}`);
+        const updatedResult: InvestorResult = {
+          ...prevResult,
+          updateType: "NoMaterialChange",
+          changeSincePrevious: { changed: false, severity: "None", summary: "No new primary sources found since last check" },
+          lastCheckedAt: nowIso,
+        };
+        store[investor.id] = updatedResult;
+        saveStore(store);
+        trackSkipped("investor-watch", "fingerprint_unchanged");
+        return updatedResult;
+      }
+
+      systemLog.logInfo("Investor Watch",
+        `[${investor.name}] Discovery: new developments found — proceeding with full analysis. ${summary}`);
+    }
+  }
+  // ── End Stage 1 ──────────────────────────────────────────────────────────────
+
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt(investor, nowIso, previousSummary);
 
@@ -377,7 +477,7 @@ async function analyzeInvestor(
       ({ result: raw, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
         effectiveUserPrompt,
-        { model: "gpt-4o", maxTokens: 2200, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2200, temperature: 0.1, module: "investor-watch", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       if (attempt >= MAX_ATTEMPTS) {

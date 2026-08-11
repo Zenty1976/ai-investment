@@ -176,7 +176,7 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso, marketContext, eventContext),
-        { model: "gpt-4o", maxTokens: 1800, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 1800, temperature: 0.1, module: "news-monitor", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -241,7 +241,7 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
         analysisRepository.save("news-monitor", parsed.data);
         systemLog.logInfo("News Monitor", `News analysis completed (MATERIAL CHANGE): ${parsed.data.news.length} market-moving stor${parsed.data.news.length !== 1 ? "ies" : "y"} found`);
       } else {
-        analysisRepository.saveSkipped("news-monitor", parsed.data);
+        analysisRepository.saveSkipped("news-monitor");
         systemLog.logInfo("News Monitor", `News analysis completed (no material change): same ${parsed.data.news.length} stor${parsed.data.news.length !== 1 ? "ies" : "y"} — materialVersion unchanged`);
       }
       res.json({ ...parsed.data, _debug: debug });

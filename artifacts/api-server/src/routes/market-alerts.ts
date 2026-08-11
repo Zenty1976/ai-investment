@@ -555,7 +555,7 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         userPromptText,
-        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1, module: "market-alerts", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

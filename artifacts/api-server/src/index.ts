@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { maybeSaxoRefresh } from "./routes/settings";
 import { automationOrchestrator } from "./lib/automation-orchestrator";
 import { initPolicyStore } from "./lib/trade-decision-policy-store";
+import { initUsageLog } from "./lib/openai-usage-service";
 
 const rawPort = process.env["PORT"];
 
@@ -22,6 +23,9 @@ if (Number.isNaN(port) || port <= 0) {
 // This validates all built-in profiles (fail-fast) and loads the persisted
 // profile selection from the analysis repository.
 initPolicyStore();
+
+// Load persisted OpenAI usage log from disk.
+initUsageLog();
 
 app.listen(port, (err) => {
   if (err) {

@@ -6,6 +6,7 @@
  */
 import OpenAI from "openai";
 import { logger } from "./logger";
+import { trackUsage } from "./openai-usage-service.js";
 
 let _client: OpenAI | null = null;
 
@@ -30,6 +31,21 @@ export interface AiServiceOptions {
    * in Chat Completions.
    */
   jsonMode?: boolean;
+  /**
+   * Module name for usage tracking, e.g. "market-monitor", "company-monitor".
+   * If omitted the call is tracked under "unknown".
+   */
+  module?: string;
+  /**
+   * Operation label for usage tracking, e.g. "analyze", "discovery", "repair-retry".
+   * Defaults to "analyze".
+   */
+  operation?: string;
+  /**
+   * Which attempt this is: 1 = first, 2+ = retry.
+   * Each attempt is recorded as a separate usage record.
+   */
+  retryNumber?: number;
 }
 
 // ── Debug metadata ────────────────────────────────────────────────────────────
@@ -112,9 +128,13 @@ export async function callAi<T>(
   userPrompt: string,
   options: AiServiceOptions = {}
 ): Promise<AiCallResult<T>> {
-  const { model = "gpt-4o-mini", maxTokens = 512, temperature = 0.3 } = options;
+  const {
+    model = "gpt-4o-mini", maxTokens = 512, temperature = 0.3,
+    module: mod = "unknown", operation = "analyze", retryNumber = 1,
+  } = options;
   const client = getClient();
   const calledAt = new Date().toISOString();
+  const callStart = Date.now();
 
   const requestPayload = {
     model,
@@ -129,17 +149,55 @@ export async function callAi<T>(
 
   logger.debug({ model }, "Calling OpenAI (chat completions)");
 
-  const response = await client.chat.completions.create(requestPayload);
+  let response: Awaited<ReturnType<typeof client.chat.completions.create>>;
+  try {
+    response = await client.chat.completions.create(requestPayload);
+  } catch (err) {
+    trackUsage({
+      timestamp: calledAt, module: mod, operation, model,
+      promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0,
+      webSearchUsed: false, retryNumber, success: false,
+      durationMs: Date.now() - callStart,
+    });
+    throw err;
+  }
+
+  const promptTokens     = response.usage?.prompt_tokens     ?? 0;
+  const completionTokens = response.usage?.completion_tokens ?? 0;
+  const totalTokens      = response.usage?.total_tokens      ?? 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cachedTokens     = (response.usage as any)?.prompt_tokens_details?.cached_tokens ?? 0;
 
   const raw = response.choices[0]?.message?.content;
-  if (!raw) throw new Error("OpenAI returned an empty response");
+  if (!raw) {
+    trackUsage({
+      timestamp: calledAt, module: mod, operation, model,
+      promptTokens, completionTokens, totalTokens, cachedTokens,
+      webSearchUsed: false, retryNumber, success: false,
+      durationMs: Date.now() - callStart,
+    });
+    throw new Error("OpenAI returned an empty response");
+  }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch {
+    trackUsage({
+      timestamp: calledAt, module: mod, operation, model,
+      promptTokens, completionTokens, totalTokens, cachedTokens,
+      webSearchUsed: false, retryNumber, success: false,
+      durationMs: Date.now() - callStart,
+    });
     throw new Error(`OpenAI returned invalid JSON: ${raw.slice(0, 200)}`);
   }
+
+  trackUsage({
+    timestamp: calledAt, module: mod, operation, model,
+    promptTokens, completionTokens, totalTokens, cachedTokens,
+    webSearchUsed: false, retryNumber, success: true,
+    durationMs: Date.now() - callStart,
+  });
 
   return {
     result: parsed as T,
@@ -147,9 +205,9 @@ export async function callAi<T>(
       request: requestPayload as unknown as Record<string, unknown>,
       rawResponse: raw,
       usage: {
-        prompt_tokens: response.usage?.prompt_tokens ?? null,
-        completion_tokens: response.usage?.completion_tokens ?? null,
-        total_tokens: response.usage?.total_tokens ?? null,
+        prompt_tokens: promptTokens,
+        completion_tokens: completionTokens,
+        total_tokens: totalTokens,
       },
       calledAt,
       webSearchUsed: false,
@@ -182,9 +240,13 @@ export async function callAiWithWebSearch<T>(
   userPrompt: string,
   options: AiServiceOptions = {}
 ): Promise<WebSearchAiCallResult<T>> {
-  const { model = "gpt-4o-mini", maxTokens = 1200, temperature = 0.3, jsonMode = false } = options;
+  const {
+    model = "gpt-4o-mini", maxTokens = 1200, temperature = 0.3, jsonMode = false,
+    module: mod = "unknown", operation = "analyze", retryNumber = 1,
+  } = options;
   const client = getClient();
   const calledAt = new Date().toISOString();
+  const callStart = Date.now();
 
   // Build the request payload BEFORE the network call so it is always
   // available for debug output even if the call times out or errors.
@@ -243,6 +305,12 @@ export async function callAiWithWebSearch<T>(
   } catch (err) {
     clearTimeout(timeoutHandle);
     const isAbort = controller.signal.aborted;
+    trackUsage({
+      timestamp: calledAt, module: mod, operation, model,
+      promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0,
+      webSearchUsed: false, retryNumber, success: false,
+      durationMs: Date.now() - callStart,
+    });
     fail(
       isAbort ? "timeout" : "request",
       isAbort
@@ -387,13 +455,26 @@ export async function callAiWithWebSearch<T>(
     }
   }
 
+  const promptTokens     = response.usage?.input_tokens  ?? 0;
+  const completionTokens = response.usage?.output_tokens ?? 0;
+  const totalTokens      = response.usage?.total_tokens  ?? 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cachedTokens     = (response.usage as any)?.input_tokens_details?.cached_tokens ?? 0;
+
+  trackUsage({
+    timestamp: calledAt, module: mod, operation, model,
+    promptTokens, completionTokens, totalTokens, cachedTokens,
+    webSearchUsed, retryNumber, success: true,
+    durationMs: Date.now() - callStart,
+  });
+
   const debug: AiDebugInfo = {
     request: requestPayload as unknown as Record<string, unknown>,
     rawResponse: rawText,
     usage: {
-      prompt_tokens: response.usage?.input_tokens ?? null,
-      completion_tokens: response.usage?.output_tokens ?? null,
-      total_tokens: response.usage?.total_tokens ?? null,
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+      total_tokens: totalTokens,
     },
     calledAt,
     webSearchUsed,

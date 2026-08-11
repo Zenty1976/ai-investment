@@ -191,7 +191,7 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso, marketContext, eventContext, newsContext),
-        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1, module: "sector-monitor", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -238,7 +238,7 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
         analysisRepository.save("sector-monitor", parsed.data);
         systemLog.logInfo("Sector Monitor", `Sector analysis completed (MATERIAL CHANGE): ${parsed.data.topSector.name} strongest, ${weakest?.name ?? "—"} weakest`);
       } else {
-        analysisRepository.saveSkipped("sector-monitor", parsed.data);
+        analysisRepository.saveSkipped("sector-monitor");
         systemLog.logInfo("Sector Monitor", `Sector analysis completed (no material change): same sector ratings — materialVersion unchanged`);
       }
       res.json({ ...parsed.data, _debug: debug });

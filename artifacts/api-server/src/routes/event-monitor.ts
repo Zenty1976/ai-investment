@@ -137,7 +137,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso, todayStr, endDateStr, marketContext),
-        { model: "gpt-4o", maxTokens: 1500, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 1500, temperature: 0.1, module: "event-monitor", operation: "analyze", retryNumber: attempt }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -279,7 +279,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
         analysisRepository.save("event-monitor", parsed.data);
         systemLog.logInfo("Event Monitor", `Event analysis completed (MATERIAL CHANGE): ${parsed.data.events.length} event${parsed.data.events.length !== 1 ? "s" : ""}, ${highCount} high importance`);
       } else {
-        analysisRepository.saveSkipped("event-monitor", parsed.data);
+        analysisRepository.saveSkipped("event-monitor");
         systemLog.logInfo("Event Monitor", `Event analysis completed (no material change): same ${parsed.data.events.length} event${parsed.data.events.length !== 1 ? "s" : ""} — materialVersion unchanged`);
       }
       res.json({ ...parsed.data, _debug: debug });
