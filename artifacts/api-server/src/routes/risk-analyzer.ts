@@ -15,10 +15,10 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunRiskAnalyzerResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
-import { getAllPriceContexts } from "../lib/price-context-service.js";
+import { buildPriceContextBlock } from "../lib/price-context-service.js";
 
 const router: IRouter = Router();
 
@@ -303,12 +303,6 @@ const SYSTEM_PROMPT = `You are an experienced institutional portfolio risk manag
 
 Your task is to identify, explain, and prioritize the risks affecting the current portfolio over the next 1–3 months.
 
-WEB SEARCH REQUIREMENT:
-You must perform a web search before producing your analysis. Search for:
-- Recent developments that could affect the held companies or their sectors
-- Current macroeconomic and geopolitical risk factors
-- Upcoming events, earnings, or catalysts that could pose risk to the portfolio
-
 PORTFOLIO-LEVEL FOCUS — CRITICAL:
 Analyse how risks affect the portfolio as a whole. Do not simply repeat separate company risks.
 Prefer portfolio-level conclusions such as:
@@ -339,8 +333,7 @@ INFORMATION PRIORITY:
 5. Sector Monitor
 6. Market Monitor
 7. News Monitor
-8. Web search results
-9. Opportunity Finder — describes possible future investments only; treat candidates as non-holdings; use only to identify research gaps or risks connected to suggested future opportunities
+8. Opportunity Finder — describes possible future investments only; treat candidates as non-holdings; use only to identify research gaps or risks connected to suggested future opportunities
 
 OBJECTIVE:
 Focus entirely on risk. Do not recommend buying or selling.
@@ -681,7 +674,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
     let debug: AiDebugInfo;
 
     try {
-      ({ result, debug } = await callAiWithWebSearch<unknown>(
+      ({ result, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(
           nowIso,
@@ -693,9 +686,15 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
           newsContext,
           sectorContext,
           companyContexts,
-          getAllPriceContexts()
+          buildPriceContextBlock(
+            accounts.flatMap(a =>
+              Array.isArray(a.positions)
+                ? (a.positions as Array<Record<string, unknown>>).map(p => String(p.symbol ?? "").toUpperCase()).filter(Boolean)
+                : []
+            )
+          )
         ),
-        { model: "gpt-4o", maxTokens: 5000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 3000, temperature: 0.1 }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

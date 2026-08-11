@@ -458,7 +458,7 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
           companyContexts,
           getAllPriceContexts()
         ),
-        { model: "gpt-4o", maxTokens: 5000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1 }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

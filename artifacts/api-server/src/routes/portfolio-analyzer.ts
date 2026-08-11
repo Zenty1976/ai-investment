@@ -15,10 +15,10 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunPortfolioAnalysisResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
-import { getAllPriceContexts } from "../lib/price-context-service.js";
+import { buildPriceContextBlock } from "../lib/price-context-service.js";
 
 const router: IRouter = Router();
 
@@ -33,21 +33,16 @@ const SYSTEM_PROMPT = `You are an experienced institutional portfolio manager.
 
 Your task is to analyse the user's current portfolio for an investment horizon of approximately 1–3 months.
 
-WEB SEARCH REQUIREMENT:
-You must perform a web search before producing your analysis. Search for recent developments, price moves, news and events relevant to the held positions and the broader market.
-
-INFORMATION PRIORITY (after you have searched):
+INFORMATION PRIORITY:
 1. Current portfolio positions, position sizes, and cash
 2. Existing Company Monitor analyses for held companies (use as primary company-specific context)
 3. Sector Monitor
 4. Event Monitor
 5. Market Monitor
 6. News Monitor
-7. Web search results (use to verify and supplement the stored analyses — not to replace them)
 
 Use the supplied module analyses as the primary analytical context.
 Do not disregard or unnecessarily repeat the supplied analyses.
-If fresh web information conflicts with stored context, prefer the newer reliable information and mention the conflict in the analysis.
 Company-specific information should take priority over broad macro commentary when assessing an individual holding.
 Broad market information should only affect a position assessment when it is materially relevant.
 
@@ -407,7 +402,7 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     let debug: AiDebugInfo;
 
     try {
-      ({ result, debug } = await callAiWithWebSearch<unknown>(
+      ({ result, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(
           nowIso,
@@ -417,9 +412,9 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
           newsContext,
           sectorContext,
           companyContexts,
-          getAllPriceContexts()
+          buildPriceContextBlock(tickers)
         ),
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1 }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

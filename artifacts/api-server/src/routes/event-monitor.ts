@@ -137,7 +137,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso, todayStr, endDateStr, marketContext),
-        { model: "gpt-4o", maxTokens: 2000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 1500, temperature: 0.1 }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

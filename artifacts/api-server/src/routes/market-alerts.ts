@@ -14,7 +14,7 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunMarketAlertsResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 
@@ -76,12 +76,6 @@ function computeAlertStatus(
 const SYSTEM_PROMPT = `You are an institutional portfolio attention manager.
 
 Your only task is to identify important developments that require the user's attention since the previous update.
-
-WEB SEARCH REQUIREMENT:
-You must perform a web search before producing your analysis. Search specifically for:
-- Breaking news or developments affecting the held portfolio companies since the previous analysis timestamp
-- New macroeconomic or geopolitical developments since then
-- Any earnings results, guidance updates, or analyst actions since the previous analysis
 
 CORE PRINCIPLE:
 Answer exactly one question: "What has changed since the last analysis that deserves attention?"
@@ -558,10 +552,10 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
     let debug: AiDebugInfo;
 
     try {
-      ({ result, debug } = await callAiWithWebSearch<unknown>(
+      ({ result, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         userPromptText,
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1 }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;

@@ -18,12 +18,12 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunTradeDecisionEngineResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import type { RepositoryEntry } from "../lib/analysis-repository.js";
 import { getActivePolicyConfig, getActivePolicyProfile } from "../lib/trade-decision-policy-store.js";
-import { getAllPriceContexts } from "../lib/price-context-service.js";
+import { buildPriceContextBlock } from "../lib/price-context-service.js";
 import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
 import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
@@ -999,7 +999,6 @@ INFORMATION PRIORITY (use when resolving conflicts):
 8. Sector Monitor
 9. Market Monitor
 10. News Monitor
-11. Web search (verification only — do not let it replace stored specialist analyses)
 
 DECISION REQUIREMENTS — for each decision state:
 - subject, decision type, reason
@@ -1014,7 +1013,7 @@ CONSISTENCY RULES:
 - If blockedByEvent is true: blockingEvent must name the event; blockingEventDate must be YYYY-MM-DD or empty string if date is unverified.
 - If blockedByEvent is false: blockingEvent and blockingEventDate must be empty strings "".
 - company and ticker must be empty strings "" for Portfolio-level decisions.
-- sourceModules must list only modules that provided material evidence for that specific decision. Use exactly these values with no spaces: PortfolioManager, PortfolioAnalyzer, RiskAnalyzer, MarketAlerts, CompanyMonitor, OpportunityFinder, EventMonitor, SectorMonitor, MarketMonitor, NewsMonitor, Web.
+- sourceModules must list only modules that provided material evidence for that specific decision. Use exactly these values with no spaces: PortfolioManager, PortfolioAnalyzer, RiskAnalyzer, MarketAlerts, CompanyMonitor, OpportunityFinder, EventMonitor, SectorMonitor, MarketMonitor, NewsMonitor.
 - Return 3–8 decisions, most important first.
 - Return 3–6 readiness drivers.
 - Do not create duplicate decisions for the same subject and decision type.
@@ -1027,8 +1026,6 @@ SIZING GUIDANCE: For every PrepareToBuy and PrepareToReduce decision, include fo
 - sizingReason (string, one sentence maximum): core rationale for this sizing only.
 
 ACCOUNT CONSIDERATIONS: Distinguish precisely: (1) trading/account currency; (2) instrument currency; (3) investor base-currency exposure; (4) underlying company currency exposure. Do not write categorical statements such as "FX neutral". Phase 1 must not select accounts or place orders.
-
-You must perform a web search to verify current information for any decision based on earnings, guidance, legal developments, regulatory decisions, significant price moves, analyst actions or macroeconomic events.
 
 Return JSON only — no markdown, no code fences, no extra text.
 Do not include timestamp or analysisDuration — the server sets those.
@@ -1444,9 +1441,13 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     userPromptSections.push(`\nCOMPANY MONITOR DATA (priority 5): None available. Treat this as missing evidence for every holding.`);
   }
 
-  // Price Context — deterministic backend data from Saxo historical prices
-  const allPriceContexts = getAllPriceContexts();
-  const priceCtxEntries = Object.entries(allPriceContexts);
+  // Price Context — only relevant symbols: portfolio holdings + current OF candidates
+  const relevantPriceSymbols = [...new Set([
+    ...allPositions.map(p => p.ticker),
+    ...rawOpportunities.map(o => String(o.ticker ?? "").toUpperCase()).filter(Boolean),
+  ])];
+  const relevantPriceContexts = buildPriceContextBlock(relevantPriceSymbols);
+  const priceCtxEntries = Object.entries(relevantPriceContexts);
   if (priceCtxEntries.length > 0) {
     const pcLines = priceCtxEntries.map(([sym, pc]) => `[${sym}]\n${pc}`).join("\n\n");
     userPromptSections.push(
@@ -1478,7 +1479,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
   userPromptSections.push(
     `\nTask: Based on all the above, produce 3–8 cautious decision proposals for the next 1–3 months. ` +
-    `Resolve conflicts between modules. Use web search to verify current information for time-sensitive decisions. ` +
+    `Resolve conflicts between modules. ` +
     `Remember: PrepareToBuy and PrepareToReduce require ≥2 independent analytical sources — the backend verifies this from data, not just sourceModules claims.`
   );
 
@@ -1489,10 +1490,10 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     if (routeTimedOut || res.headersSent) break;
 
     try {
-      const { result, debug } = await callAiWithWebSearch(
+      const { result, debug } = await callAi(
         SYSTEM_PROMPT,
         userPrompt,
-        { model: "gpt-4o", maxTokens: 6000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1 }
       );
 
       if (res.headersSent) { clearTimeout(routeTimeoutHandle); return; }

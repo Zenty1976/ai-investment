@@ -377,7 +377,7 @@ async function analyzeInvestor(
       ({ result: raw, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
         effectiveUserPrompt,
-        { model: "gpt-4o", maxTokens: 3000, temperature: 0.1 }
+        { model: "gpt-4o", maxTokens: 2200, temperature: 0.1 }
       ));
     } catch (err) {
       if (attempt >= MAX_ATTEMPTS) {

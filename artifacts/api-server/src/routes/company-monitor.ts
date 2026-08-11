@@ -809,18 +809,41 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
+  // Resolve company sector from prior analysis for relevance filtering
+  const companySector = String((prevAnalysis?.company as Record<string, unknown> | undefined)?.sector ?? "").toLowerCase();
+  const tickerLower = ticker.toLowerCase();
+
+  // Helper: is this item relevant to the company being analysed?
+  // Keeps High-importance items always; filters Medium/Low by ticker or sector match.
+  function isRelevantItem(item: Record<string, unknown>): boolean {
+    if (item.importance === "High") return true;
+    const haystack = [
+      String(item.title ?? ""),
+      String(item.expectedImpact ?? ""),
+      String(item.marketImpact ?? ""),
+      ...(Array.isArray(item.affectedMarkets) ? (item.affectedMarkets as string[]) : []),
+      ...(Array.isArray(item.affectedSymbols) ? (item.affectedSymbols as string[]) : []),
+    ].join(" ").toLowerCase();
+    return (
+      haystack.includes(tickerLower) ||
+      (companySector.length > 0 && haystack.includes(companySector))
+    );
+  }
+
   const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
   const eventContext = eventEntry
     ? JSON.stringify({
         summary: eventEntry.result.summary,
         nextMajorEvent: eventEntry.result.nextMajorEvent,
         events: Array.isArray(eventEntry.result.events)
-          ? (eventEntry.result.events as Array<Record<string, unknown>>).map((e) => ({
-              title: e.title,
-              date: e.date,
-              importance: e.importance,
-              expectedImpact: e.expectedImpact,
-            }))
+          ? (eventEntry.result.events as Array<Record<string, unknown>>)
+              .filter(isRelevantItem)
+              .map((e) => ({
+                title: e.title,
+                date: e.date,
+                importance: e.importance,
+                expectedImpact: e.expectedImpact,
+              }))
           : [],
       })
     : null;
@@ -830,15 +853,15 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
     ? JSON.stringify({
         executiveSummary: newsEntry.result.executiveSummary,
         overallMarketImpact: newsEntry.result.overallMarketImpact,
-        topStory: newsEntry.result.topStory,
         news: Array.isArray(newsEntry.result.news)
-          ? (newsEntry.result.news as Array<Record<string, unknown>>).map((n) => ({
-              title: n.title,
-              category: n.category,
-              importance: n.importance,
-              marketImpact: n.marketImpact,
-              affectedMarkets: n.affectedMarkets,
-            }))
+          ? (newsEntry.result.news as Array<Record<string, unknown>>)
+              .filter(isRelevantItem)
+              .map((n) => ({
+                title: n.title,
+                category: n.category,
+                importance: n.importance,
+                marketImpact: n.marketImpact,
+              }))
           : [],
       })
     : null;
@@ -846,16 +869,21 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
   const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
   const sectorContextStr = sectorEntry
     ? JSON.stringify({
-        executiveSummary: sectorEntry.result.executiveSummary,
         overallOutlook: sectorEntry.result.overallOutlook,
-        topSector: sectorEntry.result.topSector,
+        // Only include sectors relevant to the company (matching sector or macro-level)
         sectors: Array.isArray(sectorEntry.result.sectors)
-          ? (sectorEntry.result.sectors as Array<Record<string, unknown>>).map((s) => ({
-              name: s.name,
-              rating: s.rating,
-              trend: s.trend,
-              summary: s.summary,
-            }))
+          ? (sectorEntry.result.sectors as Array<Record<string, unknown>>)
+              .filter((s) =>
+                companySector.length === 0 ||
+                String(s.name ?? "").toLowerCase().includes(companySector) ||
+                companySector.includes(String(s.name ?? "").toLowerCase())
+              )
+              .map((s) => ({
+                name: s.name,
+                rating: s.rating,
+                trend: s.trend,
+                summary: s.summary,
+              }))
           : [],
       })
     : null;
