@@ -1,0 +1,327 @@
+We need to optimize OpenAI token usage across the AI Investor Command Center.
+
+IMPORTANT:
+Do NOT redesign the application architecture.
+Do NOT remove existing analysis capabilities.
+Do NOT change the meaning of existing module outputs.
+Do NOT change the stateful Company Monitor logic.
+Do NOT change Trade Decision / Trade Review responsibilities.
+
+The goal is:
+
+SAME OR BETTER ANALYTICAL QUALITY
+WITH MUCH LOWER OPENAI TOKEN USAGE.
+
+Before modifying anything, inspect the ACTUAL current implementation and identify exactly what each OpenAI call currently sends.
+
+The main problem is that large outputs from upstream modules are repeatedly sent into downstream OpenAI calls, often together with overlapping information and another mandatory web search.
+
+We need to stop repeatedly sending the same information.
+
+
+==================================================
+1. CREATE COMPACT AI CONTEXTS
+==================================================
+
+For modules whose results are consumed by other AI modules, create a compact machine-to-machine representation.
+
+Call it conceptually:
+
+aiContext
+
+This is NOT a replacement for the full module result displayed to the user.
+
+Each module should still store/display its full analysis exactly as needed.
+
+aiContext exists specifically for downstream AI consumption.
+
+Examples:
+
+Market Monitor aiContext:
+
+{
+  "state": "Neutral",
+  "riskLevel": "Moderate",
+  "materialChanges": [
+    "...",
+    "..."
+  ],
+  "sectorImplications": [...],
+  "portfolioImplications": [...]
+}
+
+News Monitor:
+
+{
+  "overallImpact": "Negative",
+  "materialNews": [
+    {
+      "topic": "...",
+      "impact": "...",
+      "affectedSymbols": [...]
+    }
+  ]
+}
+
+Event Monitor:
+
+{
+  "nextMajorEvents": [
+    {
+      "event": "...",
+      "date": "...",
+      "impact": "...",
+      "affectedSymbols": [...]
+    }
+  ]
+}
+
+Company Monitor:
+
+{
+  "symbol": "SERV:XNAS",
+  "view": "Watch",
+  "caseStrength": 25,
+  "materialChange": true,
+  "thesisChanges": [...],
+  "keyCatalysts": [...],
+  "keyRisks": [...],
+  "priceContextSummary": {
+      "priceState": "...",
+      "recentBehavior": "...",
+      "volatility": "..."
+  }
+}
+
+These are examples only.
+
+Inspect the existing schemas and reuse existing structured fields wherever possible.
+
+DO NOT create another OpenAI call to generate aiContext.
+
+Generate aiContext deterministically from the already existing module result.
+
+Keep aiContext small and structured.
+
+
+==================================================
+2. DOWNSTREAM MODULES SHOULD USE aiContext
+==================================================
+
+Inspect these modules carefully:
+
+- Risk Analyzer
+- Portfolio Analyzer
+- Opportunity Finder
+- Trade Decision
+- Command Brief
+- any other module consuming outputs from other modules
+
+Where they currently insert large/full upstream module results into OpenAI prompts, replace those with the compact aiContext when the detailed data is not necessary.
+
+Do NOT blindly remove information.
+
+For each consumer determine:
+
+"What information does this module actually need to perform its responsibility?"
+
+Send only that.
+
+
+==================================================
+3. TRADE DECISION PRICE CONTEXT
+==================================================
+
+The current Trade Decision implementation uses:
+
+getAllPriceContexts()
+
+This is unnecessarily broad.
+
+Trade Decision should NOT receive Price Context for every company ever analyzed.
+
+Only send Price Context for relevant symbols:
+
+- current portfolio holdings
+- current Opportunity Finder candidates
+- companies with active PrepareToBuy / PrepareToReduce / Watch decisions where relevant
+- other symbols explicitly involved in the current decision cycle
+
+Deduplicate symbols.
+
+Do not send unrelated historical company Price Contexts.
+
+
+==================================================
+4. COMPANY MONITOR INPUT
+==================================================
+
+Company Monitor may still require richer information because it performs deep company analysis.
+
+However, inspect its current prompt and remove duplicated information.
+
+If Market Monitor / News Monitor / Sector Monitor / Event Monitor already provide structured conclusions, prefer compact relevant subsets.
+
+Filter upstream information by relevance to the company whenever possible.
+
+For example SERV should not receive unrelated news/events/company information unless it materially affects SERV, its sector, macro environment, or portfolio context.
+
+Preserve the existing stateful analysis:
+
+FullAnalysis
+UpdateWithChanges
+NoMaterialChange
+
+and stable thesis IDs/statuses.
+
+
+==================================================
+5. REMOVE UNNECESSARY MANDATORY WEB SEARCH
+==================================================
+
+Inspect every use of:
+
+callAiWithWebSearch()
+
+especially calls using:
+
+search_context_size: "high"
+tool_choice: "required"
+
+Web search should primarily be performed by modules whose responsibility is to OBSERVE external reality.
+
+Likely candidates to KEEP web search:
+
+- Market Monitor
+- News Monitor
+- Event Monitor
+- Sector Monitor
+- Company Monitor
+- Investor Watch
+- Opportunity Finder where external discovery is required
+
+Modules whose primary job is to ANALYZE ALREADY COLLECTED SYSTEM DATA should normally NOT perform another broad mandatory web search.
+
+Especially inspect:
+
+- Risk Analyzer
+- Portfolio Analyzer
+- Trade Decision
+- Command Brief
+
+Where their required information already comes from upstream monitors/analyzers, switch them to the normal OpenAI call without web search.
+
+IMPORTANT:
+
+Do not remove web verification where a module genuinely requires fresh external facts.
+
+But do not make every downstream reasoning module independently search the web again.
+
+
+==================================================
+6. TRADE DECISION RESPONSIBILITY
+==================================================
+
+Trade Decision should primarily reason over trusted outputs from:
+
+Monitors
+Analyzers
+Opportunity Finder
+Company Monitor
+Portfolio
+Price Context
+Events
+
+It should NOT effectively become another Market Monitor + News Monitor + Company Monitor through a new broad web search.
+
+Preserve the existing decision states:
+
+Hold
+Watch
+PrepareToBuy
+PrepareToReduce
+Buy/Ready
+Sell/Ready
+WaitForEvent
+etc.
+
+Event-blocking behavior must remain unchanged.
+
+
+==================================================
+7. REDUCE PROMPT VERBOSITY
+==================================================
+
+Inspect all large system/user prompts.
+
+Remove repeated explanations that are already present in the system prompt or schema.
+
+Do NOT remove important behavioral rules.
+
+But avoid repeatedly explaining the same architecture in every request.
+
+Keep prompts concise and precise.
+
+
+==================================================
+8. REDUCE OUTPUT TOKEN LIMITS CAREFULLY
+==================================================
+
+Inspect actual typical response sizes before changing limits.
+
+Current maximum output limits are often very high.
+
+Reduce them where safe.
+
+Do NOT truncate valid JSON.
+
+Suggested direction only:
+
+Market Monitor: ~900 remains reasonable
+News Monitor: target ~1200-1800
+Event Monitor: target ~1200-1500
+Sector Monitor: target ~1800-2500
+Market Alerts: target ~1500-2500
+Company Monitor: keep enough for full stateful analysis, likely ~2500-3500
+Risk Analyzer: ~2000-3000
+Portfolio Analyzer: ~1800-2500
+Opportunity Finder: ~2500-3500
+Trade Decision: ~2500-3500
+Investor Watch: ~1500-2200 per investor
+Command Brief: ~800-1200
+
+These are NOT hard requirements.
+
+Inspect the schemas first and choose limits that cannot truncate normal valid output.
+
+
+==================================================
+9. DO NOT REMOVE DEBUGGING
+==================================================
+
+All existing OpenAI debug dialogs must continue to work.
+
+They should show the ACTUAL optimized request being sent to OpenAI.
+
+This is important because we need to verify that prompts became smaller.
+
+
+==================================================
+10. REPORT BEFORE/AFTER
+==================================================
+
+After implementation report:
+
+For each OpenAI-enabled module:
+
+- previous approximate prompt payload size
+- new approximate prompt payload size
+- whether web search was previously mandatory
+- whether web search is now used
+- which upstream full results were replaced by aiContext
+
+Do not claim token savings without measuring or estimating from actual serialized prompt sizes.
+
+Do not modify scheduling/change detection yet.
+
+That will be a separate task.
