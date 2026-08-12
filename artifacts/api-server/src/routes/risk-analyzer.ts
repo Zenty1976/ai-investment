@@ -19,6 +19,12 @@ import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
+import {
+  getPortfolioAnalyzerAiContext,
+  getMarketAiContext,
+  getNewsAiContext,
+  getCompanyAiContext,
+} from "../lib/downstream-ai-context.js";
 
 const router: IRouter = Router();
 
@@ -493,54 +499,22 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
 
   // ── Collect optional module contexts ─────────────────────────────────────
 
-  const analyzerEntry = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
-  const portfolioAnalyzerContext = analyzerEntry
-    ? JSON.stringify({
-        executiveSummary: analyzerEntry.result.executiveSummary,
-        mainConclusion: analyzerEntry.result.mainConclusion,
-        overallRating: analyzerEntry.result.overallRating,
-        overallOutlook: analyzerEntry.result.overallOutlook,
-        portfolioScore: analyzerEntry.result.portfolioScore,
-        strengths: analyzerEntry.result.strengths,
-        weaknesses: analyzerEntry.result.weaknesses,
-        topRisks: analyzerEntry.result.topRisks,
-        sectorAssessment: analyzerEntry.result.sectorAssessment,
-      })
-    : null;
+  // §1: Use compact downstream context layer for PA and Market contexts.
+  const paCtx = getPortfolioAnalyzerAiContext();
+  const portfolioAnalyzerContext = paCtx ? JSON.stringify(paCtx) : null;
 
-  const opportunityEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
-  const opportunityFinderContext = opportunityEntry
-    ? JSON.stringify({
-        executiveSummary: opportunityEntry.result.executiveSummary,
-        overallOpportunityLevel: opportunityEntry.result.overallOpportunityLevel,
-        topOpportunities: Array.isArray(opportunityEntry.result.topOpportunities)
-          ? (opportunityEntry.result.topOpportunities as Array<Record<string, unknown>>).map((o) => ({
-              company: o.company,
-              ticker: o.ticker,
-              mainRisk: o.mainRisk,
-              confidence: o.confidence,
-            }))
-          : [],
-      })
-    : null;
+  // §5: Opportunity Finder removed from RA — RA assesses current portfolio risk,
+  // not potential future candidates.
 
-  const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
-  const marketContext = marketEntry
-    ? JSON.stringify({
-        marketSentiment: marketEntry.result.marketSentiment,
-        riskLevel: marketEntry.result.riskLevel,
-        summary: marketEntry.result.summary,
-        positiveFactors: marketEntry.result.positiveFactors,
-        negativeFactors: marketEntry.result.negativeFactors,
-        keyRisks: marketEntry.result.keyRisks,
-      })
-    : null;
+  const marketCtx = getMarketAiContext();
+  const marketContext = marketCtx ? JSON.stringify(marketCtx) : null;
 
+  // NOTE: eventContext must remain verbose because buildPortfolioProfile (below)
+  // parses events[].title and events[].date to count upcoming events and annotate
+  // position profiles.  Only the minimal fields it needs are kept.
   const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
   const eventContext = eventEntry
     ? JSON.stringify({
-        summary: eventEntry.result.summary,
-        nextMajorEvent: eventEntry.result.nextMajorEvent,
         events: Array.isArray(eventEntry.result.events)
           ? (eventEntry.result.events as Array<Record<string, unknown>>).map((e) => ({
               title: e.title,
@@ -552,38 +526,17 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const newsContext = newsEntry
-    ? JSON.stringify({
-        executiveSummary: newsEntry.result.executiveSummary,
-        overallMarketImpact: newsEntry.result.overallMarketImpact,
-        topStory: newsEntry.result.topStory,
-        news: Array.isArray(newsEntry.result.news)
-          ? (newsEntry.result.news as Array<Record<string, unknown>>).map((n) => ({
-              title: n.title,
-              category: n.category,
-              importance: n.importance,
-              marketImpact: n.marketImpact,
-            }))
-          : [],
-      })
-    : null;
+  // Filter news to holdings, using the compact getter.
+  const holdingSymbols = accounts.flatMap((a) =>
+    Array.isArray(a.positions)
+      ? (a.positions as Array<Record<string, unknown>>).map(p => String(p.symbol ?? "").toUpperCase()).filter(Boolean)
+      : []
+  );
+  const newsCtx = getNewsAiContext(holdingSymbols);
+  const newsContext = newsCtx ? JSON.stringify(newsCtx) : null;
 
-  const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-  const sectorContext = sectorEntry
-    ? JSON.stringify({
-        executiveSummary: sectorEntry.result.executiveSummary,
-        overallOutlook: sectorEntry.result.overallOutlook,
-        sectors: Array.isArray(sectorEntry.result.sectors)
-          ? (sectorEntry.result.sectors as Array<Record<string, unknown>>).map((s) => ({
-              name: s.name,
-              rating: s.rating,
-              trend: s.trend,
-              summary: s.summary,
-            }))
-          : [],
-      })
-    : null;
+  // §4 (RA): Sector context not sent — covered by PA and Market Monitor already.
+  const sectorContext: string | null = null;
 
   if (!portfolioAnalyzerContext) {
     systemLog.logWarning(MODULE_NAME, "Portfolio Analyzer data unavailable — analysis context is limited");
@@ -621,15 +574,11 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
           if (companyInfo?.sector) {
             sectorBySymbol[symbol] = String(companyInfo.sector);
           }
-          companyContexts[symbol] = JSON.stringify({
-            executiveSummary: r.executiveSummary,
-            investmentView: r.investmentView,
-            currentSituation: r.currentSituation,
-            catalysts: r.catalysts,
-            risks: r.risks,
-            earningsAndGuidance: r.earningsAndGuidance,
-            keyThingsToWatch: r.keyThingsToWatch,
-          });
+          // §1: Compact downstream context getter for the AI prompt
+          const ctxCompact = getCompanyAiContext(resolved.key, symbol);
+          companyContexts[symbol] = ctxCompact
+            ? JSON.stringify(ctxCompact)
+            : JSON.stringify({ symbol, investmentView: r.investmentView });
         } else {
           hasMissingCompanyData = true;
         }

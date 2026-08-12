@@ -17,6 +17,16 @@ import { RunMarketAlertsResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
+import {
+  getPortfolioAnalyzerAiContext,
+  getRiskAnalyzerAiContext,
+  getOpportunityAiContext,
+  getMarketAiContext,
+  getSectorAiContext,
+  getNewsAiContext,
+  getEventAiContext,
+  getCompanyAiContext,
+} from "../lib/downstream-ai-context.js";
 
 const router: IRouter = Router();
 
@@ -313,22 +323,14 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
     hoursSincePrevious = (nowDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60);
   }
 
-  // Events that occurred between previous run and now
+  // Extract holding symbols for targeted event/news filtering
+  const holdingSymbols = positionList.map(p => String(p.symbol ?? "").toUpperCase()).filter(Boolean);
+
+  // Events that occurred between previous run and now.
+  // Raw eventEntry is kept for delta detection; compact getter used for the AI prompt.
   const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
-  const eventContext = eventEntry
-    ? JSON.stringify({
-        summary: eventEntry.result.summary,
-        nextMajorEvent: eventEntry.result.nextMajorEvent,
-        events: Array.isArray(eventEntry.result.events)
-          ? (eventEntry.result.events as Array<Record<string, unknown>>).map((e) => ({
-              title: e.title,
-              date: e.date,
-              importance: e.importance,
-              expectedImpact: e.expectedImpact,
-            }))
-          : [],
-      })
-    : null;
+  const eventCtxCompact = getEventAiContext(holdingSymbols);
+  const eventContext = eventCtxCompact ? JSON.stringify(eventCtxCompact) : null;
 
   if (previousCheckEntry && eventEntry && Array.isArray(eventEntry.result.events)) {
     const prevDate = new Date(previousCheckEntry.timestamp);
@@ -343,26 +345,11 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
     }
   }
 
-  // Newly added news items since last run
+  // Newly added news items since last run.
+  // Raw newsEntry is kept for delta detection; compact getter (filtered to holdings) for AI prompt.
   const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const newsContext = newsEntry
-    ? JSON.stringify({
-        executiveSummary: newsEntry.result.executiveSummary,
-        overallMarketImpact: newsEntry.result.overallMarketImpact,
-        topStory: newsEntry.result.topStory,
-        news: Array.isArray(newsEntry.result.news)
-          ? (newsEntry.result.news as Array<Record<string, unknown>>).map((n) => ({
-              id: n.id,
-              title: n.title,
-              category: n.category,
-              importance: n.importance,
-              whyItMatters: n.whyItMatters,
-              marketImpact: n.marketImpact,
-              publishedAt: n.publishedAt,
-            }))
-          : [],
-      })
-    : null;
+  const newsCtxCompact = getNewsAiContext(holdingSymbols);
+  const newsContext = newsCtxCompact ? JSON.stringify(newsCtxCompact) : null;
 
   if (previousCheckEntry && newsEntry && Array.isArray(newsEntry.result.news)) {
     const prevNewsIds = new Set(previousCheckEntry.newsIds);
@@ -403,74 +390,22 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
   }
   const deltaContext = deltaLines.join("\n");
 
-  // ── Optional module contexts ───────────────────────────────────────────────
+  // ── Optional module contexts — §1: compact downstream context layer ──────────
 
-  const analyzerEntry = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
-  const portfolioAnalyzerContext = analyzerEntry
-    ? JSON.stringify({
-        mainConclusion: analyzerEntry.result.mainConclusion,
-        overallRating: analyzerEntry.result.overallRating,
-        overallOutlook: analyzerEntry.result.overallOutlook,
-        topRisks: analyzerEntry.result.topRisks,
-        weaknesses: analyzerEntry.result.weaknesses,
-      })
-    : null;
+  const paCtx = getPortfolioAnalyzerAiContext();
+  const portfolioAnalyzerContext = paCtx ? JSON.stringify(paCtx) : null;
 
-  const riskEntry = analysisRepository.get<Record<string, unknown>>("risk-analyzer");
-  const riskAnalyzerContext = riskEntry
-    ? JSON.stringify({
-        overallRiskLevel: riskEntry.result.overallRiskLevel,
-        riskScore: riskEntry.result.riskScore,
-        mainConclusion: riskEntry.result.mainConclusion,
-        topRisks: Array.isArray(riskEntry.result.topRisks)
-          ? (riskEntry.result.topRisks as Array<Record<string, unknown>>).slice(0, 3).map((r) => ({
-              title: r.title,
-              category: r.category,
-              severity: r.severity,
-              probability: r.probability,
-            }))
-          : [],
-      })
-    : null;
+  const raCtx = getRiskAnalyzerAiContext();
+  const riskAnalyzerContext = raCtx ? JSON.stringify(raCtx) : null;
 
-  const opportunityEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
-  const opportunityFinderContext = opportunityEntry
-    ? JSON.stringify({
-        overallOpportunityLevel: opportunityEntry.result.overallOpportunityLevel,
-        topOpportunities: Array.isArray(opportunityEntry.result.topOpportunities)
-          ? (opportunityEntry.result.topOpportunities as Array<Record<string, unknown>>).slice(0, 3).map((o) => ({
-              company: o.company,
-              ticker: o.ticker,
-              mainCatalyst: o.mainCatalyst,
-              mainRisk: o.mainRisk,
-            }))
-          : [],
-      })
-    : null;
+  const ofCtx = getOpportunityAiContext();
+  const opportunityFinderContext = ofCtx ? JSON.stringify(ofCtx) : null;
 
-  const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
-  const marketContext = marketEntry
-    ? JSON.stringify({
-        marketSentiment: marketEntry.result.marketSentiment,
-        riskLevel: marketEntry.result.riskLevel,
-        summary: marketEntry.result.summary,
-        keyRisks: marketEntry.result.keyRisks,
-      })
-    : null;
+  const marketCtx = getMarketAiContext();
+  const marketContext = marketCtx ? JSON.stringify(marketCtx) : null;
 
-  const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-  const sectorContext = sectorEntry
-    ? JSON.stringify({
-        overallOutlook: sectorEntry.result.overallOutlook,
-        sectors: Array.isArray(sectorEntry.result.sectors)
-          ? (sectorEntry.result.sectors as Array<Record<string, unknown>>).map((s) => ({
-              name: s.name,
-              rating: s.rating,
-              trend: s.trend,
-            }))
-          : [],
-      })
-    : null;
+  const sectorCtx = getSectorAiContext();
+  const sectorContext = sectorCtx ? JSON.stringify(sectorCtx) : null;
 
   // ── Company Monitor for held positions ─────────────────────────────────────
 
@@ -496,13 +431,10 @@ router.post("/market-alerts/analyze", async (req, res): Promise<void> => {
         const entry = analysisRepository.get<Record<string, unknown>>(resolved.key);
         if (entry) {
           const r = entry.result as Record<string, unknown>;
-          companyContexts[symbol] = JSON.stringify({
-            executiveSummary: r.executiveSummary,
-            investmentView: r.investmentView,
-            catalysts: r.catalysts,
-            risks: r.risks,
-            earningsAndGuidance: r.earningsAndGuidance,
-          });
+          const ctx = getCompanyAiContext(resolved.key, symbol);
+          companyContexts[symbol] = ctx
+            ? JSON.stringify(ctx)
+            : JSON.stringify({ investmentView: r.investmentView });
         }
       }
     }

@@ -19,8 +19,8 @@ import { randomUUID } from "crypto";
 import { analysisRepository } from "./analysis-repository.js";
 import { systemLog } from "./system-log.js";
 import { fetchAndStorePriceContexts, collectAllKnownTargets, collectOpportunityFinderTargets } from "./price-context-service.js";
-import { computeFingerprint, AI_MODULE_MAX_AGE_MINUTES } from "./dependency-fingerprint-service.js";
-import { trackSkipped } from "./openai-usage-service.js";
+import { computeFingerprint, AI_MODULE_MAX_AGE_MINUTES, OBSERVATION_MODULE_MIN_REFRESH_MINUTES } from "./dependency-fingerprint-service.js";
+import { trackSkipped, trackRecentRunSkip } from "./openai-usage-service.js";
 
 // ── Data directory ───────────────────────────────────────────────────────────
 
@@ -894,6 +894,54 @@ class AutomationOrchestratorService {
     if (retryDelay > 0) {
       await new Promise(r => setTimeout(r, retryDelay));
     }
+
+    // ── Recent-run guard (external observation modules) ─────────────────────────
+    // Prevents redundant web-search AI calls when a module ran successfully only
+    // minutes ago (e.g. repeated Run All clicks, overlapping dependency triggers).
+    // Force AI Refresh always bypasses this guard.
+    if (!forceAI && job.attempt === 0) {
+      const minRefreshMin = OBSERVATION_MODULE_MIN_REFRESH_MINUTES[job.moduleId];
+      if (minRefreshMin !== undefined) {
+        const entry = analysisRepository.get(job.moduleId);
+        const lastAiAt = (entry as Record<string, unknown> | undefined)?.lastAIAnalysisAt as string | undefined;
+        if (lastAiAt) {
+          const ageSinceLastRunMs = Date.now() - new Date(lastAiAt).getTime();
+          const ageSinceLastRunMin = ageSinceLastRunMs / 60_000;
+          if (ageSinceLastRunMin < minRefreshMin) {
+            // SKIP: ran too recently for another expensive web-search
+            const now = new Date().toISOString();
+            job.status = "Skipped";
+            job.skippedUnchanged = true;
+            job.skipReason = "SKIPPED_RECENT";
+            job.completedAt = now;
+            job.durationMs = 0;
+
+            analysisRepository.saveSkipped(job.moduleId);
+            trackRecentRunSkip(job.moduleId, Math.round(ageSinceLastRunMin * 10) / 10, minRefreshMin);
+
+            const st = this.runtimeState.get(job.moduleId);
+            if (st) {
+              st.status = "Idle";
+              st.lastSuccessfulRunAt = now;
+              st.lastError = null;
+              st.currentJobId = null;
+              const intervalMs = this._moduleSettings(job.moduleId).intervalMinutes * 60_000;
+              st.nextRunAt = new Date(Date.now() + intervalMs).toISOString();
+              st.waitingForDeps = [];
+              st.lastSkippedUnchanged = true;
+            }
+
+            this._persist();
+            systemLog.logInternal(MODULE_NAME,
+              `${job.moduleId} SKIPPED_RECENT — last run ${ageSinceLastRunMin.toFixed(1)}min ago ` +
+              `(min refresh: ${minRefreshMin}min, trigger: ${job.trigger})`
+            );
+            return;
+          }
+        }
+      }
+    }
+    // ── End recent-run guard ────────────────────────────────────────────────────
 
     // ── Fingerprint skip check ─────────────────────────────────────────────────
     // Only on the first attempt (job.attempt === 0) and when forceAI is false.

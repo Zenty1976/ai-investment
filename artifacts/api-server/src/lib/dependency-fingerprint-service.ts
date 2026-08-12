@@ -29,6 +29,26 @@ export const AI_MODULE_MAX_AGE_MINUTES: Record<string, number> = {
   "trade-review":          480,  // 8 hours
 };
 
+/**
+ * Minimum age (minutes) before an external observation module may repeat its
+ * web-search AI call on a normal (non-force) run.
+ *
+ * Prevents redundant calls caused by repeated Run All clicks, overlapping
+ * dependency triggers, or multiple pipeline paths requesting the same module
+ * within minutes of a successful run.
+ *
+ * Force AI Refresh always bypasses this guard.
+ * Company Monitor uses its own fingerprint/discovery gate instead.
+ * Investor Watch uses its own discovery/schedule behavior.
+ */
+export const OBSERVATION_MODULE_MIN_REFRESH_MINUTES: Record<string, number> = {
+  "market-monitor":     15,
+  "news-monitor":       15,
+  "event-monitor":      60,
+  "sector-monitor":    180,
+  "opportunity-finder": 180,
+};
+
 // ── Static dependency configs ─────────────────────────────────────────────────
 
 /**

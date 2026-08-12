@@ -24,6 +24,14 @@ import { companyIdentityStore } from "../lib/company-identity";
 import type { RepositoryEntry } from "../lib/analysis-repository.js";
 import { getActivePolicyConfig, getActivePolicyProfile } from "../lib/trade-decision-policy-store.js";
 import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
+import {
+  getRiskAnalyzerAiContext,
+  getPortfolioAnalyzerAiContext,
+  getMarketAlertsAiContext,
+  getOpportunityAiContext,
+  getEventAiContext,
+  getCompanyAiContext,
+} from "../lib/downstream-ai-context.js";
 import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
 import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
@@ -1265,114 +1273,44 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     },
   };
 
-  // ── Module contexts ──────────────────────────────────────────────────────
-  const riskContext = riskEntry ? JSON.stringify({
-    overallRiskLevel: riskEntry.result.overallRiskLevel,
-    riskScore:        riskEntry.result.riskScore,
-    previousRiskScore: riskEntry.result.previousRiskScore,
-    mainConclusion:   riskEntry.result.mainConclusion,
-    topRisks:         riskEntry.result.topRisks,
-    riskInteractions: riskEntry.result.riskInteractions,
-    watchClosely:     riskEntry.result.watchClosely,
-    updatedAt:        riskEntry.updatedAt,
-  }) : null;
+  // ── Module contexts — §1: compact downstream context layer ──────────────────
+  const riskCtx = getRiskAnalyzerAiContext();
+  const riskContext = riskCtx ? JSON.stringify(riskCtx) : null;
 
-  const analyzerContext = analyzerEntry ? JSON.stringify({
-    mainConclusion:     analyzerEntry.result.mainConclusion,
-    executiveSummary:   analyzerEntry.result.executiveSummary,
-    overallRating:      analyzerEntry.result.overallRating,
-    overallOutlook:     analyzerEntry.result.overallOutlook,
-    portfolioScore:     analyzerEntry.result.portfolioScore,
-    strengths:          analyzerEntry.result.strengths,
-    weaknesses:         analyzerEntry.result.weaknesses,
-    topRisks:           analyzerEntry.result.topRisks,
-    topOpportunities:   analyzerEntry.result.topOpportunities,
-    recommendedActions: analyzerEntry.result.recommendedActions,
-    sectorAssessment:   analyzerEntry.result.sectorAssessment,
-    positionComments:   analyzerEntry.result.positionComments,
-    updatedAt:          analyzerEntry.updatedAt,
-  }) : null;
+  const analyzerCtx = getPortfolioAnalyzerAiContext();
+  const analyzerContext = analyzerCtx ? JSON.stringify(analyzerCtx) : null;
 
-  const alertsContext = alertsEntry ? JSON.stringify({
-    overallAlertLevel: alertsEntry.result.overallAlertLevel,
-    headline:          alertsEntry.result.headline,
-    executiveSummary:  alertsEntry.result.executiveSummary,
-    alerts:            alertsEntry.result.alerts,
-    thingsToWatch:     alertsEntry.result.thingsToWatch,
-    updatedAt:         alertsEntry.updatedAt,
-  }) : null;
+  const alertsCtx = getMarketAlertsAiContext();
+  const alertsContext = alertsCtx ? JSON.stringify(alertsCtx) : null;
 
-  const opportunityContext = opportunityEntry ? JSON.stringify({
-    executiveSummary:        opportunityEntry.result.executiveSummary,
-    overallOpportunityLevel: opportunityEntry.result.overallOpportunityLevel,
-    topOpportunities:        Array.isArray(opportunityEntry.result.topOpportunities)
-      ? (opportunityEntry.result.topOpportunities as Array<Record<string, unknown>>)
-          .slice(0, 5).map(o => ({
-            rank: o.rank, company: o.company, ticker: o.ticker, sector: o.sector,
-            overallScore: o.overallScore, confidence: o.confidence, priority: o.priority,
-            investmentThesis: o.investmentThesis, whyNow: o.whyNow, whyThisPortfolio: o.whyThisPortfolio,
-            mainCatalyst: o.mainCatalyst, mainRisk: o.mainRisk,
-            companyAnalysisAvailable: o.companyAnalysisAvailable,
-            positionSizeSuitability: o.positionSizeSuitability, positionSizeReason: o.positionSizeReason,
-          }))
-      : [],
-    sectorIdeas: opportunityEntry.result.sectorIdeas,
-    updatedAt:   opportunityEntry.updatedAt,
-  }) : null;
+  const opportunityCtx = getOpportunityAiContext();
+  const opportunityContext = opportunityCtx ? JSON.stringify(opportunityCtx) : null;
 
-  const eventContext = eventEntry ? JSON.stringify({
-    summary:        eventEntry.result.summary,
-    nextMajorEvent: eventEntry.result.nextMajorEvent,
-    events:         Array.isArray(eventEntry.result.events)
-      ? (eventEntry.result.events as Array<Record<string, unknown>>).map(e => ({
-          title: e.title, date: e.date, importance: e.importance,
-          expectedImpact: e.expectedImpact, category: e.category,
-        }))
-      : [],
-    updatedAt: eventEntry.updatedAt,
-  }) : null;
+  // Filter events to relevant symbols: holdings + current opportunity candidates.
+  const relevantEventSymbols = [
+    ...allPositions.map(p => p.ticker),
+    ...rawOpportunities.map(o => String(o.ticker ?? "").toUpperCase()).filter(Boolean),
+  ];
+  const eventCtx = getEventAiContext(relevantEventSymbols);
+  const eventContext = eventCtx ? JSON.stringify(eventCtx) : null;
 
   // §4: Market, News, Sector removed from user prompt — their material implications
   // are already represented by Portfolio Analyzer, Risk Analyzer, and Market Alerts.
   // Sending them separately causes information fan-out.
 
-  // Company Monitor context — §3 compact format (removes prose summaries)
+  // Company Monitor context — §1: compact downstream context getter
   const relevantCmEntries = allCmEntries.filter(e => relevantCmKeys.has(e.moduleName));
 
   const companyContextLines = relevantCmEntries.map(e => {
-    const result = e.result as Record<string, unknown>;
     const matchedTickers = [
       ...[...holdingCmKeys.entries()].filter(([, key]) => key === e.moduleName).map(([t]) => t),
       ...[...opCmKeys.entries()].filter(([, key]) => key === e.moduleName).map(([t]) => t),
     ];
     const matchLabel = matchedTickers.join("/") || e.moduleName.replace("company-monitor:", "");
-    const thesisSummary = Array.isArray(result.investmentThesis)
-      ? (result.investmentThesis as Array<Record<string, unknown>>).map(p => ({ id: p.id, status: p.status }))
-      : [];
-    // §3: Compact — remove executiveSummary, currentSituation, bullCase, baseCase,
-    // bearCase, competitivePosition. Keep only actionable decision-relevant fields.
-    const topCatalysts = Array.isArray(result.catalysts)
-      ? (result.catalysts as Array<Record<string, unknown>>).slice(0, 3).map(c => c.title ?? c)
-      : result.catalysts;
-    const topRisks = Array.isArray(result.risks)
-      ? (result.risks as Array<Record<string, unknown>>).slice(0, 3).map(r => r.title ?? r)
-      : result.risks;
-    return `COMPANY MONITOR — ${matchLabel} (updated: ${e.updatedAt}, freshness: ${formatAge(e)}):\n${JSON.stringify({
-      company:                { ticker: (result.company as Record<string, unknown> | undefined)?.ticker, name: (result.company as Record<string, unknown> | undefined)?.name },
-      updateType:             result.updateType,
-      investmentView:         result.investmentView,
-      investmentCaseStrength: result.investmentCaseStrength,
-      investmentCaseChange:   result.investmentCaseChange,
-      investmentThesis:       thesisSummary,
-      meaningfulChange:       result.meaningfulChange,
-      topCatalysts,
-      topRisks,
-      earningsAndGuidance:    result.earningsAndGuidance,
-      valuationAssessment:    result.valuationAssessment,
-      keyThingsToWatch:       result.keyThingsToWatch,
-      confidence:             result.confidence,
-    })}`;
-  }).join("\n\n");
+    const ctx = getCompanyAiContext(e.moduleName, matchLabel);
+    if (!ctx) return null;
+    return `COMPANY MONITOR — ${matchLabel} (updated: ${e.updatedAt}, freshness: ${formatAge(e)}):\n${JSON.stringify(ctx)}`;
+  }).filter((line): line is string => line !== null).join("\n\n");
 
   // ── History (for status computation) ─────────────────────────────────────
   const historyEntry = analysisRepository.get<{ entries: DecisionHistoryEntry[] }>(

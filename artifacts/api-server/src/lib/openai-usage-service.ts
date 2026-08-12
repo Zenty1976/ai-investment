@@ -84,7 +84,11 @@ export interface OpenAISkipRecord {
   /** Module whose AI call was skipped. */
   module: string;
   /** Why the call was skipped. */
-  reason: "fingerprint_unchanged" | "age_within_limit";
+  reason: "fingerprint_unchanged" | "age_within_limit" | "recent_run";
+  /** Only present for recent_run skips — how old the last run was in minutes. */
+  ageSinceLastRunMin?: number;
+  /** Only present for recent_run skips — the configured minimum refresh age. */
+  minimumRefreshAgeMin?: number;
 }
 
 // ── Persistent store ──────────────────────────────────────────────────────────
@@ -154,6 +158,20 @@ export function trackSkipped(
 ): void {
   const id = ++_store.lastId;
   _store.skips.push({ id, timestamp: new Date().toISOString(), module, reason });
+  if (_store.skips.length > MAX_SKIP_RECORDS) {
+    _store.skips = _store.skips.slice(-MAX_SKIP_RECORDS);
+  }
+  persistDebounced();
+}
+
+/** Record a SKIPPED_RECENT skip — external observation module ran too recently to repeat. */
+export function trackRecentRunSkip(
+  module: string,
+  ageSinceLastRunMin: number,
+  minimumRefreshAgeMin: number
+): void {
+  const id = ++_store.lastId;
+  _store.skips.push({ id, timestamp: new Date().toISOString(), module, reason: "recent_run", ageSinceLastRunMin, minimumRefreshAgeMin });
   if (_store.skips.length > MAX_SKIP_RECORDS) {
     _store.skips = _store.skips.slice(-MAX_SKIP_RECORDS);
   }

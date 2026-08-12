@@ -1,0 +1,347 @@
+The previous OpenAI cost optimizations are largely implemented correctly.
+
+DO NOT redesign the architecture.
+
+Keep:
+
+* OpenAI usage tracking
+* dependency fingerprints
+* SKIPPED_UNCHANGED
+* Company Monitor discovery gate
+* Investor Watch discovery gate
+* configurable web-search context size
+* centralized model configuration
+* Force AI Refresh
+* Price Context
+* existing module responsibilities
+
+There are TWO remaining issues to fix.
+
+==================================================
+
+1. ACTUALLY USE downstream-ai-context.ts
+   ==================================================
+
+A good deterministic compact context layer now exists in:
+
+src/lib/downstream-ai-context.ts
+
+However, inspect the actual routes.
+
+The compact context functions do not appear to be wired into the downstream OpenAI prompt construction consistently.
+
+Do not leave this as unused infrastructure.
+
+Update the actual prompt construction for:
+
+* Portfolio Analyzer
+* Risk Analyzer
+* Trade Decision Engine
+* Opportunity Finder where appropriate
+* Market Alerts where appropriate
+* Command Brief where appropriate
+
+so they consume the compact deterministic downstream contexts instead of reconstructing or sending verbose upstream module results.
+
+IMPORTANT:
+
+Do not blindly remove information.
+
+For each downstream module, explicitly map which information it actually needs.
+
+TRADE DECISION should primarily receive:
+
+* current portfolio state
+* compact Portfolio Analyzer context
+* compact Risk Analyzer context
+* compact Market Alerts context
+* compact Opportunity candidates
+* compact Company Monitor context for RELEVANT symbols
+* relevant event blockers
+* relevant Price Context
+* previous ACTIVE decisions
+
+It should NOT receive duplicate representations of the same information through:
+
+Market Monitor
+
+* News Monitor
+* Sector Monitor
+* Company Monitor
+* Risk Analyzer
+* Portfolio Analyzer
+
+unless a material fact is genuinely not represented by the higher-level context.
+
+RISK ANALYZER should primarily receive:
+
+* current portfolio
+* compact Portfolio Analyzer context if needed
+* held-company compact contexts
+* material market risks
+* material portfolio-relevant events
+* relevant Price Context
+
+Do not normally send Opportunity Finder candidates to Risk Analyzer unless they are part of an actual proposed portfolio action.
+
+PORTFOLIO ANALYZER should primarily receive:
+
+* current portfolio
+* compact contexts for held companies
+* material market context
+* relevant sector context
+* relevant events
+* Price Context for holdings
+
+Only include news that is relevant to:
+
+* a holding
+* a material portfolio sector
+* a material macro risk.
+
+COMMAND BRIEF should consume only already-compressed high-level state.
+
+It should not receive verbose monitor results.
+
+After changing each route, inspect the ACTUAL final OpenAI request payload in debug and verify that the compact context is really being used.
+
+Do not consider this complete merely because downstream-ai-context.ts exists.
+
+==================================================
+2. ADD RECENT-RUN GUARD FOR EXTERNAL OBSERVATION MODULES
+========================================================
+
+Dependency fingerprints work well for synthesis/analysis modules.
+
+However, observation modules such as Market Monitor and News Monitor must inspect the outside world, so dependency fingerprints alone cannot determine whether the world changed.
+
+Still, it is wasteful to repeat the same expensive web-search observation a few minutes after it just ran.
+
+Add a separate RECENT-RUN GUARD for externally observing modules.
+
+This is NOT the same as dependency fingerprinting.
+
+Concept:
+
+If a module completed successfully very recently and this is a normal Run All / automatic invocation:
+
+SKIP the OpenAI/web-search call.
+
+Reuse its latest result.
+
+Suggested initial minimum refresh ages:
+
+Market Monitor:
+15 minutes
+
+News Monitor:
+15 minutes
+
+Event Monitor:
+60 minutes
+
+Sector Monitor:
+180 minutes
+
+Opportunity Finder:
+180 minutes
+
+Investor Watch:
+use its existing discovery/schedule behavior; do not make it more aggressive.
+
+Company Monitor:
+keep the existing fingerprint/discovery behavior.
+
+These values must be centralized/configurable.
+
+Do not hardcode them throughout the orchestrator.
+
+==================================================
+3. IMPORTANT — FORCE REFRESH
+============================
+
+Force AI Refresh must bypass the recent-run guard.
+
+So:
+
+Normal Run All 21:00
+→ Market/News run.
+
+Normal Run All 21:03
+→ Market/News SKIPPED_RECENT.
+
+Force AI Refresh 21:03
+→ they run anyway.
+
+This preserves development/testing capability.
+
+==================================================
+4. NORMAL SCHEDULES MUST STILL WORK
+===================================
+
+Do not let the recent-run guard break the normal schedules.
+
+Current schedules such as:
+
+Market Monitor ~30 min
+News Monitor ~30 min
+Event Monitor ~180 min
+Sector Monitor ~720 min
+Opportunity Finder ~720 min
+
+should continue to function.
+
+The recent-run guard is primarily protection against redundant calls caused by:
+
+* repeated Run All clicks
+* overlapping dependency triggers
+* automatic triggers shortly after a successful run
+* multiple pipeline paths requesting the same observation.
+
+==================================================
+5. CONCURRENT REQUEST DEDUPLICATION
+===================================
+
+Also verify that two simultaneous requests for the same module cannot produce two identical OpenAI calls.
+
+If:
+
+News Monitor is already RUNNING
+
+and another dependency/Run All requests News Monitor,
+
+reuse/wait for the existing job rather than launching another OpenAI request.
+
+The orchestrator already has some job deduplication logic.
+
+Verify it works for all expensive AI modules and ticker-specific Company Monitor jobs.
+
+Do not create a second parallel deduplication system unless necessary.
+
+==================================================
+6. SKIP STATUS
+==============
+
+Add a clear status such as:
+
+SKIPPED_RECENT
+
+distinct from:
+
+SKIPPED_UNCHANGED
+
+Meaning:
+
+SKIPPED_UNCHANGED
+= material dependency fingerprint is unchanged.
+
+SKIPPED_RECENT
+= external observation was successfully refreshed too recently to justify another expensive web search.
+
+Both count as successful healthy outcomes.
+
+==================================================
+7. TOKEN SAVINGS
+================
+
+The existing OpenAI usage tracking should record avoided calls.
+
+For recent-run skips record:
+
+module
+timestamp
+reason = recent_run
+ageSinceLastSuccessfulRun
+minimumRefreshAge
+
+No fake token-savings estimate is required unless it can be calculated reliably from historical average usage.
+
+==================================================
+8. VERIFY COMPACT CONTEXT ACTUALLY REDUCES TOKENS
+=================================================
+
+After wiring downstream-ai-context.ts into the real routes, run a controlled comparison.
+
+Report actual OpenAI input tokens for:
+
+Portfolio Analyzer
+Risk Analyzer
+Trade Decision
+
+before vs after.
+
+Also inspect the debug request and report which upstream contexts were removed/replaced.
+
+==================================================
+9. TEST THE 2-MINUTE CASE
+=========================
+
+This test is especially important.
+
+TEST 1:
+
+Run normal Run All.
+
+Record:
+
+* AI calls
+* web searches
+* input tokens
+* output tokens
+* total tokens.
+
+Wait approximately 2 minutes.
+
+TEST 2:
+
+Run normal Run All again.
+
+Expected:
+
+Market Monitor → SKIPPED_RECENT
+News Monitor → SKIPPED_RECENT
+Event Monitor → SKIPPED_RECENT
+Sector Monitor → SKIPPED_RECENT
+Opportunity Finder → SKIPPED_RECENT
+
+Company Monitor → fingerprint/discovery logic prevents unnecessary full analysis.
+
+Portfolio Analyzer → SKIPPED_UNCHANGED if dependencies unchanged.
+
+Risk Analyzer → SKIPPED_UNCHANGED if dependencies unchanged.
+
+Trade Decision → SKIPPED_UNCHANGED if dependencies unchanged.
+
+Command Brief → SKIPPED_UNCHANGED if dependencies unchanged.
+
+The second Run All should therefore consume VERY FEW OpenAI tokens compared with the first one.
+
+Then:
+
+TEST 3:
+
+Run Force AI Refresh.
+
+Verify that the relevant guards are bypassed and fresh AI calls are actually made.
+
+==================================================
+10. DO NOT OVER-OPTIMIZE
+========================
+
+Do NOT increase normal monitoring intervals as part of this task.
+
+Do NOT remove material information from AI prompts.
+
+Do NOT replace Trade Decision or deep Company analysis with cheap models.
+
+Do NOT skip an analysis when a relevant material dependency changed.
+
+Do NOT make external monitoring so infrequent that meaningful changes are missed.
+
+The objective is specifically to eliminate:
+
+1. duplicate information inside prompts
+2. repeated identical/recent OpenAI calls
+3. repeated web searches only minutes apart
+
+while preserving the existing investment intelligence and architecture.

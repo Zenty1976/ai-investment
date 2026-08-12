@@ -19,6 +19,13 @@ import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
+import {
+  getMarketAiContext,
+  getNewsAiContext,
+  getEventAiContext,
+  getSectorAiContext,
+  getCompanyAiContext,
+} from "../lib/downstream-ai-context.js";
 
 const router: IRouter = Router();
 
@@ -253,28 +260,10 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     );
 
     if (resolved) {
-      const entry = analysisRepository.get<Record<string, unknown>>(resolved.key);
-      if (entry) {
-        const r = entry.result as Record<string, unknown>;
-        // §3: Compact company context — omit prose summaries; keep actionable fields
-        const thesis = Array.isArray(r.investmentThesis)
-          ? (r.investmentThesis as Array<Record<string, unknown>>).map(p => ({ id: p.id, status: p.status }))
-          : [];
-        companyContexts[ticker] = JSON.stringify({
-          investmentView: r.investmentView,
-          investmentCaseStrength: r.investmentCaseStrength,
-          investmentCaseChange: r.investmentCaseChange,
-          thesis,
-          catalysts: Array.isArray(r.catalysts)
-            ? (r.catalysts as Array<Record<string, unknown>>).slice(0, 3).map(c => c.title ?? c)
-            : r.catalysts,
-          risks: Array.isArray(r.risks)
-            ? (r.risks as Array<Record<string, unknown>>).slice(0, 3).map(ri => ri.title ?? ri)
-            : r.risks,
-          earningsAndGuidance: r.earningsAndGuidance,
-          keyThingsToWatch: r.keyThingsToWatch,
-          confidence: r.confidence,
-        });
+      // §1: Compact downstream context getter (replaces manual JSON construction)
+      const ctx = getCompanyAiContext(resolved.key, ticker);
+      if (ctx) {
+        companyContexts[ticker] = JSON.stringify(ctx);
         matchLog.push({ symbol: ticker, key: resolved.key, method: resolved.method });
       } else {
         missingCompanyTickers.push(ticker);
@@ -319,84 +308,21 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
   };
   const portfolioContext = JSON.stringify(portfolioSummary);
 
-  // ── Read other modules from repository ────────────────────────────────────
+  // ── Read other modules — §1: compact downstream context layer ─────────────
 
-  const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
-  const marketContext = marketEntry
-    ? JSON.stringify({
-        marketSentiment: marketEntry.result.marketSentiment,
-        riskLevel: marketEntry.result.riskLevel,
-        summary: marketEntry.result.summary,
-        positiveFactors: marketEntry.result.positiveFactors,
-        negativeFactors: marketEntry.result.negativeFactors,
-        strongSectors: marketEntry.result.strongSectors,
-        weakSectors: marketEntry.result.weakSectors,
-        keyRisks: marketEntry.result.keyRisks,
-      })
-    : null;
+  const marketCtx = getMarketAiContext();
+  const marketContext = marketCtx ? JSON.stringify(marketCtx) : null;
 
-  const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
-  const eventContext = eventEntry
-    ? JSON.stringify({
-        summary: eventEntry.result.summary,
-        nextMajorEvent: eventEntry.result.nextMajorEvent,
-        events: Array.isArray(eventEntry.result.events)
-          ? (eventEntry.result.events as Array<Record<string, unknown>>).map(
-              (e) => ({
-                title: e.title,
-                date: e.date,
-                importance: e.importance,
-                expectedImpact: e.expectedImpact,
-              })
-            )
-          : [],
-      })
-    : null;
+  // Filter events and news to held ticker symbols automatically.
+  const eventCtx = getEventAiContext(tickers);
+  const eventContext = eventCtx ? JSON.stringify(eventCtx) : null;
 
-  // §6: Only send news relevant to current holdings or explicitly High-importance
-  // items. Do not send a general list of market news to Portfolio Analyzer —
-  // macro context is already captured by Market Monitor and Sector Monitor.
-  const tickersLower = tickers.map((t) => t.toLowerCase());
-  const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const filteredNews = newsEntry && Array.isArray(newsEntry.result.news)
-    ? (newsEntry.result.news as Array<Record<string, unknown>>).filter((n) => {
-        if (n.importance === "High") return true;
-        const hay = [
-          String(n.title ?? ""),
-          String(n.marketImpact ?? ""),
-          ...(Array.isArray(n.affectedSymbols) ? (n.affectedSymbols as string[]) : []),
-          ...(Array.isArray(n.affectedMarkets) ? (n.affectedMarkets as string[]) : []),
-        ].join(" ").toLowerCase();
-        return tickersLower.some((t) => hay.includes(t));
-      })
-    : [];
-  const newsContext = filteredNews.length > 0
-    ? JSON.stringify(filteredNews.map((n) => ({
-        category: n.category,
-        importance: n.importance,
-        affectedSymbols: n.affectedSymbols ?? n.affectedMarkets,
-        impact: n.marketImpact,
-      })))
-    : null;
+  // §6: getNewsAiContext filters to held tickers + High-importance items.
+  const newsCtx = getNewsAiContext(tickers);
+  const newsContext = newsCtx ? JSON.stringify(newsCtx) : null;
 
-  const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-  const sectorContext = sectorEntry
-    ? JSON.stringify({
-        executiveSummary: sectorEntry.result.executiveSummary,
-        overallOutlook: sectorEntry.result.overallOutlook,
-        topSector: sectorEntry.result.topSector,
-        sectors: Array.isArray(sectorEntry.result.sectors)
-          ? (sectorEntry.result.sectors as Array<Record<string, unknown>>).map(
-              (s) => ({
-                name: s.name,
-                rating: s.rating,
-                trend: s.trend,
-                summary: s.summary,
-              })
-            )
-          : [],
-      })
-    : null;
+  const sectorCtx = getSectorAiContext();
+  const sectorContext = sectorCtx ? JSON.stringify(sectorCtx) : null;
 
   req.log.info(
     {

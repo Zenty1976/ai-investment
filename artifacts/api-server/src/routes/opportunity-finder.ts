@@ -20,6 +20,14 @@ import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../l
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { getAllPriceContexts } from "../lib/price-context-service.js";
+import {
+  getPortfolioAnalyzerAiContext,
+  getMarketAiContext,
+  getNewsAiContext,
+  getEventAiContext,
+  getSectorAiContext,
+  getCompanyAiContext,
+} from "../lib/downstream-ai-context.js";
 
 const router: IRouter = Router();
 
@@ -274,90 +282,25 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
   };
   const portfolioContext = JSON.stringify(portfolioSummary);
 
-  // ── Portfolio Analyzer ────────────────────────────────────────────────────
+  // ── §1: Compact downstream context layer — replaces manual verbose JSON construction ──
 
-  const analyzerEntry = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
-  const portfolioAnalyzerContext = analyzerEntry
-    ? JSON.stringify({
-        executiveSummary: analyzerEntry.result.executiveSummary,
-        mainConclusion: analyzerEntry.result.mainConclusion,
-        overallRating: analyzerEntry.result.overallRating,
-        overallOutlook: analyzerEntry.result.overallOutlook,
-        portfolioScore: analyzerEntry.result.portfolioScore,
-        strengths: analyzerEntry.result.strengths,
-        weaknesses: analyzerEntry.result.weaknesses,
-        topRisks: analyzerEntry.result.topRisks,
-        topOpportunities: analyzerEntry.result.topOpportunities,
-        sectorAssessment: analyzerEntry.result.sectorAssessment,
-      })
-    : null;
+  // Portfolio Analyzer
+  const paCtx = getPortfolioAnalyzerAiContext();
+  const portfolioAnalyzerContext = paCtx ? JSON.stringify(paCtx) : null;
 
-  // ── Other monitors ────────────────────────────────────────────────────────
+  // ── Other monitors (no filter — OF looks across the full market, not just holdings) ──
 
-  const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
-  const marketContext = marketEntry
-    ? JSON.stringify({
-        marketSentiment: marketEntry.result.marketSentiment,
-        riskLevel: marketEntry.result.riskLevel,
-        summary: marketEntry.result.summary,
-        positiveFactors: marketEntry.result.positiveFactors,
-        negativeFactors: marketEntry.result.negativeFactors,
-        strongSectors: marketEntry.result.strongSectors,
-        weakSectors: marketEntry.result.weakSectors,
-        keyRisks: marketEntry.result.keyRisks,
-      })
-    : null;
+  const marketCtx = getMarketAiContext();
+  const marketContext = marketCtx ? JSON.stringify(marketCtx) : null;
 
-  const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
-  const eventContext = eventEntry
-    ? JSON.stringify({
-        summary: eventEntry.result.summary,
-        nextMajorEvent: eventEntry.result.nextMajorEvent,
-        events: Array.isArray(eventEntry.result.events)
-          ? (eventEntry.result.events as Array<Record<string, unknown>>).map((e) => ({
-              title: e.title,
-              date: e.date,
-              importance: e.importance,
-              expectedImpact: e.expectedImpact,
-            }))
-          : [],
-      })
-    : null;
+  const eventCtx = getEventAiContext();
+  const eventContext = eventCtx ? JSON.stringify(eventCtx) : null;
 
-  const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const newsContext = newsEntry
-    ? JSON.stringify({
-        executiveSummary: newsEntry.result.executiveSummary,
-        overallMarketImpact: newsEntry.result.overallMarketImpact,
-        topStory: newsEntry.result.topStory,
-        news: Array.isArray(newsEntry.result.news)
-          ? (newsEntry.result.news as Array<Record<string, unknown>>).map((n) => ({
-              title: n.title,
-              category: n.category,
-              importance: n.importance,
-              marketImpact: n.marketImpact,
-              affectedMarkets: n.affectedMarkets,
-            }))
-          : [],
-      })
-    : null;
+  const newsCtx = getNewsAiContext();
+  const newsContext = newsCtx ? JSON.stringify(newsCtx) : null;
 
-  const sectorEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-  const sectorContext = sectorEntry
-    ? JSON.stringify({
-        executiveSummary: sectorEntry.result.executiveSummary,
-        overallOutlook: sectorEntry.result.overallOutlook,
-        topSector: sectorEntry.result.topSector,
-        sectors: Array.isArray(sectorEntry.result.sectors)
-          ? (sectorEntry.result.sectors as Array<Record<string, unknown>>).map((s) => ({
-              name: s.name,
-              rating: s.rating,
-              trend: s.trend,
-              summary: s.summary,
-            }))
-          : [],
-      })
-    : null;
+  const sectorCtx = getSectorAiContext();
+  const sectorContext = sectorCtx ? JSON.stringify(sectorCtx) : null;
 
   // ── Company Monitor for held positions (via companyIdentityStore) ─────────
 
@@ -384,17 +327,11 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
       if (resolved) {
         const entry = analysisRepository.get<Record<string, unknown>>(resolved.key);
         if (entry) {
-          const r = entry.result as Record<string, unknown>;
-          companyContexts[symbol] = JSON.stringify({
-            executiveSummary: r.executiveSummary,
-            investmentView: r.investmentView,
-            currentSituation: r.currentSituation,
-            catalysts: r.catalysts,
-            risks: r.risks,
-            earningsAndGuidance: r.earningsAndGuidance,
-            marketSentiment: r.marketSentiment,
-            keyThingsToWatch: r.keyThingsToWatch,
-          });
+          // §1: Compact downstream context getter
+          const ctx = getCompanyAiContext(resolved.key, symbol);
+          companyContexts[symbol] = ctx
+            ? JSON.stringify(ctx)
+            : JSON.stringify({ investmentView: (entry.result as Record<string, unknown>).investmentView });
         } else {
           hasMissingCompanyData = true;
         }
