@@ -1443,23 +1443,36 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         throw new Error(`Prohibited executable language in: ${badDecisions.map(d => d.title).join("; ")}`);
       }
 
-      // Stale WaitForEvent guard
-      const staleWaitFor = parsed.data.decisions.filter(d => {
-        if (d.decision !== "WaitForEvent") return false;
-        if (!d.blockedByEvent || !d.blockingEventDate) return false;
-        const evDate = new Date(d.blockingEventDate);
-        return !isNaN(evDate.getTime()) && evDate < nowDate;
+      // ── Stale WaitForEvent normalization (deterministic repair — no retry) ───
+      // When a WaitForEvent's blockingEventDate is in the past, the event has
+      // already occurred.  Throwing here causes TDE to fail every attempt until
+      // the event context updates — creating an infinite retry loop that wastes
+      // 2 full GPT-4o calls per orchestrator cycle, indefinitely.
+      //
+      // Safe repair: clear the expired blocking constraint and let the evidence
+      // gate re-evaluate the decision normally.  No investment facts are invented;
+      // only an expired temporal constraint is removed.  The AI will reassess
+      // the decision on the next cycle with updated event-monitor context.
+      const decisionsForGate = parsed.data.decisions.map(d => {
+        if (
+          d.decision === "WaitForEvent" &&
+          d.blockedByEvent &&
+          d.blockingEventDate
+        ) {
+          const evDate = new Date(d.blockingEventDate);
+          if (!isNaN(evDate.getTime()) && evDate < nowDate) {
+            systemLog.logInternal(MODULE_NAME,
+              `Normalized stale WaitForEvent: "${d.title}" — blocking date ${d.blockingEventDate} has passed; block cleared for this cycle`
+            );
+            return { ...d, blockedByEvent: false, blockingEvent: "", blockingEventDate: "" };
+          }
+        }
+        return d;
       });
-      if (staleWaitFor.length > 0) {
-        throw new Error(
-          `WaitForEvent decision(s) reference past blocking events: ` +
-          staleWaitFor.map(d => `"${d.title}" (${d.blockingEventDate})`).join("; ")
-        );
-      }
 
       // ── STEP 1: Directional gate + evidence score downgrade ─────────────
       const { decisions: gatedDecisions, evidenceMap, gateLog } = applyEvidenceGate(
-        parsed.data.decisions as unknown as ParsedDecision[],
+        decisionsForGate as unknown as ParsedDecision[],
         holdingCmKeys, opCmKeys, allCmEntries,
         riskEntry, analyzerEntry, alertsEntry, opportunityEntry,
         policy

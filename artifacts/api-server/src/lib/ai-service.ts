@@ -268,7 +268,7 @@ export async function callAiWithWebSearch<T>(
     model,
     max_output_tokens: maxTokens,
     temperature,
-    tools: [{ type: "web_search", search_context_size: webSearchContextSize }],
+    tools: [{ type: "web_search_preview", search_context_size: webSearchContextSize }],
     // "required" forces the model to invoke at least one tool before answering.
     // "auto" lets the model decide whether a search is warranted.
     tool_choice: webSearchRequired ? "required" : "auto",

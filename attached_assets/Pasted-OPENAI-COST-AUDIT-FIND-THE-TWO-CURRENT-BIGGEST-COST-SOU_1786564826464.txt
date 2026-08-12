@@ -1,0 +1,239 @@
+OPENAI COST AUDIT — FIND THE TWO CURRENT BIGGEST COST SOURCES
+
+Do NOT redesign modules in this task.
+
+The previous token optimizations are working:
+- downstream-ai-context.ts is now used
+- recent-run guards exist
+- dependency fingerprinting exists
+- Company Monitor discovery gate exists
+- compact contexts are being used
+
+Before optimizing further, investigate two remaining cost problems using the ACTUAL runtime behavior.
+
+
+==================================================
+1. TRADE DECISION — INVESTIGATE REPEATED CALLS
+==================================================
+
+The OpenAI usage log contains a very large number of Trade Decision calls.
+
+There are examples of calls occurring very close together, including approximately:
+
+19:53:08
+19:53:34
+19:53:50
+19:54:17
+19:54:34
+19:55:04
+19:55:22
+19:55:42
+
+Many are marked retryNumber 1 / 2.
+
+This needs to be investigated.
+
+Trace exactly WHY every Trade Decision OpenAI call is being made.
+
+For every Trade Decision AI call record:
+
+- orchestrator cycle ID
+- job ID
+- trigger
+- parent job
+- forceAI
+- retryNumber
+- fingerprint
+- previous fingerprint
+- validation result
+- reason for retry
+- whether another Trade Decision job was already running
+- whether the call belongs to a manual/test request or normal automation
+
+Verify that one normal Run All cannot accidentally cause multiple independent Trade Decision analyses for the same material input.
+
+Verify concurrent request deduplication.
+
+If Trade Decision is already RUNNING for the same relevant input fingerprint:
+
+do NOT start another OpenAI call.
+
+Reuse/wait for the existing job.
+
+If multiple triggers arrive while it is running, coalesce them.
+
+After the current run finishes:
+
+only run again if the material input fingerprint actually changed while it was running.
+
+
+==================================================
+2. TRADE DECISION RETRIES
+==================================================
+
+Determine why retryNumber=2 occurs frequently.
+
+Report the actual causes:
+
+- invalid JSON?
+- schema validation?
+- semantic validation?
+- missing required fields?
+- consistency checks?
+- timeout?
+- another reason?
+
+Do not simply increase retry count.
+
+If retries are caused by predictable schema/format problems, fix the schema/prompt/parser so the first response succeeds more often.
+
+If safe deterministic normalization can repair the response, prefer that over another full GPT-4o request.
+
+Never invent investment facts during repair.
+
+
+==================================================
+3. MARKET MONITOR INPUT COST
+==================================================
+
+Recent Market Monitor usage is approximately:
+
+~17,700 prompt/input tokens
+~250-350 completion tokens
+
+Investigate why input usage is this high.
+
+Separate the measured token usage into conceptually:
+
+- our system prompt
+- our user prompt
+- web-search/retrieved context if observable
+- other OpenAI-added context
+
+Do NOT reduce investment quality yet.
+
+First identify where the ~17k tokens come from.
+
+
+==================================================
+4. NEWS MONITOR INPUT COST
+==================================================
+
+Recent News Monitor usage is approximately:
+
+~18,600 prompt/input tokens
+~500-700 completion tokens
+
+Perform the same analysis.
+
+Determine whether medium web search context is retrieving substantially more source material than required for the structured result.
+
+Report:
+
+- search configuration
+- number/type of search results if available
+- whether the model actually uses all this context
+- whether LOW search context could still satisfy the News Monitor schema and purpose
+
+
+==================================================
+5. CONTROLLED WEB SEARCH TEST
+==================================================
+
+In development/debug only, perform a controlled comparison for Market Monitor and News Monitor:
+
+A:
+current MEDIUM search context
+
+B:
+LOW search context
+
+Use equivalent queries/time period.
+
+Compare:
+
+input tokens
+output tokens
+result completeness
+number of material items found
+important facts missed
+estimated cost
+
+Do NOT permanently change the setting yet if quality degrades materially.
+
+We want evidence.
+
+
+==================================================
+6. MARKET ALERTS — ANALYZE WHETHER AI IS NECESSARY
+==================================================
+
+Do not remove AI yet.
+
+Inspect exactly what Market Alerts asks GPT-4o to do.
+
+Classify every output field as:
+
+A) deterministically derivable from existing monitor/company/event/portfolio data
+
+or
+
+B) genuinely requires qualitative AI reasoning.
+
+Report the result.
+
+If almost all fields are category A, propose a deterministic Market Alerts implementation while keeping the existing module/UI.
+
+Do not implement the removal until the analysis is complete.
+
+
+==================================================
+7. REPORT ACTUAL COST PRIORITIES
+==================================================
+
+Using openai-usage-log.json, produce a debug report showing:
+
+module
+calls
+prompt tokens
+completion tokens
+total tokens
+cached tokens
+web searches
+retries
+estimated cost
+
+Sort by estimated cost descending.
+
+Also distinguish:
+
+normal production/orchestrator calls
+
+from:
+
+manual development/test calls
+
+if possible.
+
+The purpose is to avoid optimizing modules that are already cheap while ignoring the real cost sources.
+
+
+==================================================
+8. DO NOT CHANGE THESE YET
+==================================================
+
+Do NOT merge modules.
+
+Do NOT remove Company Monitor AI.
+
+Do NOT weaken Trade Decision context.
+
+Do NOT remove Opportunity Finder AI.
+
+Do NOT aggressively reduce Risk Analyzer or Portfolio Analyzer.
+
+Do NOT change normal schedules.
+
+This task is diagnosis plus safe deduplication/repair of obviously redundant Trade Decision calls.
+
+Return a clear report of findings before making broader architectural changes.
