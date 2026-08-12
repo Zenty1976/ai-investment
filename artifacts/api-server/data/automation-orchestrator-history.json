@@ -1,28 +1,5 @@
 [
   {
-    "id": "6018cc6d-a3f4-4c33-964b-902eeea14eef",
-    "correlationId": "438f6db4-2865-4c1d-a7c4-874190b6cab8",
-    "trigger": "RunAllNow",
-    "startedAt": "2026-08-09T16:12:57.586Z",
-    "completedAt": "2026-08-09T16:15:48.661Z",
-    "durationMs": 171075,
-    "status": "Completed",
-    "completedModules": [
-      "portfolio-manager",
-      "market-monitor",
-      "news-monitor",
-      "event-monitor",
-      "sector-monitor",
-      "company-monitor",
-      "market-alerts",
-      "risk-analyzer",
-      "portfolio-analyzer",
-      "opportunity-finder",
-      "trade-decision-engine",
-      "trade-review"
-    ]
-  },
-  {
     "id": "ab5de48e-97e9-484f-8480-8c43174c9ba6",
     "correlationId": "e8c7eb48-963a-4f20-b0aa-35f5e71421bb",
     "trigger": "RunAllNow",
@@ -469,5 +446,32 @@
       "trade-review",
       "command-brief"
     ]
+  },
+  {
+    "id": "3bd0b699-6202-470e-a91b-18d7d08e84f4",
+    "correlationId": "14016a87-328f-45ab-8b77-72ab3a3715f2",
+    "trigger": "RunAllNow",
+    "startedAt": "2026-08-12T20:18:53.514Z",
+    "completedAt": "2026-08-12T20:22:01.714Z",
+    "durationMs": 188200,
+    "status": "CompletedWithErrors",
+    "completedModules": [
+      "market-monitor",
+      "news-monitor",
+      "event-monitor",
+      "sector-monitor",
+      "company-monitor",
+      "market-alerts",
+      "risk-analyzer",
+      "portfolio-analyzer",
+      "opportunity-finder",
+      "trade-decision-engine",
+      "trade-review",
+      "command-brief"
+    ],
+    "stageErrors": {
+      "portfolio-manager": "portfolio-manager failed: HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+    },
+    "error": "portfolio-manager: portfolio-manager failed: HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
   }
 ]

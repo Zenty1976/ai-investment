@@ -1,0 +1,408 @@
+TOKEN OPTIMIZATION — REMOVE UNNECESSARY AI FROM MARKET ALERTS
+
+We now want to continue reducing OpenAI usage by identifying modules that do not actually require a separate AI analysis.
+
+Start ONLY with Market Alerts.
+
+Do not modify Risk Analyzer, Portfolio Analyzer, Company Monitor,
+Opportunity Finder or Trade Decision in this task.
+
+IMPORTANT:
+
+Keep the Market Alerts module and UI.
+
+We are NOT removing Market Alerts.
+
+We are changing HOW alerts are generated so we do not pay OpenAI
+to rediscover information that other modules have already analyzed.
+
+
+==================================================
+1. CURRENT PROBLEM
+==================================================
+
+Market Alerts currently receives already-analyzed structured information
+from modules such as:
+
+Market Monitor
+News Monitor
+Event Monitor
+Sector Monitor
+Company Monitor
+Portfolio / holdings
+Price Context
+
+and then makes another OpenAI request to determine alerts.
+
+Much of this is redundant.
+
+For example, if Company Monitor already reports:
+
+symbol = SERV
+materialChange = true
+thesis point = Invalidated
+importance/risk = High
+
+we should not need another GPT analysis simply to conclude that SERV
+deserves an alert.
+
+The same applies to:
+
+material news
+important events
+major market regime changes
+major portfolio risks
+material Price Context changes.
+
+
+==================================================
+2. CREATE DETERMINISTIC ALERT ENGINE
+==================================================
+
+Replace the normal Market Alerts OpenAI analysis with a deterministic
+backend Alert Engine.
+
+The engine should consume the existing COMPACT structured contexts.
+
+Do NOT parse long natural-language UI text.
+
+Use structured fields/enums/IDs wherever available.
+
+
+==================================================
+3. ALERT SOURCES
+==================================================
+
+Generate alert candidates from relevant structured state including:
+
+Company Monitor material changes
+News Monitor material news
+Event Monitor important upcoming events
+Market Monitor material regime/risk changes
+Sector Monitor material sector changes
+Price Context material state changes
+Portfolio-related risk conditions where already available
+
+Do not duplicate the same underlying development simply because it
+appears in multiple modules.
+
+
+==================================================
+4. ALERT STRUCTURE
+==================================================
+
+Create a normalized alert structure such as:
+
+{
+  id,
+  type,
+  severity,
+  symbol,
+  title,
+  shortReason,
+  sourceModule,
+  sourceId,
+  createdAt,
+  materialChange,
+  requiresAttention
+}
+
+Adapt this to the existing Market Alerts schema rather than unnecessarily
+creating incompatible infrastructure.
+
+
+==================================================
+5. SEVERITY MUST BE DETERMINISTIC
+==================================================
+
+Use centralized rules to determine severity.
+
+For example:
+
+CRITICAL / HIGH:
+- thesis invalidated for a current holding
+- severe portfolio/company risk escalation
+- major negative event affecting a holding
+- actionable Trade Decision state if alerts currently surface this
+- major unexpected company development
+
+MEDIUM:
+- thesis weakened
+- significant upcoming event
+- material sector/market change relevant to holdings
+- important company development
+- material Price Context regime change
+
+LOW / INFO:
+- noteworthy but non-actionable developments
+
+These are examples.
+
+Inspect the ACTUAL existing schemas and fields and map the rules to
+real data rather than inventing unsupported fields.
+
+
+==================================================
+6. PORTFOLIO RELEVANCE
+==================================================
+
+Alerts affecting current holdings should normally receive greater
+attention than unrelated market information.
+
+But do not automatically classify every holding-related item as HIGH.
+
+Use materiality + portfolio relevance.
+
+
+==================================================
+7. DEDUPLICATION
+==================================================
+
+This is important.
+
+The same event may appear in:
+
+News Monitor
+Company Monitor
+Market Monitor
+Sector Monitor
+
+Do not create four alerts.
+
+Deduplicate using:
+
+symbol
+event/source IDs
+category
+time
+normalized material-change identity
+
+where possible.
+
+Prefer the most authoritative/specific source.
+
+For example:
+
+Company-specific earnings guidance change
+
+should normally use Company Monitor/company event information rather
+than also generating separate generic News and Market alerts for the
+same underlying event.
+
+
+==================================================
+8. STATEFUL ALERTS
+==================================================
+
+Market Alerts should remain stateful.
+
+Do not recreate the same alert every cycle.
+
+Track:
+
+NEW
+ACTIVE
+UPDATED
+RESOLVED
+
+or map to the existing equivalent statuses.
+
+If nothing material changed:
+
+reuse the existing alert state.
+
+Do not create a new alert timestamp just because Run All was executed.
+
+
+==================================================
+9. NO NORMAL OPENAI CALL
+==================================================
+
+The normal Market Alerts update should require:
+
+ZERO OpenAI calls.
+
+Flow:
+
+existing module states
+→ deterministic alert candidate extraction
+→ deduplication
+→ severity rules
+→ state comparison
+→ Market Alerts result
+
+No GPT call should normally occur.
+
+
+==================================================
+10. OPTIONAL AI ESCALATION — ONLY IF GENUINELY NEEDED
+==================================================
+
+If the current Market Alerts schema contains a field that genuinely
+requires qualitative reasoning and cannot safely be derived from
+existing structured information, do NOT automatically keep the current
+large GPT-4o call.
+
+Instead first report which exact field requires AI.
+
+If AI is genuinely necessary, implement a very small OPTIONAL
+escalation call only for ambiguous HIGH-impact cases.
+
+Example:
+
+Alert Engine cannot confidently determine whether two conflicting
+material developments represent HIGH or MEDIUM severity.
+
+Only then:
+
+small structured context
+→ lightweight AI classification
+→ very small output
+
+This should be exceptional, not normal behavior.
+
+Do NOT use web search from Market Alerts.
+
+Market Alerts should trust the upstream modules whose responsibility
+is observing the world.
+
+
+==================================================
+11. IMPORTANT ARCHITECTURAL PRINCIPLE
+==================================================
+
+Market Alerts is NOT another Monitor.
+
+It should not independently research reality.
+
+Its responsibility is:
+
+"Given what the system already knows, what deserves the user's
+attention?"
+
+Therefore:
+
+Monitors observe
+Company/Analyzers interpret
+Market Alerts surfaces attention-worthy state
+
+Do not duplicate monitor responsibilities.
+
+
+==================================================
+12. DO NOT REDUCE INFORMATION AVAILABLE TO TRADE DECISION
+==================================================
+
+This optimization must NOT remove underlying information from:
+
+Company Monitor
+News Monitor
+Events
+Market Monitor
+Sector Monitor
+Price Context
+
+Market Alerts is only one downstream representation.
+
+Trade Decision should continue receiving the compact decision-relevant
+information it requires according to the existing architecture.
+
+Do not make Trade Decision dependent solely on Market Alerts.
+
+
+==================================================
+13. DEBUG
+==================================================
+
+Update Market Alerts debug/details so we can inspect:
+
+source contexts
+generated alert candidates
+deduplication
+severity calculation
+final alerts
+AI calls = 0 normally
+
+For every alert it should be possible to understand WHY it exists.
+
+Example:
+
+SERV
+Severity: HIGH
+
+Reason:
+CompanyMonitor.materialChange
+thesis[guidance] = Invalidated
+holding = true
+
+No OpenAI explanation is necessary.
+
+
+==================================================
+14. TOKEN USAGE
+==================================================
+
+After implementation, a normal Market Alerts refresh should show:
+
+OpenAI calls: 0
+Input tokens: 0
+Output tokens: 0
+Web searches: 0
+
+Do not run paid OpenAI tests just to demonstrate this.
+
+Verify through code paths/unit tests/mock data where possible.
+
+
+==================================================
+15. TEST WITHOUT PAID OPENAI CALLS
+==================================================
+
+Use existing stored module results / fixtures / mock data.
+
+Test:
+
+A)
+No material changes
+→ no new alert
+
+B)
+Company holding thesis becomes Invalidated
+→ appropriate alert
+
+C)
+Same development exists in News + Company
+→ one alert, not two
+
+D)
+Important event approaching for a holding
+→ event alert
+
+E)
+PriceState changes materially
+→ appropriate alert if existing policy says this is alert-worthy
+
+F)
+Previously active condition disappears
+→ alert resolves according to existing stateful behavior
+
+All tests should run without calling OpenAI.
+
+
+==================================================
+16. DO NOT TOUCH OTHER AI MODULES YET
+==================================================
+
+Do NOT use this task as an excuse to refactor the entire application.
+
+Only convert Market Alerts to deterministic/hybrid-zero-by-default
+behavior.
+
+Keep all existing API/UI compatibility where practical.
+
+After implementation report:
+
+1. What Market Alerts previously asked OpenAI to determine.
+2. Which parts are now deterministic.
+3. Whether ANY remaining field genuinely requires AI.
+4. Confirmation that normal Market Alerts execution makes zero OpenAI calls.

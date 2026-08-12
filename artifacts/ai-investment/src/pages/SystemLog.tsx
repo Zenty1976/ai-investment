@@ -1,7 +1,8 @@
 /**
  * System Log Page
  *
- * Console-like view of all module operational messages.
+ * Console-like view of all module operational messages plus the
+ * OpenAI usage panel (moved here from the Automation page).
  * Polls the backend every 3 s.
  * Auto-scrolls to the newest message unless the user has scrolled up.
  */
@@ -12,8 +13,163 @@ import {
   useGetSystemLog,
   useClearSystemLog,
   getGetSystemLogQueryKey,
+  useOpenAIUsageStats,
 } from '@workspace/api-client-react';
-import type { SystemLogLevel } from '@workspace/api-client-react';
+import type { SystemLogLevel, OpenAITimeWindow } from '@workspace/api-client-react';
+import { BarChart3, Loader2, SkipForward } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// ── OpenAI Usage Panel ───────────────────────────────────────────────────────
+
+const USAGE_WINDOWS: { value: OpenAITimeWindow; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "24h",   label: "24h" },
+  { value: "7d",    label: "7 days" },
+  { value: "30d",   label: "30 days" },
+]
+
+function fmtTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}k`
+  return String(n)
+}
+
+function fmtCost(usd: number | null): string {
+  if (usd === null) return "—"
+  if (usd < 0.001) return "<$0.001"
+  return `$${usd.toFixed(3)}`
+}
+
+function moduleLabel(m: string): string {
+  return m.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function OpenAIUsagePanel() {
+  const [usageWindow, setUsageWindow] = useState<OpenAITimeWindow>("today")
+  const { data, isLoading, isError } = useOpenAIUsageStats(usageWindow)
+
+  return (
+    <Card className="shrink-0">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary/70" />
+            <CardTitle className="text-sm font-semibold">OpenAI Usage</CardTitle>
+          </div>
+          <div className="flex items-center gap-1 rounded-md border border-border/60 p-0.5 bg-muted/20">
+            {USAGE_WINDOWS.map((w) => (
+              <button
+                key={w.value}
+                onClick={() => setUsageWindow(w.value)}
+                className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-colors ${
+                  usageWindow === w.value
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Loading usage data…
+          </div>
+        ) : isError || !data ? (
+          <div className="text-xs text-muted-foreground/60 py-2">
+            Could not load usage data.
+          </div>
+        ) : (
+          <>
+            {/* Summary row */}
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+              {[
+                { label: "Input",     value: fmtTokens(data.promptTokens),     sub: "tokens" },
+                { label: "Output",    value: fmtTokens(data.completionTokens), sub: "tokens" },
+                { label: "Cached",    value: fmtTokens(data.cachedTokens),     sub: "tokens" },
+                { label: "Total",     value: fmtTokens(data.totalTokens),      sub: "tokens", bold: true },
+                { label: "API calls", value: String(data.successCalls),        sub: `of ${data.totalCalls} total` },
+                { label: "Web srch",  value: String(data.webSearches),         sub: "searches" },
+                { label: "Retries",   value: String(data.retries),             sub: "retried calls" },
+                { label: "Skipped",   value: String(data.skippedCalls),        sub: "AI calls saved" },
+              ].map((s) => (
+                <div key={s.label} className="flex flex-col gap-0.5 p-2 rounded-md bg-muted/30">
+                  <div className={`text-base font-bold tabular-nums leading-none ${s.bold ? "text-primary" : ""}`}>
+                    {s.value}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground font-medium uppercase tracking-wide">{s.label}</div>
+                  <div className="text-[9px] text-muted-foreground/60">{s.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Estimated cost */}
+            {data.estimatedCostUsd !== null && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground border-t border-border/40 pt-3">
+                <span className="font-medium text-foreground/80">Estimated cost:</span>
+                <span className="font-mono tabular-nums text-foreground">{fmtCost(data.estimatedCostUsd)}</span>
+                <span className="text-muted-foreground/60 text-[10px]">· Model pricing may be stale</span>
+                {data.skippedCalls > 0 && data.totalCalls > 0 && (
+                  <>
+                    <span className="mx-1 text-border">·</span>
+                    <SkipForward className="h-3 w-3 text-emerald-400/80" />
+                    <span className="text-emerald-400/80">
+                      {data.skippedCalls} AI calls avoided ({Math.round(data.skippedCalls / (data.totalCalls + data.skippedCalls) * 100)}% skip rate)
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Module breakdown */}
+            {data.byModule.length > 0 && (
+              <div className="border-t border-border/40 pt-3">
+                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">Module breakdown</div>
+                <div className="space-y-1">
+                  <div className="grid grid-cols-[1fr_60px_60px_60px_48px_48px_56px] gap-x-2 text-[9px] text-muted-foreground/60 uppercase tracking-wide font-medium px-2 pb-1 border-b border-border/30">
+                    <span>Module</span>
+                    <span className="text-right">Input</span>
+                    <span className="text-right">Output</span>
+                    <span className="text-right">Total</span>
+                    <span className="text-right">Calls</span>
+                    <span className="text-right">Skip</span>
+                    <span className="text-right">Est. cost</span>
+                  </div>
+                  {data.byModule.map((m) => (
+                    <div
+                      key={m.module}
+                      className="grid grid-cols-[1fr_60px_60px_60px_48px_48px_56px] gap-x-2 items-center px-2 py-1 rounded hover:bg-muted/30 text-xs"
+                    >
+                      <span className="font-medium text-foreground/80 truncate" title={m.module}>{moduleLabel(m.module)}</span>
+                      <span className="text-right tabular-nums text-muted-foreground">{fmtTokens(m.promptTokens)}</span>
+                      <span className="text-right tabular-nums text-muted-foreground">{fmtTokens(m.completionTokens)}</span>
+                      <span className="text-right tabular-nums font-medium">{fmtTokens(m.totalTokens)}</span>
+                      <span className="text-right tabular-nums text-muted-foreground">
+                        {m.successCalls}{m.retries > 0 && <span className="text-amber-400/70 ml-0.5">+{m.retries}r</span>}
+                      </span>
+                      <span className="text-right tabular-nums text-emerald-400/70">{m.skippedCalls || "—"}</span>
+                      <span className="text-right tabular-nums text-muted-foreground">{fmtCost(m.estimatedCostUsd)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {data.byModule.length === 0 && (
+              <div className="text-xs text-muted-foreground/60 py-2">
+                No API calls recorded yet for this window. Usage is tracked from server start.
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 // ── Level display config ──────────────────────────────────────────────────────
 
@@ -146,6 +302,9 @@ export default function SystemLog() {
 
   return (
     <div className="flex flex-col h-full gap-3 min-h-0">
+
+      {/* ── OpenAI Usage ────────────────────────────────────────────────────── */}
+      <OpenAIUsagePanel />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between shrink-0">

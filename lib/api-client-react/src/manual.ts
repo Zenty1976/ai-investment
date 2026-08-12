@@ -1088,11 +1088,7 @@ export interface OpenAIUsageStats {
 export function useOpenAIUsageStats(window: OpenAITimeWindow = "today") {
   return useQuery<OpenAIUsageStats>({
     queryKey: ["openai-usage", window],
-    queryFn: async () => {
-      const res = await customFetch(`api/openai-usage/stats?window=${window}`);
-      if (!res.ok) throw new Error("Failed to fetch OpenAI usage stats");
-      return res.json() as Promise<OpenAIUsageStats>;
-    },
+    queryFn: () => customFetch<OpenAIUsageStats>(`/api/openai-usage/stats?window=${window}`),
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
