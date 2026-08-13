@@ -24,11 +24,10 @@ export const MODEL_PRICING: Record<string, ModelPricing> = {
   "gpt-4o-mini":               { inputPer1M: 0.15,  outputPer1M: 0.60,  cachedInputPer1M: 0.075 },
   "gpt-4o-2024-08-06":         { inputPer1M: 2.50,  outputPer1M: 10.00, cachedInputPer1M: 1.25 },
   "gpt-4o-mini-2024-07-18":    { inputPer1M: 0.15,  outputPer1M: 0.60,  cachedInputPer1M: 0.075 },
-  // ── gpt-4.1 family (active: monitor, analysis, decision, company, OF) ──────
+  // ── gpt-4.1 family (active: monitor, analysis, decision, company, OF, discovery) ──
   "gpt-4.1":                   { inputPer1M: 2.00,  outputPer1M: 8.00,  cachedInputPer1M: 0.50 },
   "gpt-4.1-mini":              { inputPer1M: 0.40,  outputPer1M: 1.60,  cachedInputPer1M: 0.10 },
-  // gpt-4.1-nano: not yet in verified pricing table — add when confirmed available.
-  // "gpt-4.1-nano":           { inputPer1M: 0.10,  outputPer1M: 0.40,  cachedInputPer1M: 0.025 },
+  "gpt-4.1-nano":              { inputPer1M: 0.10,  outputPer1M: 0.40,  cachedInputPer1M: 0.025 },
 };
 
 /**

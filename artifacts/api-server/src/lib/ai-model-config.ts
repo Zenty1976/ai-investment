@@ -52,10 +52,11 @@ export const AI_MODEL_CONFIG: Record<
    * Used by: company-monitor-discovery, investor-watch-discovery.
    * Responsibility: "Has anything materially changed that justifies an expensive full analysis?"
    * Quality bar: structured extraction, materiality classification, relevance screening.
-   * Future: upgrade to gpt-4.1-nano when pricing is confirmed.
+   * gpt-4.1-nano is sufficient — output is a binary signal, not investment reasoning.
+   * Pricing verified: $0.10/1M input, $0.025/1M cached, $0.40/1M output.
    */
   discovery: {
-    model: "gpt-4o-mini",
+    model: "gpt-4.1-nano",
     description: "Lightweight change-detection and pre-screening",
   },
 
@@ -109,9 +110,15 @@ export const AI_MODEL_CONFIG: Record<
 
   /**
    * repair — schema-validation retry attempts.
-   * Used by: all routes on retry when first attempt returns invalid JSON structure.
-   * Responsibility: mechanical schema correction only; must NOT reinterpret investment conclusions.
-   * Future: upgrade to gpt-4.1-nano when confirmed.
+   *
+   * NOTE: This category is currently NOT called by any route. All retry loops reuse
+   * the same getModel() call as their first attempt (same category, incremented
+   * retryNumber). The category exists for future use if a dedicated cheaper repair
+   * pass is introduced.
+   *
+   * Left on gpt-4o-mini rather than nano because retry prompts embed the original
+   * AI response + schema error context — semantic investment content is present.
+   * A nano model could misinterpret that content and corrupt the repair attempt.
    */
   repair: {
     model: "gpt-4o-mini",

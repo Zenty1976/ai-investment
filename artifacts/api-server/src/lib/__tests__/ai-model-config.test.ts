@@ -22,8 +22,8 @@ import {
 // ── §1 Category defaults ───────────────────────────────────────────────────────
 
 describe("getModel — category defaults", () => {
-  it("discovery → gpt-4o-mini (cheap, verified available)", () => {
-    assert.equal(getModel("discovery"), "gpt-4o-mini");
+  it("discovery → gpt-4.1-nano (verified pricing: $0.10/1M input)", () => {
+    assert.equal(getModel("discovery"), "gpt-4.1-nano");
   });
 
   it("monitor → gpt-4.1-mini (qualitative upstream)", () => {
@@ -98,12 +98,12 @@ describe("getModel — module overrides", () => {
     assert.equal(getModel("brief", "command-brief"), "gpt-4o-mini");
   });
 
-  it("company-monitor-discovery uses category discovery = gpt-4o-mini", () => {
-    assert.equal(getModel("discovery", "company-monitor-discovery"), "gpt-4o-mini");
+  it("company-monitor-discovery uses category discovery = gpt-4.1-nano", () => {
+    assert.equal(getModel("discovery", "company-monitor-discovery"), "gpt-4.1-nano");
   });
 
-  it("investor-watch-discovery uses category discovery = gpt-4o-mini", () => {
-    assert.equal(getModel("discovery", "investor-watch-discovery"), "gpt-4o-mini");
+  it("investor-watch-discovery uses category discovery = gpt-4.1-nano", () => {
+    assert.equal(getModel("discovery", "investor-watch-discovery"), "gpt-4.1-nano");
   });
 });
 
@@ -194,6 +194,25 @@ describe("MODEL_PRICING completeness", () => {
     assert.ok(MODEL_PRICING["gpt-4o-mini"].inputPer1M < MODEL_PRICING["gpt-4.1-mini"].inputPer1M,
       "gpt-4o-mini should be cheaper than gpt-4.1-mini per input token");
   });
+
+  it("gpt-4.1-nano has correct verified pricing ($0.10/$0.025/$0.40 per 1M)", () => {
+    const p = MODEL_PRICING["gpt-4.1-nano"];
+    assert.ok(p !== undefined, "gpt-4.1-nano must be in MODEL_PRICING");
+    assert.equal(p.inputPer1M, 0.10);
+    assert.equal(p.cachedInputPer1M, 0.025);
+    assert.equal(p.outputPer1M, 0.40);
+  });
+
+  it("gpt-4.1-nano is cheaper than gpt-4o-mini on input tokens", () => {
+    assert.ok(MODEL_PRICING["gpt-4.1-nano"].inputPer1M < MODEL_PRICING["gpt-4o-mini"].inputPer1M,
+      "gpt-4.1-nano ($0.10/1M) should be cheaper than gpt-4o-mini ($0.15/1M)");
+  });
+
+  it("gpt-4.1-nano cached input is $0.025/1M (75% discount vs full rate)", () => {
+    const p = MODEL_PRICING["gpt-4.1-nano"];
+    const discountPct = (1 - p.cachedInputPer1M! / p.inputPer1M) * 100;
+    assert.ok(Math.abs(discountPct - 75) < 0.001, `Expected 75% cache discount, got ${discountPct.toFixed(1)}%`);
+  });
 });
 
 // ── §6 estimateCostUsd ─────────────────────────────────────────────────────────
@@ -248,6 +267,22 @@ describe("estimateCostUsd", () => {
   it("zero tokens → zero cost", () => {
     const cost = estimateCostUsd("gpt-4.1", 0, 0);
     assert.equal(cost, 0);
+  });
+
+  it("gpt-4.1-nano: 1000 input + 500 output → correct estimate", () => {
+    // $0.10/1M input, $0.40/1M output
+    // cost = 1000 * 0.10/1M + 500 * 0.40/1M = 0.0001 + 0.0002 = 0.0003
+    const cost = estimateCostUsd("gpt-4.1-nano", 1_000, 500);
+    assert.ok(cost !== null);
+    assert.ok(Math.abs(cost! - 0.0003) < 0.000001, `Expected ~0.0003, got ${cost}`);
+  });
+
+  it("gpt-4.1-nano: cached input uses $0.025/1M rate", () => {
+    // 800 cached, 200 uncached, 0 output
+    // cost = 200 * 0.10/1M + 800 * 0.025/1M = 0.00002 + 0.00002 = 0.00004
+    const cost = estimateCostUsd("gpt-4.1-nano", 1_000, 0, 800);
+    assert.ok(cost !== null);
+    assert.ok(Math.abs(cost! - 0.00004) < 0.0000001, `Expected ~0.00004, got ${cost}`);
   });
 });
 
@@ -508,9 +543,16 @@ describe("no silent fallback — model routing", () => {
     assert.notEqual(model, "gpt-4.1-mini");
   });
 
-  it("discovery and repair use gpt-4o-mini, not gpt-4.1 (too expensive for mechanical tasks)", () => {
-    assert.notEqual(getModel("discovery"), "gpt-4.1");
+  it("discovery uses gpt-4.1-nano, not a more expensive model", () => {
+    assert.equal(getModel("discovery"), "gpt-4.1-nano");
+    assert.notEqual(getModel("discovery"), "gpt-4o-mini");
     assert.notEqual(getModel("discovery"), "gpt-4.1-mini");
+    assert.notEqual(getModel("discovery"), "gpt-4.1");
+  });
+
+  it("repair stays on gpt-4o-mini (retry prompts contain semantic investment content)", () => {
+    assert.equal(getModel("repair"), "gpt-4o-mini");
+    assert.notEqual(getModel("repair"), "gpt-4.1-nano");
     assert.notEqual(getModel("repair"), "gpt-4.1");
     assert.notEqual(getModel("repair"), "gpt-4.1-mini");
   });

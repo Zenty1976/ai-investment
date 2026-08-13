@@ -1,11 +1,11 @@
 {
   "portfolio-manager": {
-    "status": "Running",
-    "lastRunAt": "2026-08-13T20:00:35.354Z",
+    "status": "Failed",
+    "lastRunAt": "2026-08-13T20:05:45.395Z",
     "lastSuccessfulRunAt": "2026-08-11T21:02:44.708Z",
-    "nextRunAt": "2026-08-13T21:00:15.371Z",
+    "nextRunAt": "2026-08-13T21:05:45.410Z",
     "lastError": "HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}",
-    "currentJobId": "0a371cee-c8ef-4b08-a19a-cbcb28798180",
+    "currentJobId": null,
     "waitingForDeps": [],
     "lastSkippedUnchanged": false
   },
@@ -66,7 +66,9 @@
     "nextRunAt": "2026-08-13T20:03:51.013Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [],
+    "waitingForDeps": [
+      "portfolio-manager"
+    ],
     "lastSkippedUnchanged": true
   },
   "risk-analyzer": {
@@ -81,14 +83,12 @@
   },
   "portfolio-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T16:01:14.656Z",
-    "lastSuccessfulRunAt": "2026-08-13T16:01:31.491Z",
-    "nextRunAt": "2026-08-13T19:01:31.499Z",
+    "lastRunAt": "2026-08-13T20:01:35.356Z",
+    "lastSuccessfulRunAt": "2026-08-13T20:01:45.440Z",
+    "nextRunAt": "2026-08-13T23:01:45.538Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [
-      "portfolio-manager"
-    ],
+    "waitingForDeps": [],
     "lastSkippedUnchanged": false
   },
   "opportunity-finder": {
@@ -114,12 +114,12 @@
   "trade-review": {
     "status": "Idle",
     "lastRunAt": "2026-08-13T19:01:51.774Z",
-    "lastSuccessfulRunAt": "2026-08-13T19:01:51.792Z",
-    "nextRunAt": "2026-08-13T21:01:51.803Z",
+    "lastSuccessfulRunAt": "2026-08-13T20:02:05.353Z",
+    "nextRunAt": "2026-08-13T22:02:05.363Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
-    "lastSkippedUnchanged": false
+    "lastSkippedUnchanged": true
   },
   "investor-watch": {
     "status": "Idle",
