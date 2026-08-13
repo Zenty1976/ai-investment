@@ -1,20 +1,30 @@
 /**
  * PortfolioReturnBar
  *
- * A compact, always-visible summary bar shown at the top of the Overview/Dashboard page.
+ * A compact, always-visible summary bar shown in the AppShell above page content.
  * Renders ONLY when live price data is available — completely hidden (returns null)
  * while the portfolio has no price context, so there is never an empty or placeholder state.
  *
  * Shows:
- *   - Portfolio 1D return (colour-coded)
+ *   - Portfolio 1D return (colour-coded; labelled as partial when coverage < threshold)
+ *   - 5D return (secondary)
  *   - Top contributor (ticker + return)
  *   - Top detractor (ticker + return)
  *   - Price freshness timestamp (source-derived PriceContext asOf)
+ *
+ * FINANCIAL ACCURACY:
+ *   The engine returns the COVERED-portion return when price data is incomplete.
+ *   When priceCoveragePct < COVERAGE_THRESHOLD the bar shows a "~" tilde prefix
+ *   and explicit coverage % so users are never misled into reading a partial
+ *   figure as the confirmed full-portfolio return.
  */
 import { Link } from "wouter"
 import { TrendingUp, TrendingDown, Activity } from "lucide-react"
 import { useGetPortfolioPerformance } from "@workspace/api-client-react"
 import { format } from "date-fns"
+
+// Must stay in sync with PortfolioPerformanceSection.tsx
+const COVERAGE_THRESHOLD = 95
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -44,12 +54,17 @@ export function PortfolioReturnBar() {
     portfolioReturn5D,
     topContributors,
     topDetractors,
+    priceCoveragePct,
     priceDataAsOf,
   } = data
 
-  const bestContributor  = topContributors[0] ?? null
-  const worstDetractor   = topDetractors[0] ?? null
-  const priceAsOf        = priceDataAsOf ? new Date(priceDataAsOf) : null
+  // priceCoveragePct is weight-based (invested value), not holding count.
+  const isPartialCoverage =
+    priceCoveragePct !== null && priceCoveragePct < COVERAGE_THRESHOLD
+
+  const bestContributor = topContributors[0] ?? null
+  const worstDetractor  = topDetractors[0] ?? null
+  const priceAsOf       = priceDataAsOf ? new Date(priceDataAsOf) : null
 
   return (
     <Link href="/portfolio">
@@ -61,7 +76,11 @@ export function PortfolioReturnBar() {
           transition-colors cursor-pointer
           overflow-x-auto scrollbar-none
         "
-        title="Go to Portfolio"
+        title={
+          isPartialCoverage
+            ? `Covered portfolio return — ${priceCoveragePct}% of invested weight has price data. Go to Portfolio for details.`
+            : "Go to Portfolio"
+        }
       >
         {/* Label */}
         <div className="flex items-center gap-1.5 shrink-0">
@@ -76,16 +95,31 @@ export function PortfolioReturnBar() {
 
         {/* 1D return — primary figure */}
         <div className="flex items-baseline gap-1 shrink-0">
-          <span className="text-[10px] text-muted-foreground/40 font-medium">1D</span>
+          <span
+            className={`text-[10px] font-medium ${isPartialCoverage ? "text-amber-400/60" : "text-muted-foreground/40"}`}
+          >
+            {isPartialCoverage ? "~1D" : "1D"}
+          </span>
           <span className={`text-sm font-bold font-mono tabular-nums ${returnColor(portfolioReturn1D)}`}>
             {fmtReturn(portfolioReturn1D)}
           </span>
+          {/* Coverage badge — only when partial */}
+          {isPartialCoverage && (
+            <span
+              className="text-[9px] font-mono px-1 py-0.5 rounded bg-amber-500/15 text-amber-400/70 shrink-0 tabular-nums"
+              title={`Price data covers ${priceCoveragePct}% of invested portfolio weight`}
+            >
+              {priceCoveragePct}%
+            </span>
+          )}
         </div>
 
         {/* 5D return — secondary */}
         {portfolioReturn5D !== null && (
           <div className="flex items-baseline gap-1 shrink-0">
-            <span className="text-[10px] text-muted-foreground/30 font-medium">5D</span>
+            <span className={`text-[10px] font-medium ${isPartialCoverage ? "text-amber-400/50" : "text-muted-foreground/30"}`}>
+              {isPartialCoverage ? "~5D" : "5D"}
+            </span>
             <span className={`text-[11px] font-mono tabular-nums ${returnColor(portfolioReturn5D)}`}>
               {fmtReturn(portfolioReturn5D)}
             </span>

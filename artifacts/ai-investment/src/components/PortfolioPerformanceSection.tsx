@@ -6,6 +6,17 @@
  *   - Top contributors and detractors by 1D portfolio contribution
  *   - Price coverage indicator + last-updated freshness
  *
+ * FINANCIAL ACCURACY NOTE — partial coverage labelling:
+ *   The engine returns the return of the COVERED portion of the portfolio,
+ *   normalised by the invested weight of holdings that have price data.
+ *   This is NOT the confirmed full-portfolio return when coverage is incomplete.
+ *
+ *   COVERAGE_THRESHOLD (95%) determines how returns are labelled:
+ *     >= 95% → shown as portfolio return (de-minimis gap)
+ *     <  95% → labelled as "Covered portfolio return" with explicit coverage %
+ *
+ *   Missing holdings are NEVER assumed to have 0% return.
+ *
  * This section is fully deterministic — it does NOT trigger OpenAI calls
  * and updates whenever price context data changes (polling every 30 s).
  * It is visually and conceptually separate from the AI Portfolio Assessment.
@@ -16,6 +27,10 @@ import { RefreshCw, TrendingUp, TrendingDown, AlertCircle, Zap } from "lucide-re
 import { Link } from "wouter"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
+
+// Returns labelled as "portfolio return" only when coverage meets this threshold.
+// Below this, they are explicitly labelled as "covered portfolio return".
+const COVERAGE_THRESHOLD = 95
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -61,19 +76,30 @@ function fmtValue(val: number | null | undefined, currency: string): string {
 // Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * A single return row (label + value).
+ * When `partial=true` the value is prefixed with "~" to signal that it
+ * reflects only the covered portion of the portfolio, not a confirmed total.
+ */
 function ReturnPill({
   label,
   value,
+  partial = false,
 }: {
   label: string
   value: number | null | undefined
+  partial?: boolean
 }) {
+  const showTilde = partial && value !== null && value !== undefined
   return (
     <div className="flex items-center gap-1.5">
       <span className="text-[10px] text-muted-foreground/40 font-medium w-5 shrink-0">
         {label}
       </span>
       <span className={`text-sm font-semibold font-mono tabular-nums ${returnColor(value)}`}>
+        {showTilde && (
+          <span className="text-[11px] text-amber-400/70 mr-0.5" title="Covered portion only">~</span>
+        )}
         {fmtReturn(value)}
       </span>
     </div>
@@ -146,6 +172,12 @@ export function PortfolioPerformanceSection() {
     missingPriceCount,
   } = data
 
+  // ── Coverage classification ───────────────────────────────────────────────
+  // priceCoveragePct is computed from invested portfolio weight, not holding count.
+  // null means no holdings exist (skip coverage logic entirely).
+  const isPartialCoverage =
+    priceCoveragePct !== null && priceCoveragePct < COVERAGE_THRESHOLD
+
   const hasContributors = topContributors.length > 0
   const hasDetractors = topDetractors.length > 0
   const hasContribData = hasContributors || hasDetractors
@@ -204,21 +236,26 @@ export function PortfolioPerformanceSection() {
             )}
           </div>
 
-          {/* Returns */}
+          {/* Returns — labelled differently based on coverage */}
           <div className="space-y-0.5">
-            <ReturnPill label="1D" value={portfolioReturn1D} />
-            <ReturnPill label="5D" value={portfolioReturn5D} />
-            <ReturnPill label="1M" value={portfolioReturn1M} />
+            {isPartialCoverage && (
+              <div
+                className="flex items-center gap-1.5 mb-1"
+                title={`Returns shown are for the covered ${priceCoveragePct}% of the portfolio by invested weight. ${missingPriceCount} holding${missingPriceCount !== 1 ? "s" : ""} without price data are excluded — not assumed to have 0% return.`}
+              >
+                <span className="text-[9px] font-bold tracking-widest uppercase text-amber-400/70">
+                  Covered portfolio return
+                </span>
+                <span className="text-[9px] px-1 py-0.5 rounded bg-amber-500/15 text-amber-400/80 font-mono font-medium tabular-nums">
+                  {priceCoveragePct}%
+                </span>
+              </div>
+            )}
+            <ReturnPill label="1D" value={portfolioReturn1D} partial={isPartialCoverage} />
+            <ReturnPill label="5D" value={portfolioReturn5D} partial={isPartialCoverage} />
+            <ReturnPill label="1M" value={portfolioReturn1M} partial={isPartialCoverage} />
           </div>
         </div>
-
-        {/* ── Coverage warning for partial data ── */}
-        {portfolioReturn1D !== null && priceCoveragePct !== null && priceCoveragePct < 100 && (
-          <div className="text-[10px] text-amber-400/60 leading-snug">
-            Returns are based on available data ({priceCoveragePct}% price coverage
-            {missingPriceCount > 0 ? ` · ${missingPriceCount} holding${missingPriceCount > 1 ? "s" : ""} missing` : ""})
-          </div>
-        )}
 
         {/* ── Contributors / detractors ── */}
         {hasContribData && (
@@ -294,8 +331,11 @@ export function PortfolioPerformanceSection() {
         {/* ── Coverage footer ── */}
         {priceCoveragePct !== null && (
           <div className="flex items-center justify-between text-[10px] text-muted-foreground/30 border-t border-border/10 pt-2">
-            <span>
+            <span className={isPartialCoverage ? "text-amber-400/50" : ""}>
               Price coverage: {priceCoveragePct}%
+              {isPartialCoverage && missingPriceCount > 0 && (
+                <> · {missingPriceCount} holding{missingPriceCount !== 1 ? "s" : ""} excluded</>
+              )}
             </span>
             <span>
               {portfolio.holdingCount} holding{portfolio.holdingCount !== 1 ? "s" : ""}

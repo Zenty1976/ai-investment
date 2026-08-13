@@ -46,9 +46,9 @@
       "analysisDuration": 4893
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-13T17:48:17.629Z",
+    "updatedAt": "2026-08-13T18:18:41.784Z",
     "materialVersion": 7,
-    "refreshVersion": 24
+    "refreshVersion": 25
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -125,128 +125,54 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "Global markets exhibit mixed performance with U.S. indices slightly up, while European and Asian markets show varied trends. Healthcare and consumer sectors outperform, whereas technology and energy sectors underperform.",
-      "overallMarketImpact": "Neutral market sentiment with moderate risk levels.",
+      "executiveSummary": "U.S. stock indexes declined slightly amid oil market uncertainties due to the conflict with Iran. Oil prices fluctuated, ending higher, reflecting investor concerns over global supply disruptions.",
+      "overallMarketImpact": "Slightly negative, with modest declines in major U.S. stock indexes.",
       "topStory": {
-        "title": "U.S. Indices Show Slight Gains",
-        "summary": "U.S. stock indices have experienced slight gains, indicating cautious optimism among investors.",
+        "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
+        "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "us-indices-gains-2026-08-13",
-          "title": "U.S. Indices Show Slight Gains",
-          "summary": "U.S. stock indices have experienced slight gains, indicating cautious optimism among investors.",
+          "id": "us-stock-indexes-decline-2026-08-11",
+          "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
+          "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
           "category": "Equities",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. stock market"
+            "U.S. equities",
+            "Oil"
           ],
-          "whyItMatters": "Slight gains in U.S. indices suggest investor confidence and potential market stability.",
-          "marketImpact": "Positive for U.S. equities",
+          "whyItMatters": "Investor concerns over global supply disruptions are impacting stock market performance.",
+          "marketImpact": "Negative for U.S. equities",
           "confidence": 0.9,
-          "source": "Market Monitor",
-          "publishedAt": "2026-08-13"
+          "source": "AP News",
+          "publishedAt": "2026-08-11"
         },
         {
-          "id": "fomc-minutes-upcoming-2026-08-13",
-          "title": "Upcoming Release of FOMC Minutes",
-          "summary": "The Federal Open Market Committee minutes are scheduled for release on August 19, potentially impacting market volatility.",
-          "category": "Macro",
-          "importance": "High",
-          "affectedMarkets": [
-            "U.S. financial markets"
-          ],
-          "whyItMatters": "FOMC minutes provide insights into future monetary policy, influencing investor decisions.",
-          "marketImpact": "Potential market volatility",
-          "confidence": 0.9,
-          "source": "Event Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "gdp-report-upcoming-2026-08-13",
-          "title": "Upcoming GDP Report Release",
-          "summary": "The second preliminary GDP report for Q2 2026 is set for release on August 26, which may lead to market adjustments.",
-          "category": "Macro",
-          "importance": "High",
-          "affectedMarkets": [
-            "U.S. financial markets"
-          ],
-          "whyItMatters": "GDP reports offer insights into economic growth, affecting market sentiment.",
-          "marketImpact": "Potential market adjustments",
-          "confidence": 0.85,
-          "source": "Event Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "healthcare-consumer-outperform-2026-08-13",
-          "title": "Healthcare and Consumer Sectors Outperform",
-          "summary": "Healthcare and consumer sectors are outperforming, suggesting resilience in defensive industries.",
-          "category": "Equities",
+          "id": "oil-prices-fluctuate-amid-iran-conflict-2026-08-11",
+          "title": "Oil Prices Fluctuate Amid Iran Conflict",
+          "summary": "Oil prices swung throughout the day, ending 1.4% higher, reflecting investor unease about global supply disruptions due to the conflict with Iran.",
+          "category": "Commodities",
           "importance": "Medium",
           "affectedMarkets": [
-            "Healthcare sector",
-            "Consumer sector"
+            "Oil",
+            "Energy sector"
           ],
-          "whyItMatters": "Outperformance in defensive sectors indicates a shift towards safer investments.",
-          "marketImpact": "Positive for healthcare and consumer stocks",
-          "confidence": 0.85,
-          "source": "Market Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "technology-underperforms-2026-08-13",
-          "title": "Technology Sector Underperforms",
-          "summary": "The technology sector is underperforming, reflecting potential concerns over growth prospects.",
-          "category": "Equities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Technology sector"
-          ],
-          "whyItMatters": "Underperformance in technology may signal investor caution regarding future growth.",
-          "marketImpact": "Negative for technology stocks",
+          "whyItMatters": "Fluctuating oil prices can influence energy sector performance and broader economic conditions.",
+          "marketImpact": "Positive for oil prices",
           "confidence": 0.8,
-          "source": "Market Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "nikkei-declines-2026-08-13",
-          "title": "Nikkei 225 Declines",
-          "summary": "The Nikkei 225 has declined, indicating weakness in Asian markets.",
-          "category": "Equities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Asian stock markets"
-          ],
-          "whyItMatters": "Declines in the Nikkei 225 may reflect broader economic concerns in Asia.",
-          "marketImpact": "Negative for Asian equities",
-          "confidence": 0.75,
-          "source": "Market Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "advance-economic-indicators-2026-08-13",
-          "title": "Advance Economic Indicators Report Upcoming",
-          "summary": "The Advance Economic Indicators Report for July 2026 is scheduled for August 27, providing insights into trade and inventory levels.",
-          "category": "Macro",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "U.S. financial markets"
-          ],
-          "whyItMatters": "This report may influence market sentiment by revealing trade and inventory trends.",
-          "marketImpact": "Potential influence on market sentiment",
-          "confidence": 0.8,
-          "source": "Event Monitor",
-          "publishedAt": "2026-08-13"
+          "source": "AP News",
+          "publishedAt": "2026-08-11"
         }
       ],
-      "timestamp": "2026-08-13T17:48:09.714Z",
-      "analysisDuration": 9114
+      "timestamp": "2026-08-13T18:18:34.924Z",
+      "analysisDuration": 9072
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-13T17:48:18.829Z",
-    "materialVersion": 22,
-    "refreshVersion": 23
+    "updatedAt": "2026-08-13T18:18:43.996Z",
+    "materialVersion": 23,
+    "refreshVersion": 24
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -14167,6 +14093,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-13T18:18:34.933Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-13T17:48:09.684Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -14577,9 +14509,9 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-13T17:48:17.643Z",
-    "materialVersion": 24,
-    "refreshVersion": 24
+    "updatedAt": "2026-08-13T18:18:41.798Z",
+    "materialVersion": 25,
+    "refreshVersion": 25
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
