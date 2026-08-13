@@ -5,9 +5,12 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "scripts": {
+    "build": "tsc --build"
   },
   "dependencies": {
     "@tanstack/react-query": "catalog:"

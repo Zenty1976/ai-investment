@@ -12,7 +12,8 @@
  */
 import { useGetPortfolioPerformance } from "@workspace/api-client-react"
 import type { PortfolioHoldingPerf } from "@workspace/api-client-react"
-import { RefreshCw, TrendingUp, TrendingDown, AlertCircle } from "lucide-react"
+import { RefreshCw, TrendingUp, TrendingDown, AlertCircle, Zap } from "lucide-react"
+import { Link } from "wouter"
 import { Card, CardContent } from "@/components/ui/card"
 import { format } from "date-fns"
 
@@ -261,10 +262,19 @@ export function PortfolioPerformanceSection() {
           </div>
         )}
 
-        {/* ── No price data at all ── */}
+        {/* ── No price data at all — actionable prompt ── */}
         {portfolioReturn1D === null && portfolioReturn5D === null && (
-          <div className="text-[10px] text-muted-foreground/35 italic border-t border-border/15 pt-3">
-            No price context available. Run the orchestrator to fetch price data.
+          <div className="flex items-center justify-between gap-3 border-t border-border/15 pt-3">
+            <p className="text-[10px] text-muted-foreground/40 leading-snug">
+              No price data yet — enable automation to populate live returns.
+            </p>
+            <Link
+              href="/automation"
+              className="flex items-center gap-1 shrink-0 text-[10px] font-medium text-primary/60 hover:text-primary/90 transition-colors"
+            >
+              <Zap className="h-3 w-3" />
+              Automation
+            </Link>
           </div>
         )}
 
