@@ -17,6 +17,8 @@ import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunOpportunityFinderResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { getAllPriceContexts } from "../lib/price-context-service.js";
@@ -395,7 +397,7 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
           companyContexts,
           getAllPriceContexts()
         ),
-        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1, module: "opportunity-finder", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
+        { model: getModel("monitor", "opportunity-finder"), maxTokens: 3500, temperature: 0.1, module: "opportunity-finder", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -417,11 +419,10 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
     lastDebug = debug;
 
     const analysisDuration = Date.now() - startTime;
-    const parsed = RunOpportunityFinderResponse.safeParse({
-      ...(result as Record<string, unknown>),
-      timestamp: nowIso,
-      analysisDuration,
-    });
+    const assembled = { ...(result as Record<string, unknown>), timestamp: nowIso, analysisDuration };
+    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunOpportunityFinderResponse);
+    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Opportunity Finder: normalizer repaired formatting — no retry needed");
+    const parsed = RunOpportunityFinderResponse.safeParse(normAssembled);
 
     if (parsed.success) {
       // ── Sort by overallScore and reassign ranks (do not trust AI ordering) ──

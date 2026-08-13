@@ -25,6 +25,7 @@
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { getModel } from "../lib/ai-model-config.js";
 import { analysisRepository } from "../lib/analysis-repository";
 import { trackSkipped } from "../lib/openai-usage-service.js";
 import {
@@ -342,7 +343,7 @@ Return the JSON object only.`;
     const { result } = await callAiWithWebSearch<{ hasNewDevelopments: boolean; summary: string }>(
       discoverySystemPrompt,
       discoveryUserPrompt,
-      { model: "gpt-4o-mini", maxTokens: 150, temperature: 0.1,
+      { model: getModel("discovery", "investor-watch"), maxTokens: 150, temperature: 0.1,
         module: "investor-watch", operation: "discovery", retryNumber: 1,
         webSearchContextSize: "low" }
     );
@@ -478,7 +479,7 @@ async function analyzeInvestor(
       ({ result: raw, debug } = await callAiWithWebSearch<unknown>(
         systemPrompt,
         effectiveUserPrompt,
-        { model: "gpt-4o", maxTokens: 2200, temperature: 0.1, module: "investor-watch", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
+        { model: getModel("monitor", "investor-watch"), maxTokens: 2200, temperature: 0.1, module: "investor-watch", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       if (attempt >= MAX_ATTEMPTS) {

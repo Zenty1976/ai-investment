@@ -23,6 +23,8 @@ import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunPortfolioAnalysisResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
@@ -414,7 +416,7 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
           previousPaState
         ),
         {
-          model: "gpt-4o",
+          model: getModel("analysis", "portfolio-analyzer"),
           maxTokens: 2500,
           temperature: 0.1,
           module: "portfolio-analyzer",
@@ -444,11 +446,10 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     lastDebug = debug;
 
     const analysisDuration = Date.now() - startTime;
-    const parsed = RunPortfolioAnalysisResponse.safeParse({
-      ...(result as Record<string, unknown>),
-      timestamp: nowIso,
-      analysisDuration,
-    });
+    const assembled = { ...(result as Record<string, unknown>), timestamp: nowIso, analysisDuration };
+    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunPortfolioAnalysisResponse);
+    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Portfolio Analyzer: normalizer repaired formatting — no retry needed");
+    const parsed = RunPortfolioAnalysisResponse.safeParse(normAssembled);
 
     if (parsed.success) {
       // Attach fingerprint to stored result (not exposed to clients in the

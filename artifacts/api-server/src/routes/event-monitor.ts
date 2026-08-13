@@ -22,6 +22,8 @@ import { systemLog } from "../lib/system-log.js";
 import { RunEventAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 
 const router: IRouter = Router();
 
@@ -137,7 +139,7 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso, todayStr, endDateStr, marketContext),
-        { model: "gpt-4o", maxTokens: 1500, temperature: 0.1, module: "event-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "low" }
+        { model: getModel("monitor", "event-monitor"), maxTokens: 1500, temperature: 0.1, module: "event-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "low" }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -253,14 +255,17 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
 
     // ── Validate against Zod schema — timestamp and duration set by server ───
     const analysisDuration = Date.now() - startTime;
-    const parsed = RunEventAnalysisResponse.safeParse({
+    const assembled = {
       summary: resultObj.summary,
       nextMajorEvent,
       events,
       sources: Array.isArray(resultObj.sources) ? resultObj.sources : [],
       timestamp: nowIso,
       analysisDuration,
-    });
+    };
+    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunEventAnalysisResponse);
+    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Event Monitor: normalizer repaired formatting — no retry needed");
+    const parsed = RunEventAnalysisResponse.safeParse(normAssembled);
 
     if (parsed.success) {
       // ── Deterministic materiality check — no AI involved ────────────────

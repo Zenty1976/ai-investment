@@ -46,133 +46,173 @@
       "analysisDuration": 4893
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-13T18:18:41.784Z",
+    "updatedAt": "2026-08-13T18:49:13.175Z",
     "materialVersion": 7,
-    "refreshVersion": 25
+    "refreshVersion": 26
   },
   "event-monitor": {
     "moduleName": "event-monitor",
     "result": {
-      "summary": "Several significant financial events are scheduled between August 13 and August 27, 2026, including the release of the Federal Open Market Committee (FOMC) minutes and key economic indicators such as the Gross Domestic Product (GDP) report. These events are crucial for assessing economic health and potential policy changes.",
+      "summary": "Several significant financial events are scheduled between August 13 and August 27, 2026, including key economic data releases and central bank communications. These events are expected to influence market sentiment and monetary policy decisions.",
       "nextMajorEvent": {
-        "title": "Release of FOMC Minutes",
-        "date": "2026-08-19",
-        "countdownDays": 6
+        "title": "Release of July 2026 Producer Price Index (PPI)",
+        "date": "2026-08-13",
+        "countdownDays": 0
       },
       "events": [
         {
-          "title": "Release of FOMC Minutes",
-          "date": "2026-08-19",
-          "category": "Central Bank Meeting Minutes",
+          "title": "Release of July 2026 Producer Price Index (PPI)",
+          "date": "2026-08-13",
+          "category": "Economic Data Release",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. Stock Market",
-            "U.S. Bond Market"
+            "U.S. Equities",
+            "U.S. Bonds"
           ],
-          "expectedImpact": "Potential market volatility based on insights into future monetary policy.",
-          "reason": "The FOMC minutes provide detailed insights into the Federal Reserve's deliberations and future policy directions, influencing investor expectations and market movements."
+          "expectedImpact": "Potential market volatility based on inflation trends.",
+          "reason": "The PPI provides insights into inflation at the producer level, influencing Federal Reserve policy decisions and investor expectations."
         },
         {
-          "title": "Second Preliminary GDP Report for Q2 2026",
+          "title": "Release of July 2026 Retail Sales Data",
+          "date": "2026-08-14",
+          "category": "Economic Data Release",
+          "importance": "High",
+          "affectedMarkets": [
+            "U.S. Equities",
+            "Consumer Goods Sector"
+          ],
+          "expectedImpact": "Market reactions based on consumer spending trends.",
+          "reason": "Retail sales data reflect consumer spending, a key driver of economic growth, affecting corporate earnings and stock valuations."
+        },
+        {
+          "title": "Federal Open Market Committee (FOMC) Meeting Minutes Release",
+          "date": "2026-08-19",
+          "category": "Central Bank Communication",
+          "importance": "High",
+          "affectedMarkets": [
+            "U.S. Equities",
+            "U.S. Bonds"
+          ],
+          "expectedImpact": "Insights into future monetary policy may influence market expectations.",
+          "reason": "FOMC minutes provide detailed insights into the Federal Reserve's policy discussions, guiding investor expectations on interest rates."
+        },
+        {
+          "title": "Release of Second Preliminary Q2 2026 GDP Data",
           "date": "2026-08-26",
           "category": "Economic Data Release",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. Stock Market",
-            "U.S. Dollar"
+            "U.S. Equities",
+            "U.S. Bonds"
           ],
-          "expectedImpact": "Market adjustments based on revised economic growth figures.",
-          "reason": "The GDP report offers a comprehensive measure of economic activity, and revisions can lead to reassessments of economic health and influence monetary policy decisions."
+          "expectedImpact": "Market adjustments based on economic growth revisions.",
+          "reason": "GDP data offer a comprehensive measure of economic performance, influencing monetary policy and investment decisions."
         },
         {
-          "title": "Advance Economic Indicators Report for July 2026",
+          "title": "Jackson Hole Economic Symposium",
           "date": "2026-08-27",
-          "category": "Economic Data Release",
-          "importance": "Medium",
+          "category": "Central Bank Event",
+          "importance": "High",
           "affectedMarkets": [
-            "U.S. Stock Market",
-            "U.S. Dollar"
+            "Global Equities",
+            "Currencies"
           ],
-          "expectedImpact": "Insights into trade and inventory levels may influence market sentiment.",
-          "reason": "This report provides early data on international trade and inventories, offering clues about economic trends and potential impacts on GDP."
+          "expectedImpact": "Potential shifts in global monetary policy expectations.",
+          "reason": "The symposium gathers central bankers and policymakers to discuss economic issues, often signaling future policy directions."
         }
       ],
       "sources": [
-        {
-          "title": "Federal Reserve Board - Calendar: August 2026",
-          "url": "https://www.federalreserve.gov/newsevents/2026-august.htm",
-          "published": "2025-06-24"
-        },
         {
           "title": "Schedule of Selected Releases 2026",
           "url": "https://www.bls.gov/schedule/2026/home.htm",
           "published": ""
         },
         {
-          "title": "Advance Economic Indicators - Release Schedule",
-          "url": "https://www.census.gov/econ/indicators/release_schedule.html",
+          "title": "Federal Reserve Board - Calendar: August 2026",
+          "url": "https://www.federalreserve.gov/newsevents/2026-august.htm",
+          "published": ""
+        },
+        {
+          "title": "Economic Calendar - August 2026",
+          "url": "https://www.thomsoninvestmentgroup.com/economic-calendar-august-2026",
           "published": ""
         }
       ],
-      "timestamp": "2026-08-13T16:01:14.765Z",
-      "analysisDuration": 7129
+      "timestamp": "2026-08-13T19:01:35.333Z",
+      "analysisDuration": 6559
     },
     "createdAt": "2026-07-31T10:21:03.481Z",
-    "updatedAt": "2026-08-13T16:01:21.894Z",
-    "materialVersion": 11,
-    "refreshVersion": 11
+    "updatedAt": "2026-08-13T19:01:41.893Z",
+    "materialVersion": 12,
+    "refreshVersion": 12
   },
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "U.S. stock indexes declined slightly amid oil market uncertainties due to the conflict with Iran. Oil prices fluctuated, ending higher, reflecting investor concerns over global supply disruptions.",
-      "overallMarketImpact": "Slightly negative, with modest declines in major U.S. stock indexes.",
+      "executiveSummary": "Global markets are experiencing mixed performance, with U.S. indices slightly up and European and Asian markets showing varied trends. Key developments include China's AI advancements impacting technology stocks and strong U.S. economic growth in Q4 2024.",
+      "overallMarketImpact": "Neutral to slightly positive, with cautious optimism in U.S. markets and varied trends globally.",
       "topStory": {
-        "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
-        "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
+        "title": "China's AI advancements impact tech stocks",
+        "summary": "A Chinese startup released a less expensive AI model, raising concerns about U.S. tech stock valuations.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "us-stock-indexes-decline-2026-08-11",
-          "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
-          "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
-          "category": "Equities",
+          "id": "china-ai-advancements-2026-08-13",
+          "title": "China's AI advancements impact tech stocks",
+          "summary": "A Chinese startup released a less expensive AI model, raising concerns about U.S. tech stock valuations.",
+          "category": "Technology",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. equities",
-            "Oil"
+            "Technology",
+            "Equities"
           ],
-          "whyItMatters": "Investor concerns over global supply disruptions are impacting stock market performance.",
-          "marketImpact": "Negative for U.S. equities",
-          "confidence": 0.9,
-          "source": "AP News",
-          "publishedAt": "2026-08-11"
+          "whyItMatters": "The development introduces competitive pressures on U.S. tech companies, potentially affecting their market share and profitability.",
+          "marketImpact": "Negative for U.S. technology stocks",
+          "confidence": 0.85,
+          "source": "Bloomberg",
+          "publishedAt": "2026-08-13"
         },
         {
-          "id": "oil-prices-fluctuate-amid-iran-conflict-2026-08-11",
-          "title": "Oil Prices Fluctuate Amid Iran Conflict",
-          "summary": "Oil prices swung throughout the day, ending 1.4% higher, reflecting investor unease about global supply disruptions due to the conflict with Iran.",
-          "category": "Commodities",
+          "id": "us-q4-2024-economic-growth-2026-08-13",
+          "title": "U.S. economy grows 2.8% in Q4 2024",
+          "summary": "The U.S. economy expanded by 2.8% in Q4 2024, defying expectations of a slowdown.",
+          "category": "Macro",
           "importance": "Medium",
           "affectedMarkets": [
-            "Oil",
-            "Energy sector"
+            "Equities",
+            "Bonds"
           ],
-          "whyItMatters": "Fluctuating oil prices can influence energy sector performance and broader economic conditions.",
-          "marketImpact": "Positive for oil prices",
-          "confidence": 0.8,
-          "source": "AP News",
-          "publishedAt": "2026-08-11"
+          "whyItMatters": "Continued economic growth supports investor confidence and may influence Federal Reserve policy decisions.",
+          "marketImpact": "Positive for U.S. equities",
+          "confidence": 0.75,
+          "source": "Bloomberg",
+          "publishedAt": "2026-08-13"
+        },
+        {
+          "id": "us-inflation-increase-december-2026-08-13",
+          "title": "U.S. inflation rises to 2.6% in December",
+          "summary": "The Personal Consumption Expenditures Index increased to 2.6% annualized in December from 2.4%.",
+          "category": "Inflation",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Bonds",
+            "Equities"
+          ],
+          "whyItMatters": "Rising inflation may prompt the Federal Reserve to adjust monetary policy, impacting interest rates and market valuations.",
+          "marketImpact": "Negative for bonds",
+          "confidence": 0.7,
+          "source": "Bloomberg",
+          "publishedAt": "2026-08-13"
         }
       ],
-      "timestamp": "2026-08-13T18:18:34.924Z",
-      "analysisDuration": 9072
+      "timestamp": "2026-08-13T18:49:05.254Z",
+      "analysisDuration": 9104
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-13T18:18:43.996Z",
-    "materialVersion": 23,
-    "refreshVersion": 24
+    "updatedAt": "2026-08-13T18:49:14.358Z",
+    "materialVersion": 24,
+    "refreshVersion": 25
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -1650,7 +1690,7 @@
   "risk-analyzer": {
     "moduleName": "risk-analyzer",
     "result": {
-      "executiveSummary": "The portfolio is currently dominated by a 100% cash position, minimizing direct exposure to market and company-specific risks but presenting a significant opportunity cost. The two equity holdings, Novo Nordisk and Serve Robotics, have contrasting outlooks, with Novo Nordisk showing strong growth potential and Serve Robotics facing execution challenges. Macro conditions, including potential central bank policy changes and geopolitical tensions, could introduce volatility, but the cash position provides a buffer against these risks.",
+      "executiveSummary": "The portfolio is currently dominated by a 100% cash position, which minimizes direct exposure to market and company-specific risks but presents a significant opportunity cost. The two equity holdings, Novo Nordisk and Serve Robotics, have contrasting outlooks, with Novo Nordisk showing strong growth potential and Serve Robotics facing significant execution risks. Macro volatility and potential central bank policy changes could impact market conditions, but the cash position provides a buffer against these risks.",
       "overallRiskLevel": "Low",
       "mainConclusion": {
         "title": "High Cash Position Dominates Risk Profile",
@@ -1659,24 +1699,24 @@
       "riskScore": 20,
       "scoreDrivers": [
         {
-          "factor": "100% Cash Position",
+          "factor": "High Cash Position",
           "impact": "Positive",
-          "reason": "Minimizes exposure to market volatility and company-specific risks."
+          "reason": "100% cash position minimizes exposure to market volatility and company-specific risks."
         },
         {
           "factor": "Opportunity Cost of Cash",
           "impact": "Negative",
-          "reason": "Potential for reduced returns if cash is not invested in growth opportunities."
+          "reason": "Large cash position may lead to missed investment opportunities in a neutral market environment."
         },
         {
           "factor": "Serve Robotics Execution Risk",
           "impact": "Negative",
-          "reason": "High execution risk due to revenue miss and guidance cut."
+          "reason": "Significant execution challenges and guidance uncertainty for Serve Robotics."
         },
         {
           "factor": "Novo Nordisk Growth Potential",
           "impact": "Positive",
-          "reason": "Strong growth potential with recent earnings beat and product approvals."
+          "reason": "Strong growth prospects and recent positive developments for Novo Nordisk."
         },
         {
           "factor": "Macro Volatility",
@@ -1693,14 +1733,14 @@
         },
         {
           "category": "Company",
-          "score": 30,
-          "level": "Moderate",
-          "reason": "Serve Robotics faces significant execution risks, while Novo Nordisk has a positive outlook."
+          "score": 20,
+          "level": "Low",
+          "reason": "Serve Robotics faces significant execution risks, but overall impact is limited by cash position."
         },
         {
           "category": "Macro",
-          "score": 20,
-          "level": "Low",
+          "score": 30,
+          "level": "Moderate",
           "reason": "Potential central bank policy changes and geopolitical tensions could introduce volatility."
         },
         {
@@ -1712,8 +1752,8 @@
         {
           "category": "Diversification",
           "score": 50,
-          "level": "High",
-          "reason": "100% cash position limits diversification and increases opportunity cost."
+          "level": "Moderate",
+          "reason": "100% cash position limits diversification benefits."
         }
       ],
       "topRisks": [
@@ -1759,38 +1799,67 @@
           "portfolioImpact": "Could affect market conditions, but cash position provides a buffer.",
           "interactionWithOtherRisks": "",
           "monitor": "Monitor macroeconomic events that could impact market conditions, particularly central bank policy changes.",
-          "status": "New"
+          "status": "Unchanged"
         }
       ],
       "riskInteractions": [],
       "portfolioWeaknesses": [
-        "High cash allocation may lead to opportunity costs if not strategically deployed.",
-        "Serve Robotics' bearish outlook and execution risks."
+        "High cash position may lead to opportunity costs.",
+        "Serve Robotics faces significant execution and guidance risks."
       ],
       "portfolioStrengths": [
-        "High cash position provides flexibility for future opportunities.",
-        "Novo Nordisk's strong growth potential and recent positive developments."
+        "High cash reserves provide flexibility for future opportunities.",
+        "Novo Nordisk's strong growth prospects and recent positive developments."
       ],
       "watchClosely": [
         "Monitor macroeconomic events that could impact market conditions, particularly central bank policy changes."
       ],
-      "timestamp": "2026-08-13T16:01:15.142Z",
-      "analysisDuration": 13941,
+      "timestamp": "2026-08-13T19:01:35.469Z",
+      "analysisDuration": 9969,
       "previousRiskScore": 20,
       "resolvedRisks": [],
-      "_riskFactsFingerprint": "77dcd90e7682b593"
+      "_riskFactsFingerprint": "7ad2987f1dbe335d"
     },
     "createdAt": "2026-08-01T21:31:28.077Z",
-    "updatedAt": "2026-08-13T16:01:29.084Z",
-    "materialVersion": 11,
-    "refreshVersion": 11,
-    "dependencyFingerprint": "5w7vml",
-    "lastAIAnalysisAt": "2026-08-13T16:01:14.646Z"
+    "updatedAt": "2026-08-13T19:01:45.439Z",
+    "materialVersion": 12,
+    "refreshVersion": 12,
+    "dependencyFingerprint": "xtaytr",
+    "lastAIAnalysisAt": "2026-08-13T19:01:35.315Z"
   },
   "risk-analyzer-history": {
     "moduleName": "risk-analyzer-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-13T19:01:35.469Z",
+          "overallRiskLevel": "Low",
+          "riskScore": 20,
+          "risks": [
+            {
+              "title": "Serve Robotics Execution Risk",
+              "category": "Company",
+              "probability": "High",
+              "severity": "High",
+              "normalizedKey": "serve robotics execution risk|company"
+            },
+            {
+              "title": "Opportunity Cost of Cash",
+              "category": "Diversification",
+              "probability": "High",
+              "severity": "Medium",
+              "normalizedKey": "opportunity cost of cash|diversification"
+            },
+            {
+              "title": "Macro Volatility",
+              "category": "Macro",
+              "probability": "Medium",
+              "severity": "Medium",
+              "normalizedKey": "macro volatility|macro"
+            }
+          ],
+          "overallConclusion": "High Cash Position Dominates Risk Profile"
+        },
         {
           "timestamp": "2026-08-13T16:01:15.142Z",
           "overallRiskLevel": "Low",
@@ -2425,64 +2494,36 @@
             }
           ],
           "overallConclusion": "Macro‑geopolitical shocks dominate portfolio risk given full cash exposure and no invested positions"
-        },
-        {
-          "timestamp": "2026-08-10T19:50:02.014Z",
-          "overallRiskLevel": "Moderate",
-          "riskScore": 58,
-          "risks": [
-            {
-              "title": "Energy‑inflation shock from Middle East conflict",
-              "category": "Macro",
-              "probability": "High",
-              "severity": "High",
-              "normalizedKey": "energy‑inflation shock from middle east conflict|macro"
-            },
-            {
-              "title": "Serve Robotics execution and burn risk",
-              "category": "Company",
-              "probability": "Medium",
-              "severity": "High",
-              "normalizedKey": "serve robotics execution and burn risk|company"
-            },
-            {
-              "title": "Simultaneous near‑term catalysts in both holdings",
-              "category": "Event",
-              "probability": "High",
-              "severity": "Medium",
-              "normalizedKey": "simultaneous near‑term catalysts in both holdings|event"
-            },
-            {
-              "title": "ECB policy uncertainty amid inflation persistence",
-              "category": "Macro",
-              "probability": "High",
-              "severity": "Medium",
-              "normalizedKey": "ecb policy uncertainty amid inflation persistence|macro"
-            },
-            {
-              "title": "Opportunity cost from idle cash amid sector rotation",
-              "category": "Diversification",
-              "probability": "High",
-              "severity": "Low",
-              "normalizedKey": "opportunity cost from idle cash amid sector rotation|diversification"
-            }
-          ],
-          "overallConclusion": "Macro‑geopolitical and clustered catalyst risks dominate near‑term outlook"
         }
       ]
     },
     "createdAt": "2026-08-01T21:31:28.079Z",
-    "updatedAt": "2026-08-13T16:01:29.091Z",
-    "materialVersion": 11,
-    "refreshVersion": 11
+    "updatedAt": "2026-08-13T19:01:45.450Z",
+    "materialVersion": 12,
+    "refreshVersion": 12
   },
   "market-alerts": {
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "High",
-      "executiveSummary": "2 HIGH-priority alerts and 1 MEDIUM-priority alert require attention. 3 additional items to monitor.",
-      "headline": "Technology sector: weak outlook, weakening trend",
+      "executiveSummary": "4 HIGH-priority alerts and 1 MEDIUM-priority alert require attention. 4 additional items to monitor.",
+      "headline": "China's AI advancements impact tech stocks",
       "alerts": [
+        {
+          "title": "China's AI advancements impact tech stocks",
+          "category": "Company",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [
+            "SERV:XNAS"
+          ],
+          "summary": "A Chinese startup released a less expensive AI model, raising concerns about U.S. tech stock valuations.",
+          "whyItMatters": "The development introduces competitive pressures on U.S. tech companies, potentially affecting their market share and profitability.",
+          "recommendedAttention": "Prepare",
+          "sourceType": "NewsMonitor",
+          "status": "New"
+        },
         {
           "title": "Technology sector: weak outlook, weakening trend",
           "category": "Sector",
@@ -2499,42 +2540,68 @@
           "status": "Unchanged"
         },
         {
-          "title": "Release of FOMC Minutes (in 6 days)",
+          "title": "Release of July 2026 Producer Price Index (PPI) (today)",
           "category": "Event",
-          "importance": "High",
-          "isNew": false,
-          "requiresAttention": false,
-          "affectedHoldings": [],
-          "summary": "Central Bank Meeting Minutes event on 2026-08-19: Potential market volatility based on insights into future monetary policy.",
-          "whyItMatters": "The FOMC minutes provide detailed insights into the Federal Reserve's deliberations and future policy directions, influencing investor expectations and market movements.",
-          "recommendedAttention": "Review",
-          "sourceType": "EventMonitor",
-          "status": "Unchanged"
-        },
-        {
-          "title": "Second Preliminary GDP Report for Q2 2026 (in 13 days)",
-          "category": "Event",
-          "importance": "High",
-          "isNew": false,
-          "requiresAttention": false,
-          "affectedHoldings": [],
-          "summary": "Economic Data Release event on 2026-08-26: Market adjustments based on revised economic growth figures.",
-          "whyItMatters": "The GDP report offers a comprehensive measure of economic activity, and revisions can lead to reassessments of economic health and influence monetary policy decisions.",
-          "recommendedAttention": "Review",
-          "sourceType": "EventMonitor",
-          "status": "Unchanged"
-        },
-        {
-          "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
-          "category": "Macro",
           "importance": "High",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [],
-          "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
-          "whyItMatters": "Investor concerns over global supply disruptions are impacting stock market performance.",
+          "summary": "Economic Data Release event on 2026-08-13: Potential market volatility based on inflation trends.",
+          "whyItMatters": "The PPI provides insights into inflation at the producer level, influencing Federal Reserve policy decisions and investor expectations.",
           "recommendedAttention": "Review",
-          "sourceType": "NewsMonitor",
+          "sourceType": "EventMonitor",
+          "status": "New"
+        },
+        {
+          "title": "Release of July 2026 Retail Sales Data (tomorrow)",
+          "category": "Event",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [],
+          "summary": "Economic Data Release event on 2026-08-14: Market reactions based on consumer spending trends.",
+          "whyItMatters": "Retail sales data reflect consumer spending, a key driver of economic growth, affecting corporate earnings and stock valuations.",
+          "recommendedAttention": "Review",
+          "sourceType": "EventMonitor",
+          "status": "New"
+        },
+        {
+          "title": "Federal Open Market Committee (FOMC) Meeting Minutes Release (in 6 days)",
+          "category": "Event",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": false,
+          "affectedHoldings": [],
+          "summary": "Central Bank Communication event on 2026-08-19: Insights into future monetary policy may influence market expectations.",
+          "whyItMatters": "FOMC minutes provide detailed insights into the Federal Reserve's policy discussions, guiding investor expectations on interest rates.",
+          "recommendedAttention": "Review",
+          "sourceType": "EventMonitor",
+          "status": "New"
+        },
+        {
+          "title": "Release of Second Preliminary Q2 2026 GDP Data (in 13 days)",
+          "category": "Event",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": false,
+          "affectedHoldings": [],
+          "summary": "Economic Data Release event on 2026-08-26: Market adjustments based on economic growth revisions.",
+          "whyItMatters": "GDP data offer a comprehensive measure of economic performance, influencing monetary policy and investment decisions.",
+          "recommendedAttention": "Review",
+          "sourceType": "EventMonitor",
+          "status": "New"
+        },
+        {
+          "title": "Jackson Hole Economic Symposium (in 14 days)",
+          "category": "Event",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": false,
+          "affectedHoldings": [],
+          "summary": "Central Bank Event event on 2026-08-27: Potential shifts in global monetary policy expectations.",
+          "whyItMatters": "The symposium gathers central bankers and policymakers to discuss economic issues, often signaling future policy directions.",
+          "recommendedAttention": "Review",
+          "sourceType": "EventMonitor",
           "status": "New"
         },
         {
@@ -2567,28 +2634,128 @@
         }
       ],
       "thingsToWatch": [
-        "Release of FOMC Minutes (in 6 days)",
-        "Second Preliminary GDP Report for Q2 2026 (in 13 days)",
+        "Federal Open Market Committee (FOMC) Meeting Minutes Release (in 6 days)",
+        "Release of Second Preliminary Q2 2026 GDP Data (in 13 days)",
+        "Jackson Hole Economic Symposium (in 14 days)",
         "Energy sector: weak outlook, weakening trend"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-13T18:28:35.038Z",
+      "timestamp": "2026-08-13T19:08:35.349Z",
       "analysisDuration": 1,
-      "lastCheckedAt": "2026-08-13T18:28:35.038Z",
-      "lastMeaningfulUpdateAt": "2026-08-13T18:28:35.038Z",
+      "lastCheckedAt": "2026-08-13T19:08:35.349Z",
+      "lastMeaningfulUpdateAt": "2026-08-13T19:08:35.349Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-13T18:28:35.039Z",
-    "materialVersion": 33,
-    "refreshVersion": 37,
-    "dependencyFingerprint": "3hutqe",
-    "lastAIAnalysisAt": "2026-08-13T18:28:35.020Z"
+    "updatedAt": "2026-08-13T19:08:35.350Z",
+    "materialVersion": 34,
+    "refreshVersion": 39,
+    "dependencyFingerprint": "1fku4f5",
+    "lastAIAnalysisAt": "2026-08-13T19:08:35.337Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-13T19:08:35.349Z",
+          "overallAlertLevel": "High",
+          "headline": "China's AI advancements impact tech stocks",
+          "alertCount": 9,
+          "alerts": [
+            {
+              "title": "China's AI advancements impact tech stocks",
+              "category": "Company",
+              "importance": "High",
+              "summary": "A Chinese startup released a less expensive AI model, raising concerns about U.S. tech stock valuations.",
+              "normalizedKey": "china's ai advancements impact tech stocks|company",
+              "affectedHoldings": [
+                "SERV:XNAS"
+              ]
+            },
+            {
+              "title": "Technology sector: weak outlook, weakening trend",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "Under pressure due to growth concerns and potential regulatory challenges.",
+              "normalizedKey": "technology sector: weak outlook, weakening trend|sector",
+              "affectedHoldings": [
+                "SERV:XNAS"
+              ]
+            },
+            {
+              "title": "Release of July 2026 Producer Price Index (PPI) (today)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Economic Data Release event on 2026-08-13: Potential market volatility based on inflation trends.",
+              "normalizedKey": "release of july 2026 producer price index (ppi) (today)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Release of July 2026 Retail Sales Data (tomorrow)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Economic Data Release event on 2026-08-14: Market reactions based on consumer spending trends.",
+              "normalizedKey": "release of july 2026 retail sales data (tomorrow)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Federal Open Market Committee (FOMC) Meeting Minutes Release (in 6 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Central Bank Communication event on 2026-08-19: Insights into future monetary policy may influence market expectations.",
+              "normalizedKey": "federal open market committee (fomc) meeting minutes release (in 6 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Release of Second Preliminary Q2 2026 GDP Data (in 13 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Economic Data Release event on 2026-08-26: Market adjustments based on economic growth revisions.",
+              "normalizedKey": "release of second preliminary q2 2026 gdp data (in 13 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Jackson Hole Economic Symposium (in 14 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Central Bank Event event on 2026-08-27: Potential shifts in global monetary policy expectations.",
+              "normalizedKey": "jackson hole economic symposium (in 14 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Energy sector: weak outlook, weakening trend",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "Despite higher oil prices, faces challenges from geopolitical risks and market volatility.",
+              "normalizedKey": "energy sector: weak outlook, weakening trend|sector",
+              "affectedHoldings": []
+            },
+            {
+              "title": "NOVOB:XCSE: Investment thesis weakened",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Q2 earnings beat with raised guidance and EU approval of Wegovy® pill and HD pen enhance growth visibility and global expansion potential.",
+              "normalizedKey": "novob:xcse: investment thesis weakened|company",
+              "affectedHoldings": [
+                "NOVOB:XCSE"
+              ]
+            }
+          ],
+          "newsIds": [
+            "china-ai-advancements-2026-08-13",
+            "us-q4-2024-economic-growth-2026-08-13",
+            "us-inflation-increase-december-2026-08-13"
+          ],
+          "eventTitles": [
+            "Release of July 2026 Producer Price Index (PPI)",
+            "Release of July 2026 Retail Sales Data",
+            "Federal Open Market Committee (FOMC) Meeting Minutes Release",
+            "Release of Second Preliminary Q2 2026 GDP Data",
+            "Jackson Hole Economic Symposium"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-13T18:28:35.038Z",
           "overallAlertLevel": "High",
@@ -3847,67 +4014,49 @@
             "Federal Open Market Committee (FOMC) Meeting Minutes Release"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-12T20:14:36.047Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Riot Platforms lands $9.1B AI data-center deal, signaling sector convergence",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [
-            "us-stock-indexes-decline-2026-08-10",
-            "oil-prices-surge-2026-08-10",
-            "upcoming-us-inflation-data-2026-08-12"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (July)",
-            "FOMC Minutes (July 28–29 Meeting)",
-            "U.S. Producer Price Index (July)"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-13T18:28:35.064Z",
-    "materialVersion": 33,
-    "refreshVersion": 33
+    "updatedAt": "2026-08-13T19:08:35.456Z",
+    "materialVersion": 34,
+    "refreshVersion": 34
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
     "result": {
       "mainConclusion": {
-        "title": "High Cash Position with Strategic Opportunities",
-        "reason": "The portfolio's high cash position offers flexibility but also presents an opportunity cost. Strategic deployment into high-confidence opportunities like Cisco Systems and Applied Materials could mitigate this risk."
+        "title": "High Cash Position with Selective Opportunities",
+        "reason": "The portfolio's high cash position offers flexibility but also presents an opportunity cost. Selective preparation for potential buys in sectors with strong growth potential is advised, while maintaining caution due to macroeconomic uncertainties."
       },
-      "executiveSummary": "The portfolio is heavily weighted in cash, minimizing risk but also limiting growth potential. Strategic opportunities in the technology sector, particularly Cisco Systems and Applied Materials, align with the portfolio's need for diversification and growth. Monitoring macroeconomic events and company-specific developments is crucial before making significant allocations.",
+      "executiveSummary": "The portfolio is heavily weighted in cash, providing flexibility but also potential opportunity cost. Key opportunities include Cisco Systems and Applied Materials, supported by strong sector growth and upcoming catalysts. Serve Robotics requires close monitoring due to high execution risk. Macro events and sector trends necessitate a cautious approach.",
       "overallDecisionPosture": "SelectivePreparation",
-      "decisionReadinessScore": 85,
+      "decisionReadinessScore": 80,
       "readinessDrivers": [
         {
           "factor": "High Cash Position",
           "impact": "Positive",
-          "reason": "Provides flexibility for strategic investments."
+          "reason": "Provides flexibility for future opportunities."
+        },
+        {
+          "factor": "Technology Sector Weakness",
+          "impact": "Negative",
+          "reason": "Weak outlook and trend in the technology sector."
+        },
+        {
+          "factor": "Upcoming Macro Events",
+          "impact": "Neutral",
+          "reason": "Potential market volatility from upcoming economic reports."
         },
         {
           "factor": "Serve Robotics Execution Risk",
           "impact": "Negative",
-          "reason": "High execution risk necessitates careful monitoring."
+          "reason": "High execution risk and guidance uncertainty."
         },
         {
-          "factor": "Upcoming Macroeconomic Events",
-          "impact": "Neutral",
-          "reason": "Potential impact on market conditions and investment decisions."
-        },
-        {
-          "factor": "Strong Opportunities in Technology Sector",
+          "factor": "Novo Nordisk Growth Potential",
           "impact": "Positive",
-          "reason": "High-confidence opportunities in Cisco and Applied Materials."
-        },
-        {
-          "factor": "Market Alerts and Sector Weakness",
-          "impact": "Negative",
-          "reason": "Sector-specific challenges and macroeconomic uncertainties."
+          "reason": "Strong Q2 earnings and product launches enhance growth visibility."
         }
       ],
       "decisions": [
@@ -3918,13 +4067,13 @@
           "ticker": "SERV:XNAS",
           "decision": "Review",
           "title": "Review Serve Robotics pending Q3 earnings and liquidity clarity",
-          "reason": "High execution risk and recent guidance cut necessitate a review of Serve Robotics' position before earnings.",
+          "reason": "High execution risk and guidance uncertainty necessitate close monitoring before making further investment decisions.",
           "supportingEvidence": [
-            "High execution risk highlighted in Risk Analyzer.",
-            "Bearish outlook in Company Monitor."
+            "Q2 revenue miss and drastic guidance cut.",
+            "High execution risk and guidance uncertainty."
           ],
           "opposingEvidence": [
-            "Potential catalysts from Q2 2026 earnings release."
+            "No new positive developments."
           ],
           "confidence": "High",
           "urgency": "Days",
@@ -3932,14 +4081,14 @@
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Improved guidance or financial performance.",
-            "Resolution of execution risks."
+            "Improvement in financial performance or guidance.",
+            "Clarity on liquidity and execution strategy."
           ],
           "missingEvidence": [
-            "Q3 earnings report."
+            "Updated financials and guidance."
           ],
           "portfolioImpact": "Potential negative impact if performance does not improve.",
-          "accountConsiderations": "EUR account currency; Serve Robotics trades in USD.",
+          "accountConsiderations": "Instrument currency USD, account currency EUR.",
           "sourceModules": [
             "RiskAnalyzer",
             "CompanyMonitor"
@@ -3947,37 +4096,37 @@
           "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "Requires closer manual assessment before a trade decision can be made.",
-          "lastValidated": "2026-08-13T16:01:15.162Z"
+          "lastValidated": "2026-08-13T19:01:35.460Z"
         },
         {
           "rank": 2,
           "subjectType": "Opportunity",
-          "company": "Cisco Systems, Inc.",
+          "company": "Cisco Systems Inc.",
           "ticker": "CSCO",
           "decision": "PrepareToBuy",
           "title": "Prepare to buy Cisco Systems post-CPI data",
-          "reason": "Cisco's strong AI-driven demand and financial execution support a positive outlook, aligning with the portfolio's need for growth and diversification.",
+          "reason": "Cisco's strong AI-driven demand and financial execution support a positive outlook, with an upcoming earnings report as a potential catalyst.",
           "supportingEvidence": [
-            "High-confidence opportunity in Opportunity Finder.",
-            "Moderately bullish outlook in Company Monitor."
+            "Robust AI-driven demand and strong financial execution.",
+            "Upcoming Q4 FY2026 earnings report on August 19, 2026."
           ],
           "opposingEvidence": [
-            "Potential market volatility surrounding earnings announcements."
+            "Macro/inflation uncertainty."
           ],
           "confidence": "High",
           "urgency": "Weeks",
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
+          "blockedByEvent": true,
+          "blockingEvent": "Release of FOMC Minutes",
+          "blockingEventDate": "2026-08-19",
           "whatWouldChangeDecision": [
-            "Significant negative macroeconomic developments.",
-            "Adverse earnings report."
+            "Significant earnings miss or weak guidance.",
+            "Deterioration in macroeconomic conditions."
           ],
           "missingEvidence": [
-            "Post-CPI market reaction."
+            "Impact of upcoming earnings report."
           ],
-          "portfolioImpact": "Diversifies portfolio into technology sector, reducing cash position.",
-          "accountConsiderations": "EUR account currency; Cisco trades in USD.",
+          "portfolioImpact": "Enhances exposure to Information Technology sector.",
+          "accountConsiderations": "Instrument currency USD, account currency EUR.",
           "sourceModules": [
             "OpportunityFinder",
             "CompanyMonitor"
@@ -3985,41 +4134,41 @@
           "targetAllocationPercent": 5,
           "maximumAllocationPercent": 7,
           "sizingConfidence": "Medium",
-          "sizingReason": "Aligns with portfolio's diversification and growth objectives.",
-          "status": "Strengthened",
-          "readiness": "ReadyForReview",
-          "readinessReason": "Aligns with portfolio's diversification and growth objectives.",
-          "lastValidated": "2026-08-13T16:01:15.162Z"
+          "sizingReason": "Strong sector growth potential with upcoming catalyst.",
+          "status": "Weakened",
+          "readiness": "WaitingForReevaluation",
+          "readinessReason": "Waiting for Release of FOMC Minutes (2026-08-19) — trade must be re-evaluated after the event with new price, risk and sizing data.",
+          "lastValidated": "2026-08-13T19:01:35.460Z"
         },
         {
           "rank": 3,
           "subjectType": "Opportunity",
-          "company": "Applied Materials, Inc.",
+          "company": "Applied Materials Inc.",
           "ticker": "AMAT",
           "decision": "PrepareToBuy",
           "title": "Prepare to buy Applied Materials post-CPI data",
-          "reason": "Applied Materials' strong revenue momentum and AI-related growth potential make it a suitable candidate for cash deployment.",
+          "reason": "Applied Materials is well-positioned to capitalize on AI-driven demand, with strong Q3 guidance and an upcoming earnings report as catalysts.",
           "supportingEvidence": [
-            "High-confidence opportunity in Opportunity Finder.",
-            "Moderately bullish outlook in Company Monitor."
+            "Robust Q3 guidance and AI infrastructure demand.",
+            "Upcoming Q3 FY2026 earnings report."
           ],
           "opposingEvidence": [
-            "Cyclical nature of the semiconductor industry may lead to earnings volatility."
+            "Macroeconomic/Inflation Risk."
           ],
           "confidence": "High",
           "urgency": "Weeks",
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
+          "blockedByEvent": true,
+          "blockingEvent": "Release of FOMC Minutes",
+          "blockingEventDate": "2026-08-19",
           "whatWouldChangeDecision": [
-            "Negative earnings report.",
-            "Adverse macroeconomic developments."
+            "Significant earnings miss or weak guidance.",
+            "Deterioration in macroeconomic conditions."
           ],
           "missingEvidence": [
-            "Post-CPI market reaction."
+            "Impact of upcoming earnings report."
           ],
-          "portfolioImpact": "Enhances sector diversification into semiconductors.",
-          "accountConsiderations": "EUR account currency; Applied Materials trades in USD.",
+          "portfolioImpact": "Enhances exposure to Information Technology sector.",
+          "accountConsiderations": "Instrument currency USD, account currency EUR.",
           "sourceModules": [
             "OpportunityFinder",
             "CompanyMonitor"
@@ -4027,11 +4176,11 @@
           "targetAllocationPercent": 5,
           "maximumAllocationPercent": 7,
           "sizingConfidence": "Medium",
-          "sizingReason": "Supports diversification into high-growth technology sectors.",
-          "status": "Strengthened",
-          "readiness": "ReadyForReview",
-          "readinessReason": "Supports diversification into high-growth technology sectors.",
-          "lastValidated": "2026-08-13T16:01:15.162Z"
+          "sizingReason": "Strong sector growth potential with upcoming catalyst.",
+          "status": "Weakened",
+          "readiness": "WaitingForReevaluation",
+          "readinessReason": "Waiting for Release of FOMC Minutes (2026-08-19) — trade must be re-evaluated after the event with new price, risk and sizing data.",
+          "lastValidated": "2026-08-13T19:01:35.460Z"
         },
         {
           "rank": 4,
@@ -4040,13 +4189,13 @@
           "ticker": "NOVOB:XCSE",
           "decision": "Hold",
           "title": "Hold Novo Nordisk while monitoring upcoming pipeline and sentiment catalysts",
-          "reason": "Despite a weakened investment thesis, Novo Nordisk's strong growth potential and recent positive developments justify holding the position.",
+          "reason": "Strong Q2 earnings and product launches enhance growth visibility, justifying a hold position while monitoring for further developments.",
           "supportingEvidence": [
-            "High case strength in Company Monitor.",
-            "Positive outlook in Portfolio Analyzer."
+            "Q2 earnings beat and raised guidance.",
+            "EU approval of Wegovy® pill and HD pen."
           ],
           "opposingEvidence": [
-            "Investment thesis weakened in Market Alerts."
+            "Pricing pressure and competition."
           ],
           "confidence": "Medium",
           "urgency": "Weeks",
@@ -4054,59 +4203,139 @@
           "blockingEvent": "",
           "blockingEventDate": "",
           "whatWouldChangeDecision": [
-            "Significant negative developments in pipeline or market sentiment.",
-            "Adverse macroeconomic conditions."
+            "Significant changes in pricing pressure or competition.",
+            "New developments in pipeline or product launches."
           ],
           "missingEvidence": [
-            "Further pipeline developments."
+            "Impact of upcoming product launches."
           ],
-          "portfolioImpact": "Maintains exposure to healthcare sector with growth potential.",
-          "accountConsiderations": "EUR account currency; Novo Nordisk trades in DKK.",
+          "portfolioImpact": "Maintains exposure to Healthcare sector.",
+          "accountConsiderations": "Instrument currency DKK, account currency EUR.",
           "sourceModules": [
-            "CompanyMonitor",
-            "PortfolioAnalyzer"
+            "PortfolioAnalyzer",
+            "CompanyMonitor"
           ],
           "status": "Unchanged",
           "readiness": "Informational",
           "readinessReason": "No trade action required for this position.",
-          "lastValidated": "2026-08-13T16:01:15.162Z"
+          "lastValidated": "2026-08-13T19:01:35.460Z"
         }
       ],
       "conflictsResolved": [
         {
-          "topic": "Serve Robotics Execution Risk",
-          "conflict": "High execution risk vs. potential catalysts.",
-          "resolution": "Prioritize review due to high execution risk and bearish outlook."
-        },
-        {
-          "topic": "High Cash Position",
-          "conflict": "Opportunity cost vs. flexibility.",
-          "resolution": "Prepare to deploy cash into high-confidence opportunities like Cisco and Applied Materials."
+          "topic": "Technology Sector Outlook",
+          "conflict": "Weak sector outlook versus strong individual company prospects.",
+          "resolution": "Focus on companies with strong growth potential and upcoming catalysts, while maintaining caution."
         }
       ],
       "nextReviewTriggers": [
         {
-          "trigger": "Serve Robotics Q3 earnings release",
+          "trigger": "Release of FOMC Minutes",
+          "date": "2026-08-19",
+          "affectedDecisions": [
+            "Prepare to buy Cisco Systems post-CPI data",
+            "Prepare to buy Applied Materials post-CPI data"
+          ]
+        },
+        {
+          "trigger": "Q3 earnings release for Serve Robotics",
           "date": "",
           "affectedDecisions": [
             "Review Serve Robotics pending Q3 earnings and liquidity clarity"
           ]
         }
       ],
-      "timestamp": "2026-08-13T16:01:15.162Z",
-      "analysisDuration": 17887
+      "timestamp": "2026-08-13T19:01:35.460Z",
+      "analysisDuration": 15963
     },
     "createdAt": "2026-08-02T09:52:12.533Z",
-    "updatedAt": "2026-08-13T16:01:33.057Z",
-    "materialVersion": 10,
-    "refreshVersion": 10,
-    "dependencyFingerprint": "89fprm",
-    "lastAIAnalysisAt": "2026-08-13T16:01:14.670Z"
+    "updatedAt": "2026-08-13T19:01:51.436Z",
+    "materialVersion": 11,
+    "refreshVersion": 11,
+    "dependencyFingerprint": "1xhwbwr",
+    "lastAIAnalysisAt": "2026-08-13T19:01:35.327Z"
   },
   "trade-decision-engine-history": {
     "moduleName": "trade-decision-engine-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-13T19:01:35.460Z",
+          "overallDecisionPosture": "SelectivePreparation",
+          "decisionReadinessScore": 80,
+          "decisions": [
+            {
+              "subjectKey": "holding|serv:xnas",
+              "normalizedKey": "holding|serv:xnas|review",
+              "subjectType": "Holding",
+              "company": "Serve Robotics Inc.",
+              "ticker": "SERV:XNAS",
+              "decision": "Review",
+              "confidence": "High",
+              "urgency": "Days",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Review\",\"c\":\"High\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|csco",
+              "normalizedKey": "opportunity|csco|preparetobuy",
+              "subjectType": "Opportunity",
+              "company": "Cisco Systems Inc.",
+              "ticker": "CSCO",
+              "decision": "PrepareToBuy",
+              "confidence": "High",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 65,
+              "evidenceBand": "Strong",
+              "blockedByEvent": true,
+              "blockingEvent": "Release of FOMC Minutes",
+              "blockingEventDate": "2026-08-19",
+              "targetAllocationPercent": 5,
+              "maximumAllocationPercent": 7,
+              "sizingConfidence": "Medium",
+              "fingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Release of FOMC Minutes\",\"bed\":\"2026-08-19\",\"r\":\"WaitingForReevaluation\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "opportunity|amat",
+              "normalizedKey": "opportunity|amat|preparetobuy",
+              "subjectType": "Opportunity",
+              "company": "Applied Materials Inc.",
+              "ticker": "AMAT",
+              "decision": "PrepareToBuy",
+              "confidence": "High",
+              "urgency": "Weeks",
+              "readiness": "WaitingForReevaluation",
+              "evidenceScore": 65,
+              "evidenceBand": "Strong",
+              "blockedByEvent": true,
+              "blockingEvent": "Release of FOMC Minutes",
+              "blockingEventDate": "2026-08-19",
+              "targetAllocationPercent": 5,
+              "maximumAllocationPercent": 7,
+              "sizingConfidence": "Medium",
+              "fingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Release of FOMC Minutes\",\"bed\":\"2026-08-19\",\"r\":\"WaitingForReevaluation\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}"
+            },
+            {
+              "subjectKey": "holding|novob:xcse",
+              "normalizedKey": "holding|novob:xcse|hold",
+              "subjectType": "Holding",
+              "company": "Novo Nordisk A/S",
+              "ticker": "NOVOB:XCSE",
+              "decision": "Hold",
+              "confidence": "Medium",
+              "urgency": "Weeks",
+              "readiness": "Informational",
+              "blockedByEvent": false,
+              "blockingEvent": "",
+              "blockingEventDate": "",
+              "fingerprint": "{\"d\":\"Hold\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
+            }
+          ]
+        },
         {
           "timestamp": "2026-08-13T16:01:15.162Z",
           "overallDecisionPosture": "SelectivePreparation",
@@ -5769,211 +5998,27 @@
               "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
             }
           ]
-        },
-        {
-          "timestamp": "2026-08-10T18:40:38.016Z",
-          "overallDecisionPosture": "SelectivePreparation",
-          "decisionReadinessScore": 65,
-          "decisions": [
-            {
-              "subjectKey": "holding|novob:xcse",
-              "normalizedKey": "holding|novob:xcse|hold",
-              "subjectType": "Holding",
-              "company": "Novo Nordisk A/S",
-              "ticker": "NOVOB:XCSE",
-              "decision": "Hold",
-              "confidence": "High",
-              "urgency": "Immediate",
-              "readiness": "Informational",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Hold\",\"c\":\"High\",\"u\":\"Immediate\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "holding|serv:xnas",
-              "normalizedKey": "holding|serv:xnas|review",
-              "subjectType": "Holding",
-              "company": "Serve Robotics Inc.",
-              "ticker": "SERV:XNAS",
-              "decision": "Review",
-              "confidence": "Medium",
-              "urgency": "Days",
-              "readiness": "Informational",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "opportunity|hd",
-              "normalizedKey": "opportunity|hd|review",
-              "subjectType": "Opportunity",
-              "company": "The Home Depot, Inc.",
-              "ticker": "HD",
-              "decision": "Review",
-              "confidence": "Medium",
-              "urgency": "Days",
-              "readiness": "Informational",
-              "evidenceScore": 25,
-              "evidenceBand": "Adequate",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Adequate\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "opportunity|csco",
-              "normalizedKey": "opportunity|csco|review",
-              "subjectType": "Opportunity",
-              "company": "Cisco Systems, Inc.",
-              "ticker": "CSCO",
-              "decision": "Review",
-              "confidence": "Medium",
-              "urgency": "Days",
-              "readiness": "Informational",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Days\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "opportunity|avgo",
-              "normalizedKey": "opportunity|avgo|review",
-              "subjectType": "Opportunity",
-              "company": "Broadcom Inc.",
-              "ticker": "AVGO",
-              "decision": "Review",
-              "confidence": "Medium",
-              "urgency": "Weeks",
-              "readiness": "Informational",
-              "evidenceScore": 15,
-              "evidenceBand": "Weak",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Weak\",\"sm\":\"OpportunityFinder\",\"om\":\"\"}"
-            },
-            {
-              "subjectKey": "opportunity|jpm",
-              "normalizedKey": "opportunity|jpm|review",
-              "subjectType": "Opportunity",
-              "company": "JPMorgan Chase & Co.",
-              "ticker": "JPM",
-              "decision": "Review",
-              "confidence": "Medium",
-              "urgency": "Weeks",
-              "readiness": "Informational",
-              "blockedByEvent": false,
-              "blockingEvent": "",
-              "blockingEventDate": "",
-              "fingerprint": "{\"d\":\"Review\",\"c\":\"Medium\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"Informational\",\"ta\":null,\"ma\":null,\"sc\":\"\",\"eb\":\"Insufficient\",\"sm\":\"\",\"om\":\"\"}"
-            }
-          ]
         }
       ]
     },
     "createdAt": "2026-08-02T09:52:12.535Z",
-    "updatedAt": "2026-08-13T16:01:33.064Z",
-    "materialVersion": 10,
-    "refreshVersion": 10
+    "updatedAt": "2026-08-13T19:01:51.460Z",
+    "materialVersion": 11,
+    "refreshVersion": 11
   },
   "trade-review": {
     "moduleName": "trade-review",
     "result": {
-      "proposals": [
-        {
-          "id": "CSCO:PrepareToBuy",
-          "decisionId": "CSCO:PrepareToBuy",
-          "action": "BUY",
-          "ticker": "CSCO",
-          "company": "Cisco Systems, Inc.",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "estimatedValue": 0,
-          "currency": "EUR",
-          "targetAllocationPercent": 5,
-          "currentAllocationPercent": 0,
-          "resultingAllocationPercent": 0,
-          "availableCashAfterTrade": null,
-          "confidence": "High",
-          "urgency": "Weeks",
-          "shortReason": "Aligns with portfolio's diversification and growth objectives",
-          "reasonScore": 68,
-          "status": "Waiting",
-          "decisionTitle": "Prepare to buy Cisco Systems post-CPI data",
-          "decisionRank": 2,
-          "sourceModules": [
-            "OpportunityFinder",
-            "CompanyMonitor"
-          ],
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
-          "sizingUnavailableReason": "Market price unavailable",
-          "fxRate": 1,
-          "currentPositionValueBase": 0,
-          "sizingReason": "Aligns with portfolio's diversification and growth objectives.",
-          "sizingConfidence": "Medium",
-          "createdAt": "2026-08-13T16:01:33.232Z",
-          "approvedAt": null,
-          "rejectedAt": null,
-          "executedAt": null,
-          "tdeTimestamp": "2026-08-13T16:01:15.162Z",
-          "subjectType": "Opportunity",
-          "outcomeId": "Opportunity:CSCO:v3"
-        },
-        {
-          "id": "AMAT:PrepareToBuy",
-          "decisionId": "AMAT:PrepareToBuy",
-          "action": "BUY",
-          "ticker": "AMAT",
-          "company": "Applied Materials, Inc.",
-          "quantity": 0,
-          "estimatedPrice": 0,
-          "estimatedValue": 0,
-          "currency": "EUR",
-          "targetAllocationPercent": 5,
-          "currentAllocationPercent": 0,
-          "resultingAllocationPercent": 0,
-          "availableCashAfterTrade": null,
-          "confidence": "High",
-          "urgency": "Weeks",
-          "shortReason": "Supports diversification into high-growth technology sectors",
-          "reasonScore": 68,
-          "status": "Waiting",
-          "decisionTitle": "Prepare to buy Applied Materials post-CPI data",
-          "decisionRank": 3,
-          "sourceModules": [
-            "OpportunityFinder",
-            "CompanyMonitor"
-          ],
-          "blockedByEvent": false,
-          "blockingEvent": "",
-          "blockingEventDate": "",
-          "sizingUnavailableReason": "Market price unavailable",
-          "fxRate": 1,
-          "currentPositionValueBase": 0,
-          "sizingReason": "Supports diversification into high-growth technology sectors.",
-          "sizingConfidence": "Medium",
-          "createdAt": "2026-08-13T16:01:33.232Z",
-          "approvedAt": null,
-          "rejectedAt": null,
-          "executedAt": null,
-          "tdeTimestamp": "2026-08-13T16:01:15.162Z",
-          "subjectType": "Opportunity",
-          "outcomeId": "Opportunity:AMAT:v4"
-        }
-      ],
-      "tdeTimestamp": "2026-08-13T16:01:15.162Z",
-      "generatedAt": "2026-08-13T16:01:33.232Z"
+      "proposals": [],
+      "tdeTimestamp": "2026-08-13T19:01:35.460Z",
+      "generatedAt": "2026-08-13T19:01:51.780Z"
     },
     "createdAt": "2026-08-02T11:20:05.680Z",
-    "updatedAt": "2026-08-13T18:02:04.784Z",
-    "materialVersion": 10,
-    "refreshVersion": 22,
-    "dependencyFingerprint": "19dhkn7",
-    "lastAIAnalysisAt": "2026-08-13T16:01:33.207Z"
+    "updatedAt": "2026-08-13T19:01:51.783Z",
+    "materialVersion": 11,
+    "refreshVersion": 23,
+    "dependencyFingerprint": "19dhkma",
+    "lastAIAnalysisAt": "2026-08-13T19:01:51.774Z"
   },
   "company-monitor:SERV": {
     "materialVersion": 1,
@@ -6691,18 +6736,18 @@
     "result": {
       "outcomes": [
         {
-          "id": "Opportunity:AMAT:v4",
+          "id": "Opportunity:AMAT:v5",
           "subjectDecisionId": "Opportunity:AMAT",
-          "decisionVersion": 4,
-          "lastFingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"ReadyForReview\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}",
+          "decisionVersion": 5,
+          "lastFingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Release of FOMC Minutes\",\"bed\":\"2026-08-19\",\"r\":\"WaitingForReevaluation\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}",
           "ticker": "AMAT",
-          "company": "Applied Materials, Inc.",
+          "company": "Applied Materials Inc.",
           "subjectType": "Opportunity",
           "decisionType": "PrepareToBuy",
-          "decisionStatus": "Strengthened",
+          "decisionStatus": "Weakened",
           "policyProfile": "Balanced",
-          "createdAt": "2026-08-13T16:01:33.127Z",
-          "becameReadyAt": "2026-08-13T16:01:33.127Z",
+          "createdAt": "2026-08-13T19:01:51.508Z",
+          "becameReadyAt": null,
           "approvedAt": null,
           "rejectedAt": null,
           "executedAt": null,
@@ -6710,7 +6755,7 @@
           "deferredAt": null,
           "deferredCount": 0,
           "lastDeferredAt": null,
-          "evidenceScore": 75,
+          "evidenceScore": 65,
           "evidenceBand": "Strong",
           "confidence": "High",
           "urgency": "Weeks",
@@ -6741,21 +6786,21 @@
           "realizedReturnPercent": null,
           "outcomeStatus": "Tracking",
           "statusNote": null,
-          "supersededId": "Opportunity:AMAT:v3"
+          "supersededId": "Opportunity:AMAT:v4"
         },
         {
-          "id": "Opportunity:CSCO:v3",
+          "id": "Opportunity:CSCO:v4",
           "subjectDecisionId": "Opportunity:CSCO",
-          "decisionVersion": 3,
-          "lastFingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"ReadyForReview\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}",
+          "decisionVersion": 4,
+          "lastFingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":true,\"be\":\"Release of FOMC Minutes\",\"bed\":\"2026-08-19\",\"r\":\"WaitingForReevaluation\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}",
           "ticker": "CSCO",
-          "company": "Cisco Systems, Inc.",
+          "company": "Cisco Systems Inc.",
           "subjectType": "Opportunity",
           "decisionType": "PrepareToBuy",
-          "decisionStatus": "Strengthened",
+          "decisionStatus": "Weakened",
           "policyProfile": "Balanced",
-          "createdAt": "2026-08-13T16:01:33.089Z",
-          "becameReadyAt": "2026-08-13T16:01:33.089Z",
+          "createdAt": "2026-08-13T19:01:51.471Z",
+          "becameReadyAt": null,
           "approvedAt": null,
           "rejectedAt": null,
           "executedAt": null,
@@ -6763,7 +6808,7 @@
           "deferredAt": null,
           "deferredCount": 0,
           "lastDeferredAt": null,
-          "evidenceScore": 75,
+          "evidenceScore": 65,
           "evidenceBand": "Strong",
           "confidence": "High",
           "urgency": "Weeks",
@@ -6794,7 +6839,7 @@
           "realizedReturnPercent": null,
           "outcomeStatus": "Tracking",
           "statusNote": null,
-          "supersededId": "Opportunity:CSCO:v2"
+          "supersededId": "Opportunity:CSCO:v3"
         },
         {
           "id": "Opportunity:MS:v1",
@@ -7742,17 +7787,123 @@
           "approvedQuantity": null
         }
       ],
-      "updatedAt": "2026-08-13T16:01:33.149Z"
+      "updatedAt": "2026-08-13T19:01:51.608Z"
     },
     "createdAt": "2026-08-03T12:07:54.106Z",
-    "updatedAt": "2026-08-13T16:01:33.149Z",
-    "materialVersion": 19,
-    "refreshVersion": 19
+    "updatedAt": "2026-08-13T19:01:51.608Z",
+    "materialVersion": 23,
+    "refreshVersion": 23
   },
   "trade-decision-outcome-history": {
     "moduleName": "trade-decision-outcome-history",
     "result": {
       "entries": [
+        {
+          "id": "Opportunity:AMAT:v4",
+          "subjectDecisionId": "Opportunity:AMAT",
+          "decisionVersion": 4,
+          "lastFingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"ReadyForReview\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}",
+          "ticker": "AMAT",
+          "company": "Applied Materials, Inc.",
+          "subjectType": "Opportunity",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "Strengthened",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-13T16:01:33.127Z",
+          "becameReadyAt": "2026-08-13T16:01:33.127Z",
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": "2026-08-13T19:01:51.508Z",
+          "deferredAt": null,
+          "deferredCount": 0,
+          "lastDeferredAt": null,
+          "evidenceScore": 75,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Weeks",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer",
+            "OpportunityFinder"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 75,
+          "companyMonitorCaseChangeSeverity": "None",
+          "portfolioValueAtDecision": 1000053.4,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "approvedQuantity": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Expired",
+          "statusNote": "Superseded by version 5",
+          "supersededId": "Opportunity:AMAT:v3"
+        },
+        {
+          "id": "Opportunity:CSCO:v3",
+          "subjectDecisionId": "Opportunity:CSCO",
+          "decisionVersion": 3,
+          "lastFingerprint": "{\"d\":\"PrepareToBuy\",\"c\":\"High\",\"u\":\"Weeks\",\"b\":false,\"be\":\"\",\"bed\":\"\",\"r\":\"ReadyForReview\",\"ta\":5,\"ma\":7,\"sc\":\"Medium\",\"eb\":\"Strong\",\"sm\":\"CompanyMonitor,OpportunityFinder,RiskAnalyzer\",\"om\":\"\"}",
+          "ticker": "CSCO",
+          "company": "Cisco Systems, Inc.",
+          "subjectType": "Opportunity",
+          "decisionType": "PrepareToBuy",
+          "decisionStatus": "Strengthened",
+          "policyProfile": "Balanced",
+          "createdAt": "2026-08-13T16:01:33.089Z",
+          "becameReadyAt": "2026-08-13T16:01:33.089Z",
+          "approvedAt": null,
+          "rejectedAt": null,
+          "executedAt": null,
+          "closedAt": "2026-08-13T19:01:51.471Z",
+          "deferredAt": null,
+          "deferredCount": 0,
+          "lastDeferredAt": null,
+          "evidenceScore": 75,
+          "evidenceBand": "Strong",
+          "confidence": "High",
+          "urgency": "Weeks",
+          "targetAllocationPercent": 5,
+          "supportingModules": [
+            "CompanyMonitor",
+            "RiskAnalyzer",
+            "OpportunityFinder"
+          ],
+          "opposingModules": [],
+          "companyMonitorStrength": 78,
+          "companyMonitorCaseChangeSeverity": "None",
+          "portfolioValueAtDecision": 1000053.4,
+          "referencePrice": null,
+          "referencePriceCurrency": null,
+          "referencePriceTimestamp": null,
+          "approvedQuantity": null,
+          "executedPrice": null,
+          "executedQuantity": null,
+          "outcomePrice1Day": null,
+          "outcomePrice5Days": null,
+          "outcomePrice20Days": null,
+          "outcomeReturn1DayPercent": null,
+          "outcomeReturn5DaysPercent": null,
+          "outcomeReturn20DaysPercent": null,
+          "maximumFavourableMovePercent": null,
+          "maximumAdverseMovePercent": null,
+          "realizedReturnPercent": null,
+          "outcomeStatus": "Expired",
+          "statusNote": "Superseded by version 4",
+          "supersededId": "Opportunity:CSCO:v2"
+        },
         {
           "id": "Opportunity:AMAT:v3",
           "subjectDecisionId": "Opportunity:AMAT",
@@ -8702,12 +8853,12 @@
           "approvedQuantity": null
         }
       ],
-      "updatedAt": "2026-08-13T16:01:33.138Z"
+      "updatedAt": "2026-08-13T19:01:51.517Z"
     },
     "createdAt": "2026-08-03T12:07:54.134Z",
-    "updatedAt": "2026-08-13T16:01:33.138Z",
-    "materialVersion": 7,
-    "refreshVersion": 7
+    "updatedAt": "2026-08-13T19:01:51.517Z",
+    "materialVersion": 9,
+    "refreshVersion": 9
   },
   "company-monitor:NOVO B": {
     "materialVersion": 1,
@@ -14101,6 +14252,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-13T18:49:05.264Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-13T18:18:34.933Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -14517,9 +14674,9 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-13T18:18:41.798Z",
-    "materialVersion": 25,
-    "refreshVersion": 25
+    "updatedAt": "2026-08-13T18:49:13.184Z",
+    "materialVersion": 26,
+    "refreshVersion": 26
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",

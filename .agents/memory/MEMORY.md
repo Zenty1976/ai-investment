@@ -5,7 +5,7 @@
 - [Codegen wipes manual additions](codegen-manual-split.md) — orval --clean deletes everything in generated/; all non-spec types and hooks must live in manual.ts files, never in generated/.
 - [Web search + JSON mode incompatible](openai-websearch-jsonmode.md) — OpenAI Responses API rejects text.format.json_object when web_search tool is active; never pass jsonMode:true with web search.
 - [TDE policy config architecture](tde-policy-config.md) — evidence weights/thresholds live in trade-decision-policy-config.ts; active profile loaded synchronously via getActivePolicyConfig(); initPolicyStore() called at server startup.
-- [Test runner — vitest blocked](test-runner-node-test.md) — vitest is blocked by package firewall; use node:test with a custom esbuild runner (run-tests.mjs); set spawn cwd to a fresh tmpdir so analysis-repository starts empty.
+- [Test runner — vitest blocked](test-runner-node-test.md) — vitest is blocked by package firewall; use node:test with a custom esbuild runner (run-tests.mjs); set spawn cwd to a fresh tmpdir so analysis-repository starts empty. vitest must NOT be in package.json devDependencies (causes pnpm install failure).
 - [Outcome store identity model](outcome-store-identity.md) — stable subjectDecisionId ("Holding:AAPL"), exact outcomeId on proposals, "Later"→Deferred, approvedQuantity separate from executedQuantity.
 - [Price Context Architecture](price-context-architecture.md) — Saxo OHLC → deterministic metrics → repository → AI modules; Stage 1.5 in orchestrator; semantic rules in every system prompt.
 - [Dirty Propagation Architecture](dirty-propagation.md) — special-case company-monitor(holding)→pipeline; §4 price threshold already in analysis-repository._isPriceContextMaterial().
@@ -14,3 +14,5 @@
 - [web_search_preview tool type](websearch-preview-tooltype.md) — Responses API requires type:"web_search_preview" not "web_search"; wrong type silently ignores search_context_size and injects ~17k tokens; fixed in ai-service.ts.
 - [TDE stale WaitForEvent loop](tde-waitforevent-normalization.md) — stale WaitForEvent throwing instead of normalizing caused infinite retry loop; fix: clear expired blocking flag in-place, never throw for past-dated events.
 - [Risk Intelligence Engine](risk-intelligence-engine.md) — deterministic RiskFacts pre-computation; fingerprint skip; reuse this in Portfolio Analyzer, never duplicate weights/sectors/events.
+- [Central Model Routing](central-model-routing.md) — all 14 AI call sites now use getModel(category, module) from ai-model-config.ts; MODULE_OVERRIDES record is the ONE place to override a single module; zod must be in api-server direct dependencies (catalog:).
+- [AI Response Normalizer](ai-response-normalizer.md) — conservative deterministic normalizer in lib/ai-response-normalizer.ts; runs before every Zod safeParse; company-monitor runs it as a second pass after its own domain-specific normalizeRawResponse().

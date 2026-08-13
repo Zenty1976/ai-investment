@@ -22,6 +22,8 @@ import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunRiskAnalyzerResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
@@ -480,7 +482,7 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
           previousRiskContext
         ),
         {
-          model: "gpt-4o",
+          model: getModel("analysis", "risk-analyzer"),
           maxTokens: 3000,
           temperature: 0.1,
           module: "risk-analyzer",
@@ -524,11 +526,10 @@ router.post("/risk-analyzer/analyze", async (req, res): Promise<void> => {
       });
     }
 
-    const parsed = RunRiskAnalyzerResponse.safeParse({
-      ...(rawResult as Record<string, unknown>),
-      timestamp: nowIso,
-      analysisDuration,
-    });
+    const assembled = { ...(rawResult as Record<string, unknown>), timestamp: nowIso, analysisDuration };
+    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunRiskAnalyzerResponse);
+    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Risk Analyzer: normalizer repaired formatting — no retry needed");
+    const parsed = RunRiskAnalyzerResponse.safeParse(normAssembled);
 
     if (parsed.success) {
       // ── Sort top risks deterministically ──────────────────────────────────

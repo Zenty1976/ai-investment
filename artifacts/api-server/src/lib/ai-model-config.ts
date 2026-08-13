@@ -52,9 +52,36 @@ export const AI_MODEL_CONFIG: Record<
 };
 
 /**
- * Returns the configured model string for the given category.
- * Use this in every route instead of hardcoding "gpt-4o".
+ * Optional per-module model overrides.
+ *
+ * When a module's identifier is present here, its model takes precedence over
+ * the category default in AI_MODEL_CONFIG. This is the ONE place to swap the
+ * model for a specific module without affecting the rest of its category.
+ *
+ * Keys must match the `module` string used in AI call options
+ * (e.g. "market-monitor", "company-monitor", "trade-decision-engine").
+ *
+ * Example — to test gpt-4.1 for market-monitor only:
+ *   "market-monitor": "gpt-4.1",
  */
-export function getModel(category: AiModelCategory): string {
+export const MODULE_OVERRIDES: Record<string, string> = {
+  // "market-monitor": "gpt-4.1",
+};
+
+/**
+ * Returns the resolved model string for a given category and optional module.
+ *
+ * Resolution order (first match wins):
+ *   1. Per-module override in MODULE_OVERRIDES  (if `module` is provided and present)
+ *   2. Category default in AI_MODEL_CONFIG
+ *
+ * The returned string is always a concrete model identifier (e.g. "gpt-4o")
+ * suitable for passing directly to the OpenAI API.  Usage tracking records the
+ * actual resolved model — never only the category name.
+ */
+export function getModel(category: AiModelCategory, module?: string): string {
+  if (module !== undefined && Object.prototype.hasOwnProperty.call(MODULE_OVERRIDES, module)) {
+    return MODULE_OVERRIDES[module];
+  }
   return AI_MODEL_CONFIG[category].model;
 }

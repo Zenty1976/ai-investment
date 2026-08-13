@@ -19,6 +19,8 @@ import { RunCommandBriefResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { automationOrchestrator } from "../lib/automation-orchestrator";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 
 const router: IRouter = Router();
 
@@ -333,7 +335,7 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       const { result: raw, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(input, nowIso),
-        { model: "gpt-4o-mini", maxTokens: 800, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
+        { model: getModel("brief", "command-brief"), maxTokens: 800, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
       );
       lastDebug = debug;
 
@@ -343,7 +345,9 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
         if (!obj.generatedAt) obj.generatedAt = nowIso;
       }
 
-      const parsed = RunCommandBriefResponse.safeParse(raw);
+      const { normalized: normRaw, changes: normChanges } = normalizeAiResponse(raw, RunCommandBriefResponse);
+      if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Command Brief: normalizer repaired formatting — no retry needed");
+      const parsed = RunCommandBriefResponse.safeParse(normRaw);
       if (!parsed.success) {
         const errMsg = parsed.error.issues
           .map((i) => `${i.path.join(".")}: ${i.message}`)

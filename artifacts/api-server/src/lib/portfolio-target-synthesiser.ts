@@ -14,6 +14,7 @@
  */
 
 import { callAi } from "./ai-service.js";
+import { getModel } from "./ai-model-config.js";
 import type { PortfolioSnapshot } from "../routes/portfolio-manager.js";
 import type { TargetPortfolio, PortfolioV2Provenance } from "./portfolio-manager-v2-types.js";
 import { ROLE_DEFINITIONS } from "./portfolio-role-config.js";
@@ -169,7 +170,7 @@ export async function synthesiseTargetPortfolio(
   const { result: raw } = await callAi<AiTargetPortfolioResponse>(
     SYSTEM_PROMPT,
     buildUserPrompt(snapshot, ctx),
-    { model: "gpt-4o", maxTokens: 2500, temperature: 0.2 }
+    { model: getModel("analysis", "portfolio-target-synthesiser"), maxTokens: 2500, temperature: 0.2, module: "portfolio-target-synthesiser", operation: "analyze" }
   );
 
   // Validate and normalise — throws on any invariant violation

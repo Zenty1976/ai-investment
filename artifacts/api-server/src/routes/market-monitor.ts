@@ -13,6 +13,8 @@ import { RunMarketAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { systemLog } from "../lib/system-log.js";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 
 // ── History entry type (server-local) ─────────────────────────────────────────
 interface MarketMonitorHistoryEntry {
@@ -77,7 +79,7 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
         buildUserPrompt(nowIso),
-        { model: "gpt-4o", maxTokens: 900, temperature: 0.1, module: "market-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
+        { model: getModel("monitor", "market-monitor"), maxTokens: 900, temperature: 0.1, module: "market-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -115,11 +117,10 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
 
     // ── Validate against Zod schema — timestamp and duration set by server ──
     const analysisDuration = Date.now() - startTime;
-    const parsed = RunMarketAnalysisResponse.safeParse({
-      ...(result as object),
-      timestamp: nowIso,
-      analysisDuration,
-    });
+    const assembled = { ...(result as Record<string, unknown>), timestamp: nowIso, analysisDuration };
+    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunMarketAnalysisResponse);
+    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Market Monitor: normalizer repaired formatting — no retry needed");
+    const parsed = RunMarketAnalysisResponse.safeParse(normAssembled);
 
     if (parsed.success) {
       // ── Deterministic materiality check — no AI involved ────────────────

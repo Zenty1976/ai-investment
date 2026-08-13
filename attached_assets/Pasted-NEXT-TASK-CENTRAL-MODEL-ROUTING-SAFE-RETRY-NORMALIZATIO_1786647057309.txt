@@ -1,0 +1,389 @@
+NEXT TASK — CENTRAL MODEL ROUTING + SAFE RETRY NORMALIZATION
+
+The OpenAI architecture audit is accepted.
+
+Do NOT change which models the application uses yet.
+
+Do NOT change prompts, module responsibilities, schedules, web-search
+context sizes or investment logic in this task.
+
+This task has TWO safe objectives:
+
+1. Make centralized AI model routing actually work.
+2. Prevent unnecessary full OpenAI retries for purely mechanical schema
+   formatting errors.
+
+
+==================================================
+PART 1 — CENTRAL MODEL ROUTING
+==================================================
+
+The audit found that ai-model-config.ts exists but callers hardcode
+model strings directly.
+
+Fix this.
+
+All OpenAI callers should obtain their model through the centralized
+model configuration.
+
+Use appropriate semantic categories such as:
+
+discovery
+monitor
+analysis
+decision
+brief
+repair
+
+according to the existing configuration design.
+
+Examples conceptually:
+
+Company Monitor discovery
+→ getModel("discovery")
+
+Investor Watch discovery
+→ getModel("discovery")
+
+Market Monitor
+News Monitor
+Event Monitor
+Sector Monitor
+→ getModel("monitor")
+
+Company Monitor full
+Opportunity Finder
+Investor Watch full
+→ use the appropriate existing strong/monitor category
+
+Risk Analyzer
+Portfolio Analyzer
+Portfolio Target Synthesiser
+→ getModel("analysis")
+
+Trade Decision
+→ getModel("decision")
+
+Command Brief
+→ getModel("brief")
+
+
+IMPORTANT:
+
+For now, preserve the CURRENT effective model choices.
+
+If Market Monitor currently uses gpt-4o, it must still use gpt-4o after
+this refactor.
+
+If Command Brief currently uses gpt-4o-mini, it must still use
+gpt-4o-mini.
+
+This task must NOT silently change model quality.
+
+After this task, changing ai-model-config.ts must actually control the
+models used at runtime.
+
+
+==================================================
+MODEL OVERRIDES
+==================================================
+
+If useful for future testing, allow optional per-module overrides in the
+central configuration.
+
+Do not create a complicated configuration system.
+
+The important property is:
+
+ONE authoritative place to determine which OpenAI model each class of
+task uses.
+
+
+==================================================
+DEBUG / USAGE
+==================================================
+
+OpenAI usage tracking must continue recording the ACTUAL resolved model.
+
+Debug information should also show the resolved model.
+
+Do not log only the category name.
+
+
+==================================================
+PART 2 — SAFE DETERMINISTIC RESPONSE NORMALIZATION
+==================================================
+
+The audit found that trivial schema formatting errors can cause an entire
+expensive OpenAI call to run again.
+
+Add a conservative deterministic normalization layer BEFORE deciding
+that a full AI retry is necessary.
+
+This layer may ONLY repair representation/format problems.
+
+It must NEVER change investment meaning.
+
+
+==================================================
+SAFE NORMALIZATIONS
+==================================================
+
+Examples that MAY be normalized when the target schema makes the intended
+representation unambiguous:
+
+Enum casing:
+
+"high" → "High"
+"moderate" → "Moderate"
+
+ONLY when exactly one allowed enum value matches case-insensitively.
+
+Numeric strings:
+
+"82" → 82
+
+ONLY when the schema requires a number and the string is a valid finite
+number.
+
+Boolean strings:
+
+"true" → true
+"false" → false
+
+ONLY where schema requires boolean.
+
+Optional arrays:
+
+null → []
+
+ONLY where [] is a semantically valid optional/default representation.
+
+Trim accidental whitespace around enum/string identifiers.
+
+Do not broadly rewrite natural-language strings.
+
+
+==================================================
+NEVER NORMALIZE SEMANTIC INVESTMENT CONTENT
+==================================================
+
+The normalizer must NEVER change or invent:
+
+Buy / Sell / Hold / PrepareToBuy / PrepareToReduce decisions
+
+investment thesis conclusions
+
+conviction
+
+investmentCaseStrength meaning
+
+risk conclusions
+
+price targets
+
+recommendations
+
+company identity
+
+event interpretation
+
+position sizing
+
+trade quantity
+
+rationales
+
+bull/base/bear conclusions
+
+If these are invalid or missing, use the existing validation/retry logic.
+
+
+==================================================
+IMPORTANT ENUM SAFETY
+==================================================
+
+Even enums must only be normalized when it is purely representational.
+
+Example:
+
+"high" → "High"
+
+is safe if High is an allowed enum.
+
+But:
+
+"Buy" → "PrepareToBuy"
+
+is NOT normalization.
+
+That changes meaning and is forbidden.
+
+
+==================================================
+VALIDATION FLOW
+==================================================
+
+Desired flow:
+
+OpenAI response
+→ parse JSON
+→ conservative deterministic normalization
+→ schema validation
+→ semantic validation
+→ success
+
+ONLY if validation still fails:
+
+consider retry.
+
+
+==================================================
+RETRY CLASSIFICATION
+==================================================
+
+When validation fails, classify the reason:
+
+FORMAT_REPAIRED
+FORMAT_UNREPAIRABLE
+SCHEMA_MISSING_CONTENT
+SEMANTIC_INVALID
+WRONG_ENTITY
+OTHER
+
+Track this in debug/usage where practical.
+
+This will later let us see WHY tokens are being spent on retries.
+
+
+==================================================
+DO NOT AUTOMATICALLY USE THE REPAIR MODEL YET
+==================================================
+
+ai-model-config.ts contains a repair category.
+
+Do not automatically introduce another AI repair call in this task.
+
+First use deterministic repair for safe mechanical issues.
+
+If the response contains genuine missing/invalid investment content,
+the existing full retry is safer for now.
+
+We can evaluate a cheap repair-model strategy later using actual failure
+data.
+
+
+==================================================
+COMPANY MONITOR
+==================================================
+
+Be especially conservative.
+
+Do not weaken:
+
+wrong-company detection
+stable-field preservation
+thesis validation
+investment analysis validation
+
+A Company Monitor response that is semantically wrong must still retry.
+
+
+==================================================
+TRADE DECISION
+==================================================
+
+Be even more conservative.
+
+Do not deterministically repair decision meaning.
+
+Existing safe normalization such as legacy WaitForEvent representation
+may remain if already proven correct.
+
+But never turn one decision state into another simply to satisfy schema.
+
+
+==================================================
+TESTING
+==================================================
+
+Do NOT make paid OpenAI calls.
+
+Create unit tests / fixtures with intentionally malformed responses:
+
+"high" instead of "High"
+
+"82" instead of 82
+
+null instead of optional []
+
+extra whitespace
+
+and verify they validate after normalization.
+
+Also test semantic failures:
+
+invalid decision type
+missing thesis
+wrong company
+missing required recommendation
+
+and verify these are NOT silently repaired.
+
+
+==================================================
+SUCCESS CRITERIA
+==================================================
+
+1. No production OpenAI caller hardcodes its model independently of the
+   central model-routing system.
+
+2. Current effective models remain unchanged.
+
+3. ai-model-config.ts actually controls runtime model selection.
+
+4. Pure formatting/schema representation problems can be repaired without
+   another OpenAI call.
+
+5. Investment meaning is never changed by deterministic normalization.
+
+6. Existing semantic validation remains intact.
+
+7. Usage/debug records the resolved model and retry reason.
+
+8. No paid OpenAI tests are performed.
+
+
+==================================================
+DO NOT DO YET
+==================================================
+
+Do NOT switch Market Monitor to gpt-4.1.
+
+Do NOT switch News Monitor.
+
+Do NOT switch Event Monitor.
+
+Do NOT modify Opportunity Finder context.
+
+Do NOT modify Event Monitor architecture.
+
+Do NOT change Trade Decision context/model.
+
+Do NOT change Company Monitor model.
+
+Those will be separate tasks after this infrastructure is verified.
+
+
+==================================================
+FINAL REPORT
+==================================================
+
+After implementation report:
+
+1. Every OpenAI call site and which central category it now uses.
+2. Confirmation that effective models are unchanged.
+3. All deterministic normalization rules implemented.
+4. Which retry reasons can now avoid a second AI call.
+5. Which validation failures still cause a full retry.
+6. Tests added and results.

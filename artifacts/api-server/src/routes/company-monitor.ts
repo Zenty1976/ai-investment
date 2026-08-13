@@ -26,6 +26,8 @@ import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunCompanyAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { analysisRepository } from "../lib/analysis-repository";
 import { automationOrchestrator } from "../lib/automation-orchestrator";
 import { getPriceContext, fetchAndStorePriceContexts } from "../lib/price-context-service.js";
@@ -364,7 +366,7 @@ Return the JSON object only.`;
       categories: string[];
       shortReason: string;
     }>(discoverySystemPrompt, discoveryUserPrompt, {
-      model: "gpt-4o-mini",
+      model: getModel("discovery", "company-monitor"),
       maxTokens: 150,
       temperature: 0.1,
       module: "company-monitor",
@@ -1165,7 +1167,7 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
         // rejects text.format.json_object when a web_search tool is active.
         // JSON robustness is handled by the prose-extraction fallback in
         // ai-service.ts and the explicit "begin with {" instruction in retries.
-        { model: "gpt-4o", maxTokens: 4000, temperature: 0.1, module: "company-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
+        { model: getModel("monitor", "company-monitor"), maxTokens: 4000, temperature: 0.1, module: "company-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -1200,11 +1202,17 @@ router.post("/company-monitor/analyze", async (req, res): Promise<void> => {
       req.log.info({ normalizations, attempt }, "Applied safe normalization before schema validation");
     }
 
+    // ── Generic schema-aware normalization (second pass after domain-specific) ──
+    const { normalized: genericNormalized, changes: genericNormChanges } = normalizeAiResponse(normalizedResult, RunCompanyAnalysisResponse);
+    if (genericNormChanges.length > 0) {
+      req.log.info({ changes: genericNormChanges, attempt }, "Company Monitor: generic normalizer repaired additional formatting");
+    }
+
     // ── Zod schema validation ────────────────────────────────────────────────
 
     const analysisDuration = Date.now() - startTime;
     const parsed = RunCompanyAnalysisResponse.safeParse({
-      ...(normalizedResult as Record<string, unknown>),
+      ...(genericNormalized as Record<string, unknown>),
       timestamp: nowIso,
       analysisDuration,
     });

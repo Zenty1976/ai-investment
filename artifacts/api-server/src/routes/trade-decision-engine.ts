@@ -19,6 +19,8 @@ import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunTradeDecisionEngineResponse } from "@workspace/api-zod";
 import { callAi, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
+import { getModel } from "../lib/ai-model-config.js";
+import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import type { RepositoryEntry } from "../lib/analysis-repository.js";
@@ -1399,7 +1401,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       const { result, debug } = await callAi(
         SYSTEM_PROMPT,
         userPrompt,
-        { model: "gpt-4o", maxTokens: 3500, temperature: 0.1, module: "trade-decision-engine", operation: "analyze", retryNumber: attempt }
+        { model: getModel("decision", "trade-decision-engine"), maxTokens: 3500, temperature: 0.1, module: "trade-decision-engine", operation: "analyze", retryNumber: attempt }
       );
 
       if (res.headersSent) { clearTimeout(routeTimeoutHandle); return; }
@@ -1425,15 +1427,15 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
           : rawResult.decisions,
       };
 
-      // Schema validation
-      const parsed = RunTradeDecisionEngineResponse.safeParse({
-        ...normalizedResult,
-        timestamp: nowIso,
-        analysisDuration,
-      });
+      // Schema validation — with conservative format normalizer
+      const assembled = { ...normalizedResult, timestamp: nowIso, analysisDuration };
+      const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunTradeDecisionEngineResponse);
+      if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "TDE: normalizer repaired formatting — no retry needed");
+      const parsed = RunTradeDecisionEngineResponse.safeParse(normAssembled);
       if (!parsed.success) {
+        const retryReason = classifyRetryReason(parsed.error, normChanges);
         throw new Error(
-          `Schema validation failed: ${parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ")}`
+          `Schema validation failed [${retryReason}]: ${parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ")}`
         );
       }
 

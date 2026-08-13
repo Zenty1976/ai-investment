@@ -7,6 +7,7 @@
 import OpenAI from "openai";
 import { logger } from "./logger";
 import { trackUsage } from "./openai-usage-service.js";
+import type { NormalizationChange } from "./ai-response-normalizer.js";
 
 let _client: OpenAI | null = null;
 
@@ -91,6 +92,17 @@ export interface AiDebugInfo {
    * Values: request | timeout | response | web-search-validation | json-parse
    */
   errorStage?: string;
+  /**
+   * Normalization changes applied to the AI response before schema validation.
+   * Present when the route ran the conservative normalizer and at least one
+   * formatting correction was applied.
+   */
+  normalizationChanges?: NormalizationChange[];
+  /**
+   * Why a retry was triggered — set by the route when schema validation fails
+   * after normalization. Use RetryReason values from ai-response-normalizer.ts.
+   */
+  retryReason?: string;
 }
 
 /**
