@@ -1,29 +1,57 @@
 /**
- * Event Monitor Route
+ * Event Monitor Route — Hybrid Architecture
  *
- * Searches for upcoming financial-market events in the next 14 days using the
- * shared AI service with live web search. Optionally reads the latest Market
- * Monitor result from the Analysis Repository to prioritize events that are
- * relevant to current market conditions.
+ * Two operating modes chosen deterministically before any AI call:
  *
- * Server-side processing after the AI call:
- *  - Filters events with dates in the past
- *  - Deduplicates by title (case-insensitive)
- *  - Sorts by importance (High → Medium → Low), then by date ascending
- *  - Caps at 5 events
- *  - Derives nextMajorEvent from the top-ranked event
- *  - Calculates countdownDays — never trusted from the AI response
- *  - Sets timestamp and analysisDuration
+ * ── MAINTENANCE (zero AI, zero web search, zero tokens) ─────────────────────
+ *   Runs when discovery is not due and known events exist.
+ *   Updates proximity buckets and status from the stored EventIntelligenceState.
+ *   Material changes (proximity boundary crossings, passed events) still
+ *   propagate to downstream modules via the event-monitor materialVersion.
+ *   Debug shows:  mode: MAINTENANCE  aiCalled: false  webSearchUsed: false
  *
- * Invalid, incomplete or failed results are never stored in the repository.
+ * ── DISCOVERY (AI + web search) ──────────────────────────────────────────────
+ *   Runs when discovery interval elapsed, force_refresh requested, or no
+ *   known events exist yet.
+ *   AI output is merged (not replaced) into the EventIntelligenceState:
+ *   - Known events get updated content if changed; stable ID is preserved.
+ *   - Genuinely new events are added.
+ *   - Redundant re-discoveries are deduplicated silently.
+ *   Debug shows:  mode: DISCOVERY  reason: <why>  aiCalled: true
+ *
+ * Downstream fingerprint stability:
+ *   The event-monitor materialVersion only bumps on meaningful state transitions:
+ *   event added/removed, content changed, or proximity bucket boundary crossed
+ *   (FUTURE→WITHIN_7_DAYS, →WITHIN_3_DAYS, →WITHIN_24_HOURS, →TODAY, →PASSED).
+ *   Plain countdown ticks ("74h remaining" → "73h remaining") are NOT material,
+ *   preventing unnecessary Portfolio Analyzer / Risk Analyzer / TDE reruns.
  */
+
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
 import { RunEventAnalysisResponse } from "@workspace/api-zod";
-import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
-import { analysisRepository } from "../lib/analysis-repository";
+import {
+  callAiWithWebSearch,
+  extractAiErrorDebug,
+  type AiDebugInfo,
+} from "../lib/ai-service.js";
+import { analysisRepository } from "../lib/analysis-repository.js";
 import { getModel } from "../lib/ai-model-config.js";
-import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
+import {
+  normalizeAiResponse,
+  classifyRetryReason,
+} from "../lib/ai-response-normalizer.js";
+import {
+  type EventIntelligenceState,
+  type AiEventCandidate,
+  type EventImportance,
+  computeProximity,
+  runMaintenance,
+  mergeDiscovery,
+  toEventMonitorOutput,
+  computeMaterialityKey,
+  buildEventIndex,
+} from "../lib/event-intelligence.js";
 
 const router: IRouter = Router();
 
@@ -32,20 +60,16 @@ const router: IRouter = Router();
 // ---------------------------------------------------------------------------
 
 const MAX_ATTEMPTS = 2;
-const IMPORTANCE_ORDER = { High: 0, Medium: 1, Low: 2 } as const;
+
+/**
+ * Minimum time between AI discovery runs.
+ * Must run at least once per this interval — matches the default orchestrator
+ * schedule so existing timing expectations are preserved.
+ */
+const DEFAULT_DISCOVERY_INTERVAL_MS = 180 * 60_000; // 3 hours
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function calcCountdownDays(dateStr: string, todayMs: number): number {
-  const d = new Date(dateStr);
-  d.setUTCHours(0, 0, 0, 0);
-  return Math.max(0, Math.round((d.getTime() - todayMs) / 86_400_000));
-}
-
-// ---------------------------------------------------------------------------
-// Prompts
+// AI Prompt
 // ---------------------------------------------------------------------------
 
 const SYSTEM_PROMPT = `You are a financial events analyst. Search the web for scheduled events that will affect financial markets. Return JSON only — no markdown, no surrounding text.
@@ -72,17 +96,23 @@ function buildUserPrompt(
   nowIso: string,
   todayStr: string,
   endDateStr: string,
-  marketContext: string | null
+  marketContext: string | null,
+  knownEventIndex: string
 ): string {
-  const contextBlock = marketContext
+  const ctxBlock = marketContext
     ? `\nCurrent Market Monitor context (use to prioritise events relevant to current conditions — do not repeat this analysis):\n${marketContext}`
     : "";
+
+  const knownBlock =
+    knownEventIndex !== "[]"
+      ? `\nKnown events already tracked (included for deduplication context — you may update their details if you find new information, and include any genuinely new events not in this list):\n${knownEventIndex}`
+      : "";
 
   return `UTC: ${nowIso}
 Today: ${todayStr}
 14-day event window: ${todayStr} → ${endDateStr}
 
-Search for all significant scheduled financial events within the above 14-day window.${contextBlock}`;
+Search for all significant scheduled financial events within the above 14-day window.${ctxBlock}${knownBlock}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,10 +120,19 @@ Search for all significant scheduled financial events within the above 14-day wi
 // ---------------------------------------------------------------------------
 
 router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
-  req.log.info("Running event monitor analysis with web search");
-  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  const body = req.body as Record<string, unknown> | undefined;
+  const forceRefresh = body?.force_refresh === true;
+  const orchestratorTrigger = req.headers["x-orchestrator-trigger"] as
+    | string
+    | undefined;
+  const isForceAI =
+    orchestratorTrigger === "ForceRefresh" || forceRefresh;
+
   if (orchestratorTrigger) {
-    systemLog.logInfo("Event Monitor", `Scheduled run (trigger: ${orchestratorTrigger})`);
+    systemLog.logInfo(
+      "Event Monitor",
+      `Scheduled run (trigger: ${orchestratorTrigger})`
+    );
   } else {
     systemLog.logUser("Event Monitor", "User manually started event analysis");
   }
@@ -101,22 +140,143 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
 
-  // Anchor today to UTC midnight for consistent countdown calculations
+  // Anchor today to UTC midnight for consistent proximity calculations
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const todayMs = today.getTime();
   const todayStr = today.toISOString().slice(0, 10);
-  const endDateStr = new Date(todayMs + 14 * 86_400_000).toISOString().slice(0, 10);
+  const endDateStr = new Date(todayMs + 14 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
 
-  // Optional: read the latest Market Monitor result for context
-  const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
+  // ── Load event intelligence state ─────────────────────────────────────────
+  const intelligenceEntry =
+    analysisRepository.get<EventIntelligenceState>("event-intelligence");
+  const currentState: EventIntelligenceState = intelligenceEntry?.result ?? {
+    events: [],
+    summary: "",
+    sources: [],
+    lastDiscoveryAt: null,
+  };
+
+  // ── Discovery gate ────────────────────────────────────────────────────────
+  const lastDiscoveryMs = currentState.lastDiscoveryAt
+    ? new Date(currentState.lastDiscoveryAt).getTime()
+    : 0;
+  const discoveryAge = Date.now() - lastDiscoveryMs;
+
+  // Count how many upcoming events we currently know about
+  const upcomingCount = currentState.events.filter(
+    (e) => computeProximity(e.date, todayMs) !== "PASSED"
+  ).length;
+
+  const discoveryDue =
+    isForceAI ||
+    upcomingCount === 0 ||
+    discoveryAge >= DEFAULT_DISCOVERY_INTERVAL_MS;
+
+  const discoveryReason = isForceAI
+    ? "force_refresh"
+    : upcomingCount === 0
+    ? "no_known_events"
+    : "scheduled_discovery";
+
+  req.log.info(
+    {
+      mode: discoveryDue ? "DISCOVERY" : "MAINTENANCE",
+      discoveryDue,
+      discoveryAgeMin: Math.round(discoveryAge / 60_000),
+      knownUpcoming: upcomingCount,
+      discoveryReason: discoveryDue ? discoveryReason : undefined,
+    },
+    "Event Monitor mode determined"
+  );
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MAINTENANCE PATH — zero AI, zero web search, zero tokens
+  // ══════════════════════════════════════════════════════════════════════════
+
+  if (!discoveryDue) {
+    const maintenanceResult = runMaintenance(currentState, todayMs, nowIso);
+    const analysisDuration = Date.now() - startTime;
+    const output = toEventMonitorOutput(
+      maintenanceResult.state,
+      todayMs,
+      nowIso,
+      analysisDuration
+    );
+
+    // Validate output — maintenance path must produce a valid schema response
+    const parsed = RunEventAnalysisResponse.safeParse(output);
+
+    if (!parsed.success) {
+      // Rare: stored state can't produce a valid response — fall through to discovery
+      req.log.warn(
+        { errors: parsed.error.message },
+        "Event Monitor: maintenance output failed schema validation — forcing discovery"
+      );
+      // Fall through to discovery below
+    } else {
+      // Materiality check using proximity-aware key
+      const prevMaterialityKey = computeMaterialityKey(currentState.events);
+      const newMaterialityKey = computeMaterialityKey(
+        maintenanceResult.state.events
+      );
+      const isMaterial = prevMaterialityKey !== newMaterialityKey;
+
+      // Always update internal event-intelligence state (proximity may have changed)
+      analysisRepository.save("event-intelligence", maintenanceResult.state);
+
+      if (isMaterial) {
+        analysisRepository.save("event-monitor", parsed.data);
+        const summary = maintenanceResult.materialChanges.join("; ");
+        systemLog.logInfo(
+          "Event Monitor",
+          `Maintenance (MATERIAL): ${summary}`
+        );
+      } else {
+        analysisRepository.saveSkipped("event-monitor");
+        systemLog.logInfo(
+          "Event Monitor",
+          `Maintenance (no material change): ${maintenanceResult.state.events.length} event(s) — materialVersion unchanged`
+        );
+      }
+
+      res.json({
+        ...parsed.data,
+        _debug: {
+          mode: "MAINTENANCE",
+          discoveryDue: false,
+          discoveryAgeMin: Math.round(discoveryAge / 60_000),
+          aiCalled: false,
+          webSearchUsed: false,
+          knownEvents: maintenanceResult.state.events.length,
+          isMaterial,
+          materialChanges: maintenanceResult.materialChanges,
+          proximityBoundariesCrossed:
+            maintenanceResult.proximityBoundariesCrossed,
+          passedEventsExpired: maintenanceResult.passedEventsExpired,
+        },
+      });
+      return;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // DISCOVERY PATH — AI + web search
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Optional: read Market Monitor for event prioritization
+  const marketEntry =
+    analysisRepository.get<Record<string, unknown>>("market-monitor");
   const marketContext = marketEntry
     ? JSON.stringify(
         {
-          sentiment: (marketEntry.result as { marketSentiment?: string }).marketSentiment,
-          riskLevel: (marketEntry.result as { riskLevel?: string }).riskLevel,
-          keyRisks: (marketEntry.result as { keyRisks?: string[] }).keyRisks,
-          summary: (marketEntry.result as { summary?: string }).summary,
+          sentiment: (marketEntry.result as Record<string, unknown>)
+            .marketSentiment,
+          riskLevel: (marketEntry.result as Record<string, unknown>).riskLevel,
+          keyRisks: (marketEntry.result as Record<string, unknown>).keyRisks,
+          summary: (marketEntry.result as Record<string, unknown>).summary,
         },
         null,
         0
@@ -125,9 +285,19 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
 
   if (marketContext) {
     req.log.info("Using Market Monitor context for event prioritisation");
-  } else {
-    req.log.info("No Market Monitor context available — proceeding without it");
   }
+
+  // Build compact known-event index for AI deduplication context
+  const knownEventIndex = buildEventIndex(currentState.events);
+
+  req.log.info(
+    {
+      discoveryReason,
+      knownEvents: currentState.events.length,
+      hasMarketContext: marketContext !== null,
+    },
+    "Running event discovery with AI + web search"
+  );
 
   let lastDebug: AiDebugInfo | undefined;
 
@@ -138,19 +308,41 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
     try {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
-        buildUserPrompt(nowIso, todayStr, endDateStr, marketContext),
-        { model: getModel("monitor", "event-monitor"), maxTokens: 1500, temperature: 0.1, module: "event-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "low" }
+        buildUserPrompt(
+          nowIso,
+          todayStr,
+          endDateStr,
+          marketContext,
+          knownEventIndex
+        ),
+        {
+          model: getModel("monitor", "event-monitor"),
+          maxTokens: 1500,
+          temperature: 0.1,
+          module: "event-monitor",
+          operation: "analyze",
+          retryNumber: attempt,
+          webSearchContextSize: "low",
+        }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
       req.log[isLastAttempt ? "error" : "warn"](
         { err, attempt },
-        isLastAttempt ? "AI service call failed after all attempts" : "AI service call failed — retrying"
+        isLastAttempt
+          ? "AI service call failed after all attempts"
+          : "AI service call failed — retrying"
       );
       if (isLastAttempt) {
-        systemLog.logError("Event Monitor", `Event analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
+        systemLog.logError(
+          "Event Monitor",
+          `Event discovery failed: ${
+            err instanceof Error ? err.message : "AI service call failed"
+          }`
+        );
         res.status(500).json({
-          error: err instanceof Error ? err.message : "AI service call failed",
+          error:
+            err instanceof Error ? err.message : "AI service call failed",
           _debug: extractAiErrorDebug(err),
         });
         return;
@@ -160,83 +352,74 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
 
     lastDebug = debug;
 
-    // ── data_unavailable guard ───────────────────────────────────────────────
+    // ── data_unavailable guard ─────────────────────────────────────────────
     const resultObj = result as Record<string, unknown>;
     if (resultObj?.data_unavailable === true) {
       req.log.warn({ reason: resultObj.reason }, "Event data unavailable");
-      systemLog.logWarning("Event Monitor", `Event data unavailable: ${String(resultObj.reason ?? "no data")}`);
+      systemLog.logWarning(
+        "Event Monitor",
+        `Event data unavailable: ${String(resultObj.reason ?? "no data")}`
+      );
       res.status(503).json({
         error: `Event data unavailable: ${
-          resultObj.reason ?? "Could not retrieve upcoming event data. Please try again later."
+          resultObj.reason ??
+          "Could not retrieve upcoming event data. Please try again later."
         }`,
         _debug: debug,
       });
       return;
     }
 
-    // ── Server-side event processing ─────────────────────────────────────────
-
-    type RawEvent = {
-      title?: string;
-      date?: string;
-      category?: string;
-      importance?: string;
-      affectedMarkets?: string[];
-      expectedImpact?: string;
-      reason?: string;
-    };
-
-    const rawEvents: RawEvent[] = Array.isArray(resultObj.events)
-      ? (resultObj.events as RawEvent[])
+    // ── Extract and validate AI event candidates ───────────────────────────
+    const rawEvents = Array.isArray(resultObj.events)
+      ? (resultObj.events as Record<string, unknown>[])
       : [];
 
-    // 1. Filter events to the exact 14-day window [today, endDateStr] (UTC)
     const windowEndMs = new Date(endDateStr).setUTCHours(23, 59, 59, 999);
-    const futureEvents = rawEvents.filter((e) => {
-      if (!e.date) return false;
-      const d = new Date(e.date);
-      if (isNaN(d.getTime())) return false;
-      d.setUTCHours(0, 0, 0, 0);
-      const ms = d.getTime();
-      return ms >= todayMs && ms <= windowEndMs;
-    });
+    const VALID_IMPORTANCE = new Set(["High", "Medium", "Low"]);
 
-    // 2. Deduplicate by title (case-insensitive)
-    const seen = new Set<string>();
-    const deduped = futureEvents.filter((e) => {
-      const key = String(e.title ?? "")
-        .toLowerCase()
-        .trim();
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const candidates: AiEventCandidate[] = rawEvents
+      .filter((e) => {
+        if (!e.date || typeof e.date !== "string") return false;
+        const d = new Date(String(e.date) + "T00:00:00Z");
+        if (isNaN(d.getTime())) return false;
+        const ms = d.getTime();
+        return (
+          ms >= todayMs &&
+          ms <= windowEndMs &&
+          typeof e.title === "string" &&
+          String(e.title).trim().length > 0
+        );
+      })
+      .map((e) => ({
+        title: String(e.title).trim(),
+        date: String(e.date),
+        category: String(e.category ?? "Economic"),
+        importance: (
+          VALID_IMPORTANCE.has(String(e.importance))
+            ? e.importance
+            : "Medium"
+        ) as EventImportance,
+        affectedMarkets: Array.isArray(e.affectedMarkets)
+          ? (e.affectedMarkets as unknown[]).map(String)
+          : [],
+        expectedImpact: String(e.expectedImpact ?? ""),
+        reason: String(e.reason ?? ""),
+      }));
 
-    // 3. Sort: importance High → Medium → Low, then date ascending
-    const sorted = [...deduped].sort((a, b) => {
-      const ia =
-        IMPORTANCE_ORDER[a.importance as keyof typeof IMPORTANCE_ORDER] ?? 3;
-      const ib =
-        IMPORTANCE_ORDER[b.importance as keyof typeof IMPORTANCE_ORDER] ?? 3;
-      if (ia !== ib) return ia - ib;
-      return (
-        new Date(a.date ?? "").getTime() - new Date(b.date ?? "").getTime()
-      );
-    });
-
-    // 4. Cap at 5
-    const events = sorted.slice(0, 5);
-
-    if (events.length === 0) {
+    if (candidates.length === 0) {
       if (attempt < MAX_ATTEMPTS) {
         req.log.warn(
           { attempt },
-          "No valid upcoming events found — retrying once"
+          "No valid event candidates from AI — retrying once"
         );
         continue;
       }
-      req.log.error("No upcoming events found after retry");
-      systemLog.logError("Event Monitor", "Event analysis failed: no upcoming events found");
+      req.log.error("No valid events from AI after retry");
+      systemLog.logError(
+        "Event Monitor",
+        "Event discovery failed: no valid events found"
+      );
       res.status(503).json({
         error:
           "No upcoming financial events were found for the next 14 days. Please try again later.",
@@ -245,55 +428,105 @@ router.post("/event-monitor/analyze", async (req, res): Promise<void> => {
       return;
     }
 
-    // 5. Derive nextMajorEvent from the top-ranked event (server-authoritative)
-    const topEvent = events[0];
-    const nextMajorEvent = {
-      title: topEvent.title,
-      date: topEvent.date,
-      countdownDays: calcCountdownDays(topEvent.date ?? "", todayMs),
-    };
+    // ── Merge discovery with known event state ─────────────────────────────
+    const rawSources = Array.isArray(resultObj.sources)
+      ? (resultObj.sources as Record<string, unknown>[])
+      : [];
+    const sources = rawSources.map((s) => ({
+      title: String(s.title ?? ""),
+      url: String(s.url ?? ""),
+      ...(s.published ? { published: String(s.published) } : {}),
+    }));
 
-    // ── Validate against Zod schema — timestamp and duration set by server ───
+    const discoveryResult = mergeDiscovery(
+      currentState,
+      candidates,
+      String(resultObj.summary ?? ""),
+      sources,
+      todayMs,
+      nowIso
+    );
+
+    // ── Assemble and validate output ───────────────────────────────────────
     const analysisDuration = Date.now() - startTime;
-    const assembled = {
-      summary: resultObj.summary,
-      nextMajorEvent,
-      events,
-      sources: Array.isArray(resultObj.sources) ? resultObj.sources : [],
-      timestamp: nowIso,
-      analysisDuration,
-    };
-    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunEventAnalysisResponse);
-    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Event Monitor: normalizer repaired formatting — no retry needed");
-    const parsed = RunEventAnalysisResponse.safeParse(normAssembled);
+    const output = toEventMonitorOutput(
+      discoveryResult.state,
+      todayMs,
+      nowIso,
+      analysisDuration
+    );
+
+    const { normalized: normOutput, changes: normChanges } = normalizeAiResponse(
+      output,
+      RunEventAnalysisResponse
+    );
+    if (normChanges.length > 0) {
+      req.log.info(
+        { changes: normChanges, attempt },
+        "Event Monitor: normalizer repaired formatting — no retry needed"
+      );
+    }
+    const parsed = RunEventAnalysisResponse.safeParse(normOutput);
 
     if (parsed.success) {
-      // ── Deterministic materiality check — no AI involved ────────────────
-      // Compare the sorted set of event title+date pairs. If the scheduled
-      // events are unchanged, downstream AI modules should not re-run.
-      const prevEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
-      const prevKey = (Array.isArray(prevEntry?.result?.events)
-        ? (prevEntry!.result!.events as Array<Record<string, unknown>>)
-        : []
-      ).map(e => `${String(e["title"] ?? "")}|${String(e["date"] ?? "")}`).sort().join(";");
-      const newKey = parsed.data.events.map(e => `${e.title}|${e.date}`).sort().join(";");
-      const isMaterial = prevKey !== newKey;
+      // ── Materiality check ────────────────────────────────────────────────
+      const prevMaterialityKey = computeMaterialityKey(currentState.events);
+      const newMaterialityKey = computeMaterialityKey(
+        discoveryResult.state.events
+      );
+      const isMaterial =
+        prevMaterialityKey !== newMaterialityKey ||
+        discoveryResult.newEvents > 0 ||
+        discoveryResult.updatedEvents > 0;
 
-      const highCount = parsed.data.events.filter((e) => e.importance === "High").length;
+      // Always save event-intelligence (discovery always updates lastDiscoveryAt)
+      analysisRepository.save("event-intelligence", discoveryResult.state);
+
+      const highCount = parsed.data.events.filter(
+        (e) => e.importance === "High"
+      ).length;
       if (isMaterial) {
         analysisRepository.save("event-monitor", parsed.data);
-        systemLog.logInfo("Event Monitor", `Event analysis completed (MATERIAL CHANGE): ${parsed.data.events.length} event${parsed.data.events.length !== 1 ? "s" : ""}, ${highCount} high importance`);
+        systemLog.logInfo(
+          "Event Monitor",
+          `Discovery (MATERIAL CHANGE): ${parsed.data.events.length} event(s), ${highCount} high, ` +
+            `${discoveryResult.newEvents} new, ${discoveryResult.updatedEvents} updated, ` +
+            `${discoveryResult.duplicatesIgnored} duplicates ignored`
+        );
       } else {
         analysisRepository.saveSkipped("event-monitor");
-        systemLog.logInfo("Event Monitor", `Event analysis completed (no material change): same ${parsed.data.events.length} event${parsed.data.events.length !== 1 ? "s" : ""} — materialVersion unchanged`);
+        systemLog.logInfo(
+          "Event Monitor",
+          `Discovery (no material change): same ${parsed.data.events.length} event(s) — materialVersion unchanged`
+        );
       }
-      res.json({ ...parsed.data, _debug: debug });
+
+      res.json({
+        ...parsed.data,
+        _debug: {
+          ...debug,
+          mode: "DISCOVERY",
+          discoveryReason,
+          discoveryDue: true,
+          aiCalled: true,
+          webSearchUsed: debug.webSearchUsed,
+          model: getModel("monitor", "event-monitor"),
+          isMaterial,
+          newEvents: discoveryResult.newEvents,
+          updatedEvents: discoveryResult.updatedEvents,
+          duplicatesIgnored: discoveryResult.duplicatesIgnored,
+          materialChanges: discoveryResult.materialChanges,
+          knownEventsBeforeDiscovery: currentState.events.length,
+        },
+      });
       return;
     }
 
+    // Schema validation failed
     if (attempt < MAX_ATTEMPTS) {
+      const retryReason = classifyRetryReason(parsed.error, normChanges);
       req.log.warn(
-        { errors: parsed.error.message, attempt },
+        { errors: parsed.error.message, retryReason, attempt },
         "Invalid AI response schema — retrying once"
       );
     } else {

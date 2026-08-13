@@ -1,0 +1,786 @@
+NEXT TOKEN OPTIMIZATION — EVENT MONITOR HYBRID ARCHITECTURE
+
+We have now completed:
+
+- deterministic Market Alerts
+- Risk Analyzer hybrid
+- Portfolio Analyzer hybrid
+- deterministic portfolio performance
+- centralized AI model routing
+- safe deterministic AI response normalization
+- recent-run guards / fingerprints
+
+The next optimization target is Event Monitor.
+
+IMPORTANT:
+
+Do NOT remove Event Monitor.
+Do NOT make Event Monitor purely deterministic.
+Do NOT weaken its ability to discover unexpected market-moving events.
+
+The objective is to stop using expensive OpenAI + web search to repeatedly
+rediscover objective calendar information that backend code can maintain.
+
+Target architecture:
+
+STRUCTURED / KNOWN EVENT DATA
+            +
+CURRENT STORED EVENT STATE
+            ↓
+DETERMINISTIC EVENT INTELLIGENCE
+            ↓
+known events + proximity + changes
+            +
+AI DISCOVERY / INTERPRETATION ONLY WHEN NEEDED
+            ↓
+EVENT MONITOR STATE
+
+
+==================================================
+1. INSPECT THE CURRENT EVENT MONITOR FIRST
+==================================================
+
+Before modifying code, inspect the ACTUAL current Event Monitor.
+
+Document what the current gpt-4o + web-search call is responsible for.
+
+Separate its current responsibilities into:
+
+A) OBJECTIVE / DETERMINISTIC
+
+Examples:
+
+- known event date/time
+- days/hours until event
+- event already passed
+- event enters 7-day/3-day/24-hour window
+- duplicate event detection
+- ticker association when already known
+- scheduled earnings date when already stored/available
+- known macro calendar event
+- state transitions caused purely by time
+
+B) DISCOVERY / QUALITATIVE
+
+Examples:
+
+- discovering unexpected/new events
+- determining likely market significance
+- interpreting an event's relevance
+- identifying affected sectors/companies
+- understanding unusual geopolitical/regulatory developments
+- determining why an event matters
+
+Backend should own A.
+
+AI should remain available for B.
+
+
+==================================================
+2. CREATE EVENT INTELLIGENCE LAYER
+==================================================
+
+Create a reusable deterministic Event Intelligence layer.
+
+Follow existing project architecture/naming conventions.
+
+Conceptually it should normalize events into a structure such as:
+
+{
+  id,
+  type,
+  title,
+  scheduledAt,
+  status,
+  sourceType,
+
+  tickerSymbols,
+  sectors,
+
+  knownImpactLevel,
+
+  timeToEvent,
+  proximityState,
+
+  isScheduled,
+  isUnexpected,
+
+  firstSeenAt,
+  lastSeenAt,
+  lastChangedAt
+}
+
+Use the ACTUAL existing Event Monitor schema where possible.
+
+Do not unnecessarily introduce a second incompatible event schema.
+
+
+==================================================
+3. EVENT IDENTITY
+==================================================
+
+Create stable deterministic event identity.
+
+The same event discovered on multiple runs must not become multiple events.
+
+Use appropriate combinations such as:
+
+event type
+ticker
+normalized title/category
+scheduled date/time
+official/source identifier if available
+
+Do not use AI-generated prose as the sole event identity.
+
+
+==================================================
+4. DETERMINISTIC TIME / PROXIMITY
+==================================================
+
+Backend must calculate event proximity.
+
+Examples:
+
+FUTURE
+WITHIN_7_DAYS
+WITHIN_3_DAYS
+WITHIN_24_HOURS
+TODAY
+IN_PROGRESS
+PASSED
+
+Adapt naming to existing schemas.
+
+Do NOT ask OpenAI:
+
+"How soon is this event?"
+
+when scheduledAt is already known.
+
+This also means Event Monitor can update proximity state without calling AI.
+
+
+==================================================
+5. KNOWN SCHEDULED EVENTS
+==================================================
+
+Inspect which scheduled event types the application currently tracks.
+
+Examples may include:
+
+- earnings
+- FOMC / central bank decisions
+- CPI / inflation releases
+- employment / payroll data
+- GDP
+- major economic releases
+- known investor/company events
+
+Do NOT assume these are all currently supported.
+
+Use the actual code/data sources.
+
+Where a known event already exists in stored state or structured data,
+do not ask OpenAI/web search to rediscover it on every normal Event Monitor run.
+
+
+==================================================
+6. IMPORTANT — DO NOT BUILD A GIANT CALENDAR DATABASE
+==================================================
+
+Keep this simple.
+
+Do NOT create a large hardcoded calendar containing months of manually
+entered dates.
+
+Do NOT hardcode future FOMC/CPI/earnings dates into source code.
+
+The deterministic layer manages known structured events.
+
+Discovery/data ingestion remains responsible for finding new events.
+
+
+==================================================
+7. SEPARATE EVENT MAINTENANCE FROM EVENT DISCOVERY
+==================================================
+
+This is the key optimization.
+
+Event Monitor currently conceptually combines:
+
+"Maintain the events we already know about"
+
+and:
+
+"Search the world for new important events."
+
+Separate these responsibilities.
+
+NORMAL EVENT STATE UPDATE:
+
+existing known events
+→ update time/proximity/status
+→ expire/resolve passed events
+→ detect material state transitions
+→ ZERO OpenAI
+→ ZERO web search
+
+EVENT DISCOVERY:
+
+search for new/material events
+→ web search / AI where justified
+→ normalize
+→ merge into Event Intelligence
+→ deduplicate against known events
+
+
+==================================================
+8. DISCOVERY SHOULD NOT RUN JUST BECAUSE TIME PASSED
+==================================================
+
+Example:
+
+The system knows:
+
+FOMC decision
+August 19
+20:00
+
+Tomorrow the event becomes one day closer.
+
+That should NOT require:
+
+web search
+→ OpenAI
+→ rediscover FOMC
+→ rewrite event
+
+Backend simply recalculates proximity.
+
+Only actual discovery of new information should require research.
+
+
+==================================================
+9. DISCOVERY GATE
+==================================================
+
+Implement a lightweight discovery gate similar in PRINCIPLE to Company
+Monitor / Investor Watch, but appropriate for events.
+
+Do not blindly copy their implementation if the semantics differ.
+
+Before running an expensive full Event Monitor AI interpretation, determine
+whether there is evidence that new event intelligence may exist.
+
+Possible triggers:
+
+- discovery interval expired
+- new upstream structured event data arrived
+- relevant company event data changed
+- user explicitly forces refresh
+- known event changed/cancelled/rescheduled
+- other actual code-supported signal
+
+Normal proximity changes alone must NOT trigger full AI discovery.
+
+
+==================================================
+10. DISCOVERY FREQUENCY
+==================================================
+
+Preserve the existing schedule initially unless changing internal
+maintenance/discovery separation requires otherwise.
+
+Do NOT simply increase intervals to save money.
+
+Instead:
+
+Event state maintenance can run cheaply/often.
+
+Expensive discovery should follow its own freshness policy.
+
+The UI should still remain current even when AI discovery is skipped.
+
+
+==================================================
+11. AI ROLE AFTER THE CHANGE
+==================================================
+
+AI should primarily answer questions such as:
+
+"What NEW events matter?"
+
+"Is this newly discovered event materially relevant?"
+
+"Which holdings/sectors may be affected?"
+
+"Why could this matter?"
+
+"Is this event likely to be market-moving?"
+
+AI should NOT primarily spend tokens answering:
+
+"What date is this?"
+
+"Is August 19 within 7 days?"
+
+"Has this event already passed?"
+
+"Is this the same event we stored three hours ago?"
+
+
+==================================================
+12. WEB SEARCH
+==================================================
+
+Do not remove web search entirely.
+
+Unexpected events are one of the reasons Event Monitor exists.
+
+But web search should be used for DISCOVERY, not routine event-state maintenance.
+
+Continue using centralized model routing:
+
+getModel("monitor", "event-monitor")
+
+Do NOT change the Event Monitor model in this task.
+
+We will perform model optimization separately later.
+
+
+==================================================
+13. COMPACT DISCOVERY INPUT
+==================================================
+
+When AI discovery runs, do NOT send the complete historical Event Monitor
+state.
+
+Provide a compact known-event index sufficient for deduplication/context.
+
+Conceptually:
+
+[
+  {
+    id,
+    type,
+    ticker,
+    scheduledAt,
+    status,
+    impactLevel
+  }
+]
+
+plus only other relevant compact context.
+
+The model does not need long previous event descriptions merely to discover
+what is new.
+
+
+==================================================
+14. MERGE AI DISCOVERY WITH DETERMINISTIC STATE
+==================================================
+
+AI discovery output must NOT directly replace the entire Event Monitor state.
+
+Flow should be:
+
+AI discovers candidates
+→ schema validation
+→ normalization
+→ deterministic deduplication
+→ merge with known events
+→ preserve stable event IDs/state
+→ update changed/new events
+→ retain still-valid existing events
+
+This makes Event Monitor stateful.
+
+
+==================================================
+15. MATERIAL EVENT CHANGES
+==================================================
+
+Track meaningful event changes.
+
+Examples:
+
+NEW
+UPDATED
+RESCHEDULED
+CANCELLED
+PASSED
+
+or map these to existing statuses.
+
+Do not mark an event materially changed simply because:
+
+timeToEvent changed from 74h to 73h
+lastCheckedAt changed
+formatting changed
+
+
+==================================================
+16. DOWNSTREAM STABILITY
+==================================================
+
+This is important because Event Monitor feeds other modules.
+
+Do NOT cause downstream fingerprints to change continuously merely because:
+
+"3 days 4 hours remaining"
+
+became:
+
+"3 days 3 hours remaining".
+
+Material versions/fingerprints should change at useful state boundaries.
+
+For example:
+
+>7 days
+→ within 7 days
+
+within 7 days
+→ within 3 days
+
+within 3 days
+→ within 24h
+
+upcoming
+→ passed
+
+or when actual event information changes.
+
+This prevents Event Monitor from unnecessarily waking:
+
+Portfolio Analyzer
+Risk Analyzer
+Opportunity Finder
+Trade Decision
+
+and indirectly wasting OpenAI tokens elsewhere.
+
+
+==================================================
+17. EARNINGS EVENTS
+==================================================
+
+Be particularly careful with earnings.
+
+If Company Monitor / portfolio/company data already contains a confirmed
+earnings event, Event Monitor should reuse it rather than independently
+creating a duplicate.
+
+Maintain one stable event identity where practical.
+
+An earnings event may be relevant to multiple modules, but that does not
+mean each module should independently rediscover it.
+
+
+==================================================
+18. EVENT IMPACT
+==================================================
+
+Separate two concepts where possible:
+
+KNOWN/STRUCTURAL IMPORTANCE
+
+Example:
+central-bank rate decision
+earnings for a portfolio holding
+
+and:
+
+QUALITATIVE EXPECTED IMPACT
+
+Example:
+why this specific FOMC meeting could matter unusually much under current
+market conditions.
+
+The first can often be determined by rules/context.
+
+The second may justify AI.
+
+
+==================================================
+19. EVENT BLOCKERS FOR TRADE DECISION
+==================================================
+
+Do NOT weaken event-blocking behavior.
+
+Trade Decision must still be able to know:
+
+SERV
+earnings in 2 days
+→ potential trade may be Event Blocked
+
+The hybrid Event Monitor must preserve all information required for this.
+
+If anything, deterministic event proximity should make this more reliable.
+
+Do NOT make Trade Decision depend on AI-generated prose to know whether an
+event is imminent.
+
+
+==================================================
+20. ZERO-AI MAINTENANCE PATH
+==================================================
+
+There must be a normal code path where Event Monitor can update itself with:
+
+OpenAI calls: 0
+Web searches: 0
+Tokens: 0
+
+Example:
+
+Known events exist.
+No discovery is due.
+No new external event data exists.
+
+Backend updates proximity/status and returns current Event Monitor state.
+
+Debug should explicitly show:
+
+mode: MAINTENANCE
+AI called: false
+Web search: false
+
+
+==================================================
+21. DISCOVERY PATH
+==================================================
+
+When discovery genuinely runs, debug should show:
+
+mode: DISCOVERY
+
+reason:
+scheduled_discovery
+force_refresh
+upstream_change
+etc.
+
+model
+web search
+input context
+AI output
+new candidates
+deduplicated candidates
+merged events
+material changes
+
+
+==================================================
+22. FORCE REFRESH
+==================================================
+
+Manual force refresh should still allow the user to request real event
+discovery.
+
+Do not make the discovery gate impossible to bypass.
+
+But ordinary Run All should not automatically mean:
+
+"pay OpenAI to rediscover all known events."
+
+
+==================================================
+23. FINGERPRINT / MATERIAL VERSION
+==================================================
+
+Create or improve a material Event Monitor fingerprint/version based on:
+
+event identity
+event status
+material proximity bucket
+scheduled time/date
+impact level
+affected holdings/sectors
+material interpretation changes
+
+Ignore:
+
+lastCheckedAt
+minor countdown changes
+ordering
+formatting
+non-material metadata
+
+This fingerprint should be what downstream AI modules care about.
+
+
+==================================================
+24. DEBUG UI
+==================================================
+
+Extend Event Monitor debug so we can clearly see:
+
+EVENT INTELLIGENCE
+
+known events
+proximity states
+material fingerprint
+
+RUN MODE
+
+MAINTENANCE / DISCOVERY
+
+DISCOVERY DECISION
+
+due: yes/no
+reason
+
+OPENAI
+
+called: yes/no
+resolved model
+web search yes/no
+
+DISCOVERY RESULT
+
+new events
+updated events
+duplicates ignored
+unchanged events
+
+This should make it obvious why money was or was not spent.
+
+
+==================================================
+25. NO PAID TESTS
+==================================================
+
+Do NOT make paid OpenAI/web-search calls just to test this.
+
+Use:
+
+existing stored Event Monitor data
+fixtures
+mock discovery responses
+known timestamps
+
+Test deterministic behavior.
+
+
+==================================================
+26. REQUIRED TESTS
+==================================================
+
+At minimum test:
+
+A)
+Known event 5 days away
+→ maintenance updates proximity
+→ no AI
+
+B)
+Same event on next run
+→ same stable ID
+→ no duplicate
+
+C)
+Event crosses 3-day boundary
+→ material proximity change
+→ downstream fingerprint changes
+→ no AI required merely for boundary crossing
+
+D)
+Event passes
+→ status updates deterministically
+→ no AI
+
+E)
+Discovery returns an already-known event
+→ deduplicated
+
+F)
+Discovery returns genuinely new material event
+→ added with stable state
+
+G)
+Event is rescheduled
+→ existing event updated rather than duplicated where identity is clear
+
+H)
+Portfolio holding has earnings in 2 days
+→ Event Monitor retains enough structured information for Trade Decision
+to identify the event blocker.
+
+I)
+Run All shortly after successful discovery
+→ maintenance only / existing freshness guard
+→ no unnecessary OpenAI discovery.
+
+
+==================================================
+27. DO NOT CHANGE OTHER MODULES
+==================================================
+
+Do NOT modify the architecture of:
+
+Market Monitor
+News Monitor
+Sector Monitor
+Company Monitor
+Risk Analyzer
+Portfolio Analyzer
+Opportunity Finder
+Trade Decision
+Investor Watch
+Command Brief
+Market Alerts
+
+Only make minimal compatibility changes if Event Monitor's structured output
+requires them.
+
+Do NOT change AI models.
+
+
+==================================================
+28. SUCCESS CRITERIA
+==================================================
+
+This task is successful when:
+
+1. Event Monitor remains capable of discovering unexpected important events.
+
+2. Known events can be maintained without OpenAI or web search.
+
+3. Event proximity/date/status calculations are deterministic.
+
+4. The same event is not rediscovered/recreated every cycle.
+
+5. Minor countdown changes do not invalidate downstream AI fingerprints.
+
+6. Important proximity boundaries still propagate downstream.
+
+7. Event blockers remain reliable for Trade Decision.
+
+8. Full discovery uses AI only when discovery is actually due/needed.
+
+9. Event Monitor UI/debug clearly distinguishes maintenance from discovery.
+
+10. No investment-relevant event information was removed merely to save tokens.
+
+
+==================================================
+29. FINAL REPORT
+==================================================
+
+After implementation report:
+
+1. What Event Monitor previously used OpenAI for.
+2. Which responsibilities moved to deterministic Event Intelligence.
+3. What still requires AI.
+4. Exactly when discovery now runs.
+5. Exactly when Event Monitor can run with zero OpenAI calls.
+6. How stable event IDs/deduplication work.
+7. How material proximity boundaries work.
+8. How downstream fingerprint churn is prevented.
+9. How earnings/event blockers remain available to Trade Decision.
+10. Estimated reduction in unnecessary Event Monitor AI calls.
+11. Tests added and results.
+
+Do not perform paid OpenAI calls to produce the report.
