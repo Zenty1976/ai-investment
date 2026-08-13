@@ -1,0 +1,370 @@
+FIX BROKEN RECENT-RUN / REPEATED RUN-ALL AI PROTECTION
+
+We have now measured real OpenAI usage by running:
+
+Run All
+→ wait only a few minutes
+→ Run All again
+
+The second Run All still caused approximately:
+
++19 API calls
++104.6k tokens
++$0.243 estimated cost
+
+This is far too much when the system was fully updated only minutes earlier.
+
+IMPORTANT:
+Do NOT solve this by simply adding arbitrary cooldowns everywhere.
+
+I inspected the current architecture and there appears to be a concrete bug in how the existing recent-run guard records the last actual AI execution.
+
+CURRENT PROBLEM
+
+automation-orchestrator.ts already contains:
+
+OBSERVATION_MODULE_MIN_REFRESH_MINUTES
+
+including approximately:
+
+market-monitor = 15 min
+news-monitor = 15 min
+event-monitor = 60 min
+sector-monitor = 180 min
+opportunity-finder = 180 min
+
+The recent-run guard checks:
+
+entry.lastAIAnalysisAt
+
+This is correct in principle.
+
+However, after a successful orchestrator execution, lastAIAnalysisAt is currently updated through:
+
+analysisRepository.setFingerprint(...)
+
+and setFingerprint() is only called when:
+
+pendingFingerprint = computeFingerprint(...)
+
+returns a value.
+
+This creates a bug.
+
+Modules such as:
+
+market-monitor
+news-monitor
+opportunity-finder
+
+do not have STATIC_DEPS fingerprint definitions.
+
+computeFingerprint() therefore returns null.
+
+Because pendingFingerprint is null:
+
+setFingerprint() is not called
+
+and therefore lastAIAnalysisAt is not updated.
+
+The recent-run guard consequently has no reliable timestamp proving that OpenAI just ran.
+
+This allows a second Run All only minutes later to call OpenAI again.
+
+Opportunity Finder is particularly expensive:
+our measured second Run All increased Opportunity Finder from approximately:
+
+52.1k total tokens
+to
+103.8k total tokens
+
+with only one additional Opportunity Finder call.
+
+That one repeated analysis therefore consumed roughly 51.7k tokens.
+
+GOAL
+
+Separate these two concepts:
+
+1. dependencyFingerprint
+2. lastAIAnalysisAt
+
+lastAIAnalysisAt must NOT depend on whether a module supports dependency fingerprinting.
+
+Every successful execution that ACTUALLY called AI must record lastAIAnalysisAt.
+
+A module may have:
+
+lastAIAnalysisAt = timestamp
+dependencyFingerprint = undefined
+
+That is perfectly valid.
+
+IMPLEMENTATION
+
+Modify AnalysisRepository so lastAIAnalysisAt can be updated independently from dependencyFingerprint.
+
+For example add a method conceptually similar to:
+
+markAIAnalysis(moduleName, timestamp)
+
+Do not require a fingerprint argument.
+
+After every successful orchestrator-controlled AI execution:
+
+- always update lastAIAnalysisAt
+- only update dependencyFingerprint if computeFingerprint() returned a fingerprint
+
+Conceptually:
+
+if actual AI was called:
+    markAIAnalysis(repoKey, aiCallAt)
+
+if pendingFingerprint exists:
+    set dependencyFingerprint
+
+Do NOT falsely update lastAIAnalysisAt when an AI call was skipped.
+
+SKIPPED_RECENT:
+- preserve previous lastAIAnalysisAt
+
+SKIPPED_UNCHANGED:
+- preserve previous lastAIAnalysisAt
+
+The timestamp must mean:
+
+"the last time this module actually spent an AI call"
+
+not:
+
+"the last time the module was checked."
+
+IMPORTANT — ROUTES WITH INTERNAL AI SKIP LOGIC
+
+Inspect modules such as:
+
+Sector Monitor
+Event Monitor
+Company Monitor
+Investor Watch
+
+Some routes have their own maintenance/discovery logic.
+
+Do not mark a full AI analysis as executed when the route returned without the relevant AI call.
+
+If necessary, have the route response expose internal metadata such as:
+
+_aiCalled: true/false
+
+or use the existing equivalent field where already available.
+
+The orchestrator must only advance lastAIAnalysisAt for the AI execution being protected when AI was genuinely called.
+
+For Company Monitor, preserve the distinction between:
+
+cheap discovery AI call
+and
+expensive full Company analysis
+
+Do not accidentally make a cheap discovery call reset a timestamp that is intended to represent the last FULL analysis.
+
+If separate timestamps are required, use explicit names such as:
+
+lastAIAnalysisAt
+lastDiscoveryAt
+
+rather than mixing their meanings.
+
+
+OPPORTUNITY FINDER
+
+Opportunity Finder currently has:
+
+OBSERVATION_MODULE_MIN_REFRESH_MINUTES = 180
+
+but because lastAIAnalysisAt is not reliably populated, the guard does not protect it.
+
+After this fix:
+
+Run All
+→ Opportunity Finder performs AI analysis
+→ lastAIAnalysisAt is recorded
+
+Run All again 2–5 minutes later
+→ Opportunity Finder must return SKIPPED_RECENT
+→ ZERO Opportunity Finder OpenAI calls
+→ ZERO web searches from Opportunity Finder
+
+unless the user explicitly selects Force AI Refresh.
+
+Keep Force AI Refresh as the intentional bypass.
+
+
+MARKET MONITOR / NEWS MONITOR
+
+Apply the same correction.
+
+After a normal successful AI execution:
+
+Market Monitor lastAIAnalysisAt must exist.
+News Monitor lastAIAnalysisAt must exist.
+
+A second normal Run All within their configured 15-minute minimum refresh period must result in:
+
+SKIPPED_RECENT
+
+with zero paid AI calls.
+
+Force AI Refresh must still bypass this protection.
+
+
+CASCADE BEHAVIOR
+
+This fix is also intended to prevent false downstream cascades.
+
+Example:
+
+Second Run All after 3 minutes
+
+Market Monitor → SKIPPED_RECENT
+News Monitor → SKIPPED_RECENT
+Event Monitor → maintenance/recent skip
+Sector Monitor → maintenance/recent skip
+Opportunity Finder → SKIPPED_RECENT
+
+Because these modules did not produce new material analysis:
+
+their materialVersion must NOT increase.
+
+Therefore downstream modules such as:
+
+Portfolio Analyzer
+Risk Analyzer
+Trade Decision Engine
+Command Brief
+
+should see unchanged fingerprints and skip where appropriate.
+
+Do NOT create fake material changes merely because Run All was clicked.
+
+
+COMPANY MONITOR
+
+Inspect the repeated Run All Company Monitor behavior as part of this task.
+
+Measured usage changed from:
+
+20 calls / 16 skipped
+
+to:
+
+31 calls / 22 skipped
+
+after the second Run All.
+
+Determine which of the +11 calls were:
+
+- discovery calls
+- full analyses
+- new OF/TDE candidate coverage
+- retries
+
+Do not blindly disable Company Monitor discovery.
+
+But a company that was fully checked only a few minutes ago, whose:
+
+- relevant News materialVersion is unchanged
+- relevant Event materialVersion is unchanged
+- PriceContext material state is unchanged
+- existing Company analysis is fresh
+
+should not require another discovery web search just because Run All was clicked again.
+
+Use deterministic state/fingerprint checks before the discovery AI call whenever possible.
+
+Newly introduced Opportunity Finder/TDE candidates are allowed to receive their first necessary Company analysis.
+
+
+OBSERVABILITY
+
+Improve OpenAI Usage/debug visibility so we can verify this without guessing.
+
+For each module execution expose/count separately:
+
+AI_FULL
+AI_DISCOVERY
+SKIPPED_RECENT
+SKIPPED_UNCHANGED
+NO_AI_DETERMINISTIC
+RETRY
+
+For Opportunity Finder specifically we must be able to see:
+
+lastAIAnalysisAt
+minimumRefreshMinutes
+minutesSinceLastAI
+skipReason
+aiCalled
+webSearchCalled
+
+Do the equivalent where useful for Market and News.
+
+
+TESTS
+
+NO paid OpenAI calls.
+
+Add deterministic tests for:
+
+1. Opportunity Finder ran 3 minutes ago
+   → normal Run All
+   → SKIPPED_RECENT
+   → zero AI call
+
+2. Market Monitor ran 3 minutes ago
+   → SKIPPED_RECENT
+
+3. News Monitor ran 3 minutes ago
+   → SKIPPED_RECENT
+
+4. Opportunity Finder ran 181 minutes ago
+   → eligible to run again
+
+5. Force AI Refresh after 3 minutes
+   → recent guard bypassed
+
+6. SKIPPED_RECENT does not change materialVersion.
+
+7. SKIPPED_RECENT does not overwrite lastAIAnalysisAt.
+
+8. Module without dependencyFingerprint can still have lastAIAnalysisAt.
+
+9. Repeated Run All with unchanged repository state does not create a downstream material-change cascade.
+
+10. Company Monitor fresh unchanged ticker does not unnecessarily run discovery AI again.
+
+11. A genuinely new Company Monitor target introduced by OF/TDE is still analyzed.
+
+IMPORTANT
+
+Do not change model routing in this task.
+
+Do not weaken investment analysis prompts.
+
+Do not reduce analysis quality.
+
+Do not merge modules.
+
+Do not remove web search where it is genuinely required.
+
+This task is about eliminating duplicate AI work caused by execution-state bookkeeping and repeated Run All calls.
+
+After implementation, provide a report showing:
+
+- root cause found
+- files changed
+- how lastAIAnalysisAt is now recorded
+- which modules now use recent-run protection correctly
+- Company Monitor repeated-run behavior
+- tests added
+- expected behavior for Run All → wait 2–5 min → Run All

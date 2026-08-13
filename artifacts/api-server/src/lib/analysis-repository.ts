@@ -240,11 +240,45 @@ class AnalysisRepository {
   }
 
   /**
+   * Record that an AI call was made for this module, independently of whether
+   * the module has a dependency fingerprint.
+   *
+   * This is the authoritative way to set lastAIAnalysisAt. It must be called
+   * after every successful AI-backed route execution, including modules that
+   * have no static dependency config (market-monitor, news-monitor,
+   * opportunity-finder, sector-monitor DISCOVERY path, event-monitor DISCOVERY
+   * path). These modules cannot use setFingerprint (no fingerprint to store),
+   * so without this method their lastAIAnalysisAt would never be written, and
+   * the OBSERVATION_MODULE_MIN_REFRESH_MINUTES recent-run guard would have no
+   * timestamp to check.
+   *
+   * SKIPPED paths (MAINTENANCE, SKIPPED_RECENT, SKIPPED_UNCHANGED) must NOT
+   * call this — preserving the previous timestamp is the correct behaviour.
+   *
+   * Called by the orchestrator immediately after a successful HTTP response when
+   * the route's _debug.aiCalled is true (or absent, which defaults to true).
+   */
+  markAIAnalysis(moduleName: string, lastAIAnalysisAt: string): void {
+    const existing = this.store.get(moduleName);
+    if (!existing) return;
+    const entry: RepositoryEntry = {
+      ...existing,
+      lastAIAnalysisAt,
+    };
+    this.store.set(moduleName, entry);
+    this._persistToDisk();
+  }
+
+  /**
    * Store the dependency fingerprint and AI analysis timestamp after a
    * successful AI-backed analysis completes. Does not change result or
    * version numbers.
    *
-   * Called by the orchestrator after each successful HTTP call.
+   * Called by the orchestrator after each successful HTTP call for modules
+   * that have a static dependency config (i.e. computeFingerprint returns
+   * non-null). Also updates lastAIAnalysisAt for backward compatibility —
+   * callers should prefer markAIAnalysis for setting the timestamp and
+   * setFingerprint only for the fingerprint itself.
    */
   setFingerprint(moduleName: string, fingerprint: string, lastAIAnalysisAt: string): void {
     const existing = this.store.get(moduleName);

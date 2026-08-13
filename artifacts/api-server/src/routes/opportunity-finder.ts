@@ -22,6 +22,7 @@ import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-nor
 import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { getAllPriceContexts } from "../lib/price-context-service.js";
+import { OBSERVATION_MODULE_MIN_REFRESH_MINUTES } from "../lib/dependency-fingerprint-service.js";
 import {
   getPortfolioAnalyzerAiContext,
   getMarketAiContext,
@@ -377,6 +378,16 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
     return "Unchanged";
   }
 
+  // ── Observability: capture previous AI timestamp before the AI call ────────
+  // These are included in the success _debug so callers can verify that the
+  // recent-run guard will fire correctly on the next invocation.
+  const prevOFEntry = analysisRepository.get("opportunity-finder");
+  const prevAIAnalysisAt = prevOFEntry?.lastAIAnalysisAt ?? null;
+  const ofMinRefreshMinutes = OBSERVATION_MODULE_MIN_REFRESH_MINUTES["opportunity-finder"] ?? 180;
+  const minutesSinceLastAI = prevAIAnalysisAt
+    ? Math.round(((Date.now() - new Date(prevAIAnalysisAt).getTime()) / 60_000) * 10) / 10
+    : null;
+
   // ── AI call with retry ─────────────────────────────────────────────────────
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -532,7 +543,22 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
         }
       }
 
-      res.json({ ...enrichedData, _debug: debug });
+      res.json({
+        ...enrichedData,
+        _debug: {
+          ...debug,
+          // aiCalled: true tells the orchestrator that the AI was invoked on
+          // this request so it can advance lastAIAnalysisAt via markAIAnalysis().
+          // Opportunity Finder always calls AI on every successful invocation.
+          aiCalled: true,
+          webSearchCalled: debug.webSearchUsed,
+          // Observability fields so callers can verify the recent-run guard
+          // will fire correctly on the next invocation.
+          minimumRefreshMinutes: ofMinRefreshMinutes,
+          minutesSinceLastAI,
+          previousAIAnalysisAt: prevAIAnalysisAt,
+        },
+      });
       return;
     }
 

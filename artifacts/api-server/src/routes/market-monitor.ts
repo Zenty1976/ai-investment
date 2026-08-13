@@ -159,7 +159,17 @@ router.post("/market-monitor/analyze", async (req, res): Promise<void> => {
         entries: [newEntry, ...existingEntries].slice(0, MAX_HISTORY),
       });
 
-      res.json({ ...parsed.data, _debug: debug });
+      res.json({
+        ...parsed.data,
+        _debug: {
+          ...debug,
+          // aiCalled: true tells the orchestrator that the AI was invoked on this
+          // request so it can advance lastAIAnalysisAt via markAIAnalysis().
+          // Market Monitor always calls AI on every successful invocation —
+          // there is no MAINTENANCE path that skips the AI call.
+          aiCalled: true,
+        },
+      });
       return;
     }
 

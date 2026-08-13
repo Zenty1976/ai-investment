@@ -1057,6 +1057,28 @@ class AutomationOrchestratorService {
         throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
       }
 
+      // Parse the response body to detect whether the route actually called AI.
+      //
+      // Routes with MAINTENANCE paths (sector-monitor, event-monitor, and
+      // company-monitor on discovery-only runs) expose `_debug.aiCalled = false`
+      // when no AI call was made on this invocation. All other modules default to
+      // aiCalled = true — they call AI on every successful 200 response.
+      //
+      // This is consumed here to decide whether to advance lastAIAnalysisAt.
+      // We must read the body now (streams can only be consumed once), but the
+      // actual result was already saved to the repository by the route itself
+      // before it returned the response, so we discard the body contents.
+      let responseBodyDebug: Record<string, unknown> | undefined;
+      try {
+        const body = await res.json() as Record<string, unknown>;
+        responseBodyDebug = body._debug as Record<string, unknown> | undefined;
+      } catch {
+        // Non-JSON response — treat as aiCalled = true (backward compat)
+      }
+      const aiActuallyCalled = typeof responseBodyDebug?.aiCalled === "boolean"
+        ? responseBodyDebug.aiCalled
+        : true;
+
       // Compute meaningful-change from repository snapshot comparison
       const newEntry = job.moduleId === "company-monitor" && job.ticker
         ? analysisRepository.getAll().find(e => e.moduleName === `company-monitor:${job.ticker}`)
@@ -1066,12 +1088,28 @@ class AutomationOrchestratorService {
         ? this._computeMeaningfulChange(job.moduleId, prevEntry?.result, newEntry?.result, job.ticker)
         : "None" as MeaningfulChange;
 
+      const fpKey = job.moduleId === "company-monitor" && job.ticker
+        ? `company-monitor:${job.ticker}`
+        : job.moduleId;
+
+      // ALWAYS record lastAIAnalysisAt when the route actually called AI.
+      //
+      // This is the fix for the broken OBSERVATION_MODULE_MIN_REFRESH_MINUTES
+      // recent-run guard: market-monitor, news-monitor, opportunity-finder,
+      // sector-monitor (DISCOVERY path), and event-monitor (DISCOVERY path) have
+      // no STATIC_DEPS fingerprint config, so computeFingerprint() returns null
+      // and setFingerprint() is never called. Without this markAIAnalysis() call
+      // those modules would never have lastAIAnalysisAt set, causing every Run All
+      // to call OpenAI regardless of how recently the previous run completed.
+      if (aiActuallyCalled) {
+        analysisRepository.markAIAnalysis(fpKey, aiCallAt);
+      }
+
       // Store the dependency fingerprint used for this AI call so future
       // runs can skip if inputs haven't materially changed.
+      // setFingerprint() also updates lastAIAnalysisAt, harmlessly overlapping
+      // with markAIAnalysis() above (both write the same aiCallAt timestamp).
       if (pendingFingerprint) {
-        const fpKey = job.moduleId === "company-monitor" && job.ticker
-          ? `company-monitor:${job.ticker}`
-          : job.moduleId;
         analysisRepository.setFingerprint(fpKey, pendingFingerprint, aiCallAt);
       }
 

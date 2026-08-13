@@ -244,7 +244,17 @@ router.post("/news-monitor/analyze", async (req, res): Promise<void> => {
         analysisRepository.saveSkipped("news-monitor");
         systemLog.logInfo("News Monitor", `News analysis completed (no material change): same ${parsed.data.news.length} stor${parsed.data.news.length !== 1 ? "ies" : "y"} — materialVersion unchanged`);
       }
-      res.json({ ...parsed.data, _debug: debug });
+      res.json({
+        ...parsed.data,
+        _debug: {
+          ...debug,
+          // aiCalled: true tells the orchestrator that the AI was invoked on
+          // this request so it can advance lastAIAnalysisAt via markAIAnalysis().
+          // News Monitor always calls AI on every successful invocation —
+          // there is no MAINTENANCE path that skips the AI call.
+          aiCalled: true,
+        },
+      });
       return;
     }
 
