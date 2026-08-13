@@ -1,0 +1,569 @@
+NEXT TOKEN OPTIMIZATION — PORTFOLIO ANALYZER HYBRID + SHARED PORTFOLIO INTELLIGENCE
+
+IMPORTANT:
+Complete the Risk Analyzer hybrid task first.
+
+Then perform this task.
+
+Do NOT redesign the overall investment architecture.
+Do NOT merge Risk Analyzer and Portfolio Analyzer into one module.
+
+They answer different questions:
+
+Portfolio Analyzer:
+"How is my portfolio doing, what is driving it, and what deserves attention?"
+
+Risk Analyzer:
+"What risks exist in my portfolio?"
+
+They should remain separate modules and separate UI concepts.
+
+However, they should share deterministic portfolio calculations instead of
+independently asking OpenAI to process the same raw information.
+
+The objective is:
+
+RAW PORTFOLIO / SAXO / SYSTEM DATA
+→ SHARED DETERMINISTIC PORTFOLIO INTELLIGENCE
+→ compact structured facts
+→ Risk Analyzer interpretation
+→ Portfolio Analyzer interpretation
+
+OpenAI should reason about facts.
+
+OpenAI should NOT be used as a calculator or data-processing engine.
+
+
+==================================================
+1. INSPECT THE RISK ANALYZER IMPLEMENTATION FIRST
+==================================================
+
+The previous task introduced deterministic calculations for Risk Analyzer.
+
+Before implementing anything new:
+
+inspect what reusable portfolio calculations now exist.
+
+Do NOT duplicate them.
+
+Identify calculations useful to both Risk Analyzer and Portfolio Analyzer.
+
+Examples:
+
+position weights
+portfolio value
+cash percentage
+sector exposure
+currency exposure
+position concentration
+price states
+performance
+event exposure
+
+Move genuinely shared calculations into a reusable backend service if
+they are currently Risk-Analyzer-specific.
+
+Conceptually this can become:
+
+Portfolio Intelligence
+
+The exact filename/structure should follow the existing codebase.
+
+
+==================================================
+2. KEEP MODULE RESPONSIBILITIES SEPARATE
+==================================================
+
+Shared calculations do NOT mean shared conclusions.
+
+Portfolio Intelligence provides FACTS.
+
+Risk Analyzer interprets those facts from a RISK perspective.
+
+Portfolio Analyzer interprets those facts from a PORTFOLIO HEALTH /
+PERFORMANCE perspective.
+
+Do not combine their OpenAI prompts or final schemas.
+
+
+==================================================
+3. CREATE COMPACT PORTFOLIO FACTS
+==================================================
+
+Build a deterministic structured PortfolioFacts object using available data.
+
+Conceptually:
+
+{
+  portfolio: {
+    totalValue,
+    cashPct,
+    holdingCount
+  },
+
+  performance: {
+    portfolioReturn1D,
+    portfolioReturn5D,
+    portfolioReturn1M,
+    winners,
+    losers,
+    largestContributors,
+    largestDetractors
+  },
+
+  allocation: {
+    largestPositions,
+    sectorExposure,
+    currencyExposure
+  },
+
+  priceBehavior: {
+    strongUptrendExposurePct,
+    strongDowntrendExposurePct,
+    stabilizingExposurePct,
+    highVolatilityExposurePct
+  },
+
+  companyState: {
+    strengthenedHoldings,
+    weakenedHoldings,
+    invalidatedHoldings,
+    materialChanges
+  },
+
+  events: {
+    importantUpcomingHoldingEvents
+  },
+
+  notableFacts: [...]
+}
+
+This is conceptual.
+
+Inspect actual available data and schemas.
+
+Do NOT invent unavailable metrics.
+
+
+==================================================
+4. PERFORMANCE MUST BE CALCULATED IN BACKEND
+==================================================
+
+Where Saxo/portfolio data supports it, calculate exact portfolio and
+position performance deterministically.
+
+Examples:
+
+1 day
+5 day
+1 month
+3 month
+
+Do not ask OpenAI to infer performance from price histories.
+
+If historical portfolio-level performance is not available, do not fake it.
+
+Use only metrics supported by actual data.
+
+
+==================================================
+5. CONTRIBUTORS / DETRACTORS
+==================================================
+
+Where sufficient data exists, calculate which holdings contributed most
+positively and negatively.
+
+Prefer contribution based on portfolio weight × relevant return rather
+than simply sorting stocks by percentage return.
+
+Example:
+
+A 2% position gaining 20% may matter less to the portfolio than a 20%
+position losing 4%.
+
+Calculate this in backend.
+
+OpenAI should receive the result.
+
+
+==================================================
+6. ALLOCATION
+==================================================
+
+Calculate in backend:
+
+position weights
+largest positions
+sector weights
+currency exposure
+cash
+concentration
+
+Do not ask OpenAI to calculate percentages from holdings.
+
+
+==================================================
+7. PRICE CONTEXT
+==================================================
+
+Reuse the existing deterministic Price Context.
+
+Do NOT send raw historical price series to Portfolio Analyzer.
+
+Portfolio Intelligence should aggregate useful portfolio-level facts.
+
+Example:
+
+18% of portfolio value = StrongDowntrend
+27% = Uptrend
+12% = StabilizingAfterDecline
+21% = High volatility
+
+Also preserve ticker-level compact state for important holdings.
+
+Do not convert this into verbose prose.
+
+
+==================================================
+8. COMPANY MONITOR
+==================================================
+
+Portfolio Analyzer should receive compact Company Monitor state ONLY for
+current holdings.
+
+Relevant information may include:
+
+symbol
+investmentView
+investmentCaseStrength
+materialChange
+thesis status changes
+top risks
+top catalysts
+next material event
+price state
+
+Do NOT send:
+
+full executive summaries
+full bull/base/bear prose
+business descriptions
+old historical analysis
+unrelated watched companies
+
+
+==================================================
+9. NEWS / MARKET / SECTOR / EVENTS
+==================================================
+
+Portfolio Analyzer should NOT receive generic large monitor outputs.
+
+Only send information relevant to the current portfolio.
+
+MARKET:
+material macro state / regime only.
+
+SECTOR:
+only sectors represented materially in the portfolio.
+
+NEWS:
+only material news affecting:
+- current holdings
+- materially represented portfolio sectors
+- genuinely important macro factors.
+
+EVENTS:
+only important events relevant to:
+- current holdings
+- portfolio sectors
+- major macro exposure.
+
+Use existing compact downstream contexts and deterministic filtering.
+
+
+==================================================
+10. WHAT OPENAI SHOULD DO
+==================================================
+
+OpenAI should remain responsible for qualitative portfolio interpretation.
+
+Examples:
+
+- What is actually driving portfolio performance?
+- Is recent performance healthy or fragile?
+- Are gains broad or dependent on one/few holdings?
+- Are weakening company fundamentals becoming important?
+- Is the portfolio positioned reasonably for current conditions?
+- Which holdings deserve attention?
+- Are there important interactions between market conditions and holdings?
+- What should the investor monitor next?
+
+These are valuable AI tasks.
+
+Do not replace them with simple thresholds.
+
+
+==================================================
+11. WHAT OPENAI SHOULD NOT DO
+==================================================
+
+OpenAI should NOT be asked to calculate:
+
+position weights
+sector percentages
+cash percentage
+returns
+concentration
+number of holdings
+event counts
+days until events
+portfolio exposure percentages
+price trend statistics
+
+Backend should provide these as facts.
+
+
+==================================================
+12. COMPACT OPENAI INPUT
+==================================================
+
+The normal Portfolio Analyzer OpenAI request should primarily contain:
+
+PortfolioFacts
+
+plus only the small amount of qualitative context genuinely required.
+
+Do not send raw portfolio datasets if PortfolioFacts already represents them.
+
+Do not send duplicate representations of the same information.
+
+
+==================================================
+13. PREVIOUS PORTFOLIO ANALYSIS
+==================================================
+
+Do not send the complete previous Portfolio Analyzer response back to
+OpenAI on every update.
+
+Create/use a compact previous state.
+
+Example:
+
+{
+  overallHealth,
+  outlook,
+  keyDrivers,
+  keyConcerns,
+  holdingsToWatch,
+  lastMaterialChange
+}
+
+Preserve the full historical analysis in storage/UI.
+
+Only compact state is needed for change-aware reasoning.
+
+
+==================================================
+14. MATERIAL PORTFOLIO FINGERPRINT
+==================================================
+
+Create or reuse a deterministic fingerprint based on MATERIAL
+PortfolioFacts.
+
+Ignore:
+
+timestamps
+formatting
+irrelevant ordering
+tiny insignificant price movements
+
+Fingerprint should change for meaningful things such as:
+
+portfolio composition change
+meaningful allocation change
+material performance change
+Price Context state change
+Company Monitor material change
+important event entering/leaving relevant window
+material market/sector regime change
+
+
+==================================================
+15. SKIP OPENAI WHEN NOTHING MATERIAL CHANGED
+==================================================
+
+If PortfolioFacts and relevant qualitative dependencies are materially
+unchanged since the previous successful analysis:
+
+DO NOT call OpenAI.
+
+Reuse the previous qualitative Portfolio Analyzer result.
+
+Update lastCheckedAt.
+
+Do not pretend a new analysis was generated.
+
+Use:
+
+SKIPPED_UNCHANGED
+
+or the existing equivalent.
+
+
+==================================================
+16. DO NOT SKIP WHEN IT MATTERS
+==================================================
+
+OpenAI SHOULD run when meaningful portfolio conditions change.
+
+Examples:
+
+new position
+position sold
+large allocation change
+major holding price-state change
+holding thesis weakened/invalidated
+major portfolio-relevant event
+significant market regime change
+meaningful sector shift
+large performance deterioration
+important concentration change
+
+We want to spend tokens in these situations.
+
+
+==================================================
+17. SHARE BACKEND INTELLIGENCE WITH RISK ANALYZER
+==================================================
+
+After implementation, inspect Risk Analyzer again.
+
+Risk Analyzer and Portfolio Analyzer should reuse the same deterministic
+base metrics wherever appropriate.
+
+Do NOT calculate:
+
+position weights
+sector exposure
+currency exposure
+cash percentage
+event exposure
+price-state exposure
+
+separately in two different implementations.
+
+There should be one authoritative calculation for shared facts.
+
+Risk-specific calculations may remain in Risk Intelligence.
+
+Portfolio-specific calculations may remain in Portfolio Intelligence.
+
+
+==================================================
+18. FUTURE TRADE DECISION USE
+==================================================
+
+Design the deterministic PortfolioFacts so Trade Decision could later
+consume selected facts if useful.
+
+Do NOT modify Trade Decision in this task.
+
+We simply want clean reusable structured intelligence rather than
+information locked inside long AI-generated prose.
+
+
+==================================================
+19. DEBUG
+==================================================
+
+Portfolio Analyzer debug should clearly show:
+
+DETERMINISTIC PORTFOLIO FACTS
+
+QUALITATIVE CONTEXT SENT TO OPENAI
+
+FINAL OPENAI INPUT
+
+OPENAI OUTPUT
+
+AI CALLED:
+Yes / No
+
+If No:
+reason
+
+Material fingerprint
+
+This lets us verify that OpenAI is receiving facts rather than large raw
+datasets.
+
+
+==================================================
+20. NO PAID TESTS
+==================================================
+
+Do NOT perform paid OpenAI calls merely to test this implementation.
+
+Use:
+
+existing stored portfolio data
+existing Company Monitor results
+existing Price Context
+fixtures/mocks
+historical stored AI responses
+
+to verify:
+
+calculations
+filtering
+fingerprints
+prompt construction
+skip behavior.
+
+
+==================================================
+21. SUCCESS CRITERIA
+==================================================
+
+This task is successful when:
+
+1. Portfolio Analyzer remains intelligent and qualitative.
+
+2. Objective portfolio calculations are performed deterministically.
+
+3. Risk Analyzer and Portfolio Analyzer share common backend metrics.
+
+4. Portfolio Analyzer sends significantly less redundant/raw data to OpenAI.
+
+5. Unchanged portfolio state causes zero new Portfolio Analyzer AI tokens.
+
+6. Material changes still trigger qualitative AI analysis.
+
+7. No investment-relevant information has been removed simply to save tokens.
+
+
+==================================================
+22. DO NOT CHANGE OTHER MODULES
+==================================================
+
+Do NOT modify:
+
+Company Monitor
+Opportunity Finder
+Trade Decision
+Investor Watch
+Market Alerts
+
+except for shared type/service compatibility where absolutely necessary.
+
+Do NOT merge Risk Analyzer and Portfolio Analyzer.
+
+After implementation report:
+
+1. Which calculations are now shared between Risk and Portfolio Analyzer.
+2. Which Portfolio Analyzer calculations moved from AI to backend.
+3. Exactly what Portfolio Analyzer now sends to OpenAI.
+4. What was removed from the OpenAI input.
+5. When Portfolio Analyzer skips OpenAI.
+6. Which qualitative tasks remain AI-powered.
+7. Confirmation that no important portfolio information was removed.

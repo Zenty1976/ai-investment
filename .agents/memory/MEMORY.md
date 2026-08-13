@@ -13,3 +13,4 @@
 - [Investor Watch Two-Stage Execution](investor-watch-two-stage.md) — cheap discovery call before expensive full analysis; orchestrator-triggered only; fails-safe to full analysis if discovery errors.
 - [web_search_preview tool type](websearch-preview-tooltype.md) — Responses API requires type:"web_search_preview" not "web_search"; wrong type silently ignores search_context_size and injects ~17k tokens; fixed in ai-service.ts.
 - [TDE stale WaitForEvent loop](tde-waitforevent-normalization.md) — stale WaitForEvent throwing instead of normalizing caused infinite retry loop; fix: clear expired blocking flag in-place, never throw for past-dated events.
+- [Risk Intelligence Engine](risk-intelligence-engine.md) — deterministic RiskFacts pre-computation; fingerprint skip; reuse this in Portfolio Analyzer, never duplicate weights/sectors/events.

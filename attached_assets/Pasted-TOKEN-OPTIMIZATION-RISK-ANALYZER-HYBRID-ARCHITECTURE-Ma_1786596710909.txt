@@ -1,0 +1,483 @@
+TOKEN OPTIMIZATION — RISK ANALYZER HYBRID ARCHITECTURE
+
+Market Alerts has now successfully been converted to a deterministic
+zero-OpenAI module.
+
+The next optimization target is Risk Analyzer.
+
+IMPORTANT:
+
+Do NOT remove the Risk Analyzer module.
+
+Do NOT make Risk Analyzer fully deterministic.
+
+Risk analysis contains qualitative interactions where AI reasoning
+still has value.
+
+Instead convert Risk Analyzer into a HYBRID architecture:
+
+RAW PORTFOLIO / SYSTEM DATA
+→ deterministic Risk Intelligence Engine
+→ compact structured Risk Facts
+→ OpenAI qualitative interpretation ONLY when needed.
+
+The objective is to stop paying OpenAI to calculate or rediscover facts
+that backend code can determine exactly.
+
+
+==================================================
+1. INSPECT CURRENT RISK ANALYZER FIRST
+==================================================
+
+Before changing code, inspect the current Risk Analyzer implementation.
+
+Classify every piece of work currently performed by OpenAI into:
+
+A) deterministic/calculable
+B) qualitative reasoning
+
+Move category A to backend.
+
+Keep category B with OpenAI.
+
+Do not remove information required for good risk assessment.
+
+
+==================================================
+2. CREATE SHARED DETERMINISTIC RISK FACTS
+==================================================
+
+Create a backend Risk Intelligence calculation layer.
+
+Reuse existing portfolio calculations/services where they already exist.
+
+Do NOT duplicate calculations already available elsewhere.
+
+Produce a compact RiskFacts structure.
+
+Conceptually:
+
+{
+  portfolioValue,
+  cashPct,
+
+  concentration: {
+    largestPositionPct,
+    top3Pct,
+    top5Pct,
+    positionsAboveThreshold: [...]
+  },
+
+  sectors: {
+    largestSector,
+    largestSectorPct,
+    exposures: [...]
+  },
+
+  currencies: {
+    exposures: [...]
+  },
+
+  priceRisk: {
+    highVolatilityPositions: [...],
+    strongDowntrendPositions: [...],
+    deterioratingPositions: [...],
+    stabilizingPositions: [...]
+  },
+
+  eventRisk: {
+    eventsNext3Days: [...],
+    eventsNext7Days: [...],
+    portfolioPctWithMajorEventNext7Days
+  },
+
+  companyRisk: {
+    weakenedTheses: [...],
+    invalidatedTheses: [...],
+    highRiskHoldings: [...]
+  },
+
+  portfolioRiskFlags: [...]
+}
+
+Adapt this to the ACTUAL existing schemas/data.
+
+Do not invent unavailable metrics.
+
+
+==================================================
+3. CALCULATE EXACT FACTS IN BACKEND
+==================================================
+
+Backend should calculate wherever data exists:
+
+- position weights
+- largest position
+- top 3 / top 5 concentration
+- cash percentage
+- sector exposure
+- currency exposure
+- number of holdings
+- positions exceeding configured concentration thresholds
+- portfolio exposure to High volatility positions
+- exposure to StrongDowntrend positions
+- exposure to recent deteriorating Price Context
+- upcoming event exposure
+- percentage of portfolio affected by near-term major events
+- Company Monitor thesis statuses
+- InvestmentCaseStrength distribution
+- known high-risk company flags
+
+Do NOT ask OpenAI to calculate these from raw positions.
+
+
+==================================================
+4. VOLATILITY / PRICE RISK
+==================================================
+
+Reuse existing Price Context.
+
+Do not send raw historical prices.
+
+Risk Engine should consume fields such as:
+
+priceState
+recentBehavior
+volatilityState
+volatilityTrend
+returns
+range position
+
+and derive portfolio-level facts.
+
+Example:
+
+23% of portfolio value is in High-volatility positions.
+
+14% is in StrongDowntrend positions.
+
+Two holdings have recentBehavior = FallingFast.
+
+These percentages/counts should be calculated in backend.
+
+
+==================================================
+5. EVENT RISK
+==================================================
+
+Use Event Monitor structured data.
+
+Backend should calculate:
+
+major events within 3 days
+major events within 7 days
+holdings affected
+portfolio value exposed
+
+Example:
+
+31% of portfolio has earnings or another High-impact event within 7 days.
+
+OpenAI should receive that fact.
+
+It should NOT need to inspect a long Event Monitor result and calculate
+the exposure itself.
+
+
+==================================================
+6. COMPANY RISK
+==================================================
+
+Use compact Company Monitor contexts.
+
+Backend should identify:
+
+Invalidated thesis points
+Weakened thesis points
+High company risk
+material negative changes
+very low InvestmentCaseStrength
+
+for CURRENT HOLDINGS.
+
+Do not send full Company Monitor analyses to Risk Analyzer.
+
+
+==================================================
+7. WHAT OPENAI SHOULD STILL DO
+==================================================
+
+OpenAI should remain responsible for qualitative questions such as:
+
+- How serious is the COMBINATION of these risks?
+- Are risks correlated?
+- Which risks deserve most attention?
+- Is portfolio risk acceptable given current conditions?
+- What should the user monitor?
+- Are several individually moderate risks combining into a significant
+  portfolio-level problem?
+
+This is where AI adds value.
+
+
+==================================================
+8. COMPACT OPENAI INPUT
+==================================================
+
+Risk Analyzer's AI prompt should primarily contain:
+
+1. compact RiskFacts
+2. compact Portfolio Analyzer context if genuinely useful
+3. only material macro/market risk context
+4. only relevant Company Monitor context
+5. previous compact Risk Analyzer state
+
+Do NOT send:
+
+full News Monitor
+full Market Monitor
+full Event Monitor
+full Sector Monitor
+full Company Monitor analyses
+unrelated Opportunity Finder candidates
+raw historical prices
+
+unless a specific field is genuinely required and not represented in
+RiskFacts.
+
+
+==================================================
+9. OPPORTUNITY FINDER
+==================================================
+
+Opportunity Finder candidates should normally NOT be part of current
+portfolio risk.
+
+Risk Analyzer answers:
+
+"What risks exist in my CURRENT portfolio?"
+
+A stock that Opportunity Finder merely finds interesting is not yet
+portfolio risk.
+
+Only include a candidate if it has become part of an actual proposed
+portfolio action where pre-trade risk assessment is required.
+
+Do not send the entire Opportunity Finder result to normal Risk Analyzer.
+
+
+==================================================
+10. RISK STATE FINGERPRINT
+==================================================
+
+Create a deterministic material RiskFacts fingerprint.
+
+It must ignore:
+
+timestamps
+formatting
+irrelevant ordering
+tiny insignificant numerical movements
+
+It should change when meaningful risk facts change.
+
+Examples:
+
+largest position crosses threshold
+sector exposure materially changes
+volatility regime changes
+PriceState changes materially
+important event enters near-term window
+company thesis weakens/invalidates
+portfolio composition changes materially
+
+
+==================================================
+11. SKIP AI WHEN RISK FACTS ARE EFFECTIVELY UNCHANGED
+==================================================
+
+Before calling OpenAI:
+
+compare current material RiskFacts fingerprint with the last successful
+AI-interpreted risk state.
+
+If unchanged:
+
+DO NOT call OpenAI.
+
+Reuse the previous qualitative Risk Analyzer assessment.
+
+Update:
+
+lastCheckedAt
+
+but preserve:
+
+lastAnalyzedAt
+
+Record:
+
+SKIPPED_UNCHANGED
+
+or reuse the existing equivalent orchestrator mechanism.
+
+
+==================================================
+12. OPTIONAL LOW-COMPLEXITY PATH
+==================================================
+
+Inspect whether some Risk Analyzer states are so simple that AI provides
+little value.
+
+For example:
+
+- diversified portfolio
+- no threshold violations
+- no material company deterioration
+- no major near-term events
+- no unusual volatility
+- no material change since previous state
+
+In such a case, backend may safely preserve the previous AI assessment
+without a new AI call.
+
+Do NOT generate a fake qualitative AI assessment in backend.
+
+Reuse the previous valid interpretation.
+
+
+==================================================
+13. KEEP AI FOR MATERIAL RISK CHANGE
+==================================================
+
+If RiskFacts materially change:
+
+call OpenAI.
+
+Examples:
+
+SERV thesis becomes Invalidated
+large position moves into FallingFast
+sector concentration crosses High threshold
+major earnings cluster approaches
+cash exposure changes substantially
+multiple correlated risks appear
+
+This is exactly when we WANT to spend tokens.
+
+
+==================================================
+14. DO NOT MAKE RISK ANALYZER DUMBER
+==================================================
+
+This optimization is not:
+
+"replace AI with thresholds."
+
+It is:
+
+"calculate objective facts with code and let AI reason about the facts."
+
+The final qualitative Risk Analyzer should remain capable of identifying
+interactions that simple rules may miss.
+
+
+==================================================
+15. DEBUG
+==================================================
+
+Extend Risk Analyzer debug so we can inspect:
+
+DETERMINISTIC RISK FACTS
+
+OPENAI INPUT
+
+OPENAI OUTPUT
+
+AI CALLED:
+Yes / No
+
+If No:
+reason = RiskFacts unchanged
+
+Also show the material fingerprint.
+
+
+==================================================
+16. TOKEN TARGET
+==================================================
+
+Do NOT target an arbitrary percentage reduction.
+
+The goal is:
+
+- significantly smaller Risk Analyzer input
+- zero AI tokens when material RiskFacts are unchanged
+- preserved qualitative reasoning when risk materially changes
+
+Do not sacrifice relevant information simply to hit a token number.
+
+
+==================================================
+17. NO PAID TEST REQUIRED
+==================================================
+
+Do not run paid OpenAI calls just to test this implementation.
+
+Use existing stored portfolio/module data and mocks to verify:
+
+- RiskFacts calculations
+- fingerprint stability
+- change detection
+- prompt construction
+- skip behavior
+
+Existing historical OpenAI responses may be used for compatibility tests.
+
+
+==================================================
+18. IMPORTANT FUTURE REUSE
+==================================================
+
+Design RiskFacts so a future shared Portfolio Intelligence Engine can
+reuse the same deterministic calculations.
+
+Portfolio Analyzer will likely be optimized next.
+
+Do not tightly couple RiskFacts to the Risk Analyzer route if the
+underlying metric is generally useful.
+
+Examples of reusable metrics:
+
+position weights
+sector exposure
+cash
+currency exposure
+event exposure
+price-risk exposure
+
+These should preferably live in reusable backend services.
+
+
+==================================================
+19. DO NOT CHANGE OTHER MODULES
+==================================================
+
+Do NOT modify:
+
+Company Monitor
+Opportunity Finder
+Trade Decision
+Market Alerts
+Investor Watch
+
+except for shared type/import compatibility if absolutely necessary.
+
+After implementation report:
+
+1. Which Risk Analyzer calculations were moved from AI to backend.
+2. Which qualitative tasks remain with AI.
+3. What data is now sent to OpenAI.
+4. What data was removed from the OpenAI prompt.
+5. Under exactly what conditions Risk Analyzer skips OpenAI.
+6. Whether any information important to investment risk assessment was removed.
