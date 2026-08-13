@@ -7,136 +7,43 @@
  * Designed for shared use by Risk Analyzer and Portfolio Analyzer.
  * Call computeRiskFacts(nowIso) from any route that needs portfolio-level
  * quantitative facts without paying OpenAI to calculate them.
+ *
+ * Types and the pure computeRiskFactsFingerprint() function live in
+ * risk-facts.ts so they can be imported and tested without pulling in this
+ * file's dependency chain (price-context-service → saxo-store → pino).
  */
-import { createHash } from "node:crypto";
 import { analysisRepository } from "./analysis-repository.js";
 import { companyIdentityStore } from "./company-identity.js";
 import { getPriceContext } from "./price-context-service.js";
+import {
+  computeRiskFactsFingerprint,
+  type RiskFacts,
+  type PriceRiskFacts,
+  type ConcentrationFacts,
+  type SectorFacts,
+  type CurrencyFacts,
+  type EventRiskFacts,
+  type CompanyRiskFacts,
+  type UpcomingEventFact,
+  type PositionFact,
+  type RiskIntelligenceResult,
+} from "./risk-facts.js";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** A single held position with both weight bases. */
-export interface PositionFact {
-  ticker: string;
-  name: string;
-  /** % of total portfolio value (includes cash denominator) */
-  portfolioWeightPct: number;
-  /** % of invested capital (excludes cash) */
-  investedWeightPct: number;
-  currency: string;
-  sector: string;
-  marketValueBase: number;
-}
-
-export interface ConcentrationFacts {
-  /** Top 5 positions by invested-capital weight, descending. */
-  topPositions: PositionFact[];
-  largestPositionTicker: string | null;
-  /** % of invested capital */
-  largestPositionPct: number;
-  top3Pct: number;
-  top5Pct: number;
-  top3Tickers: string[];
-  /** Holdings with investedWeightPct > 20% */
-  positionsAbove20Pct: string[];
-  /** Holdings with investedWeightPct > 30% */
-  positionsAbove30Pct: string[];
-}
-
-export interface SectorFacts {
-  /** Sorted descending by portfolio-weight percentage. */
-  exposures: Array<{ name: string; pct: number }>;
-  largestSectorPct: number;
-  largestSectorName: string | null;
-}
-
-export interface CurrencyFacts {
-  /** Sorted descending by portfolio-weight percentage. */
-  exposures: Array<{ currency: string; pct: number }>;
-}
-
-export interface PriceRiskFacts {
-  /** % of invested portfolio value in High-volatility positions */
-  highVolatilityPct: number;
-  highVolatilityHoldings: string[];
-  /** % of invested portfolio value in StrongDowntrend positions */
-  strongDowntrendPct: number;
-  strongDowntrendHoldings: string[];
-  /** % of invested portfolio value in StrongUptrend positions */
-  strongUptrendPct: number;
-  strongUptrendHoldings: string[];
-  /** Holdings with recentBehavior.state = "FallingFast" */
-  fallingFastHoldings: string[];
-  /** Holdings with recentBehavior.state = "Rising" */
-  risingHoldings: string[];
-  /** Holdings with recentBehavior.state = "Stabilizing" while priceState is a downtrend */
-  stabilizingFromDowntrendHoldings: string[];
-  /** Tickers for which no fresh PriceContext was found */
-  missingPriceContext: string[];
-}
-
-export interface UpcomingEventFact {
-  title: string;
-  date: string;
-  importance: string;
-  affectedHoldings: string[];
-}
-
-export interface EventRiskFacts {
-  /** Non-Low importance events in the next 3 days, sorted by date. */
-  eventsNext3Days: UpcomingEventFact[];
-  /** Non-Low importance events in the next 7 days, sorted by date. */
-  eventsNext7Days: UpcomingEventFact[];
-  /** % of total portfolio value (incl. cash) with a material event in next 3 days */
-  portfolioPctWithEventNext3Days: number;
-  /** % of total portfolio value (incl. cash) with a material event in next 7 days */
-  portfolioPctWithEventNext7Days: number;
-}
-
-export interface ThesisFact {
-  ticker: string;
-  thesisId: string;
-}
-
-export interface CompanyRiskFacts {
-  /** Thesis points currently Invalidated for any holding */
-  invalidatedTheses: ThesisFact[];
-  /** Thesis points currently Weakened for any holding */
-  weakenedTheses: ThesisFact[];
-  /** Holdings with investmentCaseStrength < 40 */
-  lowCaseStrength: Array<{ ticker: string; strength: number }>;
-  /** Holdings with investmentView.rating = "Avoid" or "Strong Avoid" */
-  avoidViewHoldings: Array<{ ticker: string; view: string }>;
-  /** investmentView.rating distribution across holdings */
-  viewDistribution: Record<string, number>;
-}
-
-/** Complete deterministic risk fact set. All quantities are computed in backend. */
-export interface RiskFacts {
-  baseCurrency: string;
-  /** Total portfolio value in base currency. null when unavailable. */
-  portfolioValue: number | null;
-  /** Cash as % of total portfolio value (includes available cash). */
-  cashPct: number;
-  numberOfHoldings: number;
-  concentration: ConcentrationFacts;
-  sectors: SectorFacts;
-  currencies: CurrencyFacts;
-  priceRisk: PriceRiskFacts;
-  eventRisk: EventRiskFacts;
-  companyRisk: CompanyRiskFacts;
-  /** Human-readable plain-language flags summarising material risk conditions. */
-  portfolioRiskFlags: string[];
-  computedAt: string;
-}
-
-export interface RiskIntelligenceResult {
-  riskFacts: RiskFacts;
-  /** Material fingerprint — changes only when meaningful risk facts change. */
-  fingerprint: string;
-}
+// Re-export everything from risk-facts.ts so callers only need one import.
+export {
+  computeRiskFactsFingerprint,
+  type RiskFacts,
+  type PriceRiskFacts,
+  type ConcentrationFacts,
+  type SectorFacts,
+  type CurrencyFacts,
+  type EventRiskFacts,
+  type CompanyRiskFacts,
+  type UpcomingEventFact,
+  type PositionFact,
+  type RiskIntelligenceResult,
+} from "./risk-facts.js";
+export type { PositionPriceSnapshot, ThesisFact } from "./risk-facts.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -144,10 +51,6 @@ export interface RiskIntelligenceResult {
 
 function r1(n: number): number {
   return Math.round(n * 10) / 10;
-}
-
-function bandN(n: number, size: number): number {
-  return Math.round(n / size) * size;
 }
 
 const DOWNTREND_STATES = new Set(["StrongDowntrend", "Downtrend"]);
@@ -350,6 +253,7 @@ export function computeRiskFacts(nowIso: string): RiskIntelligenceResult {
     risingHoldings: [],
     stabilizingFromDowntrendHoldings: [],
     missingPriceContext: [],
+    perPositionState: {},
   };
 
   for (const pos of positionFacts) {
@@ -358,6 +262,13 @@ export function computeRiskFacts(nowIso: string): RiskIntelligenceResult {
       priceRisk.missingPriceContext.push(pos.ticker);
       continue;
     }
+
+    // Record full categorical state for fingerprinting (catches any regime shift)
+    priceRisk.perPositionState[pos.ticker] = {
+      priceState: ctx.priceState,
+      volatilityState: ctx.volatility.volatilityState,
+      recentBehaviorState: ctx.recentBehavior?.state ?? null,
+    };
 
     const w = pos.investedWeightPct;
 
@@ -557,47 +468,4 @@ export function computeRiskFacts(nowIso: string): RiskIntelligenceResult {
     riskFacts,
     fingerprint: computeRiskFactsFingerprint(riskFacts),
   };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Fingerprint
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Produce a deterministic fingerprint of material RiskFacts.
- *
- * Bands continuous values to avoid fingerprint churn from tiny movements.
- * Changes when a meaningful risk threshold is crossed:
- *   - largest position crosses 2% band
- *   - top-3 concentration crosses 5% band
- *   - sector exposure crosses 5% band
- *   - volatility regime changes (high-vol holdings set changes)
- *   - priceState crosses StrongDowntrend threshold (holdings set changes)
- *   - FallingFast behavior appears / disappears
- *   - event enters or leaves the 7-day window (by title+date)
- *   - thesis point becomes Invalidated or Weakened
- *   - portfolio composition changes (top-5 holding set)
- */
-export function computeRiskFactsFingerprint(facts: RiskFacts): string {
-  const material = {
-    cashBand: bandN(facts.cashPct, 5),
-    largestPosBand: bandN(facts.concentration.largestPositionPct, 2),
-    top3Band: bandN(facts.concentration.top3Pct, 5),
-    above20: [...facts.concentration.positionsAbove20Pct].sort(),
-    above30: [...facts.concentration.positionsAbove30Pct].sort(),
-    largestSectorBand: bandN(facts.sectors.largestSectorPct, 5),
-    largestSector: facts.sectors.largestSectorName,
-    highVolHoldings: [...facts.priceRisk.highVolatilityHoldings].sort(),
-    strongDownHoldings: [...facts.priceRisk.strongDowntrendHoldings].sort(),
-    fallingFastHoldings: [...facts.priceRisk.fallingFastHoldings].sort(),
-    events7d: facts.eventRisk.eventsNext7Days.map((e) => `${e.title}|${e.date}`).sort(),
-    invalidated: facts.companyRisk.invalidatedTheses.map((t) => `${t.ticker}:${t.thesisId}`).sort(),
-    weakened: facts.companyRisk.weakenedTheses.map((t) => `${t.ticker}:${t.thesisId}`).sort(),
-    lowStrength: facts.companyRisk.lowCaseStrength
-      .map((l) => `${l.ticker}:${bandN(l.strength, 10)}`)
-      .sort(),
-    numberOfHoldings: facts.numberOfHoldings,
-    topTickers: facts.concentration.topPositions.map((p) => p.ticker).sort(),
-  };
-  return createHash("sha256").update(JSON.stringify(material)).digest("hex").slice(0, 16);
 }
