@@ -1,9 +1,9 @@
 {
   "portfolio-manager": {
     "status": "Failed",
-    "lastRunAt": "2026-08-13T19:32:58.687Z",
+    "lastRunAt": "2026-08-13T19:46:30.975Z",
     "lastSuccessfulRunAt": "2026-08-11T21:02:44.708Z",
-    "nextRunAt": "2026-08-13T20:32:58.694Z",
+    "nextRunAt": "2026-08-13T20:46:30.980Z",
     "lastError": "HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}",
     "currentJobId": null,
     "waitingForDeps": [],
@@ -66,7 +66,9 @@
     "nextRunAt": "2026-08-13T19:43:46.456Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [],
+    "waitingForDeps": [
+      "portfolio-manager"
+    ],
     "lastSkippedUnchanged": false
   },
   "risk-analyzer": {

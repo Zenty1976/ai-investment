@@ -1,19 +1,29 @@
 /**
- * Sector Monitor Route
+ * Sector Monitor Route — Hybrid Architecture
  *
- * Uses the OpenAI Responses API with live web search to analyse where
- * institutional money appears to be flowing across major equity sectors
- * over the next 1-3 months.
+ * MAINTENANCE path (zero AI):
+ *   Runs when the deterministic input fingerprint is unchanged from the last
+ *   successful AI call. Returns the cached qualitative interpretation.
+ *   Zero OpenAI tokens, zero web-search cost.
  *
- * Reads market-monitor, event-monitor and news-monitor context from the
- * Analysis Repository to improve reasoning. Never communicates directly
- * with other modules.
+ * DISCOVERY path (AI + web search):
+ *   Runs when upstream module states or portfolio exposure have changed
+ *   meaningfully, or on the first run. AI receives:
+ *     • Compact deterministic SectorFacts (portfolio exposure per sector)
+ *     • Compact upstream contexts (market, event, news)
+ *     • Previous sector interpretation (for "what changed?" framing)
+ *   AI focuses on WHY sectors are behaving as they are — not on calculating
+ *   objective metrics that the backend now provides.
  *
- * Server-side processing after the AI call:
- *  - Validates against Zod schema
- *  - Sets timestamp and analysisDuration — never trusted from AI response
+ * Downstream compatibility:
+ *   The emitted shape (executiveSummary, overallOutlook, topSector, sectors[])
+ *   is unchanged. downstream-ai-context.getSectorAiContext() continues to work
+ *   without modification.
  *
- * Invalid results are never stored in the repository.
+ * Data gaps:
+ *   Sector ETF/index price series are NOT available in this application.
+ *   Returns, relative performance and rotation signals derived from sector
+ *   price data could NOT be implemented deterministically — see sector-intelligence.ts.
  */
 import { Router, type IRouter } from "express";
 import { systemLog } from "../lib/system-log.js";
@@ -21,7 +31,20 @@ import { RunSectorAnalysisResponse } from "@workspace/api-zod";
 import { callAiWithWebSearch, extractAiErrorDebug, type AiDebugInfo } from "../lib/ai-service";
 import { analysisRepository } from "../lib/analysis-repository";
 import { getModel } from "../lib/ai-model-config.js";
-import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
+import { normalizeAiResponse } from "../lib/ai-response-normalizer.js";
+import {
+  computePortfolioSectorExposure,
+  buildSectorFactsBlock,
+  computeInputFingerprint,
+  computeOutputFingerprint,
+  isOutputMaterial,
+  extractMarketInputs,
+  extractEventInputs,
+  extractNewsInputs,
+  buildExposureBandKeys,
+  type SectorMonitorFacts,
+} from "../lib/sector-intelligence.js";
+import type { PortfolioSnapshot } from "./portfolio-manager.js";
 
 const router: IRouter = Router();
 
@@ -32,21 +55,34 @@ const router: IRouter = Router();
 const MAX_ATTEMPTS = 2;
 
 // ---------------------------------------------------------------------------
-// Prompts
+// System prompt
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You are a senior institutional equity strategist. Your task is to determine where capital appears to be flowing across major market sectors over the next 1-3 months. Use live web search to gather current data. Return JSON only — no markdown, no surrounding text.
+const SYSTEM_PROMPT = `You are a senior institutional equity strategist. Your task is to determine where capital appears to be flowing across major market sectors over the next 1-3 months.
 
-GOAL: Identify sector rotation opportunities by analysing the current macro environment, market sentiment, recent news, upcoming events, earnings trends, interest rates, inflation, commodities, currencies and geopolitical developments. This is NOT a news summary — synthesise signals into actionable sector views.
+You will receive:
+  1. PORTFOLIO SECTOR EXPOSURE — deterministic facts pre-computed by the backend. Do NOT recalculate these.
+  2. Market Monitor, Event Monitor, News Monitor context — use for macro framing.
+  3. Previous sector interpretation (if available) — focus on what has CHANGED.
 
-QUESTION TO ANSWER: "Which sectors currently offer the most attractive opportunities over the next 1-3 months, and why?"
+YOUR JOB is qualitative interpretation:
+  • WHY are the strongest/weakest sectors behaving this way?
+  • Does apparent rotation look meaningful or noise?
+  • What macro/news/events plausibly explain the leadership pattern?
+  • Is the leadership broad, narrow, defensive, cyclical, risk-on, risk-off?
+  • Which sector developments deserve investor attention right now?
+  • What could invalidate the current interpretation?
+
+Use live web search to gather current sector catalyst data — especially sector-specific developments (policy changes, regulatory actions, supply shocks, industry-specific catalysts) not already covered by the upstream context you've been given. Do not rediscover general market news already present in the News/Market Monitor context.
+
+Return JSON only — no markdown, no surrounding text.
+
+Do NOT calculate returns, rankings, portfolio weights, or relative performance — these are provided to you as facts. Focus on WHY.
 
 ALWAYS ANALYSE AT LEAST THESE SECTORS:
 AI & Software, Semiconductors, Healthcare, Biotechnology, Financials, Industrials, Energy, Utilities, Consumer Discretionary, Consumer Staples, Communication Services, Materials, Real Estate
 
 You may add additional sectors if market conditions warrant it.
-
-You will receive Market Monitor, Event Monitor and News Monitor analyses as context. Use them to sharpen your reasoning — do NOT repeat or summarise them.
 
 OUTPUT RULES:
 - executiveSummary: ≤80 words — the key macro thesis driving sector allocation right now
@@ -66,16 +102,25 @@ OUTPUT RULES:
 Return exactly:
 {"executiveSummary":"...","overallOutlook":"...","topSector":{"name":"...","reason":"..."},"sectors":[{"name":"...","rating":"Strong|Moderately Strong|Neutral|Moderately Weak|Weak","trend":"Improving|Stable|Weakening","summary":"...","drivers":["...","..."],"risks":["..."],"outlook":"...","confidence":"High|Medium|Low"}]}`;
 
+// ---------------------------------------------------------------------------
+// Prompt builder
+// ---------------------------------------------------------------------------
+
 function buildUserPrompt(
   nowIso: string,
+  sectorFacts: SectorMonitorFacts,
   marketContext: string | null,
   eventContext: string | null,
-  newsContext: string | null
+  newsContext: string | null,
+  prevSectorSummary: string | null
 ): string {
-  const blocks: string[] = [`UTC: ${nowIso}`, ""];
-  blocks.push(
-    "Analyse major equity sectors and determine where institutional capital is most likely to flow over the next 1-3 months."
-  );
+  const blocks: string[] = [
+    `UTC: ${nowIso}`,
+    "",
+    "Analyse major equity sectors and determine where institutional capital is most likely to flow over the next 1-3 months.",
+    "",
+    buildSectorFactsBlock(sectorFacts),
+  ];
 
   if (marketContext) {
     blocks.push(
@@ -98,8 +143,54 @@ function buildUserPrompt(
       newsContext
     );
   }
+  if (prevSectorSummary) {
+    blocks.push(
+      "",
+      "Previous sector interpretation (describe what has CHANGED from this — do not repeat it):",
+      prevSectorSummary
+    );
+  }
 
   return blocks.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Portfolio sector exposure helper
+// ---------------------------------------------------------------------------
+
+function buildSectorByTicker(
+): Map<string, string> {
+  const map = new Map<string, string>();
+  // Walk all repository entries for company-monitor:<TICKER>
+  for (const entry of analysisRepository.getAll()) {
+    if (!entry.moduleName.startsWith("company-monitor:")) continue;
+    const ticker = entry.moduleName.slice("company-monitor:".length).toUpperCase().trim();
+    if (!ticker) continue;
+    const r = entry.result as Record<string, unknown>;
+    const sector =
+      (r.company as Record<string, unknown> | undefined)?.sector as string | undefined
+      ?? r.sector as string | undefined;
+    if (sector && sector.trim()) {
+      map.set(ticker, sector.trim());
+    }
+  }
+  return map;
+}
+
+function getPortfolioSectorFacts(): SectorMonitorFacts {
+  const snapshot = analysisRepository.get<PortfolioSnapshot>("portfolio-manager");
+  if (!snapshot) {
+    return {
+      portfolioExposure: [],
+      unclassifiedTickers: [],
+      coveragePct: 0,
+      coverageConfidence: "Low",
+      totalClassifiableMv: 0,
+    };
+  }
+  const positions = snapshot.result.accounts.flatMap((a) => a.positions);
+  const sectorByTicker = buildSectorByTicker();
+  return computePortfolioSectorExposure(positions, sectorByTicker);
 }
 
 // ---------------------------------------------------------------------------
@@ -107,8 +198,8 @@ function buildUserPrompt(
 // ---------------------------------------------------------------------------
 
 router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
-  req.log.info("Running sector monitor analysis with web search");
-  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  req.log.info("Running sector monitor analysis");
+  const orchestratorTrigger = req.headers["x-orchestrator-trigger"];
   if (orchestratorTrigger) {
     systemLog.logInfo("Sector Monitor", `Scheduled run (trigger: ${orchestratorTrigger})`);
   } else {
@@ -117,37 +208,36 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
 
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
-  let lastDebug: AiDebugInfo | undefined;
 
-  // ── Read context from Analysis Repository ──────────────────────────────────
+  // ── 1. Deterministic sector facts (portfolio exposure) ─────────────────────
+
+  const sectorFacts = getPortfolioSectorFacts();
+
+  // ── 2. Compact upstream contexts ───────────────────────────────────────────
 
   const marketEntry = analysisRepository.get<Record<string, unknown>>("market-monitor");
-  const marketContext = marketEntry
+  const marketResult = marketEntry?.result ?? null;
+  const marketContext = marketResult
     ? JSON.stringify({
-        marketSentiment: marketEntry.result.marketSentiment,
-        riskLevel: marketEntry.result.riskLevel,
-        summary: marketEntry.result.summary,
-        positiveFactors: marketEntry.result.positiveFactors,
-        negativeFactors: marketEntry.result.negativeFactors,
-        strongSectors: marketEntry.result.strongSectors,
-        weakSectors: marketEntry.result.weakSectors,
-        keyRisks: marketEntry.result.keyRisks,
+        marketSentiment: marketResult.marketSentiment,
+        riskLevel: marketResult.riskLevel,
+        summary: marketResult.summary,
+        positiveFactors: marketResult.positiveFactors,
+        negativeFactors: marketResult.negativeFactors,
+        strongSectors: marketResult.strongSectors,
+        weakSectors: marketResult.weakSectors,
+        keyRisks: marketResult.keyRisks,
       })
     : null;
 
-  if (marketContext) {
-    req.log.info("Using Market Monitor context for sector analysis");
-  } else {
-    req.log.info("No Market Monitor context available — proceeding without it");
-  }
-
   const eventEntry = analysisRepository.get<Record<string, unknown>>("event-monitor");
-  const eventContext = eventEntry
+  const eventResult = eventEntry?.result ?? null;
+  const eventContext = eventResult
     ? JSON.stringify({
-        summary: eventEntry.result.summary,
-        nextMajorEvent: eventEntry.result.nextMajorEvent,
-        events: Array.isArray(eventEntry.result.events)
-          ? (eventEntry.result.events as Array<Record<string, unknown>>).map((e) => ({
+        summary: eventResult.summary,
+        nextMajorEvent: eventResult.nextMajorEvent,
+        events: Array.isArray(eventResult.events)
+          ? (eventResult.events as Array<Record<string, unknown>>).map((e) => ({
               title: e.title,
               date: e.date,
               importance: e.importance,
@@ -157,18 +247,15 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  if (eventContext) {
-    req.log.info("Using Event Monitor context for sector analysis");
-  }
-
   const newsEntry = analysisRepository.get<Record<string, unknown>>("news-monitor");
-  const newsContext = newsEntry
+  const newsResult = newsEntry?.result ?? null;
+  const newsContext = newsResult
     ? JSON.stringify({
-        executiveSummary: newsEntry.result.executiveSummary,
-        overallMarketImpact: newsEntry.result.overallMarketImpact,
-        topStory: newsEntry.result.topStory,
-        news: Array.isArray(newsEntry.result.news)
-          ? (newsEntry.result.news as Array<Record<string, unknown>>).map((n) => ({
+        executiveSummary: newsResult.executiveSummary,
+        overallMarketImpact: newsResult.overallMarketImpact,
+        topStory: newsResult.topStory,
+        news: Array.isArray(newsResult.news)
+          ? (newsResult.news as Array<Record<string, unknown>>).map((n) => ({
               title: n.title,
               category: n.category,
               importance: n.importance,
@@ -179,11 +266,80 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
       })
     : null;
 
-  if (newsContext) {
-    req.log.info("Using News Monitor context for sector analysis");
+  // ── 3. Compute deterministic input fingerprint ─────────────────────────────
+
+  const mktInputs = extractMarketInputs(marketResult);
+  const evtInputKeys = extractEventInputs(eventResult);
+  const newsInputs = extractNewsInputs(newsResult);
+  const exposureBandKeys = buildExposureBandKeys(sectorFacts.portfolioExposure);
+
+  const inputFingerprint = computeInputFingerprint(
+    mktInputs.sentiment,
+    mktInputs.risk,
+    mktInputs.strongSectors,
+    mktInputs.weakSectors,
+    evtInputKeys,
+    newsInputs.impact,
+    newsInputs.topStoryTitle,
+    exposureBandKeys
+  );
+
+  // ── 4. Skip AI if inputs are unchanged ─────────────────────────────────────
+
+  const prevEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
+  const storedFingerprint = prevEntry?.dependencyFingerprint ?? null;
+  const hasPreviousResult = !!prevEntry;
+
+  if (hasPreviousResult && storedFingerprint === inputFingerprint) {
+    // Inputs unchanged — reuse previous qualitative interpretation
+    analysisRepository.saveSkipped("sector-monitor");
+
+    const analysisDuration = Date.now() - startTime;
+    const cached = prevEntry!.result;
+    const prevOutputKey = computeOutputFingerprint(
+      Array.isArray(cached.sectors) ? (cached.sectors as Array<{ name: string; rating: string; trend: string }>) : []
+    );
+
+    req.log.info({ inputFingerprint }, "Sector Monitor: inputs unchanged — returning cached analysis (0 AI calls)");
+    systemLog.logInfo("Sector Monitor", "Sector inputs unchanged — reusing previous qualitative interpretation (0 AI tokens)");
+
+    res.json({
+      ...cached,
+      _debug: {
+        mode: "MAINTENANCE",
+        reason: "SECTOR_FACTS_UNCHANGED",
+        inputFingerprint,
+        storedFingerprint,
+        aiCalled: false,
+        webSearchUsed: false,
+        portfolioSectorFacts: sectorFacts,
+        outputFingerprint: prevOutputKey,
+        analysisDuration,
+      },
+    });
+    return;
   }
 
-  // ── AI call with retry ─────────────────────────────────────────────────────
+  // ── 5. DISCOVERY — call AI with compact SectorFacts ────────────────────────
+
+  req.log.info({ inputFingerprint, storedFingerprint, hasPreviousResult }, "Sector Monitor: inputs changed — running AI analysis");
+
+  // Previous sector summary for "what changed?" framing
+  const prevSectorSummary = hasPreviousResult
+    ? (() => {
+        const r = prevEntry!.result;
+        const topSector = r.topSector as Record<string, unknown> | undefined;
+        const sectors = Array.isArray(r.sectors)
+          ? (r.sectors as Array<{ name: string; rating: string; trend: string }>)
+              .slice(0, 8)
+              .map((s) => `${s.name}: ${s.rating} / ${s.trend}`)
+              .join(", ")
+          : "";
+        return `Top sector: ${String(topSector?.name ?? "—")}. Ratings: ${sectors}`;
+      })()
+    : null;
+
+  let lastDebug: AiDebugInfo | undefined;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     let result: unknown;
@@ -192,8 +348,16 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
     try {
       ({ result, debug } = await callAiWithWebSearch<unknown>(
         SYSTEM_PROMPT,
-        buildUserPrompt(nowIso, marketContext, eventContext, newsContext),
-        { model: getModel("monitor", "sector-monitor"), maxTokens: 2500, temperature: 0.1, module: "sector-monitor", operation: "analyze", retryNumber: attempt, webSearchContextSize: "medium" }
+        buildUserPrompt(nowIso, sectorFacts, marketContext, eventContext, newsContext, prevSectorSummary),
+        {
+          model: getModel("monitor", "sector-monitor"),
+          maxTokens: 2500,
+          temperature: 0.1,
+          module: "sector-monitor",
+          operation: "analyze",
+          retryNumber: attempt,
+          webSearchContextSize: "medium",
+        }
       ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
@@ -202,7 +366,10 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
         isLastAttempt ? "AI service call failed after all attempts" : "AI service call failed — retrying"
       );
       if (isLastAttempt) {
-        systemLog.logError("Sector Monitor", `Sector analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`);
+        systemLog.logError(
+          "Sector Monitor",
+          `Sector analysis failed: ${err instanceof Error ? err.message : "AI service call failed"}`
+        );
         res.status(500).json({
           error: err instanceof Error ? err.message : "AI service call failed",
           _debug: extractAiErrorDebug(err),
@@ -214,35 +381,69 @@ router.post("/sector-monitor/analyze", async (req, res): Promise<void> => {
 
     lastDebug = debug;
 
-    // ── Validate against Zod schema — timestamp and duration set by server ───
-
+    // ── Validate against Zod schema ────────────────────────────────────────
     const analysisDuration = Date.now() - startTime;
-    const assembled = { ...(result as Record<string, unknown>), timestamp: nowIso, analysisDuration };
-    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(assembled, RunSectorAnalysisResponse);
-    if (normChanges.length > 0) req.log.info({ changes: normChanges, attempt }, "Sector Monitor: normalizer repaired formatting — no retry needed");
+    const assembled = {
+      ...(result as Record<string, unknown>),
+      timestamp: nowIso,
+      analysisDuration,
+    };
+    const { normalized: normAssembled, changes: normChanges } = normalizeAiResponse(
+      assembled,
+      RunSectorAnalysisResponse
+    );
+    if (normChanges.length > 0) {
+      req.log.info({ changes: normChanges, attempt }, "Sector Monitor: normalizer repaired formatting");
+    }
     const parsed = RunSectorAnalysisResponse.safeParse(normAssembled);
 
     if (parsed.success) {
-      // ── Deterministic materiality check — no AI involved ────────────────
-      // Compare the sorted sector name+rating+trend fingerprint. If the
-      // institutional view is unchanged, downstream AI modules should not re-run.
-      const prevEntry = analysisRepository.get<Record<string, unknown>>("sector-monitor");
-      const prevKey = (Array.isArray(prevEntry?.result?.sectors)
-        ? (prevEntry!.result!.sectors as Array<Record<string, unknown>>)
-        : []
-      ).map(s => `${String(s["name"] ?? "")}:${String(s["rating"] ?? "")}:${String(s["trend"] ?? "")}`).sort().join(";");
-      const newKey = parsed.data.sectors.map(s => `${s.name}:${s.rating}:${s.trend}`).sort().join(";");
-      const isMaterial = prevKey !== newKey;
+      // ── Deterministic output fingerprint / materiality check ─────────────
+      const prevOutputKey = hasPreviousResult
+        ? computeOutputFingerprint(
+            Array.isArray(prevEntry!.result.sectors)
+              ? (prevEntry!.result.sectors as Array<{ name: string; rating: string; trend: string }>)
+              : []
+          )
+        : "";
+      const newOutputKey = computeOutputFingerprint(parsed.data.sectors);
+      const outputMaterial = isOutputMaterial(prevOutputKey, newOutputKey);
 
       const weakest = parsed.data.sectors[parsed.data.sectors.length - 1];
-      if (isMaterial) {
+
+      if (outputMaterial || !hasPreviousResult) {
         analysisRepository.save("sector-monitor", parsed.data);
-        systemLog.logInfo("Sector Monitor", `Sector analysis completed (MATERIAL CHANGE): ${parsed.data.topSector.name} strongest, ${weakest?.name ?? "—"} weakest`);
+        analysisRepository.setFingerprint("sector-monitor", inputFingerprint, nowIso);
+        systemLog.logInfo(
+          "Sector Monitor",
+          `Sector analysis completed (MATERIAL CHANGE): ${parsed.data.topSector.name} strongest, ${weakest?.name ?? "—"} weakest`
+        );
       } else {
+        // Output unchanged — update fingerprint so future calls stay skipped
         analysisRepository.saveSkipped("sector-monitor");
-        systemLog.logInfo("Sector Monitor", `Sector analysis completed (no material change): same sector ratings — materialVersion unchanged`);
+        analysisRepository.setFingerprint("sector-monitor", inputFingerprint, nowIso);
+        systemLog.logInfo(
+          "Sector Monitor",
+          `Sector analysis completed (no material change in ratings/trends): fingerprint updated`
+        );
       }
-      res.json({ ...parsed.data, _debug: debug });
+
+      res.json({
+        ...parsed.data,
+        _debug: {
+          ...debug,
+          mode: "DISCOVERY",
+          aiCalled: true,
+          inputFingerprint,
+          storedFingerprint,
+          outputFingerprint: newOutputKey,
+          previousOutputFingerprint: prevOutputKey,
+          outputMaterial,
+          normalizationChanges: normChanges.length > 0 ? normChanges : undefined,
+          portfolioSectorFacts: sectorFacts,
+          analysisDuration,
+        },
+      });
       return;
     }
 

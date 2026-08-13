@@ -1,0 +1,774 @@
+NEXT TOKEN OPTIMIZATION — SECTOR MONITOR HYBRID ARCHITECTURE
+
+We have now completed the Event Monitor hybrid architecture.
+
+The next optimization target is Sector Monitor.
+
+IMPORTANT:
+
+Do NOT remove Sector Monitor.
+Do NOT merge Sector Monitor with Market Monitor.
+Do NOT make Sector Monitor purely deterministic.
+Do NOT change the OpenAI model in this task.
+
+Sector Monitor has a legitimate qualitative AI responsibility.
+
+The objective is:
+
+BACKEND calculates objective sector facts
+→ AI interprets WHY they matter
+
+OpenAI should not spend tokens calculating, sorting, comparing or
+rediscovering objective sector information that backend code can determine.
+
+
+==================================================
+1. INSPECT CURRENT SECTOR MONITOR FIRST
+==================================================
+
+Before changing code, inspect the ACTUAL current Sector Monitor.
+
+Document:
+
+- what data it receives
+- what web search does
+- what OpenAI currently calculates
+- what OpenAI currently interprets
+- what downstream modules consume from Sector Monitor
+
+Classify current responsibilities into:
+
+A) DETERMINISTIC / OBJECTIVE
+
+B) QUALITATIVE / REASONING
+
+Move A to backend where actual data supports it.
+
+Keep B with AI.
+
+
+==================================================
+2. PRESERVE SECTOR MONITOR'S UNIQUE RESPONSIBILITY
+==================================================
+
+Sector Monitor should answer:
+
+"What is happening across sectors, where is relative strength/weakness
+developing, is meaningful rotation occurring, and WHY?"
+
+It should NOT become another Market Monitor.
+
+Market Monitor:
+overall market / macro regime
+
+Sector Monitor:
+cross-sector behavior / relative strength / rotation / sector drivers
+
+Preserve this separation.
+
+
+==================================================
+3. CREATE SECTOR INTELLIGENCE ENGINE
+==================================================
+
+Create a deterministic backend Sector Intelligence layer.
+
+Follow existing architecture conventions.
+
+Conceptually:
+
+market/sector data
+        ↓
+Sector Intelligence
+        ↓
+SectorFacts
+        ↓
+AI qualitative interpretation
+
+Do not create duplicate calculations if equivalent market/price utilities
+already exist.
+
+
+==================================================
+4. CREATE COMPACT SECTOR FACTS
+==================================================
+
+Create a typed compact SectorFacts structure based ONLY on data actually
+available in the application.
+
+Conceptually:
+
+{
+  sectors: [
+    {
+      sector,
+      return1D,
+      return5D,
+      return1M,
+
+      relativeToMarket1D,
+      relativeToMarket5D,
+      relativeToMarket1M,
+
+      trendState,
+      momentumState,
+
+      rank1D,
+      rank5D,
+      rank1M,
+
+      changeInRank,
+
+      portfolioExposurePct
+    }
+  ],
+
+  leadership: {
+    strongestSectors,
+    weakestSectors,
+    improvingSectors,
+    deterioratingSectors
+  },
+
+  rotation: {
+    detected,
+    from,
+    toward,
+    strength,
+    persistence
+  },
+
+  dispersion: {
+    level
+  },
+
+  notableFacts: []
+}
+
+This is conceptual.
+
+DO NOT invent metrics if the current data cannot support them.
+
+
+==================================================
+5. IMPORTANT — VERIFY DATA AVAILABILITY
+==================================================
+
+Before implementing returns/rankings/rotation:
+
+determine what actual sector price/performance data exists.
+
+Do NOT fabricate sector returns from news sentiment.
+
+Do NOT ask OpenAI to invent missing market data.
+
+If the application currently lacks reliable sector performance series,
+explicitly report that.
+
+Build only deterministic metrics supported by real inputs.
+
+If Saxo or another existing data source can provide suitable sector
+instrument/index/ETF data through existing infrastructure, identify that,
+but do not introduce a major new external integration without reporting it.
+
+
+==================================================
+6. OBJECTIVE SECTOR PERFORMANCE
+==================================================
+
+Where valid price data exists, backend should calculate:
+
+sector returns
+relative performance
+rankings
+trend
+changes in rankings
+
+OpenAI should receive these as facts.
+
+Example:
+
+Technology:
+5D +3.8%
+relative to market +2.1pp
+rank 1/11
+previous rank 4/11
+
+OpenAI should NOT need raw price history to discover this.
+
+
+==================================================
+7. RELATIVE STRENGTH
+==================================================
+
+Sector Monitor is primarily about RELATIVE behavior.
+
+A sector being +2% does not necessarily mean it is strong if the market
+is +5%.
+
+Calculate relative strength against an appropriate market benchmark where
+actual data supports it.
+
+Keep calculation deterministic.
+
+
+==================================================
+8. ROTATION DETECTION
+==================================================
+
+If sufficient historical sector data exists, create conservative
+deterministic rotation signals.
+
+Do not use a single day's movement as proof of sector rotation.
+
+Rotation should preferably consider:
+
+relative performance
+ranking changes
+persistence across multiple periods
+broadening/weakening where measurable
+
+Backend may produce something like:
+
+rotationCandidate = true
+
+from:
+Technology
+
+toward:
+Healthcare, Consumer Staples
+
+persistence:
+Moderate
+
+The AI then decides what this may mean in the broader context.
+
+
+==================================================
+9. DO NOT OVERENGINEER ROTATION
+==================================================
+
+We do NOT need a quantitative hedge-fund factor model.
+
+Keep rules understandable and inspectable.
+
+The objective is to give AI better facts, not replace qualitative
+investment reasoning with an enormous rules engine.
+
+
+==================================================
+10. PORTFOLIO EXPOSURE
+==================================================
+
+Where portfolio sector classification exists, calculate:
+
+portfolioExposurePct per sector
+
+deterministically.
+
+This allows Sector Monitor to distinguish:
+
+"Healthcare is strengthening"
+
+from:
+
+"Healthcare is strengthening and represents 28% of the user's portfolio."
+
+Do NOT require OpenAI to calculate exposure from raw positions.
+
+
+==================================================
+11. NEWS / MARKET CONTEXT
+==================================================
+
+Sector Monitor may still need qualitative context from:
+
+Market Monitor
+News Monitor
+Event Monitor
+
+But use compact structured contexts.
+
+Do NOT send full upstream analyses where compact contexts already exist.
+
+Avoid duplicate representations of the same event/news item.
+
+
+==================================================
+12. WEB SEARCH ROLE
+==================================================
+
+Inspect whether Sector Monitor currently performs its own web search.
+
+If yes, determine what unique information that search contributes.
+
+Sector Monitor should NOT pay for web search merely to rediscover:
+
+general market news already found by News Monitor
+macro state already interpreted by Market Monitor
+known events already maintained by Event Monitor
+
+However, sector-specific discovery may still have value.
+
+Examples:
+
+unexpected semiconductor policy development
+energy supply shock
+sector-specific regulatory action
+industry-specific catalyst
+
+Do NOT remove web search blindly.
+
+Instead separate:
+
+GENERAL CONTEXT
+→ reuse upstream modules
+
+SECTOR-SPECIFIC DISCOVERY
+→ web search only where it adds unique information.
+
+
+==================================================
+13. AI'S ROLE AFTER THE CHANGE
+==================================================
+
+OpenAI should primarily answer:
+
+WHY are the strongest/weakest sectors behaving this way?
+
+Does the apparent rotation look meaningful?
+
+What macro/news/events plausibly explain it?
+
+Is the leadership broad, narrow, defensive, cyclical, risk-on, risk-off,
+or otherwise notable?
+
+Which sector developments deserve investor attention?
+
+What could invalidate the current interpretation?
+
+This is the valuable AI work.
+
+
+==================================================
+14. AI SHOULD NOT CALCULATE
+==================================================
+
+Do NOT ask OpenAI to calculate:
+
+returns
+rankings
+portfolio sector weights
+relative performance
+rank changes
+days since previous observation
+basic trend classification where deterministic data supports it
+
+Provide these as SectorFacts.
+
+
+==================================================
+15. STATEFUL SECTOR ANALYSIS
+==================================================
+
+Sector Monitor should become explicitly stateful if it is not already.
+
+Preserve:
+
+previous sector regime
+previous leadership
+previous rotation interpretation
+material sector developments
+
+AI should answer:
+
+"What materially changed?"
+
+not rewrite the entire sector story on every run.
+
+
+==================================================
+16. MATERIAL SECTOR FINGERPRINT
+==================================================
+
+Create a deterministic material fingerprint based on meaningful SectorFacts.
+
+It may include:
+
+sector trend states
+relative-strength bands
+material ranking changes
+rotation state
+leadership group
+portfolio exposure bands
+material sector-specific events
+
+Ignore:
+
+timestamps
+tiny return changes
+minor ranking noise
+formatting
+irrelevant ordering
+
+
+==================================================
+17. USE BANDS / HYSTERESIS
+==================================================
+
+Avoid fingerprint churn from tiny numerical changes.
+
+Example:
+
+Technology relative strength:
+
++2.11%
+→ +2.13%
+
+should NOT necessarily wake OpenAI.
+
+Use reasonable bands/state classifications.
+
+Likewise:
+
+rank 3 → rank 2
+
+should not automatically be material if performance differences are
+negligible.
+
+Design conservative, explainable materiality rules.
+
+
+==================================================
+18. SKIP AI WHEN SECTOR STATE IS UNCHANGED
+==================================================
+
+Before calling OpenAI:
+
+compare current material SectorFacts fingerprint with the previous successful
+AI-interpreted sector state.
+
+If materially unchanged:
+
+DO NOT call OpenAI.
+
+Reuse the previous qualitative interpretation.
+
+Record:
+
+AI called: false
+reason: SECTOR_FACTS_UNCHANGED
+
+Use existing tracking/skip infrastructure where possible.
+
+
+==================================================
+19. DO NOT SKIP IMPORTANT CHANGES
+==================================================
+
+AI should run when something materially changes.
+
+Examples:
+
+new persistent sector leadership
+meaningful rotation begins
+rotation reverses
+major sector-specific event
+large relative-strength regime change
+sector relevant to portfolio materially deteriorates
+new sector-specific catalyst
+
+
+==================================================
+20. DISCOVERY VS INTERPRETATION
+==================================================
+
+If Sector Monitor currently combines web discovery and interpretation,
+inspect whether these can be gated separately.
+
+Ideal concept:
+
+SectorFacts changed materially?
+Sector-specific discovery due?
+New upstream material context?
+
+        ↓
+
+If NO:
+reuse previous interpretation
+0 AI
+
+If YES:
+construct compact context
+perform necessary discovery
+AI interpretation
+
+Do not create unnecessary complexity if the existing recent-run/fingerprint
+infrastructure already provides the required behavior.
+
+
+==================================================
+21. DOWNSTREAM STABILITY
+==================================================
+
+Sector Monitor feeds other reasoning modules.
+
+Its material version/fingerprint must NOT change because:
+
+return changed 1.84% → 1.86%
+timestamp changed
+rank changed due to microscopic difference
+AI wording changed without material meaning
+
+Downstream modules should wake only for meaningful sector changes.
+
+
+==================================================
+22. OPPORTUNITY FINDER COMPATIBILITY
+==================================================
+
+Do NOT modify Opportunity Finder in this task.
+
+But preserve all useful Sector Monitor information it currently consumes.
+
+The new Sector Monitor output should ideally make Opportunity Finder better:
+
+instead of receiving vague prose like:
+
+"Technology looks strong"
+
+it can receive structured facts such as:
+
+Technology
+relative strength: Strong
+trend: Up
+leadership: Yes
+rotation state: Strengthening
+
+plus the AI qualitative explanation.
+
+
+==================================================
+23. TRADE DECISION
+==================================================
+
+Do NOT modify Trade Decision.
+
+Do not make Trade Decision directly depend on detailed SectorFacts unless it
+already does.
+
+Sector Monitor remains upstream intelligence.
+
+No architecture expansion in this task.
+
+
+==================================================
+24. DEBUG
+==================================================
+
+Extend Sector Monitor debug/details to show:
+
+DETERMINISTIC SECTOR FACTS
+
+data sources
+sector performance
+relative strength
+rankings
+rotation signals
+portfolio exposure
+
+MATERIAL STATE
+
+current fingerprint
+previous fingerprint
+material change yes/no
+reason
+
+OPENAI
+
+called yes/no
+resolved model
+web search yes/no
+input context
+output
+
+If skipped:
+
+reason
+
+
+==================================================
+25. ZERO-AI PATH
+==================================================
+
+There must be a valid normal execution path:
+
+fresh objective sector data
+→ Sector Intelligence recalculates
+→ no material sector-state change
+→ previous qualitative interpretation reused
+→ OpenAI calls = 0
+
+The deterministic UI/state may still update numeric facts.
+
+
+==================================================
+26. NO PAID TESTS
+==================================================
+
+Do NOT make paid OpenAI or web-search calls merely to test this.
+
+Use:
+
+stored sector data
+stored market/news/event context
+fixtures
+mock AI output
+
+Test deterministic calculations and skip behavior.
+
+
+==================================================
+27. REQUIRED TESTS
+==================================================
+
+At minimum test:
+
+A)
+Tiny sector return movement
+→ fingerprint unchanged
+→ no AI
+
+B)
+Meaningful relative-strength regime change
+→ fingerprint changes
+
+C)
+Persistent new sector leadership
+→ material change
+
+D)
+One-day noisy rank swap with negligible performance difference
+→ not automatically material
+
+E)
+Portfolio sector exposure calculated correctly
+
+F)
+Same material sector state with different timestamps/order
+→ same fingerprint
+
+G)
+Material sector-specific event
+→ analysis eligible to rerun
+
+H)
+No sufficient sector price data
+→ system does NOT invent returns/rotation
+
+I)
+Existing downstream Sector Monitor compact context remains valid.
+
+
+==================================================
+28. MODEL ROUTING
+==================================================
+
+Continue using centralized routing:
+
+getModel("monitor", "sector-monitor")
+
+Do NOT change the resolved model in this task.
+
+We will decide later whether Sector Monitor can use a cheaper model after
+its AI responsibility has been reduced to qualitative interpretation.
+
+
+==================================================
+29. DO NOT MODIFY OTHER MODULES
+==================================================
+
+Do NOT change:
+
+Market Monitor
+News Monitor
+Event Monitor
+Company Monitor
+Portfolio Analyzer
+Risk Analyzer
+Opportunity Finder
+Trade Decision
+Investor Watch
+Command Brief
+Market Alerts
+
+except minimal shared type compatibility if genuinely necessary.
+
+
+==================================================
+30. SUCCESS CRITERIA
+==================================================
+
+This task is successful when:
+
+1. Sector Monitor remains a useful qualitative intelligence module.
+
+2. Objective sector calculations happen in backend where real data supports
+   them.
+
+3. OpenAI receives compact SectorFacts instead of being asked to calculate
+   objective metrics.
+
+4. AI focuses on WHY sector behavior matters.
+
+5. Materially unchanged sector state can produce zero OpenAI calls.
+
+6. Tiny market movements do not cause fingerprint churn.
+
+7. Sector-specific discovery is preserved where genuinely valuable.
+
+8. General news/market/event information is not unnecessarily rediscovered.
+
+9. Downstream intelligence is not weakened.
+
+10. No sector metrics are fabricated when underlying data is unavailable.
+
+
+==================================================
+31. IMPORTANT: REPORT DATA GAPS
+==================================================
+
+If the current application does NOT have sufficient objective sector market
+data to implement meaningful SectorFacts:
+
+DO NOT fake the implementation.
+
+Instead implement only what actual data supports and clearly report:
+
+- which metrics could be implemented
+- which could not
+- what data would be required
+- whether existing Saxo integration could later provide it
+
+This is preferable to creating pseudo-quantitative intelligence from AI text.
+
+
+==================================================
+32. FINAL REPORT
+==================================================
+
+After implementation report:
+
+1. What Sector Monitor previously asked OpenAI to do.
+2. What moved to deterministic backend.
+3. What remains AI-powered.
+4. What objective sector data is actually available.
+5. What metrics could NOT be implemented due to missing data.
+6. When Sector Monitor now makes zero OpenAI calls.
+7. How materiality/fingerprint works.
+8. How web search usage changed, if at all.
+9. How downstream compatibility was preserved.
+10. Tests added/results.
+11. Estimated reduction in unnecessary AI calls.
+
+Do not perform paid OpenAI calls to generate this report.
