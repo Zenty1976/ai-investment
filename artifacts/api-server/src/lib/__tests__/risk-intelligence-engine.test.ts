@@ -127,6 +127,7 @@ function baseRiskFacts(overrides: Partial<RiskFacts> = {}): RiskFacts {
     companyRisk: {
       invalidatedTheses: [],
       weakenedTheses: [],
+      strengthenedTheses: [],
       lowCaseStrength: [],
       avoidViewHoldings: [],
       viewDistribution: { Buy: 2 },

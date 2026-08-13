@@ -117,6 +117,8 @@ export interface CompanyRiskFacts {
   invalidatedTheses: ThesisFact[];
   /** Thesis points currently Weakened for any holding */
   weakenedTheses: ThesisFact[];
+  /** Thesis points currently Strengthened for any holding */
+  strengthenedTheses: ThesisFact[];
   /** Holdings with investmentCaseStrength < 40 */
   lowCaseStrength: Array<{ ticker: string; strength: number }>;
   /** Holdings with investmentView.rating = "Avoid" or "Strong Avoid" */
@@ -228,6 +230,9 @@ export function computeRiskFactsFingerprint(facts: RiskFacts): string {
       .map((t) => `${t.ticker}:${t.thesisId}`)
       .sort(),
     weakened: facts.companyRisk.weakenedTheses
+      .map((t) => `${t.ticker}:${t.thesisId}`)
+      .sort(),
+    strengthened: facts.companyRisk.strengthenedTheses
       .map((t) => `${t.ticker}:${t.thesisId}`)
       .sort(),
     lowStrength: facts.companyRisk.lowCaseStrength

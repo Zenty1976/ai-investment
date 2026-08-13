@@ -1,13 +1,20 @@
 /**
  * Portfolio Analyzer Route
  *
- * Uses the OpenAI Responses API with live web search to evaluate the user's
- * complete portfolio for a 1–3 month investment horizon.
+ * Hybrid architecture: deterministic Portfolio Intelligence Engine computes
+ * all quantitative facts (position weights, performance/contributions, sector/
+ * currency exposure, price behaviour, company state, upcoming events) into a
+ * compact PortfolioFacts object. OpenAI receives only that compact ground truth
+ * and handles qualitative interpretation only.
  *
- * Reads context from five modules (Portfolio Manager, Market Monitor,
- * Event Monitor, News Monitor, Sector Monitor) and any available Company
- * Monitor analyses for currently-held positions. Never communicates
- * directly with those modules — only through the Analysis Repository.
+ * Skip logic: fingerprint of PortfolioFacts is stored on the result and
+ * compared on every run. If unchanged, the stored result is returned without
+ * calling OpenAI (saveSkipped + trackSkipped + _aiCalled: false).
+ *
+ * Reads context from Portfolio Manager, Market Monitor, News Monitor, Sector
+ * Monitor, and Company Monitor analyses for held positions via the Analysis
+ * Repository. Event Monitor data is consumed through the intelligence engine
+ * (portfolioFacts.events) — not passed as raw JSON.
  *
  * Results are stored under the key "portfolio-analyzer".
  * Invalid results are never stored.
@@ -22,10 +29,15 @@ import { buildPriceContextBlockCompact } from "../lib/price-context-service.js";
 import {
   getMarketAiContext,
   getNewsAiContext,
-  getEventAiContext,
   getSectorAiContext,
   getCompanyAiContext,
 } from "../lib/downstream-ai-context.js";
+import { computeRiskFacts } from "../lib/risk-intelligence-engine.js";
+import {
+  computePortfolioFacts,
+  buildSlimPortfolioFacts,
+} from "../lib/portfolio-intelligence-engine.js";
+import { trackSkipped } from "../lib/openai-usage-service.js";
 
 const router: IRouter = Router();
 
@@ -40,13 +52,23 @@ const SYSTEM_PROMPT = `You are an experienced institutional portfolio manager.
 
 Your task is to analyse the user's current portfolio for an investment horizon of approximately 1–3 months.
 
+PORTFOLIO FACTS — USE AS GROUND TRUTH:
+All objective portfolio metrics have been pre-calculated by the backend and provided as
+"Portfolio Facts" in the user message. These include: position weights, cash %,
+sector/currency exposures, concentration, price-behaviour exposure percentages,
+performance contributions (1D/5D/1M returns by holding), company state signals,
+and upcoming events for held positions.
+Use these facts as ground truth. Do NOT recalculate or re-derive these metrics.
+Do NOT restate the numbers verbatim — interpret them.
+Your role is qualitative portfolio interpretation: what is driving performance,
+is the portfolio positioned well, what deserves attention next?
+
 INFORMATION PRIORITY:
-1. Current portfolio positions, position sizes, and cash
-2. Existing Company Monitor analyses for held companies (use as primary company-specific context)
-3. Sector Monitor
-4. Event Monitor
-5. Market Monitor
-6. News Monitor
+1. Portfolio Facts (pre-calculated ground truth — treat as authoritative)
+2. Company Monitor contexts for held positions (primary qualitative source per company)
+3. Sector Monitor (sector-level signals for held sectors only)
+4. Market Monitor (macro context — only when materially relevant to holdings)
+5. News Monitor (recent events affecting held positions)
 
 Use the supplied module analyses as the primary analytical context.
 Do not disregard or unnecessarily repeat the supplied analyses.
@@ -90,62 +112,86 @@ OUTPUT RULES:
 Return exactly:
 {"mainConclusion":{"title":"...","reason":"..."},"scoreDrivers":[{"factor":"...","impact":"Positive|Negative|Neutral","reason":"..."}],"executiveSummary":"...","overallRating":"Excellent|Good|Fair|Weak","overallOutlook":"Bullish|Moderately Bullish|Neutral|Moderately Bearish|Bearish","portfolioScore":75,"strengths":["..."],"weaknesses":["..."],"topRisks":[{"title":"...","reason":"...","severity":"High|Medium|Low"}],"topOpportunities":[{"title":"...","reason":"...","confidence":"High|Medium|Low"}],"sectorAssessment":"...","positionComments":[{"ticker":"...","summary":"...","attention":"High|Medium|Low"}],"recommendedActions":[{"action":"...","reason":"...","priority":"High|Medium|Low"}],"thingsToWatch":["..."]}`;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Compact previous PA state (sent to AI for continuity — avoids full result)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildCompactPreviousPaState(
+  entry: { result: Record<string, unknown> } | undefined | null
+): Record<string, unknown> | null {
+  if (!entry?.result) return null;
+  const r = entry.result;
+  return {
+    overallRating: r.overallRating,
+    overallOutlook: r.overallOutlook,
+    portfolioScore: r.portfolioScore,
+    mainConclusionTitle: (r.mainConclusion as Record<string, unknown>)?.title,
+    topRisks: (Array.isArray(r.topRisks) ? r.topRisks : [])
+      .slice(0, 3)
+      .map((risk: Record<string, unknown>) => risk.title),
+    strengths: (Array.isArray(r.strengths) ? r.strengths : []).slice(0, 3),
+    holdingsToWatch: Array.isArray(r.thingsToWatch)
+      ? (r.thingsToWatch as string[]).slice(0, 3)
+      : [],
+    computedAt: r.timestamp,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User prompt (hybrid)
+// ─────────────────────────────────────────────────────────────────────────────
+
 function buildUserPrompt(
   nowIso: string,
-  portfolioContext: string,
+  slimPortfolioFacts: Record<string, unknown>,
   marketContext: string | null,
-  eventContext: string | null,
   newsContext: string | null,
   sectorContext: string | null,
   companyContexts: Record<string, string>,
-  priceContexts: Record<string, string>
+  priceContexts: Record<string, string>,
+  previousPaState: Record<string, unknown> | null
 ): string {
   const blocks: string[] = [
     `UTC: ${nowIso}`,
     "",
-    "Perform a complete portfolio analysis for the next 1-3 months.",
+    "Analyse this portfolio for the next 1–3 months.",
+    "Portfolio Facts are pre-calculated by the backend — use as ground truth for all quantitative assertions.",
     "",
-    "Current Portfolio:",
-    portfolioContext,
+    "PORTFOLIO FACTS (calculated deterministically — ground truth):",
+    JSON.stringify(slimPortfolioFacts),
   ];
 
   if (marketContext) {
     blocks.push(
       "",
-      "Market Monitor context (macro conditions — do not repeat this verbatim):",
+      "Market Monitor (macro context — apply only when materially relevant to a held position):",
       marketContext
-    );
-  }
-  if (eventContext) {
-    blocks.push(
-      "",
-      "Event Monitor context (upcoming market events — do not repeat this verbatim):",
-      eventContext
     );
   }
   if (newsContext) {
     blocks.push(
       "",
-      "News Monitor context (recent market-moving news — do not repeat this verbatim):",
+      "News Monitor (recent news affecting held positions — do not repeat verbatim):",
       newsContext
     );
   }
   if (sectorContext) {
     blocks.push(
       "",
-      "Sector Monitor context (sector ratings and flows — do not repeat this verbatim):",
+      "Sector Monitor (portfolio sectors only — sector ratings and flows):",
       sectorContext
     );
   }
+
   for (const [ticker, ctx] of Object.entries(companyContexts)) {
     blocks.push(
       "",
-      `Company Monitor context for ${ticker} (use for company-specific assessment — do not repeat this verbatim):`,
+      `Company Monitor — ${ticker} (use for company-specific qualitative assessment):`,
       ctx
     );
   }
 
-  // §7: Compact price context — one JSON line per symbol; prose rules in system prompt
+  // Compact price context — one JSON line per symbol
   const priceCtxEntries = Object.entries(priceContexts);
   if (priceCtxEntries.length > 0) {
     blocks.push(
@@ -157,6 +203,14 @@ function buildUserPrompt(
     }
   }
 
+  if (previousPaState) {
+    blocks.push(
+      "",
+      "Previous Portfolio Assessment (compact — for continuity only, not a constraint):",
+      JSON.stringify(previousPaState)
+    );
+  }
+
   return blocks.join("\n");
 }
 
@@ -165,7 +219,7 @@ function buildUserPrompt(
 // ---------------------------------------------------------------------------
 
 router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
-  const orchestratorTrigger = req.headers['x-orchestrator-trigger'];
+  const orchestratorTrigger = req.headers["x-orchestrator-trigger"];
   if (orchestratorTrigger) {
     systemLog.logInfo(MODULE_NAME, `Scheduled run (trigger: ${orchestratorTrigger})`);
   } else {
@@ -176,13 +230,12 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
   const nowIso = new Date().toISOString();
   let lastDebug: AiDebugInfo | undefined;
 
-  // ── Read Portfolio Manager from repository ─────────────────────────────────
+  // ── Check Portfolio Manager data is available ─────────────────────────────
 
   const portfolioEntry = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
   if (!portfolioEntry) {
     res.status(400).json({
-      error:
-        "No portfolio data available. Please run Portfolio Manager first.",
+      error: "No portfolio data available. Please run Portfolio Manager first.",
     });
     return;
   }
@@ -190,13 +243,45 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
   const portfolioResult = portfolioEntry.result as Record<string, unknown>;
 
   if (portfolioResult.isMockData) {
-    systemLog.logWarning(
-      MODULE_NAME,
-      "Portfolio analysis is based on mock portfolio data"
-    );
+    systemLog.logWarning(MODULE_NAME, "Portfolio analysis is based on mock portfolio data");
   }
 
-  // Collect held tickers from all positions
+  // ── Compute deterministic Portfolio Facts ─────────────────────────────────
+  // Risk engine provides shared foundation (weights, sectors, currencies, price
+  // behaviour, event risk, company risk). Portfolio engine adds performance
+  // (returns/contributors/detractors) and strengthened-thesis detection.
+
+  const { riskFacts } = computeRiskFacts(nowIso);
+  const { portfolioFacts, fingerprint } = computePortfolioFacts(nowIso, riskFacts);
+
+  // ── Skip check — fingerprint unchanged means no material change ───────────
+
+  const storedEntry = analysisRepository.get<Record<string, unknown>>("portfolio-analyzer");
+  const previousFingerprint = storedEntry
+    ? String((storedEntry.result as Record<string, unknown>)._portfolioFactsFingerprint ?? "")
+    : "";
+
+  if (previousFingerprint && previousFingerprint === fingerprint && storedEntry) {
+    req.log.info({ fingerprint }, "Portfolio Analyzer skip: PortfolioFacts fingerprint unchanged");
+    systemLog.logInfo(MODULE_NAME, "Portfolio analysis skipped — no material portfolio change detected");
+    analysisRepository.saveSkipped("portfolio-analyzer");
+    trackSkipped("portfolio-analyzer", "fingerprint_unchanged");
+    res.json({
+      ...storedEntry.result,
+      _aiCalled: false,
+      _debug: {
+        aiCalled: false,
+        skipReason: "fingerprint_unchanged",
+        fingerprint,
+        previousFingerprint,
+        portfolioFacts,
+      },
+    });
+    return;
+  }
+
+  // ── Collect held tickers ──────────────────────────────────────────────────
+
   const accounts = Array.isArray(portfolioResult.accounts)
     ? (portfolioResult.accounts as Array<Record<string, unknown>>)
     : [];
@@ -214,11 +299,7 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     }
   }
 
-  // ── Build Company Monitor candidate list ─────────────────────────────────
-  // Collect all stored company-monitor entries as candidates for identity
-  // resolution. The companyIdentityStore resolves Saxo display symbols
-  // (e.g. "NOVO B") to the correct repository key using a 5-step chain:
-  // UIC → ISIN → saved alias → exact ticker → normalised name.
+  // ── Build Company Monitor contexts for held positions ─────────────────────
 
   const allRepoEntries = analysisRepository.getAll();
   const companyMonitorCandidates = allRepoEntries
@@ -228,14 +309,11 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
       result: e.result as Record<string, unknown>,
     }));
 
-  // ── Load Company Monitor analyses for held positions ───────────────────────
-
   const companyContexts: Record<string, string> = {};
   const missingCompanyTickers: string[] = [];
   const matchLog: Array<{ symbol: string; key: string; method: string }> = [];
 
   for (const ticker of tickers) {
-    // Find the original position entry so we can pass name for step-5 matching
     let posName: string | null = null;
     for (const account of accounts) {
       const posArr = Array.isArray(account.positions)
@@ -260,7 +338,6 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     );
 
     if (resolved) {
-      // §1: Compact downstream context getter (replaces manual JSON construction)
       const ctx = getCompanyAiContext(resolved.key, ticker);
       if (ctx) {
         companyContexts[ticker] = JSON.stringify(ctx);
@@ -273,7 +350,6 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     }
   }
 
-  // Debug-only: log which Company Monitor analyses were matched and how
   req.log.debug({ matchLog }, "Company Monitor identity resolution");
 
   for (const ticker of missingCompanyTickers) {
@@ -283,57 +359,39 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     );
   }
 
-  // ── Build portfolio context string ─────────────────────────────────────────
-
-  const portfolioSummary = {
-    baseCurrency: portfolioResult.baseCurrency,
-    totalValue: portfolioResult.totalValue,
-    totalAvailableCash: portfolioResult.totalAvailableCash,
-    totalUnrealizedProfitLoss: portfolioResult.totalUnrealizedProfitLoss,
-    accounts: accounts.map((a) => ({
-      currency: a.currency,
-      totalValue: a.totalValue,
-      positions: Array.isArray(a.positions)
-        ? (a.positions as Array<Record<string, unknown>>).map((p) => ({
-            symbol: p.symbol,
-            name: p.name,
-            quantity: p.quantity,
-            marketValue: p.marketValue,
-            marketValueBaseCurrency: p.marketValueBaseCurrency,
-            profitLoss: p.profitLoss,
-            currency: p.currency,
-          }))
-        : [],
-    })),
-  };
-  const portfolioContext = JSON.stringify(portfolioSummary);
-
-  // ── Read other modules — §1: compact downstream context layer ─────────────
+  // ── Build compact contexts ─────────────────────────────────────────────────
 
   const marketCtx = getMarketAiContext();
   const marketContext = marketCtx ? JSON.stringify(marketCtx) : null;
 
-  // Filter events and news to held ticker symbols automatically.
-  const eventCtx = getEventAiContext(tickers);
-  const eventContext = eventCtx ? JSON.stringify(eventCtx) : null;
-
-  // §6: getNewsAiContext filters to held tickers + High-importance items.
+  // News filtered to held tickers + High-importance items.
   const newsCtx = getNewsAiContext(tickers);
   const newsContext = newsCtx ? JSON.stringify(newsCtx) : null;
 
-  const sectorCtx = getSectorAiContext();
+  // Sector context filtered to sectors represented in the portfolio.
+  const portfolioSectors = riskFacts.sectors.exposures
+    .map((s) => s.name)
+    .filter(Boolean);
+  const sectorCtx = getSectorAiContext(portfolioSectors.length ? portfolioSectors : undefined);
   const sectorContext = sectorCtx ? JSON.stringify(sectorCtx) : null;
+
+  // Compact previous PA state (for AI continuity — not the full stored result).
+  const previousPaState = buildCompactPreviousPaState(storedEntry);
+
+  // Slim portfolioFacts (strips internal fingerprinting detail).
+  const slimPortfolioFacts = buildSlimPortfolioFacts(portfolioFacts);
 
   req.log.info(
     {
       tickers,
       missingCompanyTickers,
       hasMarket: !!marketContext,
-      hasEvent: !!eventContext,
       hasNews: !!newsContext,
       hasSector: !!sectorContext,
+      fingerprint,
+      previousFingerprint,
     },
-    "Context loaded from Analysis Repository"
+    "Portfolio Facts ready — calling AI"
   );
 
   // ── AI call with retry ─────────────────────────────────────────────────────
@@ -347,21 +405,30 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
         SYSTEM_PROMPT,
         buildUserPrompt(
           nowIso,
-          portfolioContext,
+          slimPortfolioFacts,
           marketContext,
-          eventContext,
           newsContext,
           sectorContext,
           companyContexts,
-          buildPriceContextBlockCompact(tickers)
+          buildPriceContextBlockCompact(tickers),
+          previousPaState
         ),
-        { model: "gpt-4o", maxTokens: 2500, temperature: 0.1, module: "portfolio-analyzer", operation: "analyze", retryNumber: attempt }
-      )); // §7: buildPriceContextBlockCompact replaces buildPriceContextBlock inside buildUserPrompt
+        {
+          model: "gpt-4o",
+          maxTokens: 2500,
+          temperature: 0.1,
+          module: "portfolio-analyzer",
+          operation: "analyze",
+          retryNumber: attempt,
+        }
+      ));
     } catch (err) {
       const isLastAttempt = attempt >= MAX_ATTEMPTS;
       req.log[isLastAttempt ? "error" : "warn"](
         { err, attempt },
-        isLastAttempt ? "AI service call failed after all attempts" : "AI service call failed — retrying"
+        isLastAttempt
+          ? "AI service call failed after all attempts"
+          : "AI service call failed — retrying"
       );
       if (isLastAttempt) {
         systemLog.logError(MODULE_NAME, "Portfolio analysis failed");
@@ -384,23 +451,21 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
     });
 
     if (parsed.success) {
-      analysisRepository.save("portfolio-analyzer", parsed.data);
+      // Attach fingerprint to stored result (not exposed to clients in the
+      // main payload — only in _debug).
+      const resultWithFingerprint = {
+        ...parsed.data,
+        _portfolioFactsFingerprint: fingerprint,
+      };
 
-      // ── Meaningful system log entries ────────────────────────────────────
+      analysisRepository.save("portfolio-analyzer", resultWithFingerprint);
+
+      // ── System log entries ───────────────────────────────────────────────
 
       systemLog.logInfo(MODULE_NAME, "Portfolio analysis completed");
-      systemLog.logInfo(
-        MODULE_NAME,
-        `Main conclusion: ${parsed.data.mainConclusion.title}`
-      );
-      systemLog.logInfo(
-        MODULE_NAME,
-        `Overall rating: ${parsed.data.overallRating}`
-      );
-      systemLog.logInfo(
-        MODULE_NAME,
-        `Overall outlook: ${parsed.data.overallOutlook}`
-      );
+      systemLog.logInfo(MODULE_NAME, `Main conclusion: ${parsed.data.mainConclusion.title}`);
+      systemLog.logInfo(MODULE_NAME, `Overall rating: ${parsed.data.overallRating}`);
+      systemLog.logInfo(MODULE_NAME, `Overall outlook: ${parsed.data.overallOutlook}`);
 
       const highRisk = parsed.data.topRisks.find((r) => r.severity === "High");
       const topRisk = highRisk ?? parsed.data.topRisks[0];
@@ -411,9 +476,7 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
         );
       }
 
-      const highOpp = parsed.data.topOpportunities.find(
-        (o) => o.confidence === "High"
-      );
+      const highOpp = parsed.data.topOpportunities.find((o) => o.confidence === "High");
       const topOpp = highOpp ?? parsed.data.topOpportunities[0];
       if (topOpp) {
         systemLog.logInternal(
@@ -422,9 +485,7 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
         );
       }
 
-      const highAction = parsed.data.recommendedActions.find(
-        (a) => a.priority === "High"
-      );
+      const highAction = parsed.data.recommendedActions.find((a) => a.priority === "High");
       const topAction = highAction ?? parsed.data.recommendedActions[0];
       if (topAction) {
         systemLog.logInternal(
@@ -433,7 +494,17 @@ router.post("/portfolio-analyzer/analyze", async (req, res): Promise<void> => {
         );
       }
 
-      res.json({ ...parsed.data, _debug: debug });
+      res.json({
+        ...parsed.data,
+        _aiCalled: true,
+        _debug: {
+          aiCalled: true,
+          fingerprint,
+          previousFingerprint,
+          portfolioFacts,
+          ...debug,
+        },
+      });
       return;
     }
 

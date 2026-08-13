@@ -126,6 +126,7 @@ export function computeRiskFacts(nowIso: string): RiskIntelligenceResult {
   const companyRisk: CompanyRiskFacts = {
     invalidatedTheses: [],
     weakenedTheses: [],
+    strengthenedTheses: [],
     lowCaseStrength: [],
     avoidViewHoldings: [],
     viewDistribution: {},
@@ -158,6 +159,8 @@ export function computeRiskFacts(nowIso: string): RiskIntelligenceResult {
           companyRisk.invalidatedTheses.push({ ticker: pos.symbol, thesisId: id });
         } else if (status === "Weakened") {
           companyRisk.weakenedTheses.push({ ticker: pos.symbol, thesisId: id });
+        } else if (status === "Strengthened") {
+          companyRisk.strengthenedTheses.push({ ticker: pos.symbol, thesisId: id });
         }
       }
     }
