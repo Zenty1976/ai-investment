@@ -1,0 +1,61 @@
+Yes, implement this next.
+
+Use the deterministic Portfolio Intelligence / PortfolioFacts that was just implemented to expose current portfolio performance to the UI WITHOUT requiring a Portfolio Analyzer OpenAI run.
+
+IMPORTANT:
+
+Do not create another AI call.
+
+Do not duplicate portfolio calculations.
+
+Reuse computePortfolioFacts / the shared Portfolio Intelligence layer.
+
+Expose/display at minimum:
+
+- current portfolio value, if available from Portfolio Manager/Saxo
+- 1D portfolio return
+- 5D portfolio return
+- 1M portfolio return
+- top 3 contributors
+- top 3 detractors
+- data freshness / last price update
+
+For contributors/detractors show:
+
+ticker
+position weight
+return
+portfolio contribution
+
+Use portfolio contribution (position weight × return) for the main ranking, not simply the stock with the largest percentage move.
+
+This should be clearly separated conceptually from the AI Portfolio Assessment.
+
+DETERMINISTIC / CURRENT DATA:
+Portfolio value
+returns
+contributors/detractors
+
+AI ASSESSMENT:
+portfolio health
+outlook
+risks
+qualitative interpretation
+
+The deterministic current-data section should be able to update whenever fresh portfolio/price data is available even when Portfolio Analyzer correctly skips OpenAI because no material analytical change occurred.
+
+Do not label the data "LIVE" unless the underlying Saxo/Price Context data is actually sufficiently fresh.
+
+Always expose/show a last-updated timestamp or freshness indicator.
+
+If some holdings do not have valid current Price Context, do not silently present the calculated portfolio return as fully complete.
+
+Expose data coverage, for example:
+
+Price coverage: 92% of invested portfolio
+
+and visually indicate when portfolio return is based on incomplete price coverage.
+
+Do not modify the Risk Analyzer or Portfolio Analyzer AI logic as part of this task.
+
+This is a UI/data-access improvement built on the deterministic Portfolio Intelligence that now already exists.

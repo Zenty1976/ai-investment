@@ -352,6 +352,50 @@ export function useGetPortfolioV2History() {
   });
 }
 
+// ── Portfolio Intelligence (deterministic — no OpenAI) ────────────────────────
+
+export interface PortfolioHoldingPerf {
+  ticker: string;
+  investedWeightPct: number;
+  return1D: number | null;
+  contribution1DPct: number | null;
+}
+
+export interface PortfolioPerformance {
+  portfolio: {
+    totalValue: number | null;
+    cashPct: number;
+    holdingCount: number;
+    baseCurrency: string;
+  };
+  portfolioReturn1D: number | null;
+  portfolioReturn5D: number | null;
+  portfolioReturn1M: number | null;
+  topContributors: PortfolioHoldingPerf[];
+  topDetractors: PortfolioHoldingPerf[];
+  /** % of invested capital with valid price context (null if no holdings) */
+  priceCoveragePct: number | null;
+  /** Number of holdings without price context data */
+  missingPriceCount: number;
+  /** ISO timestamp of when this data was computed */
+  computedAt: string;
+}
+
+/**
+ * Fetches deterministic portfolio performance data — returns, contributors,
+ * detractors, and price coverage — computed by the Portfolio Intelligence Engine.
+ * No OpenAI calls. Refreshes every 30 seconds to pick up price context updates.
+ */
+export function useGetPortfolioPerformance() {
+  return useQuery({
+    queryKey: ["portfolio-performance"],
+    queryFn: (): Promise<PortfolioPerformance> =>
+      customFetch<PortfolioPerformance>("/api/portfolio-intelligence/performance"),
+    refetchInterval: 30_000,
+    retry: false,
+  });
+}
+
 // ── Portfolio Analyzer ────────────────────────────────────────────────────────
 
 export interface PortfolioAnalysis {

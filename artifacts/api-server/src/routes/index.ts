@@ -22,6 +22,7 @@ import systemLogRouter from "./system-log";
 import automationRouter from "./automation";
 import priceHistoryRouter from "./price-history";
 import openaiUsageRouter from "./openai-usage";
+import portfolioIntelligenceRouter from "./portfolio-intelligence";
 
 const router: IRouter = Router();
 
@@ -48,5 +49,6 @@ router.use(systemLogRouter);
 router.use(automationRouter);
 router.use(priceHistoryRouter);
 router.use(openaiUsageRouter);
+router.use(portfolioIntelligenceRouter);
 
 export default router;

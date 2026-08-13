@@ -13,6 +13,7 @@ import { useState } from "react"
 import { useRunPortfolioAnalysis, useGetRepositoryEntry } from "@workspace/api-client-react"
 import { TickerBadge } from "@/components/TickerBadge"
 import type { PortfolioAnalysis } from "@workspace/api-client-react"
+import { PortfolioPerformanceSection } from "@/components/PortfolioPerformanceSection"
 import {
   AlertCircle,
   RefreshCw,
@@ -173,7 +174,19 @@ export default function PortfolioAnalyzer() {
   // ── Not updated yet ───────────────────────────────────────────────────────
   if (!analysis) {
     return (
-      <div className="space-y-4 pb-8 animate-in fade-in duration-500">
+      <div className="space-y-3 pb-8 animate-in fade-in duration-500">
+        {/* Deterministic performance section — always available */}
+        <PortfolioPerformanceSection />
+
+        {/* AI Assessment divider */}
+        <div className="flex items-center gap-2 pt-1">
+          <div className="h-px flex-1 bg-border/20" />
+          <span className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/25">
+            AI Assessment
+          </span>
+          <div className="h-px flex-1 bg-border/20" />
+        </div>
+
         <div>
           <h1 className="text-base font-bold tracking-widest uppercase text-foreground">
             Portfolio Analyzer
@@ -212,6 +225,18 @@ export default function PortfolioAnalyzer() {
   // ── Analysis view ─────────────────────────────────────────────────────────
   return (
     <div className="space-y-3 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+      {/* Deterministic performance section — updates independently of AI analysis */}
+      <PortfolioPerformanceSection />
+
+      {/* AI Assessment divider */}
+      <div className="flex items-center gap-2 pt-1">
+        <div className="h-px flex-1 bg-border/20" />
+        <span className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/25">
+          AI Assessment
+        </span>
+        <div className="h-px flex-1 bg-border/20" />
+      </div>
 
       {/* Inline update-failed banner — only shown when we still have data */}
       {mutationError && (

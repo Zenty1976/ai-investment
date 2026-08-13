@@ -1,0 +1,86 @@
+Yes, this is a good next task, but make one important distinction:
+
+The purpose is NOT to create another analysis or another OpenAI call.
+
+Task #61 has already created deterministic PortfolioFacts and Portfolio Intelligence.
+We now want to expose selected CURRENT deterministic portfolio facts directly to the UI so they can update independently of the qualitative AI Portfolio Analyzer assessment.
+
+Use the existing Portfolio Intelligence calculations. Do not duplicate them.
+
+Show a compact current portfolio performance section with:
+
+- Current portfolio value, where supported by actual portfolio/Saxo data
+- 1D portfolio return
+- 5D portfolio return
+- 1M portfolio return
+- Top 3 contributors
+- Top 3 detractors
+- Last price/data update
+- Price data coverage if some holdings are missing valid PriceContext
+
+IMPORTANT:
+
+Use TOP CONTRIBUTORS / DETRACTORS as the primary ranking, not simply top movers.
+
+Contribution should use the calculation already introduced in task #61:
+
+position weight × return
+
+For each contributor/detractor show compactly:
+
+ticker
+return %
+portfolio contribution
+
+Position weight may be available in Details rather than the compact overview if space is limited.
+
+Keep this visually/conceptually separate from the AI Portfolio Assessment.
+
+CURRENT / DETERMINISTIC:
+portfolio value
+returns
+contributors
+detractors
+
+AI ASSESSMENT:
+overall health
+outlook
+main conclusion
+strengths
+risks
+holdings to watch
+qualitative interpretation
+
+The deterministic section must NOT depend on a new Portfolio Analyzer AI analysis.
+
+Example:
+
+Price data updates
+→ Portfolio Intelligence recalculates
+→ current performance UI updates
+
+This must work even if Portfolio Analyzer AI correctly returns SKIPPED_UNCHANGED.
+
+Do NOT call OpenAI for this feature.
+
+Do NOT force Portfolio Analyzer AI to rerun just because current performance numbers changed slightly.
+
+Do NOT duplicate the calculations in frontend code if they already exist in Portfolio Intelligence.
+
+Expose the calculated backend data through the appropriate existing API/state path.
+
+Do not label the data LIVE unless the underlying prices are genuinely live/current.
+
+Always show a last-updated/freshness indicator.
+
+If price data is incomplete, do not present the portfolio return as if it covers the entire portfolio.
+
+Show a compact coverage indicator such as:
+
+Price coverage: 92%
+
+Use invested portfolio value/weight for the coverage calculation where possible.
+
+Do not modify Risk Analyzer, Trade Decision, Company Monitor, Opportunity Finder or other AI logic as part of this task.
+
+This is a zero-OpenAI UI/data feature built on the deterministic intelligence introduced in task #61.

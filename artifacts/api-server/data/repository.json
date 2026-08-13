@@ -46,9 +46,9 @@
       "analysisDuration": 4893
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-13T16:01:21.973Z",
+    "updatedAt": "2026-08-13T16:31:44.355Z",
     "materialVersion": 7,
-    "refreshVersion": 21
+    "refreshVersion": 22
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -125,38 +125,102 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "U.S. stock indexes declined modestly amid oil market uncertainties due to the war with Iran. Brent crude prices rose, reflecting investor concerns over global supply disruptions.",
-      "overallMarketImpact": "Slightly negative across major markets.",
+      "executiveSummary": "Global markets are experiencing mixed performance, with U.S. indices slightly up and varied trends in European and Asian markets. Key developments include China's AI advancements impacting technology stocks and ongoing geopolitical tensions affecting energy markets.",
+      "overallMarketImpact": "Mixed market impact with cautious optimism in U.S. indices and sector-specific volatility.",
       "topStory": {
-        "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
-        "summary": "Major U.S. stock indexes fell slightly as oil prices fluctuated due to the ongoing war with Iran.",
+        "title": "China's AI advancements impact tech stocks",
+        "summary": "Chinese startup releases affordable AI model, raising competition concerns.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "us-stock-indexes-decline-2026-08-11",
-          "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
-          "summary": "Major U.S. stock indexes fell slightly as oil prices fluctuated due to the ongoing war with Iran.",
-          "category": "Equities",
+          "id": "china-ai-advancements-2026-08-12",
+          "title": "China's AI advancements impact tech stocks",
+          "summary": "Chinese startup releases affordable AI model, raising competition concerns.",
+          "category": "Technology",
           "importance": "High",
           "affectedMarkets": [
-            "U.S. Equities",
-            "Oil"
+            "Technology",
+            "Equities"
           ],
-          "whyItMatters": "The conflict with Iran introduces volatility in oil markets, impacting investor sentiment and stock performance.",
-          "marketImpact": "Negative for U.S. equities; positive for oil prices.",
+          "whyItMatters": "Increased competition from China may affect valuations of U.S. tech companies.",
+          "marketImpact": "Negative for U.S. technology stocks",
           "confidence": 0.9,
-          "source": "AP News",
-          "publishedAt": "2026-08-11T20:17:22Z"
+          "source": "Bloomberg",
+          "publishedAt": "2026-08-12"
+        },
+        {
+          "id": "geopolitical-tensions-energy-markets-2026-08-11",
+          "title": "Geopolitical tensions affect energy markets",
+          "summary": "Ongoing conflicts in key regions lead to energy market volatility.",
+          "category": "Energy",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Energy",
+            "Commodities"
+          ],
+          "whyItMatters": "Geopolitical instability can disrupt energy supply chains and pricing.",
+          "marketImpact": "Positive for oil prices",
+          "confidence": 0.8,
+          "source": "Reuters",
+          "publishedAt": "2026-08-11"
+        },
+        {
+          "id": "us-inflation-data-2026-08-10",
+          "title": "U.S. inflation data shows persistence",
+          "summary": "Recent data indicates inflation remains above target levels.",
+          "category": "Inflation",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Bonds",
+            "Equities"
+          ],
+          "whyItMatters": "Persistent inflation may influence Federal Reserve policy decisions.",
+          "marketImpact": "Negative for government bonds",
+          "confidence": 0.85,
+          "source": "CNBC",
+          "publishedAt": "2026-08-10"
+        },
+        {
+          "id": "european-economic-growth-2026-08-09",
+          "title": "European economic growth slows",
+          "summary": "Latest reports show a deceleration in Europe's economic expansion.",
+          "category": "Macro",
+          "importance": "Medium",
+          "affectedMarkets": [
+            "Equities",
+            "FX"
+          ],
+          "whyItMatters": "Slower growth may impact investor sentiment and currency valuations.",
+          "marketImpact": "Negative for European equities",
+          "confidence": 0.75,
+          "source": "Financial Times",
+          "publishedAt": "2026-08-09"
+        },
+        {
+          "id": "us-consumer-confidence-2026-08-08",
+          "title": "U.S. consumer confidence declines",
+          "summary": "Surveys indicate a drop in consumer confidence amid economic uncertainties.",
+          "category": "Macro",
+          "importance": "Low",
+          "affectedMarkets": [
+            "Equities",
+            "Consumer Defensive"
+          ],
+          "whyItMatters": "Lower confidence can affect consumer spending and corporate earnings.",
+          "marketImpact": "Negative for consumer discretionary stocks",
+          "confidence": 0.7,
+          "source": "Wall Street Journal",
+          "publishedAt": "2026-08-08"
         }
       ],
-      "timestamp": "2026-08-13T05:18:34.354Z",
-      "analysisDuration": 5610
+      "timestamp": "2026-08-13T16:31:39.600Z",
+      "analysisDuration": 6355
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-13T16:01:23.076Z",
-    "materialVersion": 19,
-    "refreshVersion": 20
+    "updatedAt": "2026-08-13T16:31:45.955Z",
+    "materialVersion": 20,
+    "refreshVersion": 21
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2465,13 +2529,28 @@
     "result": {
       "overallAlertLevel": "High",
       "executiveSummary": "2 HIGH-priority alerts and 1 MEDIUM-priority alert require attention. 3 additional items to monitor.",
-      "headline": "Technology sector: weak outlook, weakening trend",
+      "headline": "China's AI advancements impact tech stocks",
       "alerts": [
+        {
+          "title": "China's AI advancements impact tech stocks",
+          "category": "Company",
+          "importance": "High",
+          "isNew": true,
+          "requiresAttention": true,
+          "affectedHoldings": [
+            "SERV:XNAS"
+          ],
+          "summary": "Chinese startup releases affordable AI model, raising competition concerns.",
+          "whyItMatters": "Increased competition from China may affect valuations of U.S. tech companies.",
+          "recommendedAttention": "Prepare",
+          "sourceType": "NewsMonitor",
+          "status": "New"
+        },
         {
           "title": "Technology sector: weak outlook, weakening trend",
           "category": "Sector",
           "importance": "High",
-          "isNew": true,
+          "isNew": false,
           "requiresAttention": true,
           "affectedHoldings": [
             "SERV:XNAS"
@@ -2480,45 +2559,32 @@
           "whyItMatters": "Regulatory scrutiny",
           "recommendedAttention": "Prepare",
           "sourceType": "Web",
-          "status": "New"
+          "status": "Unchanged"
         },
         {
           "title": "Release of FOMC Minutes (in 6 days)",
           "category": "Event",
           "importance": "High",
-          "isNew": true,
+          "isNew": false,
           "requiresAttention": false,
           "affectedHoldings": [],
           "summary": "Central Bank Meeting Minutes event on 2026-08-19: Potential market volatility based on insights into future monetary policy.",
           "whyItMatters": "The FOMC minutes provide detailed insights into the Federal Reserve's deliberations and future policy directions, influencing investor expectations and market movements.",
           "recommendedAttention": "Review",
           "sourceType": "EventMonitor",
-          "status": "New"
+          "status": "Unchanged"
         },
         {
           "title": "Second Preliminary GDP Report for Q2 2026 (in 13 days)",
           "category": "Event",
           "importance": "High",
-          "isNew": true,
+          "isNew": false,
           "requiresAttention": false,
           "affectedHoldings": [],
           "summary": "Economic Data Release event on 2026-08-26: Market adjustments based on revised economic growth figures.",
           "whyItMatters": "The GDP report offers a comprehensive measure of economic activity, and revisions can lead to reassessments of economic health and influence monetary policy decisions.",
           "recommendedAttention": "Review",
           "sourceType": "EventMonitor",
-          "status": "New"
-        },
-        {
-          "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
-          "category": "Macro",
-          "importance": "High",
-          "isNew": false,
-          "requiresAttention": true,
-          "affectedHoldings": [],
-          "summary": "Major U.S. stock indexes fell slightly as oil prices fluctuated due to the ongoing war with Iran.",
-          "whyItMatters": "The conflict with Iran introduces volatility in oil markets, impacting investor sentiment and stock performance.",
-          "recommendedAttention": "Review",
-          "sourceType": "NewsMonitor",
           "status": "Unchanged"
         },
         {
@@ -2532,7 +2598,7 @@
           "whyItMatters": "Geopolitical tensions",
           "recommendedAttention": "Review",
           "sourceType": "Web",
-          "status": "Updated"
+          "status": "Unchanged"
         },
         {
           "title": "NOVOB:XCSE: Investment thesis weakened",
@@ -2556,23 +2622,98 @@
         "Energy sector: weak outlook, weakening trend"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-13T16:21:39.621Z",
+      "timestamp": "2026-08-13T16:41:39.702Z",
       "analysisDuration": 1,
-      "lastCheckedAt": "2026-08-13T16:21:39.621Z",
-      "lastMeaningfulUpdateAt": "2026-08-13T16:21:39.621Z",
+      "lastCheckedAt": "2026-08-13T16:41:39.702Z",
+      "lastMeaningfulUpdateAt": "2026-08-13T16:41:39.702Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-13T16:21:39.623Z",
-    "materialVersion": 29,
-    "refreshVersion": 32,
-    "dependencyFingerprint": "dtvprj",
-    "lastAIAnalysisAt": "2026-08-13T16:21:39.530Z"
+    "updatedAt": "2026-08-13T16:41:39.704Z",
+    "materialVersion": 30,
+    "refreshVersion": 33,
+    "dependencyFingerprint": "1m9w6kl",
+    "lastAIAnalysisAt": "2026-08-13T16:41:39.669Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-13T16:41:39.702Z",
+          "overallAlertLevel": "High",
+          "headline": "China's AI advancements impact tech stocks",
+          "alertCount": 6,
+          "alerts": [
+            {
+              "title": "China's AI advancements impact tech stocks",
+              "category": "Company",
+              "importance": "High",
+              "summary": "Chinese startup releases affordable AI model, raising competition concerns.",
+              "normalizedKey": "china's ai advancements impact tech stocks|company",
+              "affectedHoldings": [
+                "SERV:XNAS"
+              ]
+            },
+            {
+              "title": "Technology sector: weak outlook, weakening trend",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "Under pressure due to growth concerns and potential regulatory challenges.",
+              "normalizedKey": "technology sector: weak outlook, weakening trend|sector",
+              "affectedHoldings": [
+                "SERV:XNAS"
+              ]
+            },
+            {
+              "title": "Release of FOMC Minutes (in 6 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Central Bank Meeting Minutes event on 2026-08-19: Potential market volatility based on insights into future monetary policy.",
+              "normalizedKey": "release of fomc minutes (in 6 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Second Preliminary GDP Report for Q2 2026 (in 13 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Economic Data Release event on 2026-08-26: Market adjustments based on revised economic growth figures.",
+              "normalizedKey": "second preliminary gdp report for q2 2026 (in 13 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Energy sector: weak outlook, weakening trend",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "Despite higher oil prices, faces challenges from geopolitical risks and market volatility.",
+              "normalizedKey": "energy sector: weak outlook, weakening trend|sector",
+              "affectedHoldings": []
+            },
+            {
+              "title": "NOVOB:XCSE: Investment thesis weakened",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Q2 earnings beat with raised guidance and EU approval of Wegovy® pill and HD pen enhance growth visibility and global expansion potential.",
+              "normalizedKey": "novob:xcse: investment thesis weakened|company",
+              "affectedHoldings": [
+                "NOVOB:XCSE"
+              ]
+            }
+          ],
+          "newsIds": [
+            "china-ai-advancements-2026-08-12",
+            "geopolitical-tensions-energy-markets-2026-08-11",
+            "us-inflation-data-2026-08-10",
+            "european-economic-growth-2026-08-09",
+            "us-consumer-confidence-2026-08-08"
+          ],
+          "eventTitles": [
+            "Release of FOMC Minutes",
+            "Second Preliminary GDP Report for Q2 2026",
+            "Advance Economic Indicators Report for July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-13T16:21:39.621Z",
           "overallAlertLevel": "High",
@@ -3594,31 +3735,13 @@
             "U.S. Producer Price Index (PPI) – July"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-11T20:34:16.387Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Riot Platforms lands $9.1B AI data-center deal, signaling sector convergence",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [
-            "nvidia-ai-infrastructure-megadeal-2026-08-10",
-            "oil-surge-strait-of-hormuz-2026-08-10",
-            "markets-hold-before-cpi-2026-08-11"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (CPI) – July",
-            "FOMC Minutes – July Meeting",
-            "U.S. Producer Price Index (PPI) – July"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-13T16:21:39.716Z",
-    "materialVersion": 29,
-    "refreshVersion": 29
+    "updatedAt": "2026-08-13T16:41:39.748Z",
+    "materialVersion": 30,
+    "refreshVersion": 30
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",
@@ -13848,6 +13971,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-13T16:31:39.595Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-13T16:01:14.723Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -14240,9 +14369,9 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-13T16:01:21.982Z",
-    "materialVersion": 21,
-    "refreshVersion": 21
+    "updatedAt": "2026-08-13T16:31:44.376Z",
+    "materialVersion": 22,
+    "refreshVersion": 22
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
