@@ -2480,7 +2480,7 @@
     "moduleName": "market-alerts",
     "result": {
       "overallAlertLevel": "High",
-      "executiveSummary": "4 HIGH-priority alerts and 1 MEDIUM-priority alert require attention. 4 additional items to monitor.",
+      "executiveSummary": "2 HIGH-priority alerts and 1 MEDIUM-priority alert require attention. 3 additional items to monitor.",
       "headline": "Technology sector: weak outlook, weakening trend",
       "alerts": [
         {
@@ -2525,40 +2525,14 @@
           "status": "Unchanged"
         },
         {
-          "title": "U.S. Indices Show Slight Gains",
+          "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
           "category": "Macro",
           "importance": "High",
           "isNew": true,
           "requiresAttention": true,
           "affectedHoldings": [],
-          "summary": "U.S. stock indices have experienced slight gains, indicating cautious optimism among investors.",
-          "whyItMatters": "Slight gains in U.S. indices suggest investor confidence and potential market stability.",
-          "recommendedAttention": "Review",
-          "sourceType": "NewsMonitor",
-          "status": "New"
-        },
-        {
-          "title": "Upcoming Release of FOMC Minutes",
-          "category": "Macro",
-          "importance": "High",
-          "isNew": true,
-          "requiresAttention": true,
-          "affectedHoldings": [],
-          "summary": "The Federal Open Market Committee minutes are scheduled for release on August 19, potentially impacting market volatility.",
-          "whyItMatters": "FOMC minutes provide insights into future monetary policy, influencing investor decisions.",
-          "recommendedAttention": "Review",
-          "sourceType": "NewsMonitor",
-          "status": "New"
-        },
-        {
-          "title": "Upcoming GDP Report Release",
-          "category": "Macro",
-          "importance": "High",
-          "isNew": true,
-          "requiresAttention": true,
-          "affectedHoldings": [],
-          "summary": "The second preliminary GDP report for Q2 2026 is set for release on August 26, which may lead to market adjustments.",
-          "whyItMatters": "GDP reports offer insights into economic growth, affecting market sentiment.",
+          "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
+          "whyItMatters": "Investor concerns over global supply disruptions are impacting stock market performance.",
           "recommendedAttention": "Review",
           "sourceType": "NewsMonitor",
           "status": "New"
@@ -2590,47 +2564,101 @@
           "recommendedAttention": "Review",
           "sourceType": "CompanyMonitor",
           "status": "Unchanged"
-        },
-        {
-          "title": "Technology Sector Underperforms",
-          "category": "Company",
-          "importance": "Medium",
-          "isNew": true,
-          "requiresAttention": false,
-          "affectedHoldings": [
-            "SERV:XNAS"
-          ],
-          "summary": "The technology sector is underperforming, reflecting potential concerns over growth prospects.",
-          "whyItMatters": "Underperformance in technology may signal investor caution regarding future growth.",
-          "recommendedAttention": "Review",
-          "sourceType": "NewsMonitor",
-          "status": "New"
         }
       ],
       "thingsToWatch": [
         "Release of FOMC Minutes (in 6 days)",
         "Second Preliminary GDP Report for Q2 2026 (in 13 days)",
-        "Energy sector: weak outlook, weakening trend",
-        "Technology Sector Underperforms"
+        "Energy sector: weak outlook, weakening trend"
       ],
       "nothingImportantChanged": false,
-      "timestamp": "2026-08-13T18:08:34.830Z",
+      "timestamp": "2026-08-13T18:28:35.038Z",
       "analysisDuration": 1,
-      "lastCheckedAt": "2026-08-13T18:08:34.830Z",
-      "lastMeaningfulUpdateAt": "2026-08-13T18:08:34.830Z",
+      "lastCheckedAt": "2026-08-13T18:28:35.038Z",
+      "lastMeaningfulUpdateAt": "2026-08-13T18:28:35.038Z",
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-13T18:08:34.832Z",
-    "materialVersion": 32,
-    "refreshVersion": 36,
-    "dependencyFingerprint": "1tlsj47",
-    "lastAIAnalysisAt": "2026-08-13T18:08:34.810Z"
+    "updatedAt": "2026-08-13T18:28:35.039Z",
+    "materialVersion": 33,
+    "refreshVersion": 37,
+    "dependencyFingerprint": "3hutqe",
+    "lastAIAnalysisAt": "2026-08-13T18:28:35.020Z"
   },
   "market-alerts-history": {
     "moduleName": "market-alerts-history",
     "result": {
       "entries": [
+        {
+          "timestamp": "2026-08-13T18:28:35.038Z",
+          "overallAlertLevel": "High",
+          "headline": "Technology sector: weak outlook, weakening trend",
+          "alertCount": 6,
+          "alerts": [
+            {
+              "title": "Technology sector: weak outlook, weakening trend",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "Under pressure due to growth concerns and potential regulatory challenges.",
+              "normalizedKey": "technology sector: weak outlook, weakening trend|sector",
+              "affectedHoldings": [
+                "SERV:XNAS"
+              ]
+            },
+            {
+              "title": "Release of FOMC Minutes (in 6 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Central Bank Meeting Minutes event on 2026-08-19: Potential market volatility based on insights into future monetary policy.",
+              "normalizedKey": "release of fomc minutes (in 6 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Second Preliminary GDP Report for Q2 2026 (in 13 days)",
+              "category": "Event",
+              "importance": "High",
+              "summary": "Economic Data Release event on 2026-08-26: Market adjustments based on revised economic growth figures.",
+              "normalizedKey": "second preliminary gdp report for q2 2026 (in 13 days)|event",
+              "affectedHoldings": []
+            },
+            {
+              "title": "U.S. Stock Indexes Decline Amid Oil Market Uncertainty",
+              "category": "Macro",
+              "importance": "High",
+              "summary": "Major U.S. stock indexes experienced modest declines due to ongoing uncertainty in oil markets stemming from the conflict with Iran.",
+              "normalizedKey": "u.s. stock indexes decline amid oil market uncertainty|macro",
+              "affectedHoldings": []
+            },
+            {
+              "title": "Energy sector: weak outlook, weakening trend",
+              "category": "Sector",
+              "importance": "High",
+              "summary": "Despite higher oil prices, faces challenges from geopolitical risks and market volatility.",
+              "normalizedKey": "energy sector: weak outlook, weakening trend|sector",
+              "affectedHoldings": []
+            },
+            {
+              "title": "NOVOB:XCSE: Investment thesis weakened",
+              "category": "Company",
+              "importance": "Medium",
+              "summary": "Q2 earnings beat with raised guidance and EU approval of Wegovy® pill and HD pen enhance growth visibility and global expansion potential.",
+              "normalizedKey": "novob:xcse: investment thesis weakened|company",
+              "affectedHoldings": [
+                "NOVOB:XCSE"
+              ]
+            }
+          ],
+          "newsIds": [
+            "us-stock-indexes-decline-2026-08-11",
+            "oil-prices-fluctuate-amid-iran-conflict-2026-08-11"
+          ],
+          "eventTitles": [
+            "Release of FOMC Minutes",
+            "Second Preliminary GDP Report for Q2 2026",
+            "Advance Economic Indicators Report for July 2026"
+          ],
+          "checkResult": "Meaningful"
+        },
         {
           "timestamp": "2026-08-13T18:08:34.830Z",
           "overallAlertLevel": "High",
@@ -3837,33 +3865,13 @@
             "U.S. Producer Price Index (July)"
           ],
           "checkResult": "NoChange"
-        },
-        {
-          "timestamp": "2026-08-12T19:54:04.171Z",
-          "overallAlertLevel": "Medium",
-          "headline": "Riot Platforms lands $9.1B AI data-center deal, signaling sector convergence",
-          "alertCount": 0,
-          "alerts": [],
-          "newsIds": [
-            "us-cpi-anticipation-2026-08-12",
-            "ecb-holds-rates-amid-energy-shock-2026-07-23",
-            "middle-east-oil-shock-2026-08-12",
-            "equity-sentiment-cautiously-bullish-2026-08-11",
-            "soybean-prices-rise-on-china-demand-2026-07-08"
-          ],
-          "eventTitles": [
-            "U.S. Consumer Price Index (July)",
-            "FOMC Minutes (July 28–29 Meeting)",
-            "U.S. Producer Price Index (July)"
-          ],
-          "checkResult": "NoChange"
         }
       ]
     },
     "createdAt": "2026-08-01T22:11:22.426Z",
-    "updatedAt": "2026-08-13T18:08:34.843Z",
-    "materialVersion": 32,
-    "refreshVersion": 32
+    "updatedAt": "2026-08-13T18:28:35.064Z",
+    "materialVersion": 33,
+    "refreshVersion": 33
   },
   "trade-decision-engine": {
     "moduleName": "trade-decision-engine",

@@ -1,0 +1,654 @@
+OPENAI USAGE / ARCHITECTURE AUDIT — NEXT TOKEN OPTIMIZATION PHASE
+
+IMPORTANT:
+
+Do NOT make broad architectural changes in this task.
+
+We have already completed major token/cost optimizations including:
+
+- deterministic Market Alerts (zero OpenAI)
+- Risk Analyzer hybrid architecture
+- Portfolio Analyzer hybrid architecture
+- shared deterministic Risk/Portfolio Intelligence
+- compact downstream AI contexts
+- dependency fingerprints / SKIPPED_UNCHANGED
+- recent-run guards / SKIPPED_RECENT
+- Company Monitor discovery gate
+- Investor Watch discovery gate
+- cheaper web-search context
+- deterministic portfolio performance
+- OpenAI usage tracking
+
+The next goal is NOT simply "use fewer tokens".
+
+The goal is:
+
+USE OPENAI ONLY WHERE IT ADDS REAL INTELLIGENCE.
+
+We now need a complete audit of every remaining OpenAI call in the CURRENT CODEBASE before deciding what to optimize next.
+
+
+==================================================
+1. FIND EVERY OPENAI CALL
+==================================================
+
+Search the actual codebase for every possible OpenAI API invocation.
+
+Include direct and indirect calls through shared services/wrappers.
+
+For every call identify:
+
+- module
+- route/service
+- function
+- model
+- reasoning setting if applicable
+- web search yes/no
+- web search context size
+- max output tokens
+- retry behavior
+- schema/response format
+- normal trigger
+- scheduled frequency
+- recent-run guard
+- fingerprint/unchanged guard
+- discovery gate if any
+- force-refresh behavior
+
+Do not rely on module names or assumptions.
+
+Trace the actual runtime code paths.
+
+
+==================================================
+2. CREATE AN AI CALL MAP
+==================================================
+
+Produce a report/table for ALL modules.
+
+At minimum inspect:
+
+Market Monitor
+News Monitor
+Event Monitor
+Sector Monitor
+Company Monitor
+Portfolio Analyzer
+Risk Analyzer
+Opportunity Finder
+Trade Decision
+Command Brief / 20-second conclusion
+Investor Watch
+Market Alerts
+Trade Review
+
+and any additional AI-using module found in the code.
+
+For each classify:
+
+A — STRONG AI REQUIRED
+B — AI REQUIRED BUT CHEAPER MODEL MAY BE ENOUGH
+C — HYBRID: MORE WORK CAN SAFELY MOVE TO BACKEND
+D — AI PROBABLY UNNECESSARY
+E — ALREADY ZERO AI
+
+Do not classify based only on cost.
+
+Explain what intelligence OpenAI actually adds.
+
+
+==================================================
+3. IDENTIFY WHAT EACH AI CALL IS ACTUALLY DOING
+==================================================
+
+For each AI call split its responsibilities into:
+
+DETERMINISTIC TASKS
+
+Examples:
+- calculations
+- sorting
+- filtering
+- threshold comparison
+- date calculations
+- ranking using known numeric rules
+- portfolio weights
+- exposure calculations
+- detecting exact structured state changes
+- deduplication
+
+QUALITATIVE / AI TASKS
+
+Examples:
+- interpreting ambiguous news
+- assessing significance
+- connecting multiple developments
+- investment thesis reasoning
+- assessing uncertainty
+- qualitative company analysis
+- opportunity reasoning
+- decision reasoning
+
+Anything deterministic should be flagged as a candidate for backend processing.
+
+Do NOT automatically move it yet.
+
+
+==================================================
+4. LOOK FOR AI RE-ANALYZING AI
+==================================================
+
+This is especially important.
+
+Identify situations where:
+
+Module A uses OpenAI
+→ produces structured interpretation
+→ Module B sends essentially the same information to OpenAI again
+→ Module C may interpret it yet again.
+
+For example inspect flows such as:
+
+News
+→ Company
+→ Opportunity
+→ Trade Decision
+
+Market
+→ Risk
+→ Portfolio
+→ Trade Decision
+
+Events
+→ Company
+→ Opportunity
+→ Trade Decision
+
+We EXPECT multiple reasoning stages where they answer genuinely different questions.
+
+That is fine.
+
+But identify where OpenAI is merely rephrasing, reclassifying or rediscovering something already established upstream.
+
+Do not remove legitimate layered reasoning.
+
+
+==================================================
+5. AUDIT CONTEXT DUPLICATION
+==================================================
+
+For each remaining AI prompt inspect exactly what is sent.
+
+Find duplicated information such as:
+
+- same company fact appearing in Company Context + News Context
+- same event appearing in Event + Company + News
+- same portfolio fact appearing in Risk + Portfolio + raw holdings
+- same Price Context represented multiple ways
+- full previous analysis when compact previous state is sufficient
+- raw data plus deterministic summary of the same raw data
+
+Report these.
+
+Prefer one authoritative representation of each fact.
+
+
+==================================================
+6. MARKET MONITOR
+==================================================
+
+Determine exactly why Market Monitor requires OpenAI.
+
+Separate:
+
+OBSERVATION / DATA COLLECTION
+
+from:
+
+QUALITATIVE MARKET INTERPRETATION.
+
+Ask:
+
+Could deterministic/backend logic handle any current responsibilities?
+
+Could a cheaper model perform the normal interpretation?
+
+Does the model need the current amount of web context?
+
+Would reducing model strength materially hurt downstream intelligence?
+
+Do NOT change it yet.
+
+
+==================================================
+7. NEWS MONITOR
+==================================================
+
+Inspect whether OpenAI currently performs:
+
+discovery
+deduplication
+relevance
+materiality
+summarization
+ticker mapping
+investment interpretation
+
+Determine which can safely be backend logic.
+
+Important:
+
+News Monitor still needs semantic understanding.
+
+Do not propose removing AI simply because some fields are structured.
+
+Look especially for opportunities to:
+
+web discovery
+→ backend dedup/filter
+→ compact relevant articles
+→ AI materiality/interpretation
+
+instead of asking AI to process unnecessary source material.
+
+
+==================================================
+8. EVENT MONITOR
+==================================================
+
+This is a strong candidate for deterministic/hybrid processing.
+
+Inspect exactly what AI currently does.
+
+Dates, event proximity, ticker mapping from known structured events,
+importance thresholds and duplicate events may not require expensive AI.
+
+Determine what genuinely requires qualitative interpretation.
+
+Classify accordingly.
+
+
+==================================================
+9. SECTOR MONITOR
+==================================================
+
+Inspect whether Sector Monitor needs its own full AI reasoning cycle.
+
+Determine:
+
+- what data it receives
+- what it calculates
+- what it interprets
+- whether Market/News already provide much of the same intelligence
+- whether sector performance/rotation can be calculated deterministically
+- whether AI is mainly useful for explaining WHY sectors are moving
+
+Do NOT merge it with Market Monitor yet.
+
+Assess first.
+
+
+==================================================
+10. COMPANY MONITOR
+==================================================
+
+Be conservative here.
+
+Company Monitor is intentionally stateful and strategically important.
+
+Verify:
+
+- cheap discovery gate works
+- expensive full analysis only occurs when justified
+- stable fields are preserved
+- previous context is compact enough
+- Price Context is deterministic
+- full AI analysis still has enough information
+
+Look for savings but do NOT weaken the investment thesis analysis simply
+to reduce cost.
+
+Company Monitor is expected to remain an important AI module.
+
+
+==================================================
+11. OPPORTUNITY FINDER
+==================================================
+
+Inspect whether Opportunity Finder is doing work already performed by:
+
+Company Monitor
+Market Monitor
+Sector Monitor
+Price Context
+
+Its unique responsibility should be approximately:
+
+"Given what the system currently knows, where are the interesting
+investment opportunities?"
+
+Determine whether:
+
+- candidate generation can partly happen deterministically
+- ranking/filtering can happen before OpenAI
+- OpenAI only needs the best candidate set
+- too many companies are currently sent to AI
+- irrelevant context can be removed
+
+Opportunity Finder should probably retain AI reasoning.
+
+The question is how much context and which model it needs.
+
+
+==================================================
+12. TRADE DECISION
+==================================================
+
+Be VERY conservative.
+
+Trade Decision is the central decision engine.
+
+Its responsibility is not merely classification.
+
+It must combine:
+
+portfolio
+risk
+company analysis
+opportunities
+events/blockers
+price context
+market context
+previous active decisions
+
+and determine:
+
+Hold
+Watch
+PrepareToBuy
+PrepareToReduce
+Buy/Ready
+Sell/Ready
+
+Do NOT recommend weakening Trade Decision simply to save tokens.
+
+Instead inspect:
+
+- duplicated context
+- unnecessary candidates
+- inactive previous decisions
+- redundant upstream prose
+- retry costs
+- model choice
+
+If spending MORE per Trade Decision would materially improve decision
+quality while other modules become cheaper, explicitly say so.
+
+Overall system cost matters more than making every individual call cheap.
+
+
+==================================================
+13. COMMAND BRIEF / 20-SECOND CONCLUSION
+==================================================
+
+Inspect whether this really requires OpenAI.
+
+Its purpose is mainly to summarize already-analyzed system state.
+
+Determine whether it should:
+
+A) remain cheap AI
+B) become mostly deterministic with optional AI wording
+C) become completely deterministic
+
+The user values the short overall interpretation, so preserve usefulness.
+
+Do not optimize it into a meaningless list of statuses.
+
+
+==================================================
+14. INVESTOR WATCH
+==================================================
+
+Keep its special architecture in mind.
+
+Investor Watch is informational and NOT part of Trade Decision input.
+
+Verify discovery gate and stateful behavior.
+
+Determine whether the current full-analysis model is appropriate and
+whether discovery can be made even cheaper without losing meaningful
+updates.
+
+Do not increase update frequency.
+
+
+==================================================
+15. MODEL ROUTING AUDIT
+==================================================
+
+Inspect the CURRENT model configuration and every hardcoded model reference.
+
+Report which model each task actually uses.
+
+Identify any route that bypasses centralized model configuration.
+
+Then recommend the appropriate MODEL CLASS for each task:
+
+CHEAP:
+classification
+extraction
+change detection
+schema repair
+simple summarization
+
+MID:
+news interpretation
+market interpretation
+portfolio/risk qualitative interpretation
+
+STRONG:
+Company full analysis
+Opportunity reasoning if justified
+Trade Decision
+
+Do not change models yet.
+
+Also identify where a newer OpenAI model could potentially provide
+better reasoning-per-dollar than the currently configured model.
+
+Do not guess pricing/model availability from memory in the implementation.
+Just make model routing configurable and report the current setup.
+
+
+==================================================
+16. RETRY / REPAIR AUDIT
+==================================================
+
+For every AI module inspect:
+
+- retry count
+- common retry reasons
+- schema validation
+- JSON repair
+- deterministic normalization
+- whether a full expensive AI request is repeated unnecessarily
+
+A malformed enum or harmless formatting issue should not necessarily
+cause another full expensive reasoning call.
+
+Identify where safe deterministic repair could prevent retries.
+
+Never repair/invent investment conclusions deterministically.
+
+
+==================================================
+17. PROMPT CACHING READINESS
+==================================================
+
+Inspect prompt construction.
+
+Determine whether stable prompt content is consistently placed before
+variable content.
+
+Examples of stable content:
+
+system instructions
+schema
+definitions
+investment framework
+
+Variable content:
+
+current news
+portfolio
+company state
+events
+price context
+
+Report whether prompt construction is friendly to OpenAI prompt caching.
+
+Do NOT change behavior yet unless it is purely structural and guaranteed
+not to change the model's information.
+
+
+==================================================
+18. PRODUCE A COST/INTELLIGENCE MATRIX
+==================================================
+
+At the end produce a clear table:
+
+MODULE
+CURRENT AI MODEL
+AI CALL FREQUENCY
+WEB SEARCH
+CURRENT GUARDS
+WHAT AI ADDS
+DETERMINISTIC WORK STILL DONE BY AI
+DUPLICATED CONTEXT
+RECOMMENDED CLASSIFICATION
+POTENTIAL SAVING
+QUALITY RISK
+
+Potential Saving:
+
+LOW
+MEDIUM
+HIGH
+
+Quality Risk:
+
+LOW
+MEDIUM
+HIGH
+
+
+==================================================
+19. PRIORITIZE THE NEXT CHANGES
+==================================================
+
+Give a ranked list of the next 3 optimization tasks.
+
+Rank using:
+
+potential token/cost saving
+×
+frequency
+×
+implementation simplicity
+÷
+quality risk
+
+We prefer:
+
+HIGH saving
+LOW quality risk
+
+over:
+
+small savings
+high quality risk.
+
+
+==================================================
+20. IMPORTANT — DO NOT EQUATE TOKENS WITH BAD DESIGN
+==================================================
+
+A large AI prompt is acceptable when the model genuinely needs the information.
+
+A small prompt is bad if important decision context is missing.
+
+The objective is NOT:
+
+"minimum tokens."
+
+The objective is:
+
+"minimum tokens required to preserve or improve investment intelligence."
+
+
+==================================================
+21. DO NOT MERGE MODULES YET
+==================================================
+
+Also assess whether any modules now have so much responsibility overlap
+that merging them would simplify the architecture.
+
+But DO NOT merge anything in this task.
+
+For each possible merge report:
+
+- modules involved
+- overlap
+- benefit
+- downside
+- recommendation
+
+It is completely acceptable to conclude that the current separation is
+better.
+
+
+==================================================
+22. NO PAID OPENAI TESTS
+==================================================
+
+Do NOT make paid OpenAI calls for this audit.
+
+Use:
+
+source code
+existing usage logs
+stored debug information
+stored module results
+
+Do not run OpenAI merely to compare outputs.
+
+
+==================================================
+23. FINAL REPORT
+==================================================
+
+Do not immediately implement all recommendations.
+
+First produce the audit report.
+
+The final report must answer:
+
+1. Which modules still call OpenAI?
+2. Which models do they actually use?
+3. Which modules genuinely need strong AI?
+4. Which could use cheaper AI?
+5. Which could become hybrid?
+6. Which could potentially become zero-AI?
+7. Where are we still sending duplicate information?
+8. Where are retries wasting tokens?
+9. Are prompts structured well for caching?
+10. Are any modules worth merging?
+11. What are the TOP 3 next optimizations?
+12. Roughly where is the largest remaining avoidable OpenAI cost?
+
+Do not optimize Trade Decision or Company Monitor aggressively without
+explicitly explaining the potential effect on investment quality.
+
+The report should be based on the ACTUAL CURRENT CODE, not on previous
+task descriptions.
