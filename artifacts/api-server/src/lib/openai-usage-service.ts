@@ -11,44 +11,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { logger } from "./logger.js";
+import { estimateCostUsd, MODEL_PRICING } from "./ai-model-pricing.js";
 
-// ── Centralized model pricing ─────────────────────────────────────────────────
-// USD per 1 million tokens. Update here when OpenAI changes rates.
-// Source: openai.com/pricing
-
-export interface ModelPricing {
-  /** USD per 1M input tokens */
-  inputPer1M: number;
-  /** USD per 1M output tokens */
-  outputPer1M: number;
-  /** USD per 1M cached input tokens (prompt cache hit). Defaults to inputPer1M if absent. */
-  cachedInputPer1M?: number;
-}
-
-export const MODEL_PRICING: Record<string, ModelPricing> = {
-  "gpt-4o":                    { inputPer1M: 2.50,  outputPer1M: 10.00, cachedInputPer1M: 1.25 },
-  "gpt-4o-mini":               { inputPer1M: 0.15,  outputPer1M: 0.60,  cachedInputPer1M: 0.075 },
-  "gpt-4o-2024-08-06":         { inputPer1M: 2.50,  outputPer1M: 10.00, cachedInputPer1M: 1.25 },
-  "gpt-4o-mini-2024-07-18":    { inputPer1M: 0.15,  outputPer1M: 0.60,  cachedInputPer1M: 0.075 },
-  "gpt-4.1":                   { inputPer1M: 2.00,  outputPer1M: 8.00,  cachedInputPer1M: 0.50 },
-  "gpt-4.1-mini":              { inputPer1M: 0.40,  outputPer1M: 1.60,  cachedInputPer1M: 0.10 },
-};
-
-/** Estimate cost in USD for a single API call. Returns null if model pricing is unknown. */
-export function estimateCostUsd(
-  model: string,
-  promptTokens: number,
-  completionTokens: number,
-  cachedTokens = 0
-): number | null {
-  const p = MODEL_PRICING[model];
-  if (!p) return null;
-  const uncachedInput = Math.max(0, promptTokens - cachedTokens);
-  const cachedCost = (cachedTokens / 1_000_000) * (p.cachedInputPer1M ?? p.inputPer1M);
-  const inputCost  = (uncachedInput  / 1_000_000) * p.inputPer1M;
-  const outputCost = (completionTokens / 1_000_000) * p.outputPer1M;
-  return inputCost + cachedCost + outputCost;
-}
+// Re-export so existing callers can import from openai-usage-service without change.
+export { estimateCostUsd, MODEL_PRICING };
+export type { ModelPricing } from "./ai-model-pricing.js";
 
 // ── Record types ──────────────────────────────────────────────────────────────
 
@@ -60,13 +27,20 @@ export interface OpenAIUsageRecord {
   module: string;
   /** Operation label, e.g. "analyze", "discovery", "repair-retry". */
   operation: string;
-  /** OpenAI model identifier, e.g. "gpt-4o", "gpt-4o-mini". */
+  /** OpenAI model identifier, e.g. "gpt-4.1", "gpt-4.1-mini", "gpt-4o-mini". */
   model: string;
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
   /** Tokens served from the prompt cache. 0 when not reported by the API. */
   cachedTokens: number;
+  /**
+   * Internal reasoning tokens used by the model (o-series models only).
+   * 0 for gpt-4.1 family — tracked for future o-series compatibility.
+   * When non-zero, these are a subset of completionTokens reported by the API
+   * (for o-series, completionTokens = visibleOutput + reasoningTokens).
+   */
+  reasoningTokens: number;
   /** True when the Responses API web_search tool was used. */
   webSearchUsed: boolean;
   /** 1 = first attempt, 2+ = retry call. Each retry is a separate record. */
@@ -142,7 +116,13 @@ export function initUsageLog(): void {
 export function trackUsage(record: Omit<OpenAIUsageRecord, "id" | "estimatedCostUsd">): void {
   const id = ++_store.lastId;
   const estimatedCostUsd = record.success
-    ? estimateCostUsd(record.model, record.promptTokens, record.completionTokens, record.cachedTokens)
+    ? estimateCostUsd(
+        record.model,
+        record.promptTokens,
+        record.completionTokens,
+        record.cachedTokens,
+        record.reasoningTokens ?? 0
+      )
     : null;
   _store.records.push({ ...record, id, estimatedCostUsd });
   if (_store.records.length > MAX_API_RECORDS) {
@@ -207,6 +187,8 @@ export interface ModuleStats {
   completionTokens: number;
   totalTokens: number;
   cachedTokens: number;
+  /** Internal reasoning tokens (o-series only; 0 for gpt-4.1 family). */
+  reasoningTokens: number;
   estimatedCostUsd: number | null;
   /** Average prompt tokens across successful calls. null if no successful calls. */
   avgPromptTokens: number | null;
@@ -227,6 +209,8 @@ export interface UsageStats {
   completionTokens: number;
   totalTokens: number;
   cachedTokens: number;
+  /** Internal reasoning tokens summed across all calls (o-series only; 0 for gpt-4.1 family). */
+  reasoningTokens: number;
   /** null when no calls have known pricing. */
   estimatedCostUsd: number | null;
   skippedCalls: number;
@@ -255,6 +239,7 @@ export function getStats(window: TimeWindow = "today"): UsageStats {
         module,
         calls: 0, successCalls: 0, failedCalls: 0, retries: 0, webSearches: 0,
         promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0,
+        reasoningTokens: 0,
         estimatedCostUsd: null,
         avgPromptTokens: null, avgCompletionTokens: null,
         skippedCalls: 0,
@@ -273,6 +258,7 @@ export function getStats(window: TimeWindow = "today"): UsageStats {
     m.completionTokens += r.completionTokens;
     m.totalTokens      += r.totalTokens;
     m.cachedTokens     += r.cachedTokens;
+    m.reasoningTokens  += r.reasoningTokens ?? 0;
     if (r.estimatedCostUsd !== null) {
       m.estimatedCostUsd = (m.estimatedCostUsd ?? 0) + r.estimatedCostUsd;
     }
@@ -297,10 +283,11 @@ export function getStats(window: TimeWindow = "today"): UsageStats {
   const successCalls     = records.filter(r => r.success).length;
   const retries          = records.filter(r => r.retryNumber > 1).length;
   const webSearches      = records.filter(r => r.webSearchUsed).length;
-  const promptTokens     = records.reduce((s, r) => s + r.promptTokens,     0);
-  const completionTokens = records.reduce((s, r) => s + r.completionTokens, 0);
-  const totalTokens      = records.reduce((s, r) => s + r.totalTokens,      0);
-  const cachedTokens     = records.reduce((s, r) => s + r.cachedTokens,     0);
+  const promptTokens     = records.reduce((s, r) => s + r.promptTokens,               0);
+  const completionTokens = records.reduce((s, r) => s + r.completionTokens,           0);
+  const totalTokens      = records.reduce((s, r) => s + r.totalTokens,                0);
+  const cachedTokens     = records.reduce((s, r) => s + r.cachedTokens,               0);
+  const reasoningTokens  = records.reduce((s, r) => s + (r.reasoningTokens ?? 0),     0);
   const estimatedCostUsd = records.some(r => r.estimatedCostUsd !== null)
     ? records.reduce((s, r) => s + (r.estimatedCostUsd ?? 0), 0)
     : null;
@@ -317,6 +304,7 @@ export function getStats(window: TimeWindow = "today"): UsageStats {
     completionTokens,
     totalTokens,
     cachedTokens,
+    reasoningTokens,
     estimatedCostUsd,
     skippedCalls: skips.length,
     byModule,

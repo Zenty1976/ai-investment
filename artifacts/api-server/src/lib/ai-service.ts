@@ -180,7 +180,7 @@ export async function callAi<T>(
   } catch (err) {
     trackUsage({
       timestamp: calledAt, module: mod, operation, model,
-      promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0,
+      promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0, reasoningTokens: 0,
       webSearchUsed: false, retryNumber, success: false,
       durationMs: Date.now() - callStart,
     });
@@ -191,13 +191,16 @@ export async function callAi<T>(
   const completionTokens = response.usage?.completion_tokens ?? 0;
   const totalTokens      = response.usage?.total_tokens      ?? 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cachedTokens     = (response.usage as any)?.prompt_tokens_details?.cached_tokens ?? 0;
+  const usageAny = response.usage as any;
+  const cachedTokens    = usageAny?.prompt_tokens_details?.cached_tokens    ?? 0;
+  // Reasoning tokens: non-zero for o-series models; 0 for gpt-4.1 family.
+  const reasoningTokens = usageAny?.completion_tokens_details?.reasoning_tokens ?? 0;
 
   const raw = response.choices[0]?.message?.content;
   if (!raw) {
     trackUsage({
       timestamp: calledAt, module: mod, operation, model,
-      promptTokens, completionTokens, totalTokens, cachedTokens,
+      promptTokens, completionTokens, totalTokens, cachedTokens, reasoningTokens,
       webSearchUsed: false, retryNumber, success: false,
       durationMs: Date.now() - callStart,
     });
@@ -210,7 +213,7 @@ export async function callAi<T>(
   } catch {
     trackUsage({
       timestamp: calledAt, module: mod, operation, model,
-      promptTokens, completionTokens, totalTokens, cachedTokens,
+      promptTokens, completionTokens, totalTokens, cachedTokens, reasoningTokens,
       webSearchUsed: false, retryNumber, success: false,
       durationMs: Date.now() - callStart,
     });
@@ -219,7 +222,7 @@ export async function callAi<T>(
 
   trackUsage({
     timestamp: calledAt, module: mod, operation, model,
-    promptTokens, completionTokens, totalTokens, cachedTokens,
+    promptTokens, completionTokens, totalTokens, cachedTokens, reasoningTokens,
     webSearchUsed: false, retryNumber, success: true,
     durationMs: Date.now() - callStart,
   });
@@ -332,7 +335,7 @@ export async function callAiWithWebSearch<T>(
     const isAbort = controller.signal.aborted;
     trackUsage({
       timestamp: calledAt, module: mod, operation, model,
-      promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0,
+      promptTokens: 0, completionTokens: 0, totalTokens: 0, cachedTokens: 0, reasoningTokens: 0,
       webSearchUsed: false, retryNumber, success: false,
       durationMs: Date.now() - callStart,
     });
@@ -484,11 +487,15 @@ export async function callAiWithWebSearch<T>(
   const completionTokens = response.usage?.output_tokens ?? 0;
   const totalTokens      = response.usage?.total_tokens  ?? 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cachedTokens     = (response.usage as any)?.input_tokens_details?.cached_tokens ?? 0;
+  const usageAny2 = response.usage as any;
+  const cachedTokens    = usageAny2?.input_tokens_details?.cached_tokens                ?? 0;
+  // Reasoning tokens: non-zero for o-series models; 0 for gpt-4.1 family.
+  // Responses API reports them under output_tokens_details.reasoning_tokens.
+  const reasoningTokens = usageAny2?.output_tokens_details?.reasoning_tokens           ?? 0;
 
   trackUsage({
     timestamp: calledAt, module: mod, operation, model,
-    promptTokens, completionTokens, totalTokens, cachedTokens,
+    promptTokens, completionTokens, totalTokens, cachedTokens, reasoningTokens,
     webSearchUsed, retryNumber, success: true,
     durationMs: Date.now() - callStart,
   });

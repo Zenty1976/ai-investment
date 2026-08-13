@@ -1,0 +1,763 @@
+NEXT OPTIMIZATION — OPENAI MODEL ROUTING MIGRATION
+
+We have now reduced unnecessary AI calls substantially and centralized
+model routing.
+
+The next objective is:
+
+USE THE CHEAPEST MODEL THAT CAN SAFELY PERFORM EACH AI RESPONSIBILITY,
+WHILE PRESERVING OR IMPROVING INVESTMENT QUALITY.
+
+IMPORTANT:
+
+This is NOT a blanket downgrade.
+
+Trade Decision and Company Monitor are strategically important and should
+remain strong unless there is a compelling reason otherwise.
+
+We would rather:
+
+remove unnecessary expensive calls
++
+use cheap models for simple tasks
++
+spend more on a small number of important reasoning calls
+
+than use one medium model everywhere.
+
+
+==================================================
+1. INSPECT CURRENT CODE FIRST
+==================================================
+
+Inspect the actual current ai-model-config.ts and every caller using:
+
+getModel(...)
+
+Confirm all current model categories and module overrides.
+
+Do not rely on previous task descriptions.
+
+Produce the current mapping before modifying it.
+
+
+==================================================
+2. TARGET MODEL STRATEGY
+==================================================
+
+Evaluate the currently available OpenAI models supported by the API used
+by this application.
+
+Candidate model classes should include:
+
+CHEAP / HIGH VOLUME
+- GPT-5.4 nano class or equivalent
+
+MID / QUALITATIVE
+- GPT-5.4 mini class or equivalent
+
+STRONG REASONING
+- GPT-5.4 class or an appropriate current frontier model
+
+Do not use Pro models for routine application calls.
+
+IMPORTANT:
+
+Do not blindly use the newest/most expensive model.
+
+Match model capability to responsibility.
+
+
+==================================================
+3. DISCOVERY TASKS
+==================================================
+
+Discovery gates perform relatively simple work:
+
+"Has anything materially changed that justifies an expensive analysis?"
+
+Examples:
+
+Company Monitor discovery
+Investor Watch discovery
+other lightweight discovery gates
+
+These should use a CHEAP model.
+
+Candidate:
+
+GPT-5.4 nano
+
+The discovery model should NOT perform the final investment analysis.
+
+Its job is mainly:
+
+change detection
+relevance classification
+materiality screening
+structured extraction
+
+Use reasoning effort NONE or LOW unless testing/code constraints indicate
+otherwise.
+
+
+==================================================
+4. COMMAND BRIEF
+==================================================
+
+Command Brief / 20-second conclusion summarizes intelligence that has
+already been produced by other modules.
+
+It should not need the same model class as Trade Decision.
+
+Candidate:
+
+GPT-5.4 mini
+
+Potentially nano only if its actual responsibility is simple enough.
+
+Be conservative because Command Brief must still provide a useful overall
+interpretation rather than mechanically concatenate statuses.
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: none/low
+
+
+==================================================
+5. MARKET MONITOR
+==================================================
+
+Market Monitor performs qualitative market interpretation and may use web
+search.
+
+It does not need to be the strongest decision model.
+
+Candidate:
+
+GPT-5.4 mini
+
+The model should still be capable of:
+
+macro interpretation
+market regime interpretation
+cross-asset reasoning
+structured output
+web-search-supported analysis
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low
+
+
+==================================================
+6. NEWS MONITOR
+==================================================
+
+News Monitor requires semantic understanding but is a high-volume upstream
+module.
+
+Candidate:
+
+GPT-5.4 mini
+
+Its job includes:
+
+relevance
+materiality
+investment interpretation
+ticker/company association
+summarization
+
+Do not downgrade to nano initially unless the current prompt shows that
+most qualitative interpretation has already been moved elsewhere.
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low
+
+
+==================================================
+7. EVENT MONITOR
+==================================================
+
+Event Monitor is now hybrid.
+
+Routine event maintenance uses zero AI.
+
+When AI discovery actually runs, its responsibility is primarily:
+
+discover new events
+assess relevance
+interpret unusual events
+
+Candidate:
+
+GPT-5.4 mini
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low
+
+Do NOT change the zero-AI maintenance path.
+
+
+==================================================
+8. SECTOR MONITOR
+==================================================
+
+Sector Monitor is now hybrid.
+
+Its AI responsibility is primarily qualitative:
+
+WHY sectors behave as they do
+sector-specific catalysts
+rotation narrative
+leadership interpretation
+
+Candidate:
+
+GPT-5.4 mini
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low
+
+Do not change deterministic Sector Intelligence.
+
+
+==================================================
+9. RISK ANALYZER
+==================================================
+
+Risk Analyzer is now hybrid.
+
+Backend already calculates objective RiskFacts.
+
+AI performs qualitative risk interpretation.
+
+Candidate:
+
+GPT-5.4 mini
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low or medium
+
+Do not move deterministic calculations back into AI.
+
+
+==================================================
+10. PORTFOLIO ANALYZER
+==================================================
+
+Portfolio Analyzer is now hybrid.
+
+Backend calculates PortfolioFacts.
+
+AI interprets:
+
+portfolio health
+drivers
+strengths
+weaknesses
+what deserves attention
+
+Candidate:
+
+GPT-5.4 mini
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low or medium
+
+
+==================================================
+11. INVESTOR WATCH FULL ANALYSIS
+==================================================
+
+Investor Watch is informational and not an input to Trade Decision.
+
+Candidate:
+
+GPT-5.4 mini
+
+It needs good qualitative synthesis but does not justify frontier-model
+cost on every full update.
+
+Initial preference:
+
+GPT-5.4 mini
+reasoning: low
+
+
+==================================================
+12. COMPANY MONITOR FULL ANALYSIS
+==================================================
+
+BE CONSERVATIVE HERE.
+
+Company Monitor establishes and maintains:
+
+investment thesis
+investment view
+investmentCaseStrength
+bull/base/bear case
+competitive position
+thesis strengthening/weakening/invalidation
+material-change reasoning
+
+This is one of the core intelligence modules.
+
+Initial candidate:
+
+GPT-5.4
+
+reasoning: medium
+
+Do NOT downgrade Company Monitor full analysis to mini merely to save cost.
+
+The architecture already reduces frequency through discovery gating.
+
+We prefer fewer high-quality Company analyses over many cheap weaker ones.
+
+
+==================================================
+13. OPPORTUNITY FINDER
+==================================================
+
+Opportunity Finder is an important reasoning stage.
+
+Its responsibility is:
+
+"Given everything currently known, where are the interesting investment
+opportunities?"
+
+Initial candidate:
+
+GPT-5.4 mini OR GPT-5.4 depending on actual prompt complexity.
+
+Inspect its current workload.
+
+If it receives a compact prefiltered candidate set and mainly ranks/
+interprets candidates:
+
+GPT-5.4 mini may be enough.
+
+If it performs substantial cross-module investment reasoning across many
+companies:
+
+keep a stronger model.
+
+Do not automatically downgrade.
+
+Report the decision and rationale.
+
+
+==================================================
+14. TRADE DECISION
+==================================================
+
+QUALITY PRIORITY.
+
+Trade Decision is the central decision engine.
+
+It combines:
+
+Company analysis
+Portfolio
+Risk
+Opportunities
+Events/blockers
+Price Context
+Market
+existing active decisions
+
+and determines:
+
+Hold
+Watch
+PrepareToBuy
+PrepareToReduce
+Buy/Ready
+Sell/Ready
+
+Use a STRONG model.
+
+Initial candidate:
+
+GPT-5.4
+
+reasoning: medium or high depending on actual workload.
+
+Do NOT use nano.
+
+Do NOT use mini merely for cost savings.
+
+This is one of the places where spending more per call is acceptable
+because we have reduced call frequency elsewhere.
+
+
+==================================================
+15. PORTFOLIO TARGET SYNTHESISER
+==================================================
+
+Inspect its actual responsibility.
+
+If deterministic Portfolio/Risk facts already do most of the work and AI
+mainly synthesizes targets:
+
+candidate:
+GPT-5.4 mini
+
+If it makes consequential allocation reasoning:
+consider stronger model.
+
+Report the reasoning.
+
+
+==================================================
+16. REPAIR
+==================================================
+
+Most mechanical repair should already be handled deterministically.
+
+If an AI repair model is used anywhere, it should be CHEAP.
+
+Candidate:
+
+GPT-5.4 nano
+
+Never allow the repair model to reinterpret investment conclusions.
+
+
+==================================================
+17. PROPOSED INITIAL MAPPING
+==================================================
+
+Use this as a hypothesis, NOT as a command if the actual code suggests
+something different:
+
+DISCOVERY:
+GPT-5.4 nano
+reasoning none/low
+
+MARKET MONITOR:
+GPT-5.4 mini
+reasoning low
+
+NEWS MONITOR:
+GPT-5.4 mini
+reasoning low
+
+EVENT MONITOR:
+GPT-5.4 mini
+reasoning low
+
+SECTOR MONITOR:
+GPT-5.4 mini
+reasoning low
+
+RISK ANALYZER:
+GPT-5.4 mini
+reasoning low/medium
+
+PORTFOLIO ANALYZER:
+GPT-5.4 mini
+reasoning low/medium
+
+COMMAND BRIEF:
+GPT-5.4 mini
+reasoning none/low
+
+INVESTOR WATCH FULL:
+GPT-5.4 mini
+reasoning low
+
+COMPANY MONITOR FULL:
+GPT-5.4
+reasoning medium
+
+OPPORTUNITY FINDER:
+GPT-5.4 mini OR GPT-5.4
+based on actual responsibility
+
+TRADE DECISION:
+GPT-5.4
+reasoning medium
+
+PORTFOLIO TARGET SYNTHESISER:
+GPT-5.4 mini unless strong reasoning is clearly required
+
+REPAIR:
+GPT-5.4 nano
+
+
+==================================================
+18. IMPORTANT — API COMPATIBILITY
+==================================================
+
+Before switching models, verify the current OpenAI API implementation.
+
+Check whether the application uses:
+
+Chat Completions
+Responses API
+or both.
+
+Verify for each proposed model:
+
+structured output compatibility
+web search compatibility
+reasoning parameter syntax
+response parsing
+usage reporting
+
+Do NOT assume parameters used for gpt-4o work identically with newer
+reasoning models.
+
+Adapt the shared OpenAI infrastructure correctly.
+
+Do not create module-specific hacks.
+
+
+==================================================
+19. REASONING TOKENS
+==================================================
+
+Reasoning models can consume additional tokens.
+
+Track this correctly in usage/cost reporting if the API exposes it.
+
+Do not set medium/high reasoning globally.
+
+Use reasoning effort based on task complexity.
+
+Cheap monitor calls should not silently become expensive because they use
+unnecessary reasoning effort.
+
+
+==================================================
+20. WEB SEARCH COST
+==================================================
+
+Continue tracking web-search usage separately from model token cost.
+
+Switching from gpt-4o to a cheaper model does NOT make unnecessary web
+search free.
+
+Existing hybrid/discovery gates must remain intact.
+
+
+==================================================
+21. PROMPT CACHING
+==================================================
+
+Inspect whether the new model/API path supports prompt caching.
+
+Preserve stable prompt prefixes:
+
+system instructions
+schemas
+definitions
+investment framework
+
+before variable content:
+
+current data
+news
+portfolio
+events
+price context
+
+Do not radically redesign prompts in this task.
+
+But structure them so repeated stable content can benefit from caching
+where supported.
+
+Track cached input tokens separately if returned by the API.
+
+
+==================================================
+22. USAGE TRACKING
+==================================================
+
+Update OpenAI Usage so it correctly records:
+
+module
+resolved model
+input tokens
+cached input tokens
+output tokens
+reasoning tokens where available
+web-search usage
+retry count
+estimated cost
+
+The UI/debug must make it possible to compare model cost by module.
+
+
+==================================================
+23. COST CONFIGURATION
+==================================================
+
+Do not scatter model prices throughout the code.
+
+Maintain one centralized model pricing/config table.
+
+Cost estimates must be based on the resolved model.
+
+Keep pricing configuration easy to update because API pricing changes.
+
+
+==================================================
+24. FALLBACK
+==================================================
+
+Do NOT silently fall back from a strong model to a weaker model when a
+request fails.
+
+If Company Monitor or Trade Decision cannot use its configured model,
+surface the failure through existing error/debug handling.
+
+Reliability must not silently change investment intelligence.
+
+
+==================================================
+25. NO PAID TESTS
+==================================================
+
+Do NOT perform live OpenAI calls merely to test model quality.
+
+Use:
+
+unit tests
+mock responses
+schema fixtures
+existing stored responses
+
+Verify API request construction without sending paid requests.
+
+
+==================================================
+26. TEST API CONSTRUCTION
+==================================================
+
+Add tests verifying:
+
+nano request construction
+mini request construction
+strong model request construction
+reasoning effort
+structured output/schema configuration
+web search configuration
+usage parsing
+cached token parsing if applicable
+
+No paid API calls.
+
+
+==================================================
+27. DO NOT CHANGE MODULE ARCHITECTURE
+==================================================
+
+This task is about MODEL ROUTING.
+
+Do NOT redesign:
+
+Company Monitor
+Market Monitor
+News Monitor
+Event Monitor
+Sector Monitor
+Risk Analyzer
+Portfolio Analyzer
+Opportunity Finder
+Trade Decision
+Investor Watch
+
+Do not merge modules.
+
+Do not remove contexts merely to make new models work.
+
+
+==================================================
+28. IMPORTANT QUALITY PRINCIPLE
+==================================================
+
+The goal is NOT:
+
+"Make every OpenAI call cheap."
+
+The goal is:
+
+"Spend little on routine intelligence and spend intelligently on the few
+decisions where model quality matters."
+
+Expected pattern:
+
+many zero-AI deterministic operations
++
+cheap discovery
++
+mid-cost qualitative monitors
++
+few high-quality investment reasoning calls
+
+
+==================================================
+29. IMPLEMENTATION SAFETY
+==================================================
+
+Before actually changing production model mapping:
+
+1. Print/report CURRENT mapping.
+2. Print/report PROPOSED mapping.
+3. Verify API compatibility.
+4. Update shared infrastructure.
+5. Update centralized mapping.
+6. Run all non-paid tests.
+
+If a proposed model is incompatible with an existing feature, DO NOT
+silently remove the feature.
+
+Report the incompatibility instead.
+
+
+==================================================
+30. FINAL REPORT
+==================================================
+
+After implementation report:
+
+1. Previous model for every module.
+2. New model for every module.
+3. Reasoning effort for every module.
+4. Why each model was selected.
+5. Which modules remain on strong AI and why.
+6. API changes required for GPT-5.x models.
+7. Structured output compatibility.
+8. Web-search compatibility.
+9. Usage/cost tracking changes.
+10. Prompt-caching readiness.
+11. Tests and results.
+12. Any module NOT migrated and why.
+13. Expected relative cost reduction.
+
+Do not claim a measured cost reduction unless actual production usage
+data supports it.
+
+Clearly distinguish:
+
+EXPECTED SAVING
+
+from:
+
+MEASURED SAVING.

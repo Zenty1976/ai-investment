@@ -46,9 +46,9 @@
       "analysisDuration": 4893
     },
     "createdAt": "2026-07-31T10:16:47.600Z",
-    "updatedAt": "2026-08-13T19:19:23.911Z",
+    "updatedAt": "2026-08-13T19:49:59.563Z",
     "materialVersion": 7,
-    "refreshVersion": 27
+    "refreshVersion": 28
   },
   "event-monitor": {
     "moduleName": "event-monitor",
@@ -149,99 +149,52 @@
   "news-monitor": {
     "moduleName": "news-monitor",
     "result": {
-      "executiveSummary": "U.S. markets show slight gains amid cautious optimism, while European and Asian markets exhibit mixed trends. Healthcare and consumer sectors outperform, whereas technology and energy sectors underperform.",
+      "executiveSummary": "U.S. markets show slight gains amid cautious optimism, with healthcare and consumer sectors outperforming, while technology and energy sectors underperform. Investors are attentive to upcoming economic data releases and central bank communications.",
       "overallMarketImpact": "Neutral market sentiment with moderate risk levels.",
       "topStory": {
-        "title": "U.S. Markets Show Slight Gains",
-        "summary": "U.S. indices experience modest increases, indicating cautious investor optimism.",
+        "title": "U.S. Markets Exhibit Mixed Performance",
+        "summary": "Healthcare and consumer sectors outperform, while technology and energy sectors underperform.",
         "importance": "High"
       },
       "news": [
         {
-          "id": "us-markets-slight-gains-2026-08-13",
-          "title": "U.S. Markets Show Slight Gains",
-          "summary": "U.S. indices experience modest increases, indicating cautious investor optimism.",
+          "id": "us-markets-mixed-performance-2026-08-13",
+          "title": "U.S. Markets Exhibit Mixed Performance",
+          "summary": "Healthcare and consumer sectors outperform, while technology and energy sectors underperform.",
           "category": "Equities",
           "importance": "High",
           "affectedMarkets": [
             "U.S. Equities"
           ],
-          "whyItMatters": "Reflects investor sentiment and potential economic outlook.",
-          "marketImpact": "Positive for U.S. equities",
+          "whyItMatters": "Sector performance indicates investor sentiment and potential shifts in market dynamics.",
+          "marketImpact": "Mixed impact on U.S. equities",
           "confidence": 0.9,
           "source": "Market Monitor",
           "publishedAt": "2026-08-13"
         },
         {
-          "id": "ppi-release-2026-08-13",
-          "title": "July 2026 Producer Price Index Released",
-          "summary": "Latest PPI data released, providing insights into inflation trends.",
-          "category": "Inflation",
+          "id": "upcoming-economic-data-releases-2026-08-13",
+          "title": "Upcoming Economic Data Releases",
+          "summary": "Investors anticipate key economic data releases, including PPI and retail sales data.",
+          "category": "Macro",
           "importance": "High",
           "affectedMarkets": [
-            "Inflation Indicators"
+            "Global Markets"
           ],
-          "whyItMatters": "Influences monetary policy decisions and market expectations.",
-          "marketImpact": "Potential market volatility based on inflation trends",
-          "confidence": 0.9,
-          "source": "Event Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "healthcare-consumer-sectors-outperform-2026-08-13",
-          "title": "Healthcare and Consumer Sectors Outperform",
-          "summary": "Defensive industries like healthcare and consumer sectors show resilience.",
-          "category": "Equities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Healthcare",
-            "Consumer Defensive"
-          ],
-          "whyItMatters": "Indicates investor preference for defensive stocks amid uncertainty.",
-          "marketImpact": "Positive for healthcare and consumer defensive stocks",
+          "whyItMatters": "Economic data releases can influence market sentiment and monetary policy decisions.",
+          "marketImpact": "Potential market volatility",
           "confidence": 0.85,
-          "source": "Market Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "technology-energy-sectors-underperform-2026-08-13",
-          "title": "Technology and Energy Sectors Underperform",
-          "summary": "Technology and energy sectors face declines, reflecting growth concerns.",
-          "category": "Equities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Technology",
-            "Energy"
-          ],
-          "whyItMatters": "Highlights potential challenges in growth-oriented sectors.",
-          "marketImpact": "Negative for technology and energy stocks",
-          "confidence": 0.8,
-          "source": "Market Monitor",
-          "publishedAt": "2026-08-13"
-        },
-        {
-          "id": "nikkei-225-declines-2026-08-13",
-          "title": "Nikkei 225 Declines",
-          "summary": "Japan's Nikkei 225 index experiences a downturn, indicating Asian market weakness.",
-          "category": "Equities",
-          "importance": "Medium",
-          "affectedMarkets": [
-            "Asian Equities"
-          ],
-          "whyItMatters": "Suggests regional economic challenges affecting investor confidence.",
-          "marketImpact": "Negative for Asian equities",
-          "confidence": 0.75,
-          "source": "Market Monitor",
+          "source": "Event Monitor",
           "publishedAt": "2026-08-13"
         }
       ],
-      "timestamp": "2026-08-13T19:19:16.314Z",
-      "analysisDuration": 9687
+      "timestamp": "2026-08-13T19:49:51.097Z",
+      "analysisDuration": 7080
     },
     "createdAt": "2026-07-31T11:12:20.424Z",
-    "updatedAt": "2026-08-13T19:19:26.001Z",
-    "materialVersion": 25,
-    "refreshVersion": 26
+    "updatedAt": "2026-08-13T19:49:58.178Z",
+    "materialVersion": 26,
+    "refreshVersion": 27
   },
   "sector-monitor": {
     "moduleName": "sector-monitor",
@@ -2703,9 +2656,9 @@
       "noNewDevelopmentsSinceLastCheck": false
     },
     "createdAt": "2026-08-01T22:11:22.425Z",
-    "updatedAt": "2026-08-13T19:28:46.310Z",
+    "updatedAt": "2026-08-13T19:48:51.002Z",
     "materialVersion": 35,
-    "refreshVersion": 40,
+    "refreshVersion": 41,
     "dependencyFingerprint": "1gbihwg",
     "lastAIAnalysisAt": "2026-08-13T19:28:46.292Z"
   },
@@ -14404,6 +14357,12 @@
     "result": {
       "entries": [
         {
+          "timestamp": "2026-08-13T19:49:51.061Z",
+          "sentiment": "Neutral",
+          "riskLevel": "Moderate",
+          "score": 0
+        },
+        {
           "timestamp": "2026-08-13T19:19:16.279Z",
           "sentiment": "Neutral",
           "riskLevel": "Moderate",
@@ -14832,9 +14791,9 @@
       ]
     },
     "createdAt": "2026-08-08T08:34:32.655Z",
-    "updatedAt": "2026-08-13T19:19:23.926Z",
-    "materialVersion": 27,
-    "refreshVersion": 27
+    "updatedAt": "2026-08-13T19:49:59.575Z",
+    "materialVersion": 28,
+    "refreshVersion": 28
   },
   "company-monitor:CSCO": {
     "moduleName": "company-monitor:CSCO",
