@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter"
+import { PortfolioReturnBar } from "@/components/PortfolioReturnBar"
 import {
   LayoutGrid,
   Briefcase,
@@ -202,6 +203,10 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* ── Page content ── */}
         <main className="flex-1 overflow-y-auto p-4 md:p-5">
+          {/* Portfolio return bar — hidden on pages that already show full performance detail */}
+          {location !== "/portfolio" && location !== "/analyse" && (
+            <PortfolioReturnBar />
+          )}
           {children}
         </main>
       </div>

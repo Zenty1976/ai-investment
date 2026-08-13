@@ -1,89 +1,5 @@
 [
   {
-    "id": "62972177-35ac-4d3c-aaec-a92f38c90b80",
-    "timestamp": "2026-08-13T04:47:56.841Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via Scheduled (3015ms, change: Medium)"
-  },
-  {
-    "id": "39107d6b-c8ae-47aa-bdd7-67e81a55b77e",
-    "timestamp": "2026-08-13T04:47:56.842Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:AMAT changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "18bc73b3-b5cf-4c83-84db-4ade7cf5d1c9",
-    "timestamp": "2026-08-13T04:47:56.847Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "NOVOB:XCSE: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "b5aa90f4-7a41-4695-b8de-b454bceb43af",
-    "timestamp": "2026-08-13T04:47:56.867Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via Scheduled (3184ms, change: Medium)"
-  },
-  {
-    "id": "c694759c-5c95-4339-9062-f294ff52b675",
-    "timestamp": "2026-08-13T04:47:56.868Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer not woken by holding-CM change (NOVOB:XCSE) — waiting for: portfolio-manager, risk-analyzer"
-  },
-  {
-    "id": "fee68e66-158b-4b96-8876-3b6644c82996",
-    "timestamp": "2026-08-13T04:47:56.874Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "KEYS: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "34b03fb7-bb9f-445a-a1c3-175543cab57a",
-    "timestamp": "2026-08-13T04:47:56.896Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via Scheduled (3069ms, change: Medium)"
-  },
-  {
-    "id": "363dc9d6-4aa1-4013-8640-8bd67135aa39",
-    "timestamp": "2026-08-13T04:47:56.900Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:KEYS changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "70e00a62-06fa-4373-9872-e8da7b76901f",
-    "timestamp": "2026-08-13T04:47:56.978Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "CSCO: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "21f0aed9-d26c-499f-bda5-721ab4332ba4",
-    "timestamp": "2026-08-13T04:47:57.008Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via Scheduled (3183ms, change: Medium)"
-  },
-  {
-    "id": "18504267-e5f9-4579-9e13-c5ab90cc34fd",
-    "timestamp": "2026-08-13T04:47:57.009Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:CSCO changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "d714f238-4d80-4dd9-927e-a1f7a359b345",
-    "timestamp": "2026-08-13T04:47:57.415Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "SERV:XNAS: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
     "id": "d3959694-18d5-45f3-b2cb-babff4569da0",
     "timestamp": "2026-08-13T04:47:57.435Z",
     "module": "AutomationOrchestrator",
@@ -3495,6 +3411,90 @@
   {
     "id": "9e492832-aa9d-4384-b5b2-fbffdfc8a2f0",
     "timestamp": "2026-08-13T18:07:14.836Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9232feaf-8c69-45b3-b361-57a10c57b31e",
+    "timestamp": "2026-08-13T18:07:44.840Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "800ba381-31c4-4dac-81bd-cc8e8ebf1bd5",
+    "timestamp": "2026-08-13T18:08:14.832Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "cd6bb95c-0067-426e-aa07-bf18f9b63408",
+    "timestamp": "2026-08-13T18:08:34.829Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "2719a90f-5d11-4ffd-a06e-9f0428ae6e6a",
+    "timestamp": "2026-08-13T18:08:34.861Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts completed via deterministic engine (1ms, change: High)"
+  },
+  {
+    "id": "708b848b-ed61-493d-95f1-56826cce80af",
+    "timestamp": "2026-08-13T18:08:34.936Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "4 new alert(s): U.S. Indices Show Slight Gains; Upcoming Release of FOMC Minutes; Upcoming GDP Report Release; Technology Sector Underperforms"
+  },
+  {
+    "id": "2dc383a9-5d8c-40c6-ac0e-fc33bbdcbd03",
+    "timestamp": "2026-08-13T18:08:34.937Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 alert(s) resolved: U.S. Stock Indexes Decline Amid Oil Market Uncertainty"
+  },
+  {
+    "id": "34d2665b-f951-4a1e-8cee-06ed3c14e4bc",
+    "timestamp": "2026-08-13T18:08:34.947Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Technology sector: weak outlook, weakening trend [Sector]"
+  },
+  {
+    "id": "0080975e-25c9-45a2-bac3-d001f52d1ce9",
+    "timestamp": "2026-08-13T18:08:34.961Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Dependency (151ms, change: High)"
+  },
+  {
+    "id": "a2e9662c-c076-414a-a37a-04de61a92e4a",
+    "timestamp": "2026-08-13T18:08:34.963Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: portfolio-manager"
+  },
+  {
+    "id": "52d4102e-558d-4465-a885-18e0381a28b8",
+    "timestamp": "2026-08-13T18:08:44.840Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "922ac13f-9229-4ff8-ab6f-e78e48cb71cb",
+    "timestamp": "2026-08-13T18:09:14.829Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "222bd965-8a6e-432b-a689-c4548a0c7fbe",
+    "timestamp": "2026-08-13T18:09:44.828Z",
     "module": "AutomationOrchestrator",
     "level": "error",
     "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
