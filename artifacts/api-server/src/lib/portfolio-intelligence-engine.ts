@@ -88,25 +88,38 @@ export function computePortfolioFacts(
     }
   }
 
-  const totalInvested = rawPositions.reduce((s, p) => s + p.marketValueBase, 0);
+  // ── Aggregate market values by ticker across all accounts ──────────────
+  // The same symbol can be held in multiple accounts with different market
+  // values. Accumulate before computing weights so each ticker has exactly
+  // one correct weight entry and produces exactly one perHolding row.
+  const tickerValues: Record<string, number> = {};
+  for (const pos of rawPositions) {
+    tickerValues[pos.symbol] = (tickerValues[pos.symbol] ?? 0) + pos.marketValueBase;
+  }
 
-  // invested-weight map for all positions (by ticker)
+  const totalInvested = Object.values(tickerValues).reduce((s, v) => s + v, 0);
+
+  // invested-weight map — one entry per unique ticker
   const investedWeightMap: Record<string, number> = {};
   if (totalInvested > 0) {
-    for (const pos of rawPositions) {
-      investedWeightMap[pos.symbol] = (pos.marketValueBase / totalInvested) * 100;
+    for (const [symbol, mv] of Object.entries(tickerValues)) {
+      investedWeightMap[symbol] = (mv / totalInvested) * 100;
     }
   }
 
-  // ── Per-holding performance ───────────────────────────────────────────────
+  // ── Per-holding performance (one row per unique ticker) ───────────────────
+  // Collect PriceContext asOf timestamps to surface source data freshness.
+  // Policy: expose the oldest (minimum) asOf so callers know the worst-case
+  // data age — "all prices used here are at least this fresh."
+  const priceAsOfs: string[] = [];
 
-  const perHolding: HoldingPerformance[] = rawPositions.map((pos) => {
-    const investedW = investedWeightMap[pos.symbol] ?? 0;
-    const ctx = getPriceContext(pos.symbol);
+  const perHolding: HoldingPerformance[] = Object.keys(tickerValues).map((symbol) => {
+    const investedW = investedWeightMap[symbol] ?? 0;
+    const ctx = getPriceContext(symbol);
 
     if (!ctx?.returns) {
       return {
-        ticker: pos.symbol,
+        ticker: symbol,
         investedWeightPct: r1(investedW),
         return1D: null,
         return5D: null,
@@ -114,6 +127,8 @@ export function computePortfolioFacts(
         contribution1DPct: null,
       };
     }
+
+    if (ctx.asOf) priceAsOfs.push(ctx.asOf);
 
     const r1d =
       typeof ctx.returns.oneDayPct === "number" ? ctx.returns.oneDayPct : null;
@@ -123,7 +138,7 @@ export function computePortfolioFacts(
       typeof ctx.returns.thirtyDayPct === "number" ? ctx.returns.thirtyDayPct : null;
 
     return {
-      ticker: pos.symbol,
+      ticker: symbol,
       investedWeightPct: r1(investedW),
       return1D: r1d !== null ? r2(r1d) : null,
       return5D: r5d !== null ? r2(r5d) : null,
@@ -131,6 +146,12 @@ export function computePortfolioFacts(
       contribution1DPct: r1d !== null ? r2((investedW / 100) * r1d) : null,
     };
   });
+
+  // Oldest (most conservative) asOf across covered holdings; null if none.
+  const priceDataAsOf: string | null =
+    priceAsOfs.length > 0
+      ? priceAsOfs.reduce((oldest, t) => (t < oldest ? t : oldest))
+      : null;
 
   // ── Contributors / detractors (by 1D contribution) ───────────────────────
 
@@ -179,6 +200,7 @@ export function computePortfolioFacts(
     portfolioReturn1D,
     portfolioReturn5D,
     portfolioReturn1M,
+    priceDataAsOf,
   };
 
   // ── Company state (derived from riskFacts.companyRisk) ─────────────────

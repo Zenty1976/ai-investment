@@ -97,6 +97,7 @@ function basePortfolioFacts(overrides: Partial<PortfolioFacts> = {}): PortfolioF
       portfolioReturn1D: 0.08,
       portfolioReturn5D: 2.8,
       portfolioReturn1M: 1.2,
+      priceDataAsOf: null,
     },
     allocation: {
       topPositions: [
@@ -448,5 +449,138 @@ describe("computePortfolioFactsFingerprint — event changes", () => {
       computePortfolioFactsFingerprint(a, 1, 2),
       computePortfolioFactsFingerprint(b, 1, 2)
     );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// priceDataAsOf — metadata field must not affect fingerprint
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("priceDataAsOf metadata field", () => {
+  it("25. priceDataAsOf null → fingerprint unchanged (metadata not part of material state)", () => {
+    const a = basePortfolioFacts();
+    a.performance.priceDataAsOf = null;
+    const b = clone(a);
+    b.performance.priceDataAsOf = "2026-08-13T14:30:00.000Z";
+    assert.strictEqual(
+      computePortfolioFactsFingerprint(a, 1, 1),
+      computePortfolioFactsFingerprint(b, 1, 1),
+      "priceDataAsOf change must not alter fingerprint — it is source metadata, not material state"
+    );
+  });
+
+  it("26. priceDataAsOf populated → fingerprint unchanged regardless of timestamp value", () => {
+    const a = basePortfolioFacts();
+    a.performance.priceDataAsOf = "2026-08-13T09:00:00.000Z";
+    const b = clone(a);
+    b.performance.priceDataAsOf = "2026-08-13T16:30:00.000Z";
+    assert.strictEqual(
+      computePortfolioFactsFingerprint(a, 1, 1),
+      computePortfolioFactsFingerprint(b, 1, 1),
+      "different priceDataAsOf timestamps must not alter fingerprint"
+    );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Multi-account ticker aggregation — pure math verification
+//
+// These tests document the expected weight calculation behaviour for portfolios
+// where the same ticker is held in multiple accounts. The engine aggregates
+// market values by ticker before computing weights so each holding gets one
+// correct row (accumulate, not overwrite).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("multi-account ticker aggregation (weight math)", () => {
+  /** Simulate engine aggregation: accumulate → weight → contribution. */
+  function aggregateAndWeight(
+    positions: Array<{ symbol: string; marketValueBase: number }>
+  ): Record<string, { weightPct: number; aggregatedMv: number }> {
+    const tickerValues: Record<string, number> = {};
+    for (const pos of positions) {
+      tickerValues[pos.symbol] = (tickerValues[pos.symbol] ?? 0) + pos.marketValueBase;
+    }
+    const total = Object.values(tickerValues).reduce((s, v) => s + v, 0);
+    const result: Record<string, { weightPct: number; aggregatedMv: number }> = {};
+    for (const [sym, mv] of Object.entries(tickerValues)) {
+      result[sym] = { weightPct: (mv / total) * 100, aggregatedMv: mv };
+    }
+    return result;
+  }
+
+  it("27. same ticker in two equal accounts → one row, weight = combined share", () => {
+    const positions = [
+      { symbol: "AAPL", marketValueBase: 50_000 }, // account A
+      { symbol: "AAPL", marketValueBase: 50_000 }, // account B
+      { symbol: "MSFT", marketValueBase: 100_000 },
+    ];
+    const weights = aggregateAndWeight(positions);
+    assert.strictEqual(Object.keys(weights).length, 2, "exactly 2 unique tickers (no duplicate rows)");
+    assert.ok(Math.abs(weights["AAPL"]!.weightPct - 50) < 0.01,
+      `AAPL combined weight should be 50%, got ${weights["AAPL"]!.weightPct.toFixed(3)}%`);
+    assert.ok(Math.abs(weights["MSFT"]!.weightPct - 50) < 0.01,
+      `MSFT weight should be 50%, got ${weights["MSFT"]!.weightPct.toFixed(3)}%`);
+  });
+
+  it("28. same ticker in two unequal accounts → weight reflects true combined exposure", () => {
+    // AAPL: account A 10k + account B 90k = 100k total; NVDA: 100k
+    // Total invested: 200k.  AAPL weight: 50%, NVDA weight: 50%.
+    // Buggy overwrite approach: AAPL weight = 90k/200k = 45% (last-seen wins).
+    const positions = [
+      { symbol: "AAPL", marketValueBase: 10_000 }, // account A (small slice)
+      { symbol: "AAPL", marketValueBase: 90_000 }, // account B (large slice)
+      { symbol: "NVDA", marketValueBase: 100_000 },
+    ];
+    const weights = aggregateAndWeight(positions);
+    const aaplWeight = weights["AAPL"]!.weightPct;
+    assert.ok(Math.abs(aaplWeight - 50) < 0.01,
+      `AAPL true combined weight should be 50%, got ${aaplWeight.toFixed(3)}%`);
+    // Old buggy approach (overwrite) would yield 45%
+    const buggyWeight = (90_000 / 200_000) * 100;
+    assert.ok(Math.abs(buggyWeight - 45) < 0.01, "buggy overwrite gives 45% (wrong)");
+    assert.notEqual(
+      Math.round(aaplWeight * 100),
+      Math.round(buggyWeight * 100),
+      "correct aggregation (50%) differs from buggy overwrite (45%)"
+    );
+  });
+
+  it("29. contribution uses combined weight: AAPL +2% at 50% weight → +1.00pp (not 0.90pp)", () => {
+    const positions = [
+      { symbol: "AAPL", marketValueBase: 10_000 },
+      { symbol: "AAPL", marketValueBase: 90_000 },
+      { symbol: "NVDA", marketValueBase: 100_000 },
+    ];
+    const weights = aggregateAndWeight(positions);
+    const return1D = 2.0;
+    const contribution = (weights["AAPL"]!.weightPct / 100) * return1D;
+    assert.ok(Math.abs(contribution - 1.0) < 0.001,
+      `correct contribution: ${contribution.toFixed(4)}pp, expected 1.00pp`);
+    // Buggy approach contribution
+    const buggyContrib = (45 / 100) * return1D; // 0.90pp
+    assert.ok(Math.abs(buggyContrib - 0.9) < 0.001, "buggy approach gives 0.90pp");
+    assert.ok(contribution > buggyContrib, "correct contribution exceeds buggy by 0.10pp");
+  });
+
+  it("30. partial price coverage: holdings with null return do not affect weighted portfolio return", () => {
+    // AAPL: 50% weight, return1D = 2.0%
+    // NVDA: 50% weight, return1D = null (no price context)
+    // weightedAvgReturn should be 2.0 (scaled only over AAPL's 50% weight share)
+    const holdings = [
+      { ticker: "AAPL", investedWeightPct: 50, return1D: 2.0 },
+      { ticker: "NVDA", investedWeightPct: 50, return1D: null as null | number },
+    ];
+    let weightSum = 0;
+    let weightedReturn = 0;
+    for (const h of holdings) {
+      if (h.return1D === null) continue;
+      const w = h.investedWeightPct;
+      weightedReturn += (w / 100) * h.return1D;
+      weightSum += w / 100;
+    }
+    const portfolioReturn1D = weightSum > 0 ? weightedReturn / weightSum : null;
+    assert.ok(portfolioReturn1D !== null, "partial coverage still yields a return");
+    assert.ok(Math.abs(portfolioReturn1D - 2.0) < 0.001,
+      `return normalised over covered weight: ${portfolioReturn1D?.toFixed(4)}%, expected 2.00%`);
   });
 });

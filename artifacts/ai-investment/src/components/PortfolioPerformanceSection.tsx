@@ -82,9 +82,12 @@ function ReturnPill({
 
 function HoldingRow({ holding }: { holding: PortfolioHoldingPerf }) {
   return (
-    <div className="flex items-center justify-between gap-2 py-0.5">
+    <div className="flex items-center gap-2 py-0.5">
       <span className="text-[11px] font-mono font-semibold text-foreground/80 w-14 shrink-0">
         {holding.ticker}
+      </span>
+      <span className="text-[10px] font-mono tabular-nums text-muted-foreground/35 w-10 shrink-0 text-right">
+        {holding.investedWeightPct.toFixed(1)}%
       </span>
       <span className={`text-[11px] font-mono tabular-nums ${returnColor(holding.return1D)}`}>
         {fmtReturn(holding.return1D)}
@@ -147,8 +150,11 @@ export function PortfolioPerformanceSection() {
   const hasDetractors = topDetractors.length > 0
   const hasContribData = hasContributors || hasDetractors
 
-  // Freshness — use client-side refetch timestamp (not server computedAt)
-  const lastUpdated = dataUpdatedAt ? new Date(dataUpdatedAt) : null
+  // Source price freshness — use the engine-derived PriceContext asOf (oldest among
+  // covered holdings) so the timestamp reflects actual data age, not polling cadence.
+  // Falls back to React Query's dataUpdatedAt only when no price data exists yet.
+  const priceAsOf = data.priceDataAsOf ? new Date(data.priceDataAsOf) : null
+  const lastFetched = dataUpdatedAt ? new Date(dataUpdatedAt) : null
 
   return (
     <Card className="bg-card/50 border-card-border/40 overflow-hidden">
@@ -166,9 +172,15 @@ export function PortfolioPerformanceSection() {
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/35">
             {isFetching && <RefreshCw className="h-2.5 w-2.5 animate-spin" />}
-            {lastUpdated && (
-              <span>Updated {format(lastUpdated, "HH:mm:ss")}</span>
-            )}
+            {priceAsOf ? (
+              <span title={`Source price data as of ${data.priceDataAsOf}`}>
+                Prices {format(priceAsOf, "HH:mm")}
+              </span>
+            ) : lastFetched ? (
+              <span title="Last backend fetch — no price data available yet">
+                Fetched {format(lastFetched, "HH:mm:ss")}
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -254,10 +266,11 @@ export function PortfolioPerformanceSection() {
             </div>
 
             {/* Column sub-header legend */}
-            <div className="flex items-center gap-1 mt-2 text-[9px] text-muted-foreground/25">
+            <div className="flex items-center gap-2 mt-2 text-[9px] text-muted-foreground/25">
               <span className="w-14">ticker</span>
+              <span className="w-10 text-right">wt</span>
               <span>return</span>
-              <span className="ml-auto">contribution</span>
+              <span className="ml-auto">contrib</span>
             </div>
           </div>
         )}

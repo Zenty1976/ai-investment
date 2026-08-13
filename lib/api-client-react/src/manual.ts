@@ -377,7 +377,13 @@ export interface PortfolioPerformance {
   priceCoveragePct: number | null;
   /** Number of holdings without price context data */
   missingPriceCount: number;
-  /** ISO timestamp of when this data was computed */
+  /**
+   * Oldest PriceContext asOf timestamp among covered holdings (source data freshness).
+   * Use this — not computedAt — to tell users how fresh the underlying price data is.
+   * null when no holding has price context yet.
+   */
+  priceDataAsOf: string | null;
+  /** ISO timestamp of when this payload was computed (request time) */
   computedAt: string;
 }
 

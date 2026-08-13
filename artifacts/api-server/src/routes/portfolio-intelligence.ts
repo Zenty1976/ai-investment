@@ -69,6 +69,12 @@ router.get("/portfolio-intelligence/performance", (req, res): void => {
       })),
       priceCoveragePct,
       missingPriceCount,
+      /**
+       * Oldest PriceContext asOf timestamp among covered holdings.
+       * Aggregation policy: minimum (oldest) — "all prices are at least this fresh."
+       * null when no holding has price data yet.
+       */
+      priceDataAsOf: perf.priceDataAsOf,
       computedAt: nowIso,
     });
   } catch (err) {

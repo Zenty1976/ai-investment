@@ -11,6 +11,7 @@
 
 import { useState } from "react"
 import { useGetPortfolioLive, useGetPortfolioPriceHistory, useUpdatePortfolio } from "@workspace/api-client-react"
+import { PortfolioPerformanceSection } from "@/components/PortfolioPerformanceSection"
 import { TickerBadge } from "@/components/TickerBadge"
 import type { PortfolioAccount, PortfolioPosition, PortfolioSnapshot } from "@workspace/api-client-react"
 import {
@@ -565,6 +566,9 @@ export default function PortfolioManager() {
           </CardContent>
         </Card>
       )}
+
+      {/* ── Today's movers (deterministic — no AI call required) ── */}
+      <PortfolioPerformanceSection />
 
       {/* ── Summary + accounts + positions ── */}
       {snapshot && (

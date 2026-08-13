@@ -45,6 +45,12 @@ export interface PortfolioPerformanceFacts {
   portfolioReturn5D: number | null;
   /** Weighted average 30-day return. null if insufficient data. */
   portfolioReturn1M: number | null;
+  /**
+   * Oldest PriceContext asOf timestamp among holdings with price data.
+   * Aggregation policy: minimum (oldest) so callers know the worst-case data age.
+   * null when no holding has price context.
+   */
+  priceDataAsOf: string | null;
 }
 
 export interface CompanyStateFacts {
