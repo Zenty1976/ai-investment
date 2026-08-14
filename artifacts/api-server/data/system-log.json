@@ -1,117 +1,5 @@
 [
   {
-    "id": "fc371c36-8b73-4d12-baf8-cdab21dba183",
-    "timestamp": "2026-08-14T10:50:36.689Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor downstream skipped — upstream change was None"
-  },
-  {
-    "id": "cad0a748-1f8b-432e-a91d-6fa3492854c8",
-    "timestamp": "2026-08-14T10:50:36.692Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "db23bf86-613d-41ec-8ee4-8c773b71b9ff",
-    "timestamp": "2026-08-14T10:50:36.759Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "5db733f8-0198-4b17-bde7-de98d773cc22",
-    "timestamp": "2026-08-14T10:50:40.098Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "0548e369-7af0-45b9-9594-d8e88db40b09",
-    "timestamp": "2026-08-14T10:51:00.064Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "2a76c881-ba7f-4e4b-92c7-2aa49f4915e7",
-    "timestamp": "2026-08-14T10:51:10.068Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "71b7faf9-979b-41fe-ad85-2e759fba5bf2",
-    "timestamp": "2026-08-14T10:51:12.910Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed (MATERIAL CHANGE): 8 market-moving stories found"
-  },
-  {
-    "id": "1bd66676-c906-4bba-8784-f3f7fc302b19",
-    "timestamp": "2026-08-14T10:51:13.051Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via Scheduled (13015ms, change: Medium)"
-  },
-  {
-    "id": "82baa55e-4f5c-4e2b-b84f-84fd93d53405",
-    "timestamp": "2026-08-14T10:51:13.053Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "6f091dc5-1346-4c1d-863d-ae32d53649c0",
-    "timestamp": "2026-08-14T10:51:13.058Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "9e3c4e25-02ca-4314-bc27-3604d86e0af4",
-    "timestamp": "2026-08-14T10:51:13.146Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "eea59f08-ed9c-4292-81a4-30f12e91f3ab",
-    "timestamp": "2026-08-14T10:51:20.801Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (7651ms, change: None)"
-  },
-  {
-    "id": "05c67c6b-5040-4419-83d8-976b2a0f7261",
-    "timestamp": "2026-08-14T10:51:30.055Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NOVOB:XCSE (trigger: Scheduled)"
-  },
-  {
-    "id": "8dec2142-0c04-4a60-8162-c0f7a38df568",
-    "timestamp": "2026-08-14T10:51:30.059Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for SERV:XNAS (trigger: Scheduled)"
-  },
-  {
-    "id": "52cd94dd-875d-4cac-81c2-2c00e4bfee6e",
-    "timestamp": "2026-08-14T10:51:30.065Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for PFE (trigger: Scheduled)"
-  },
-  {
-    "id": "3eb40fdb-e5f6-4d8f-915c-56a0da63a43e",
-    "timestamp": "2026-08-14T10:51:30.068Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NEE (trigger: Scheduled)"
-  },
-  {
     "id": "0d870eeb-8dc0-4e6f-a60c-29b76ca17bda",
     "timestamp": "2026-08-14T10:51:30.071Z",
     "module": "Company Monitor",
@@ -3498,5 +3386,117 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "b9a14a80-80e6-4d92-ad82-0e33d2acdc1b",
+    "timestamp": "2026-08-14T18:51:14.124Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "732b7cae-b2d2-46c5-ba39-3fdc558e23d5",
+    "timestamp": "2026-08-14T18:57:10.080Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Full cycle started (Run all now) [4a0bf7b2-7bdd-40c6-abf2-f158e2656b39]"
+  },
+  {
+    "id": "e1d52a43-720b-464d-8a9c-474d421fdf3b",
+    "timestamp": "2026-08-14T18:57:10.097Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "61a53c90-7fe6-4661-bd4c-7a9dab19ff7e",
+    "timestamp": "2026-08-14T18:57:10.530Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
+  },
+  {
+    "id": "cdb700db-49c5-4565-b0fd-c2a8160df953",
+    "timestamp": "2026-08-14T18:57:10.767Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via RunAllNow (682ms, change: High)"
+  },
+  {
+    "id": "a55f9f15-3681-489e-8e87-0c3db4f9af7a",
+    "timestamp": "2026-08-14T18:57:16.355Z",
+    "module": "Price Context",
+    "level": "info",
+    "message": "Stage 1.5: 51 symbol(s) refreshed from 51 known targets"
+  },
+  {
+    "id": "ce47d2a7-15bd-4eb8-b174-ba68026d7f96",
+    "timestamp": "2026-08-14T18:57:16.488Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "56302caa-ed0f-46af-a46b-8093ed52704d",
+    "timestamp": "2026-08-14T18:57:16.495Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "e92fe2e2-9738-4668-8dd2-771d53049aa3",
+    "timestamp": "2026-08-14T18:57:16.623Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Maintenance (no material change): 5 event(s) — materialVersion unchanged"
+  },
+  {
+    "id": "6c2fe653-ff6d-4036-960e-e7ae2e270a37",
+    "timestamp": "2026-08-14T18:57:16.626Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "event-monitor completed via RunAllNow (152ms, change: None)"
+  },
+  {
+    "id": "8fa61577-f957-446f-8a36-cc2e02b214ab",
+    "timestamp": "2026-08-14T18:57:16.633Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts downstream skipped — upstream change was None"
+  },
+  {
+    "id": "3d731a81-4076-487d-9298-3ac30b902a99",
+    "timestamp": "2026-08-14T18:57:16.635Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer downstream skipped — upstream change was None"
+  },
+  {
+    "id": "f811d9ca-3202-49da-bbfb-0ad40ee0cd96",
+    "timestamp": "2026-08-14T18:57:16.636Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "06c27e06-ae6e-40f7-b2d4-7e2593fed461",
+    "timestamp": "2026-08-14T18:57:16.638Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine downstream skipped — upstream change was None"
+  },
+  {
+    "id": "29ef2bf5-f877-4085-90cd-a4ff230e6166",
+    "timestamp": "2026-08-14T18:57:16.641Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief downstream skipped — upstream change was None"
+  },
+  {
+    "id": "d566523a-4e28-4415-9246-79f6ecbfbd1a",
+    "timestamp": "2026-08-14T18:57:16.643Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
   }
 ]
