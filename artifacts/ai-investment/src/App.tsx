@@ -19,6 +19,7 @@ import Settings from '@/pages/Settings';
 import SystemLog from '@/pages/SystemLog';
 import Automation from '@/pages/Automation';
 import CommandBrief from '@/pages/CommandBrief';
+import CatalystWatch from '@/pages/CatalystWatch';
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ function Router() {
         <Route path="/companies" component={CompanyMonitor} />
         <Route path="/portfolio" component={PortfolioManager} />
         <Route path="/analyse" component={PortfolioAnalyzer} />
+        <Route path="/catalyst" component={CatalystWatch} />
         <Route path="/opportunities" component={OpportunityFinder} />
         <Route path="/risk" component={RiskAnalyzer} />
         <Route path="/alerts" component={MarketAlerts} />

@@ -23,7 +23,39 @@ import type {
   EarningsHistoryProfile,
   ExpectationsProfile,
   SourceQualityCategory,
+  InformationCategory,
 } from "./catalyst-types.js";
+
+// ── InformationCategory derivation ────────────────────────────────────────────
+
+/**
+ * Derive InformationCategory from sourceType/sourceQuality.
+ * Used to tag signals with their epistemological status (spec §6).
+ */
+function deriveInformationCategory(
+  sourceType: string,
+  sourceQuality: SourceQualityCategory
+): InformationCategory {
+  if (sourceType === "CompanyAnnouncement" || sourceType === "RegFiling") return "CONFIRMED_FACT";
+  if (sourceType === "OfficialStats" || sourceType === "IndustryData") return "INDUSTRY_SIGNAL";
+  if (sourceQuality === "AnalystData") return "ANALYST_EXPECTATION";
+  if (sourceQuality === "ReliableReporting" || sourceQuality === "DirectCompany") return "RELIABLE_REPORTING";
+  if (sourceQuality === "AiInterpretation" || sourceType === "CompanyMonitor" || sourceType === "NewsMonitor") return "AI_INTERPRETATION";
+  return "RELIABLE_REPORTING";
+}
+
+/**
+ * Derive sourceOriginId from source name.
+ * Strips URL to domain for deduplication purposes.
+ */
+function deriveSourceOriginId(source: string): string {
+  try {
+    const url = new URL(source);
+    return url.hostname.replace(/^www\./, "");
+  } catch {
+    return source.toLowerCase().replace(/\s+/g, "-").slice(0, 50);
+  }
+}
 
 // ── Stub profiles (Part 1 — data not available) ───────────────────────────────
 
@@ -101,6 +133,10 @@ function extractSignalsFromCompanyMonitor(
         leadTimeRelevance: "High",
         companyImpactReason: "Identified as a catalyst by Company Monitor AI analysis",
         freshness: "Fresh",
+        informationCategory: "AI_INTERPRETATION",
+        sourceOriginId: "company-monitor",
+        canonicalSource: "Company Monitor AI Analysis",
+        availableAt: assembledAt,
       });
     }
   }
@@ -126,6 +162,10 @@ function extractSignalsFromCompanyMonitor(
       leadTimeRelevance: "High",
       companyImpactReason: "Earnings/guidance trend directly affects upcoming results",
       freshness: "Fresh",
+      informationCategory: "AI_INTERPRETATION",
+      sourceOriginId: "company-monitor",
+      canonicalSource: "Company Monitor AI Analysis",
+      availableAt: assembledAt,
     });
   }
 
@@ -163,6 +203,7 @@ function extractSignalsFromNews(
       : sentiment === "Negative" || sentiment === "VeryNegative" ? "Negative" as const
       : "Neutral" as const;
 
+    const newsSourceQuality: SourceQualityCategory = mentionsTicker ? "ReliableReporting" : "SecondaryReporting";
     signals.push({
       signalId: `news-${headline.slice(0, 40).replace(/\s+/g, "-").toLowerCase()}`,
       driver: "Market/Company News",
@@ -173,13 +214,17 @@ function extractSignalsFromNews(
       observationDate: assembledAt.slice(0, 10),
       source: "News Monitor",
       sourceType: "NewsMonitor",
-      sourceQuality: (mentionsTicker ? "ReliableReporting" : "SecondaryReporting") as SourceQualityCategory,
+      sourceQuality: newsSourceQuality,
       sourceConfidence: "Medium",
       leadTimeRelevance: mentionsTicker ? "High" : "Low",
       companyImpactReason: mentionsTicker
         ? "News directly references this company"
         : "General market news that may affect overall conditions",
       freshness: "Fresh",
+      informationCategory: deriveInformationCategory("NewsMonitor", newsSourceQuality),
+      sourceOriginId: deriveSourceOriginId("News Monitor"),
+      canonicalSource: "News Monitor AI Analysis",
+      availableAt: assembledAt,
     });
   }
 

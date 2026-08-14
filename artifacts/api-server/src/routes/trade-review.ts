@@ -260,7 +260,7 @@ async function doHandleTradeReview(res: Response, useCache: boolean): Promise<vo
     const cacheIsCompatible =
       Array.isArray(cachedProposals) &&
       cachedProposals.every((p) => {
-        const pr = p as Record<string, unknown>;
+        const pr = p as unknown as Record<string, unknown>;
         return (
           typeof pr.fxRate === "number" &&
           pr.blockedByEvent !== true          // bust if old blocked proposals exist

@@ -1,0 +1,1401 @@
+CATALYST INTELLIGENCE — PART 2
+PROACTIVE DISCOVERY + SCHEDULED CATALYSTS + DRIVER-DIRECTED RESEARCH
+
+BACKGROUND
+
+Part 1 created the Catalyst Intelligence foundation.
+
+IMPORTANT:
+Inspect the ACTUAL current implementation before changing anything.
+
+Reuse the existing Part 1 architecture, including where applicable:
+
+- CatalystFacts
+- CatalystRepository
+- catalyst screening
+- price asymmetry
+- material fingerprinting
+- source quality
+- LeadingIndicatorSignal
+- EarningsHistoryProfile interface
+- ExpectationsProfile interface
+- CompanyDriverProfile storage/types
+- orchestrator integration
+- existing tests/fixtures
+
+Do NOT rewrite Part 1 unnecessarily.
+
+The objective of Part 2 is to make Catalyst Intelligence genuinely PROACTIVE.
+
+The current application is good at analyzing companies it already knows about.
+
+That is not enough.
+
+The system must increasingly be able to answer:
+
+"Which companies are becoming unusually interesting BEFORE the market-moving
+event or price move happens?"
+
+Two motivating historical examples are:
+
+A.P. Møller-Mærsk:
+known upcoming earnings + improving real-world shipping indicators.
+
+SpaceX:
+known upcoming company event/meeting + potentially relevant expectations,
+rumors and company developments before the event.
+
+IMPORTANT:
+
+These are regression/examples ONLY.
+
+DO NOT hardcode Maersk, SpaceX, shipping, AI, or any ticker-specific logic into
+production code.
+
+
+==================================================
+1. FUNDAMENTAL CHANGE IN DISCOVERY
+==================================================
+
+Current Catalyst Intelligence candidate discovery appears to rely mainly on:
+
+- portfolio holdings
+- Opportunity Finder candidates
+- existing Company Monitor entries
+
+This is insufficient.
+
+It creates a circular problem:
+
+Catalyst Intelligence only investigates companies already considered interesting.
+
+But one of Catalyst Intelligence's purposes is to DISCOVER companies that should
+become interesting.
+
+Fix this.
+
+Catalyst discovery must be able to introduce NEW companies into the intelligence
+pipeline.
+
+The conceptual flow should become:
+
+SUPPORTED MARKET UNIVERSE
+
+→ upcoming potentially market-moving events
+
+→ cheap deterministic/relevance screening
+
+→ potentially interesting companies
+
+→ Catalyst Intelligence
+
+→ Opportunity Finder
+
+→ Trade Decision
+
+A company must NOT need to already exist in:
+
+Portfolio
+Opportunity Finder
+or Company Monitor
+
+to become a Catalyst candidate.
+
+
+==================================================
+2. SUPPORTED MARKET UNIVERSE
+==================================================
+
+Create a clean abstraction for the supported equity universe.
+
+Initial target:
+
+- supported Danish equities
+- supported US equities
+
+Prefer using instruments available through the Saxo integration/current instrument
+data where appropriate.
+
+Do NOT make thousands of OpenAI calls to build the universe.
+
+Universe discovery must be deterministic/data-driven.
+
+The universe should provide compact metadata where available:
+
+ticker
+company name
+exchange
+country
+currency
+sector
+industry
+instrument identifier/UIC
+tradability
+active/inactive status
+
+The system does NOT need to deeply analyze every company in this universe.
+
+This is only the searchable/discoverable universe.
+
+
+==================================================
+3. GENERALIZE EVENT MONITOR
+==================================================
+
+Event Monitor must no longer treat earnings as the only important company catalyst.
+
+Support structured company catalyst types.
+
+At minimum design for:
+
+EARNINGS
+GUIDANCE_UPDATE
+INVESTOR_DAY
+CAPITAL_MARKETS_DAY
+COMPANY_MEETING
+SHAREHOLDER_MEETING
+PRODUCT_LAUNCH
+AI_MODEL_LAUNCH
+TECHNOLOGY_DEMONSTRATION
+DEVELOPER_CONFERENCE
+KEYNOTE
+CLINICAL_READOUT
+FDA_DECISION
+REGULATORY_DECISION
+COURT_DECISION
+MAJOR_CONTRACT_DECISION
+M_AND_A_EVENT
+LOCKUP_EXPIRATION
+STRATEGY_UPDATE
+MANAGEMENT_PRESENTATION
+OTHER_COMPANY_CATALYST
+
+Do not assume every event type exists in structured APIs.
+
+The architecture must allow events to come from:
+
+- structured event/calendar data
+- official company sources
+- regulatory filings
+- reliable reporting
+- existing Event Monitor web discovery
+
+Each event should conceptually include:
+
+eventId
+ticker
+company
+eventType
+title
+eventDate
+time if known
+beforeAfterMarket if applicable
+source
+sourceType
+sourceConfidence
+isConfirmed
+expectedTopics[]
+potentialMarketImpact
+uncertainty
+discoveredAt
+lastUpdatedAt
+
+
+==================================================
+4. SCHEDULED EVENT DISCOVERY
+==================================================
+
+This is extremely important.
+
+The system must actively search for known upcoming potentially market-moving
+company events.
+
+Example conceptually:
+
+"Company X will hold an investor event in 5 days."
+
+This alone does NOT mean BUY.
+
+But it means:
+
+"This company may deserve pre-event investigation."
+
+Event Monitor should discover and maintain such events before they happen.
+
+Use cheap structured sources first where available.
+
+Use web discovery only where necessary.
+
+Do not repeatedly rediscover unchanged events.
+
+Use state/fingerprints.
+
+
+==================================================
+5. PRE-EVENT INTELLIGENCE
+==================================================
+
+For a potentially important scheduled event, Catalyst Intelligence should investigate:
+
+WHAT IS KNOWN TO HAPPEN?
+
+WHAT IS EXPECTED TO BE DISCUSSED/ANNOUNCED?
+
+WHAT HAS MANAGEMENT OFFICIALLY SAID?
+
+WHAT DO RELIABLE REPORTERS EXPECT?
+
+ARE THERE CREDIBLE RUMORS?
+
+ARE THERE INDUSTRY/SUPPLIER/PARTNER SIGNALS?
+
+HAS MANAGEMENT BEEN TEASING SOMETHING?
+
+HAS THE COMPANY RECENTLY MADE RELATED ANNOUNCEMENTS?
+
+ARE THERE UNUSUAL CHANGES IN RELEVANT COMPANY DRIVERS?
+
+HOW HAS THE STOCK BEHAVED LEADING INTO THE EVENT?
+
+DOES THE MARKET APPEAR TO HAVE ALREADY PRICED IN POSITIVE EXPECTATIONS?
+
+
+==================================================
+6. FACT VS EXPECTATION VS RUMOR
+==================================================
+
+Do NOT mix these.
+
+Every pre-event information item must be classified.
+
+Suggested categories:
+
+CONFIRMED_FACT
+OFFICIAL_EXPECTATION
+RELIABLE_REPORTING
+ANALYST_EXPECTATION
+INDUSTRY_SIGNAL
+CREDIBLE_RUMOR
+UNVERIFIED_RUMOR
+AI_INTERPRETATION
+
+Example:
+
+CONFIRMED_FACT:
+Company event scheduled for Tuesday.
+
+RELIABLE_REPORTING:
+Reuters/Bloomberg reports that a new product announcement is expected.
+
+CREDIBLE_RUMOR:
+Multiple independent sources suggest feature X.
+
+UNVERIFIED_RUMOR:
+Single low-confidence social-media claim.
+
+AI_INTERPRETATION:
+Combined evidence suggests the event may be more significant than normal.
+
+AI_INTERPRETATION must NEVER be stored or displayed as a confirmed fact.
+
+
+==================================================
+7. SOURCE INDEPENDENCE
+==================================================
+
+Do not count article quantity as evidence quantity.
+
+If:
+
+Reuters publishes one report
+
+and 12 websites repeat the Reuters report
+
+that is ONE underlying evidence source.
+
+Introduce/support:
+
+sourceOriginId
+canonicalSource
+derivedFrom
+independentEvidenceGroup
+
+EvidenceConfidence must consider:
+
+source quality
+independence
+freshness
+causal relevance
+
+not raw article count.
+
+
+==================================================
+8. COMPANY DRIVER PROFILE — IMPLEMENT REAL GENERATION
+==================================================
+
+Part 1 created CompanyDriverProfile architecture/storage.
+
+Now implement generation.
+
+The Company Driver Profile should be created when:
+
+- a company becomes a serious Catalyst candidate
+- Company Monitor needs it
+- it does not already exist
+
+Do NOT generate profiles for the entire market universe upfront.
+
+Use centralized model routing.
+
+The generated profile should identify:
+
+primaryRevenueDrivers
+primaryMarginDrivers
+costDrivers
+leadingIndicators
+industryIndicators
+macroSensitivities
+geopoliticalSensitivities
+regulatorySensitivities
+importantCompetitors
+companySpecificKPIs
+typicalIndicatorLeadTime
+
+Also include confidence/source grounding where possible.
+
+The profile must be STATEFUL.
+
+Do NOT regenerate it every Catalyst run.
+
+Update only when material company/business-model changes justify it.
+
+
+==================================================
+9. DRIVER-DIRECTED RESEARCH
+==================================================
+
+This is one of the most important requirements.
+
+Do NOT research a company only using:
+
+"[ticker] latest news"
+
+Use CompanyDriverProfile to direct research.
+
+Conceptually:
+
+CompanyDriverProfile
+→ identify economically relevant indicators
+→ search existing application intelligence first
+→ determine missing current indicators
+→ targeted web research only for missing/material signals
+
+For a hypothetical shipping company:
+
+freight rates
+container volumes
+capacity
+fuel costs
+trade flows
+port congestion
+
+For a hypothetical pharmaceutical company:
+
+prescription data
+market share
+manufacturing capacity
+regulatory status
+competitor data
+
+For a hypothetical cloud/AI company:
+
+cloud demand
+AI adoption
+datacenter capacity
+enterprise spending
+competitive products
+
+DO NOT HARDCODE THESE EXAMPLES.
+
+OpenAI/CompanyDriverProfile determines the relevant drivers.
+
+
+==================================================
+10. SIGNAL ACCUMULATION
+==================================================
+
+Do not evaluate every signal in isolation.
+
+Maintain state over time.
+
+The system should detect:
+
+"Multiple independent, causally relevant signals have begun moving in the same
+direction."
+
+Create a concept such as:
+
+SignalAccumulationState
+
+Possible fields:
+
+ticker
+window7D
+window14D
+window30D
+
+positiveMaterialSignals
+negativeMaterialSignals
+
+independentPositiveGroups
+independentNegativeGroups
+
+strengtheningDrivers[]
+weakeningDrivers[]
+
+newSignalsSinceLastAssessment[]
+
+contradictorySignals[]
+
+signalMomentum:
+DETERIORATING
+WEAKENING
+STABLE
+IMPROVING
+ACCELERATING
+
+overallDirection:
+STRONGLY_NEGATIVE
+NEGATIVE
+MIXED
+NEUTRAL
+POSITIVE
+STRONGLY_POSITIVE
+
+evidenceConfidence
+
+This must be based on structured stored signals, not AI remembering prose from the
+previous run.
+
+
+==================================================
+11. EMERGING SETUP DETECTION
+==================================================
+
+Add a second Catalyst entry path.
+
+PATH A:
+KNOWN SCHEDULED CATALYST
+
+Event Monitor
+→ Catalyst screening
+→ Catalyst Intelligence
+
+PATH B:
+EMERGING SETUP
+
+Signal accumulation
++
+Company state
++
+Price Context
++
+News/Sector/Market changes
+
+→ candidate promotion
+→ Catalyst Intelligence
+
+An Emerging Setup does NOT require a known future event.
+
+Example conceptually:
+
+multiple company drivers improve
++
+price stabilizes after weakness
++
+sector improves
++
+company-specific news flow strengthens
+
+→ EMERGING SETUP
+
+Possible states:
+
+NONE
+EARLY
+DEVELOPING
+STRONG
+URGENT_REVIEW
+
+Do not automatically make STRONG = BUY.
+
+
+==================================================
+12. PRE-EVENT PRICE BEHAVIOR
+==================================================
+
+Reuse Part 1 PriceAsymmetry.
+
+For scheduled events, explicitly evaluate whether the expected positive/negative
+story may already be reflected in price.
+
+Relevant backend facts should include:
+
+return6M
+return3M
+return1M
+return14D
+return5D
+
+preEventRunup
+drawdown
+distanceFrom52WeekHigh
+recentAcceleration
+recentVolatility
+stabilization
+
+Examples:
+
+Positive rumors + stock +35% in 14 days:
+potentially heavily priced in.
+
+Positive evidence + stock still depressed/stable:
+potentially more attractive asymmetry.
+
+Do not make this deterministic BUY logic.
+
+It is evidence for Catalyst Intelligence.
+
+
+==================================================
+13. EVENT EXPECTATION PROFILE
+==================================================
+
+For non-earnings scheduled catalysts create an EventExpectationProfile.
+
+Conceptually:
+
+eventId
+
+confirmedTopics[]
+expectedTopics[]
+
+officialHints[]
+
+reliableReportingExpectations[]
+
+analystExpectations[]
+
+credibleRumors[]
+
+unverifiedRumors[]
+
+marketNarrative
+
+expectationDirection:
+NEGATIVE
+MIXED
+NEUTRAL
+POSITIVE
+VERY_POSITIVE
+UNKNOWN
+
+expectationIntensity:
+LOW
+MEDIUM
+HIGH
+
+expectationConfidence:
+LOW
+MEDIUM
+HIGH
+
+potentialSurpriseAreas[]
+
+alreadyWidelyExpected[]
+
+unknowns[]
+
+This gives us the non-earnings equivalent of analyst consensus.
+
+
+==================================================
+14. EARNINGS REMAINS A SPECIAL CASE
+==================================================
+
+Do NOT remove the Part 1 earnings architecture.
+
+Earnings is a specialized Catalyst type.
+
+It should eventually use:
+
+EarningsHistoryProfile
+ExpectationsProfile
+CompanyDriverProfile
+LeadingIndicatorSignals
+PriceAsymmetry
+Company state
+Sector
+Market
+
+But the generic Catalyst engine must also work when no earnings-specific data exists.
+
+
+==================================================
+15. CATALYST AI ANALYSIS
+==================================================
+
+Implement the deep Catalyst Intelligence AI analysis.
+
+IMPORTANT:
+
+Only run this after cheap screening indicates that the case deserves it.
+
+Use centralized model routing.
+
+Do NOT hardcode model names.
+
+The strong AI should receive compact CatalystFacts.
+
+Do not send raw complete module outputs.
+
+Its role is qualitative reasoning.
+
+It should answer:
+
+1. Why could this event/setup materially affect the company?
+
+2. Which evidence is causally relevant?
+
+3. Are multiple independent signals aligned?
+
+4. What is confirmed versus rumored?
+
+5. What does the market appear to expect?
+
+6. What could surprise the market?
+
+7. Does price action suggest this is already priced in?
+
+8. Is recent weakness likely temporary/cyclical/structural?
+
+9. What is the strongest opposing interpretation?
+
+10. What would invalidate the setup?
+
+11. Is this interesting enough for Opportunity Finder?
+
+
+==================================================
+16. STRUCTURED OUTPUT
+==================================================
+
+Use the Part 1 structured concepts and extend where necessary.
+
+Suggested result:
+
+catalystType
+
+triggerType:
+SCHEDULED_EVENT
+EARNINGS
+EMERGING_SETUP
+
+eventId optional
+
+catalystDirection:
+STRONGLY_NEGATIVE
+NEGATIVE
+NEUTRAL
+POSITIVE
+STRONGLY_POSITIVE
+
+evidenceConfidence:
+LOW
+MEDIUM
+HIGH
+
+expectationGap:
+STRONG_NEGATIVE
+NEGATIVE
+NEUTRAL
+POSITIVE
+STRONG_POSITIVE
+UNKNOWN
+
+priceAsymmetry:
+POOR
+WEAK
+NEUTRAL
+ATTRACTIVE
+VERY_ATTRACTIVE
+
+alreadyPricedIn:
+LOW
+MEDIUM
+HIGH
+UNKNOWN
+
+catalystRisk:
+LOW
+MEDIUM
+HIGH
+EXTREME
+
+opportunityState:
+NOT_INTERESTING
+MONITOR
+INVESTIGATE
+HIGH_INTEREST
+CANDIDATE_FOR_TRADE_DECISION
+
+thesis
+
+whatMarketMayBeMissing
+
+supportingSignalIds[]
+
+contradictingSignalIds[]
+
+strongestCounterargument
+
+invalidationConditions[]
+
+dataLimitations[]
+
+recommendedNextStep
+
+AI must reference actual stored signal IDs.
+
+Do not allow invented evidence.
+
+
+==================================================
+17. STATEFUL CATALYST ANALYSIS
+==================================================
+
+Catalyst Intelligence must be stateful.
+
+First analysis:
+
+FULL_ANALYSIS
+
+Later:
+
+MATERIAL_UPDATE
+
+or:
+
+NO_MATERIAL_CHANGE
+
+Do not rewrite the whole analysis every time.
+
+Preserve stable conclusions where appropriate.
+
+Material fingerprint should include only decision-relevant structured changes.
+
+If fingerprint unchanged:
+
+ZERO deep Catalyst AI calls.
+
+
+==================================================
+18. PROMOTION TO OPPORTUNITY FINDER
+==================================================
+
+Catalyst Intelligence must be able to introduce a NEW ticker to Opportunity Finder.
+
+This is critical.
+
+A company does not need to have been an Opportunity Finder candidate before Catalyst
+Intelligence discovered it.
+
+Promote when:
+
+opportunityState = HIGH_INTEREST
+or
+CANDIDATE_FOR_TRADE_DECISION
+
+depending on existing Opportunity Finder architecture.
+
+The promoted context should be compact.
+
+Example:
+
+ticker
+trigger type
+event/date if any
+catalyst direction
+evidence confidence
+expectation gap
+price asymmetry
+key supporting signals
+key risks
+thesis
+invalidation conditions
+
+Opportunity Finder remains responsible for comparing it with other opportunities.
+
+
+==================================================
+19. TRADE DECISION — DO NOT FULLY ENABLE PRE-EVENT TRADING YET
+==================================================
+
+Do NOT yet make production Trade Decision automatically issue live pre-event BUY
+decisions solely because Catalyst Intelligence says HighInterest.
+
+For Part 2:
+
+Trade Decision may READ Catalyst Intelligence.
+
+It should understand:
+
+INTENTIONAL_PRE_EVENT_THESIS
+
+versus:
+
+EVENT_BLOCKED
+
+But keep actual automatic pre-event BUY enablement behind a safe feature flag or
+non-actionable state until we validate the system historically.
+
+We want intelligence first.
+
+Trading behavior comes after validation.
+
+
+==================================================
+20. EVENT MONITOR UI
+==================================================
+
+Keep UI compact.
+
+For important upcoming catalysts, Event Monitor should make it possible to see:
+
+ticker
+event
+date / days remaining
+event type
+potential impact
+Catalyst state
+
+Example:
+
+XYZ
+Investor Day
+3 days
+HIGH INTEREST
+
+Click Details for:
+
+expectations
+rumors
+signals
+price setup
+Catalyst analysis
+
+Do not flood the main dashboard with research text.
+
+
+==================================================
+21. CATALYST WATCH UI
+==================================================
+
+If Part 1 already created an appropriate Catalyst surface, extend it.
+
+Otherwise add a compact Catalyst Intelligence view.
+
+Suggested sections:
+
+UPCOMING CATALYSTS
+
+EMERGING SETUPS
+
+Examples:
+
+XYZ   Earnings       2d    HIGH INTEREST
+ABC   Investor Day   5d    INVESTIGATE
+DEF   Product Event  7d    MONITOR
+
+Emerging:
+
+GHI   AI/Cloud signals accumulating   DEVELOPING
+JKL   Demand recovery                 STRONG
+
+These are informational intelligence states.
+
+They are NOT Trade Review orders.
+
+
+==================================================
+22. AUTOMATION ORCHESTRATOR
+==================================================
+
+All discovery and analysis must be orchestrator controlled.
+
+NO frontend timers.
+
+Separate cheap discovery from expensive analysis.
+
+Conceptually:
+
+UNIVERSE/EVENT DISCOVERY
+cheap
+
+↓
+
+SCREENING
+deterministic/cheap
+
+↓
+
+SIGNAL RESEARCH
+only where warranted
+
+↓
+
+DEEP CATALYST AI
+only high-interest cases
+
+Do not run strong AI across the whole market universe.
+
+
+==================================================
+23. TOKEN/COST SAFETY
+==================================================
+
+This feature could become extremely expensive if implemented badly.
+
+Therefore:
+
+DO NOT:
+
+send the entire equity universe to OpenAI
+
+run web search for every stock every cycle
+
+generate CompanyDriverProfile for every listed company
+
+deep-analyze every upcoming event
+
+repeat unchanged research
+
+send raw PriceHistory candles to OpenAI
+
+send full News Monitor outputs
+
+send full Company Monitor outputs
+
+DO:
+
+use backend screening
+
+reuse stored signals
+
+reuse CompanyDriverProfiles
+
+reuse existing News/Event/Market/Sector intelligence
+
+use compact contexts
+
+use material fingerprints
+
+use cheap model routing for discovery
+
+use strong AI only for promoted cases
+
+Track Catalyst Intelligence token/cost usage separately.
+
+
+==================================================
+24. WEB SEARCH SAFETY
+==================================================
+
+Before new Catalyst web research:
+
+check existing:
+
+News Monitor
+Event Monitor
+Company Monitor
+Market Monitor
+Sector Monitor
+
+for usable current evidence.
+
+Only search the web for:
+
+missing driver information
+scheduled-event expectations
+credible rumors
+new material signals
+source verification
+
+Avoid repeated identical searches.
+
+Cache research appropriately.
+
+
+==================================================
+25. HISTORICAL / POINT-IN-TIME SAFETY
+==================================================
+
+We need to be able to test whether this system would ACTUALLY have found an
+opportunity before the event.
+
+Therefore design research/data structures with:
+
+publishedAt
+observedAt
+availableAt
+source date
+
+where possible.
+
+Historical regression tests must enforce a cutoff timestamp.
+
+No information published AFTER the simulated decision time may be included.
+
+This is essential to avoid hindsight bias.
+
+
+==================================================
+26. MAERSK REGRESSION
+==================================================
+
+Keep/extend the Maersk-style regression fixture.
+
+The system should conceptually be able to detect:
+
+known earnings approaching
++
+materially improving business drivers
++
+multiple independent supporting signals
++
+appropriate price setup
+
+→ at least INVESTIGATE/HIGH_INTEREST.
+
+Do not hardcode Maersk.
+
+
+==================================================
+27. SCHEDULED EVENT REGRESSION — SPACEX-STYLE CASE
+==================================================
+
+Create a synthetic/historical fixture representing the concept:
+
+company has a known upcoming company meeting / technology event
+
+before the event:
+
+- the event itself is publicly known
+- company has recently increased activity around an important strategic driver
+- credible reporting/expectations suggest meaningful announcements may occur
+- some positive supporting signals exist
+- price has not necessarily fully run ahead
+
+IMPORTANT:
+
+Do NOT include secret information that was unavailable before the event.
+
+Expected behavior:
+
+the company should become:
+
+EVENT_OPPORTUNITY_WATCH
+or
+INVESTIGATE/HIGH_INTEREST
+
+BEFORE the event,
+
+depending on evidence strength.
+
+The test is:
+
+"Can the system recognize that a KNOWN event deserves proactive investigation?"
+
+not:
+
+"Can the system magically predict the secret announcement?"
+
+
+==================================================
+28. NEGATIVE EVENT REGRESSION
+==================================================
+
+Create a scheduled-event case where:
+
+event is known
+rumors are strongly positive
+BUT
+stock already +40% in 14 days
+AND
+all rumors derive from one low-quality source
+
+Expected:
+
+NOT automatically HIGH_INTEREST.
+
+This validates price-asymmetry + source independence.
+
+
+==================================================
+29. EMERGING SETUP REGRESSION
+==================================================
+
+Create a case with:
+
+no scheduled event
+
+but:
+
+multiple independent company drivers improve
+sector improves
+price stabilizes after weakness
+company-specific evidence improves
+
+Expected:
+
+EMERGING SETUP = DEVELOPING or STRONG
+
+and eligible for Catalyst investigation.
+
+Again:
+
+NOT automatically BUY.
+
+
+==================================================
+30. DEBUG
+==================================================
+
+Catalyst debug must show the full decision chain:
+
+WHY was ticker discovered?
+
+Discovery source:
+UNIVERSE_EVENT
+EXISTING_EVENT
+NEWS_SIGNAL
+COMPANY_SIGNAL
+SECTOR_SIGNAL
+EMERGING_SETUP
+PORTFOLIO
+OPPORTUNITY_FINDER
+OTHER
+
+What screening happened?
+
+What caused promotion?
+
+Which web searches were performed?
+
+Which existing cached intelligence was reused?
+
+Which signals were accepted/rejected?
+
+Which signals share the same original source?
+
+What CompanyDriverProfile was used?
+
+What price facts were used?
+
+What expectations/rumors were used?
+
+Was deep AI called?
+
+Why/why not?
+
+Fingerprint:
+current
+previous
+
+AI usage:
+model
+input tokens
+output tokens
+cached tokens
+web searches
+estimated cost
+
+
+==================================================
+31. IMPORTANT — MISSING CONSENSUS DATA
+==================================================
+
+Part 1 identified that reliable historical actual-vs-consensus and analyst revision
+data may not currently exist in our sources.
+
+DO NOT solve this by letting OpenAI invent consensus.
+
+Keep ExpectationsProfile capable of:
+
+UNKNOWN / PARTIAL DATA.
+
+Use reliable reporting where available, clearly source-tagged.
+
+Do not block the entire Catalyst architecture because consensus integration is not
+complete.
+
+But explicitly reduce EvidenceConfidence / ExpectationGap confidence when reliable
+expectations data are missing.
+
+
+==================================================
+32. DO NOT OVERCOMPLICATE
+==================================================
+
+Preserve the application's architecture.
+
+Do not create:
+
+Event Opportunity Finder
+Earnings Opportunity Finder
+Rumor Opportunity Finder
+Emerging Opportunity Finder
+
+as separate giant modules.
+
+Use:
+
+Event Monitor
++
+Company Driver Profile
++
+Catalyst Intelligence
++
+Opportunity Finder
++
+Trade Decision.
+
+One generalized Catalyst system with different trigger types.
+
+
+==================================================
+33. NO PAID TESTS
+==================================================
+
+Do not make live OpenAI/web calls merely for testing.
+
+Use mocks, fixtures and stored data.
+
+All regression tests must work offline.
+
+
+==================================================
+34. IMPLEMENTATION ORDER
+==================================================
+
+Implement in this order:
+
+1. Inspect current Part 1 implementation.
+
+2. Generalize catalyst/event types.
+
+3. Build supported-universe abstraction.
+
+4. Make Event Monitor capable of producing broader scheduled catalysts.
+
+5. Implement CompanyDriverProfile generation/storage lifecycle.
+
+6. Implement EventExpectationProfile.
+
+7. Implement driver-directed signal research architecture.
+
+8. Implement signal accumulation state.
+
+9. Implement Emerging Setup detection.
+
+10. Implement compact CatalystFacts extension.
+
+11. Implement deep structured Catalyst AI analysis.
+
+12. Implement state/material fingerprint skip logic.
+
+13. Integrate promotion into Opportunity Finder.
+
+14. Add non-actionable Catalyst input to Trade Decision.
+
+15. Add compact UI/debug.
+
+16. Add regression tests.
+
+Do not skip directly to UI.
+
+
+==================================================
+35. FINAL REPORT
+==================================================
+
+After implementation report:
+
+1. Files added/modified.
+
+2. How the supported Danish/US universe is obtained.
+
+3. How NEW companies can now enter Catalyst Intelligence.
+
+4. Supported scheduled catalyst types.
+
+5. How Event Monitor discovers scheduled catalysts.
+
+6. CompanyDriverProfile generation lifecycle.
+
+7. How driver-directed research works.
+
+8. How rumors/expectations are classified.
+
+9. How duplicate/derived sources are handled.
+
+10. Signal accumulation architecture.
+
+11. Emerging Setup detection.
+
+12. Price-asymmetry integration.
+
+13. Deep Catalyst AI prompt/input.
+
+14. Structured AI output.
+
+15. Stateful/material fingerprint behavior.
+
+16. Opportunity Finder integration.
+
+17. Trade Decision integration.
+
+18. Orchestrator behavior.
+
+19. Token/cost protections.
+
+20. Debug visibility.
+
+21. Maersk regression result.
+
+22. Scheduled-event/SpaceX-style regression result.
+
+23. Emerging-setup regression result.
+
+24. Negative regression results.
+
+25. Current missing data limitations.
+
+26. Any functionality intentionally NOT enabled.
+
+27. Tests and total test count.
+
+28. Recommended Part 3.
+
+MOST IMPORTANT SUCCESS CRITERION:
+
+After Part 2 the application must no longer only ask:
+
+"What is interesting among companies I already follow?"
+
+It must begin to ask:
+
+"Across the supported market, where is a known catalyst or accumulation of
+independent signals creating an investment setup that deserves attention BEFORE
+the market-moving event or price move?"

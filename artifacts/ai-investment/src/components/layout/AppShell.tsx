@@ -20,6 +20,7 @@ import {
   Settings,
   Users,
   Zap,
+  Crosshair,
 } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { format } from "date-fns"
@@ -60,6 +61,7 @@ const NAV_ITEMS = [
   { label: "INVESTORS",  href: "/investors", icon: Users,         enabled: true  },
   { label: "RISK",        href: "/risk",      icon: ShieldAlert,  enabled: true  },
   { label: "ANALYZER",    href: "/analyse",      icon: BarChart2,  enabled: true  },
+  { label: "CATALYST",    href: "/catalyst",       icon: Crosshair,  enabled: true  },
   { label: "OPPORTUNITY", href: "/opportunities", icon: Lightbulb,  enabled: true  },
   { label: "ALERTS",      href: "/alerts",        icon: Bell,       enabled: true  },
   { label: "DECISIONS",   href: "/decisions",     icon: GitMerge,      enabled: true  },

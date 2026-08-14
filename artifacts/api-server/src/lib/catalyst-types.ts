@@ -301,10 +301,17 @@ export type SignalSourceType =
 /**
  * A single observable signal relevant to the company's earnings drivers.
  *
- * IMPORTANT EPISTEMOLOGICAL DISTINCTION:
+ * IMPORTANT EPISTEMOLOGICAL DISTINCTIONS:
  *   fact: "US container imports increased 12% MoM" (observable data)
  *   interpretation: "This may support stronger shipping demand" (derived)
  * Do NOT store interpretations as if they were facts.
+ *
+ * Source independence fields (spec §7):
+ *   sourceOriginId — the original reporting entity (dedup key)
+ *   canonicalSource — primary/authoritative source URL or name
+ *
+ * Point-in-time safety (spec §25):
+ *   availableAt — when this signal was first available to the system
  */
 export interface LeadingIndicatorSignal {
   /** Stable unique identifier for this signal. */
@@ -342,6 +349,31 @@ export interface LeadingIndicatorSignal {
 
   /** Is this signal fresh (< 2 weeks) or stale? */
   freshness: "Fresh" | "Aging" | "Stale";
+
+  // ── Part 2 additions ──────────────────────────────────────────────────────
+
+  /** How this information should be classified (spec §6). */
+  informationCategory: InformationCategory;
+
+  /**
+   * Deduplication key for source independence (spec §7).
+   * Identifies the ORIGINAL reporting entity (not the repeater).
+   * Example: a Reuters story re-published on 10 sites → sourceOriginId = "reuters.com"
+   */
+  sourceOriginId: string | null;
+
+  /**
+   * Canonical primary source (URL or name) for this signal.
+   * Used to cluster evidence groups and prevent counting the same story twice.
+   */
+  canonicalSource: string | null;
+
+  /**
+   * When this signal first became available to the system (ISO timestamp).
+   * Used for point-in-time regression testing — no information published
+   * after the simulated decision time may be included (spec §25).
+   */
+  availableAt: string;
 }
 
 // ── Price asymmetry ────────────────────────────────────────────────────────────
@@ -582,37 +614,348 @@ export interface CatalystScreeningResult {
 
 // ── Catalyst Intelligence AI output (Part 2) ──────────────────────────────────
 
+// ── Part 2 additions ──────────────────────────────────────────────────────────
+
 /**
- * Structured output from the deep Catalyst AI analysis.
- * Part 1: type definition only — actual AI calls are Part 2.
+ * What kind of catalyst triggered this analysis.
+ * PATH A = known scheduled event; PATH B = signal accumulation.
  */
-export interface CatalystAnalysisResult {
-  earningsSurpriseSignal: EarningsSurpriseSignal;
+export type TriggerType = "SCHEDULED_EVENT" | "EARNINGS" | "EMERGING_SETUP";
+
+/** Overall direction of the catalyst evidence. */
+export type CatalystDirection =
+  | "STRONGLY_NEGATIVE" | "NEGATIVE" | "NEUTRAL"
+  | "POSITIVE" | "STRONGLY_POSITIVE";
+
+/** Whether the thesis appears already priced into the stock. */
+export type AlreadyPricedIn = "LOW" | "MEDIUM" | "HIGH" | "UNKNOWN";
+
+/** Whether this is a fresh full analysis, a material update, or no change. */
+export type AnalysisUpdateType = "FULL_ANALYSIS" | "MATERIAL_UPDATE" | "NO_MATERIAL_CHANGE";
+
+/**
+ * How the company was discovered as a Catalyst candidate.
+ * Logged in _debug for full decision-chain visibility (spec §30).
+ */
+export type DiscoverySource =
+  | "UNIVERSE_EVENT"       // discovered via market universe + upcoming event
+  | "EXISTING_EVENT"       // from existing EventRecord or CompanySpecificEvent
+  | "NEWS_SIGNAL"          // from news-monitor signals
+  | "COMPANY_SIGNAL"       // from company-monitor changes
+  | "SECTOR_SIGNAL"        // from sector-monitor changes
+  | "EMERGING_SETUP"       // from signal accumulation path (PATH B)
+  | "PORTFOLIO"            // already a portfolio holding
+  | "OPPORTUNITY_FINDER"   // already an OF candidate
+  | "OTHER";
+
+/**
+ * Classification of a pre-event information item.
+ * IMPORTANT: AI_INTERPRETATION must NEVER be stored as a confirmed fact.
+ */
+export type InformationCategory =
+  | "CONFIRMED_FACT"          // verifiable, confirmed event/announcement
+  | "OFFICIAL_EXPECTATION"    // company-stated forward-looking statement
+  | "RELIABLE_REPORTING"      // major news outlet with original research
+  | "ANALYST_EXPECTATION"     // sell-side analyst forecast or expectation
+  | "INDUSTRY_SIGNAL"         // industry data, supply chain, or sector observation
+  | "CREDIBLE_RUMOR"          // multiple independent sources, unconfirmed
+  | "UNVERIFIED_RUMOR"        // single low-confidence or anecdotal source
+  | "AI_INTERPRETATION";      // AI-derived synthesis — must be clearly labeled
+
+/**
+ * Supported scheduled catalyst event types (spec §3).
+ * Not every type will have structured API data — some require web discovery.
+ */
+export type ScheduledCatalystType =
+  | "EARNINGS"
+  | "GUIDANCE_UPDATE"
+  | "INVESTOR_DAY"
+  | "CAPITAL_MARKETS_DAY"
+  | "COMPANY_MEETING"
+  | "SHAREHOLDER_MEETING"
+  | "PRODUCT_LAUNCH"
+  | "AI_MODEL_LAUNCH"
+  | "TECHNOLOGY_DEMONSTRATION"
+  | "DEVELOPER_CONFERENCE"
+  | "KEYNOTE"
+  | "CLINICAL_READOUT"
+  | "FDA_DECISION"
+  | "REGULATORY_DECISION"
+  | "COURT_DECISION"
+  | "MAJOR_CONTRACT_DECISION"
+  | "M_AND_A_EVENT"
+  | "LOCKUP_EXPIRATION"
+  | "STRATEGY_UPDATE"
+  | "MANAGEMENT_PRESENTATION"
+  | "OTHER_COMPANY_CATALYST";
+
+/**
+ * Company-specific scheduled catalyst event (distinct from market-wide EventRecord).
+ * Stored under repository key: "company-events:<TICKER>"
+ *
+ * Source independence fields (spec §7):
+ *   sourceOriginId — the original reporting entity (e.g. "reuters.com")
+ *   canonicalSource — the primary/authoritative source URL or name
+ *   derivedFrom — sourceOriginId of the parent source (if this is a re-report)
+ */
+export interface CompanySpecificEvent {
+  /** Stable ID: "<ticker>-<eventType>-<YYYY-MM-DD>" */
+  eventId: string;
+  ticker: string;
+  company: string;
+  eventType: ScheduledCatalystType;
+  title: string;
+  /** YYYY-MM-DD */
+  eventDate: string;
+  /** HH:MM in company's local time, or null if unknown. */
+  eventTime: string | null;
+  beforeAfterMarket: "BeforeMarket" | "AfterMarket" | "DuringMarket" | "Unknown";
+  /** Whether the event date/time has been officially confirmed. */
+  isConfirmed: boolean;
+  /** Topics the company has officially said will be covered. */
+  expectedTopics: string[];
+  potentialMarketImpact: "High" | "Medium" | "Low" | "Unknown";
+  /** Qualitative uncertainty level for this event. */
+  uncertainty: "High" | "Medium" | "Low";
+  source: string;
+  sourceType: SourceQualityCategory;
+  sourceOriginId: string | null;
+  canonicalSource: string | null;
+  classification: EventClassification;
+  /** ISO timestamp when first discovered. */
+  discoveredAt: string;
+  /** ISO timestamp of last update. */
+  lastUpdatedAt: string;
+}
+
+/**
+ * Expectation profile for a non-earnings scheduled catalyst event.
+ * The non-earnings equivalent of analyst consensus (spec §13).
+ *
+ * Each item is tagged with InformationCategory to prevent mixing
+ * confirmed facts with unverified rumors.
+ */
+export interface EventExpectationItem {
+  content: string;
+  category: InformationCategory;
+  source: string;
+  sourceOriginId: string | null;
+  /** ISO date the expectation was published/stated. */
+  publishedAt: string | null;
+  /** ISO date this information was collected (for point-in-time safety). */
+  observedAt: string;
+}
+
+export type ExpectationDirection =
+  | "NEGATIVE" | "MIXED" | "NEUTRAL" | "POSITIVE" | "VERY_POSITIVE" | "UNKNOWN";
+
+export interface EventExpectationProfile {
+  eventId: string;
+  confirmedTopics: EventExpectationItem[];
+  expectedTopics: EventExpectationItem[];
+  officialHints: EventExpectationItem[];
+  reliableReportingExpectations: EventExpectationItem[];
+  analystExpectations: EventExpectationItem[];
+  credibleRumors: EventExpectationItem[];
+  unverifiedRumors: EventExpectationItem[];
+  /** AI-synthesized market narrative — clearly labeled AI_INTERPRETATION. */
+  marketNarrative: EventExpectationItem | null;
+  expectationDirection: ExpectationDirection;
+  expectationIntensity: "LOW" | "MEDIUM" | "HIGH";
+  expectationConfidence: "LOW" | "MEDIUM" | "HIGH";
+  potentialSurpriseAreas: string[];
+  alreadyWidelyExpected: string[];
+  unknowns: string[];
+  /** ISO timestamp when this profile was built. */
+  builtAt: string;
+  dataSource: "WebResearch" | "ExistingIntelligence" | "Partial" | "NotAvailable";
+}
+
+// ── Signal Accumulation (spec §10) ────────────────────────────────────────────
+
+export type SignalMomentum =
+  | "DETERIORATING" | "WEAKENING" | "STABLE" | "IMPROVING" | "ACCELERATING";
+
+export type SignalOverallDirection =
+  | "STRONGLY_NEGATIVE" | "NEGATIVE" | "MIXED" | "NEUTRAL"
+  | "POSITIVE" | "STRONGLY_POSITIVE";
+
+/**
+ * Represents a group of signals that share the same original evidence source.
+ * Used to enforce source independence when computing evidence confidence.
+ * Ten re-publications of one Reuters story = one evidence group.
+ */
+export interface IndependentEvidenceGroup {
+  groupId: string;
+  sourceOriginId: string;
+  canonicalSource: string;
+  signalIds: string[];
+  /** Net direction of this evidence group (majority rules). */
+  netDirection: SignalDirection;
+}
+
+export interface SignalWindowStats {
+  positiveMaterialSignals: number;
+  negativeMaterialSignals: number;
+  neutralSignals: number;
+  independentPositiveGroups: number;
+  independentNegativeGroups: number;
+}
+
+export interface SignalAccumulationState {
+  ticker: string;
+  /** ISO timestamp of computation. */
+  computedAt: string;
+
+  window7D: SignalWindowStats;
+  window14D: SignalWindowStats;
+  window30D: SignalWindowStats;
+
+  /** Drivers that have been accumulating positive signals. */
+  strengtheningDrivers: string[];
+  /** Drivers that have been accumulating negative signals. */
+  weakeningDrivers: string[];
+
+  /** Signal IDs that arrived after the previous assessment. */
+  newSignalsSinceLastAssessment: string[];
+  /** Signal IDs that point in the opposite direction of the majority. */
+  contradictorySignals: string[];
+
+  /** Evidence groups for independent source tracking. */
+  evidenceGroups: IndependentEvidenceGroup[];
+
+  signalMomentum: SignalMomentum;
+  overallDirection: SignalOverallDirection;
+  evidenceConfidence: EvidenceConfidence;
+}
+
+// ── Emerging Setup (spec §11, PATH B) ─────────────────────────────────────────
+
+export type EmergingSetupState =
+  | "NONE"          // no meaningful signal accumulation
+  | "EARLY"         // weak/nascent signals, worth watching
+  | "DEVELOPING"    // growing evidence, warrants attention
+  | "STRONG"        // strong multi-driver convergence
+  | "URGENT_REVIEW"; // time-sensitive, should run deep analysis soon
+
+export interface EmergingSetup {
+  state: EmergingSetupState;
+  /** Human-readable reasons for this state assignment. */
+  reasons: string[];
+  /** Drivers contributing to the emerging setup. */
+  keyDrivers: string[];
+  /** Whether price action is consistent with a setup (stabilizing after weakness). */
+  priceSetupConsistent: boolean;
+  /** Evidence confidence for this emerging setup. */
+  evidenceConfidence: EvidenceConfidence;
+  /** ISO timestamp of computation. */
+  computedAt: string;
+}
+
+// ── Equity Universe (spec §2) ─────────────────────────────────────────────────
+
+/**
+ * A single entry in the supported equity universe.
+ * Used to enumerate DISCOVERABLE companies for proactive catalyst screening.
+ *
+ * The universe enables PATH A (scheduled event) discovery for companies
+ * NOT yet in the portfolio, Opportunity Finder, or Company Monitor.
+ */
+export interface EquityUniverseEntry {
+  ticker: string;
+  company: string;
+  exchange: string;
+  country: string;
+  currency: string;
+  sector: string | null;
+  industry: string | null;
+  /** Saxo UIC identifier (if known). */
+  uic: number | null;
+  /** Whether this instrument can be traded via Saxo. */
+  tradeable: boolean;
+  /** Whether this equity is currently active (not delisted). */
+  active: boolean;
+  /** How this entry was added to the universe. */
+  source: "STATIC_SEED" | "SAXO_DISCOVERY" | "REPOSITORY_DISCOVERY";
+}
+
+// ── Catalyst Promotion (spec §18) ─────────────────────────────────────────────
+
+/**
+ * Compact promotion record written when Catalyst Intelligence promotes
+ * a company to Opportunity Finder consideration.
+ * Repository key: "catalyst-promotions"
+ */
+export interface CatalystPromotion {
+  ticker: string;
+  company: string;
+  promotedAt: string;
+  triggerType: TriggerType;
+  /** Event date if PATH A; null for PATH B. */
+  eventDate: string | null;
+  /** Event type if PATH A; null for PATH B. */
+  eventType: ScheduledCatalystType | null;
+  catalystDirection: CatalystDirection;
   evidenceConfidence: EvidenceConfidence;
   expectationGap: ExpectationGap;
   priceAsymmetry: PriceAsymmetry;
+  opportunityState: PreEventOpportunityState;
+  /** IDs of signals that supported the promotion decision. */
+  keySignalIds: string[];
+  keyRisks: string[];
+  thesis: string;
+  invalidationConditions: string[];
+  /** Whether this promotion has been acknowledged by Opportunity Finder. */
+  acknowledgedAt: string | null;
+  /** Whether this promotion has expired (event passed / setup resolved). */
+  expired: boolean;
+  expiresAt: string | null;
+}
+
+// ── Extended Catalyst Analysis Result (Part 2 — replaces Part 1 placeholder) ──
+
+/**
+ * Structured output from the deep Catalyst Intelligence AI analysis.
+ *
+ * AI must reference actual stored signal IDs (supportingSignalIds,
+ * contradictingSignalIds) — invented evidence is not permitted.
+ *
+ * The analysis update type tracks whether this is a new full analysis,
+ * an incremental update, or a no-change confirmation.
+ */
+export interface CatalystAnalysisResult {
+  triggerType: TriggerType;
+  catalystType: ScheduledCatalystType | "EMERGING_SETUP" | null;
+  /** Event ID if triggered by a CompanySpecificEvent; null otherwise. */
+  eventId: string | null;
+
+  // ── Core qualitative dimensions ────────────────────────────────────────────
+  catalystDirection: CatalystDirection;
+  evidenceConfidence: EvidenceConfidence;
+  expectationGap: ExpectationGap;
+  priceAsymmetry: PriceAsymmetry;
+  alreadyPricedIn: AlreadyPricedIn;
   catalystRisk: CatalystRisk;
   opportunityState: PreEventOpportunityState;
-
-  /** Concise thesis for the pre-event case. */
-  thesis: string;
-
-  /** Signal IDs from CatalystFacts.signals that support the thesis. */
-  supportingSignals: Array<{ signalId: string; reason: string }>;
-  /** Signal IDs that contradict the thesis. */
-  contradictingSignals: Array<{ signalId: string; reason: string }>;
-
-  strongestCounterargument: string;
-  whatMarketMayBeMissing: string | null;
-  alreadyPricedInAssessment: string;
   temporaryVsStructural: TemporaryVsStructural;
 
-  /** Conditions that would invalidate the pre-event thesis. */
+  // ── Earnings-specific (null for non-earnings) ──────────────────────────────
+  earningsSurpriseSignal: EarningsSurpriseSignal | null;
+
+  // ── Reasoning ─────────────────────────────────────────────────────────────
+  thesis: string;
+  whatMarketMayBeMissing: string | null;
+  strongestCounterargument: string;
+  alreadyPricedInAssessment: string;
   invalidationConditions: string[];
-  /** Data gaps that limit confidence in this analysis. */
   dataLimitations: string[];
 
+  // ── Signal references (must be actual stored signal IDs) ──────────────────
+  supportingSignalIds: string[];
+  contradictingSignalIds: string[];
+
   recommendedNextStep: RecommendedNextStep;
+  analysisUpdateType: AnalysisUpdateType;
 }
 
 // ── Catalyst repository state ──────────────────────────────────────────────────
@@ -631,12 +974,12 @@ export interface CatalystState {
   /** Catalyst facts assembled for the most recent analysis cycle. */
   facts: CatalystFacts | null;
 
-  /** AI analysis result (null until Part 2 deep analysis is implemented). */
+  /** AI analysis result (null until Part 2 deep analysis runs). */
   analysis: CatalystAnalysisResult | null;
 
   /**
    * Material fingerprint from the last AI analysis run.
-   * Used to detect when a new AI call is warranted.
+   * If unchanged → skip AI call (spec §17).
    */
   lastAnalysisFingerprint: string | null;
 
@@ -651,4 +994,24 @@ export interface CatalystState {
 
   /** ISO timestamp when this state was last updated. */
   updatedAt: string;
+
+  // ── Part 2 additions ──────────────────────────────────────────────────────
+
+  /** How this ticker entered the Catalyst pipeline (spec §30 debug). */
+  discoverySource: DiscoverySource | null;
+
+  /** Which trigger path produced this analysis. */
+  triggerType: TriggerType | null;
+
+  /** Signal accumulation state for PATH B (emerging setup detection). */
+  signalAccumulation: SignalAccumulationState | null;
+
+  /** Emerging setup assessment for PATH B candidates. */
+  emergingSetup: EmergingSetup | null;
+
+  /** ISO timestamp when this was promoted to Opportunity Finder. Null if not yet promoted. */
+  promotedAt: string | null;
+
+  /** Type of the most recent AI analysis update. */
+  lastAnalysisUpdateType: AnalysisUpdateType | null;
 }

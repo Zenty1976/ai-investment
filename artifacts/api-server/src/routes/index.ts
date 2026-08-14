@@ -24,6 +24,7 @@ import priceHistoryRouter from "./price-history";
 import openaiUsageRouter from "./openai-usage";
 import portfolioIntelligenceRouter from "./portfolio-intelligence";
 import catalystIntelligenceRouter from "./catalyst-intelligence";
+import companyEventsRouter from "./company-events";
 
 const router: IRouter = Router();
 
@@ -52,5 +53,6 @@ router.use(priceHistoryRouter);
 router.use(openaiUsageRouter);
 router.use(portfolioIntelligenceRouter);
 router.use(catalystIntelligenceRouter);
+router.use(companyEventsRouter);
 
 export default router;

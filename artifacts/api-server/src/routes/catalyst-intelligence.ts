@@ -1,15 +1,15 @@
 /**
- * Catalyst Intelligence Route — Part 1 (Deterministic Skeleton)
+ * Catalyst Intelligence Route — Part 2 (AI Analysis + Signal Accumulation)
  *
  * Endpoints:
- *   POST /api/catalyst-intelligence/screen      — run deterministic screening
- *   POST /api/catalyst-intelligence/screen/:ticker — screen a specific ticker
- *   GET  /api/catalyst-intelligence/status      — all tracked tickers' states
- *   GET  /api/catalyst-intelligence/debug/:ticker — full debug dump
- *   GET  /api/catalyst-intelligence/facts/:ticker  — assembled CatalystFacts
- *
- * Part 1 = NO AI calls. Only deterministic screening + facts assembly.
- * Part 2 will add the deep OpenAI analysis on top of this skeleton.
+ *   POST /api/catalyst-intelligence/screen            — run deterministic screening
+ *   POST /api/catalyst-intelligence/screen/:ticker    — screen a specific ticker
+ *   POST /api/catalyst-intelligence/analyze/:ticker   — deep AI analysis for a ticker
+ *   POST /api/catalyst-intelligence/driver-profile/:ticker — generate/refresh driver profile
+ *   GET  /api/catalyst-intelligence/status            — all tracked tickers' states
+ *   GET  /api/catalyst-intelligence/promotions        — active OF promotions
+ *   GET  /api/catalyst-intelligence/debug/:ticker     — full debug dump
+ *   GET  /api/catalyst-intelligence/facts/:ticker     — assembled CatalystFacts
  */
 
 import { Router } from "express";
@@ -22,8 +22,23 @@ import { buildCatalystFacts } from "../lib/catalyst-facts-builder.js";
 import { buildPriceAsymmetryFacts } from "../lib/catalyst-price-asymmetry.js";
 import { screenCatalystCandidate } from "../lib/catalyst-screening.js";
 import { DEFAULT_CATALYST_SCREENING_CONFIG } from "../lib/catalyst-types.js";
+import {
+  getOrGenerateDriverProfile, getDriverProfile,
+} from "../lib/catalyst-driver-profile.js";
+import {
+  computeSignalAccumulationState,
+} from "../lib/catalyst-signal-accumulation.js";
+import {
+  detectEmergingSetup, emergingSetupWarrantsAnalysis,
+} from "../lib/catalyst-emerging-setup.js";
+import {
+  runCatalystAnalysis, qualifiesForPromotion,
+} from "../lib/catalyst-analysis.js";
+import {
+  promoteToOpportunityFinder, getActivePromotions, buildPromotionsContextBlock,
+} from "../lib/catalyst-promotion.js";
 import type {
-  CatalystEvent, CatalystState, PriceAsymmetry,
+  CatalystEvent, CatalystState, PriceAsymmetry, TriggerType,
 } from "../lib/catalyst-types.js";
 
 const router = Router();
@@ -188,17 +203,27 @@ function screenTicker(ticker: string, now: Date): ScreenTickerResult {
       screenedAt,
     });
 
+    // Preserve existing Part 2 state fields when overwriting screening
+    const existingState = getCatalystState(ticker);
+
     const state: CatalystState = {
       ticker,
       company,
       screening,
       facts: event ? facts : null,
-      analysis: null,
-      lastAnalysisFingerprint: null,
+      analysis: existingState?.analysis ?? null,
+      lastAnalysisFingerprint: existingState?.lastAnalysisFingerprint ?? null,
       lastScreenedAt: screenedAt,
-      lastAnalysedAt: null,
+      lastAnalysedAt: existingState?.lastAnalysedAt ?? null,
       eventPassed: !earningsDate || earningsDate.daysUntil < 0,
       updatedAt: screenedAt,
+      // Part 2 fields
+      discoverySource: existingState?.discoverySource ?? null,
+      triggerType: existingState?.triggerType ?? null,
+      signalAccumulation: existingState?.signalAccumulation ?? null,
+      emergingSetup: existingState?.emergingSetup ?? null,
+      promotedAt: existingState?.promotedAt ?? null,
+      lastAnalysisUpdateType: existingState?.lastAnalysisUpdateType ?? null,
     };
 
     saveCatalystState(ticker, state);
@@ -429,6 +454,244 @@ router.get("/catalyst-intelligence/facts/:ticker", (req, res) => {
     ticker,
     facts: state.facts,
     _debug: { module: MODULE, assembledAt: state.facts.assembledAt },
+  });
+});
+
+// ── Part 2: Deep AI Analysis ───────────────────────────────────────────────────
+
+/**
+ * POST /api/catalyst-intelligence/analyze/:ticker
+ *
+ * Runs the full Part 2 Catalyst Intelligence pipeline for a single ticker:
+ *   1. Screen (if not already screened)
+ *   2. Compute signal accumulation (deterministic)
+ *   3. Detect emerging setup (PATH B, if no scheduled event)
+ *   4. Get or generate driver profile (cached, expensive)
+ *   5. Run deep AI analysis (fingerprint-skipped if no material change)
+ *   6. Promote to Opportunity Finder if qualified
+ *
+ * Body: { force?: boolean } — if true, re-runs even if fingerprint unchanged
+ */
+router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<void> => {
+  const ticker = req.params.ticker?.trim().toUpperCase();
+  if (!ticker) {
+    res.status(400).json({ ok: false, error: "Missing ticker" });
+    return;
+  }
+
+  const force = req.body?.force === true;
+  const now = new Date();
+
+  try {
+    // ── Step 1: Ensure screening is current ─────────────────────────────────
+    let state = getCatalystState(ticker);
+    if (!state || !state.lastScreenedAt) {
+      const screenResult = screenTicker(ticker, now);
+      if (screenResult.error || !screenResult.state) {
+        res.status(500).json({ ok: false, ticker, error: screenResult.error ?? "Screening failed" });
+        return;
+      }
+      state = screenResult.state;
+    }
+
+    if (!state.facts) {
+      res.status(200).json({
+        ok: true, ticker,
+        skipped: true,
+        skipReason: "No upcoming event found — no facts to analyze",
+        state: null,
+        _debug: { module: MODULE, aiCalled: false },
+      });
+      return;
+    }
+
+    const facts = state.facts;
+    const companyName = state.company;
+
+    // ── Step 2: Compute signal accumulation ──────────────────────────────────
+    const prevSignalIds = state.signalAccumulation
+      ? [...(state.signalAccumulation.window14D ? [] : [])]
+      : [];
+    const signalAccumulation = computeSignalAccumulationState(ticker, facts.signals, prevSignalIds);
+
+    // ── Step 3: Emerging setup (PATH B — only if no scheduled event) ─────────
+    const hasScheduledEvent = !!facts.event.eventDate;
+    const emergingSetup = detectEmergingSetup({
+      signalAccumulation,
+      momentum5D: facts.price.priceAsymmetryFacts.recentMomentum5D,
+      momentum30D: facts.price.priceAsymmetryFacts.momentum30D,
+      momentum90D: facts.price.priceAsymmetryFacts.momentum90D,
+      cmStatus: facts.company.earningsGuidanceTrend ?? null,
+      sectorDirection: facts.sector?.sectorSummary ?? null,
+      hasKnownUpcomingEvent: hasScheduledEvent,
+    });
+
+    // Determine trigger type
+    const triggerType: TriggerType = hasScheduledEvent
+      ? (facts.event.eventType === "Earnings" ? "EARNINGS" : "SCHEDULED_EVENT")
+      : "EMERGING_SETUP";
+
+    // ── Step 4: Driver profile ───────────────────────────────────────────────
+    // Generate driver profile if eligible and not fresh
+    const isEligible = state.screening?.eligible ?? false;
+    const isDeepAnalysis = state.screening?.screeningLevel === "DeepAnalysis";
+    const pathBEligible = triggerType === "EMERGING_SETUP" && emergingSetupWarrantsAnalysis(emergingSetup);
+
+    let driverProfile = getDriverProfile(ticker) ?? null;
+    if ((isDeepAnalysis || pathBEligible) && !driverProfile && companyName) {
+      const universeEntry = (await import("../lib/catalyst-universe.js")).getUniverseEntry(ticker);
+      driverProfile = await getOrGenerateDriverProfile(
+        ticker, companyName,
+        universeEntry?.sector ?? facts.company.sector,
+        universeEntry?.industry ?? facts.company.industry
+      );
+    }
+
+    // ── Step 5: Deep AI analysis ─────────────────────────────────────────────
+    let analysisOutput = null;
+    let aiCalled = false;
+
+    const shouldAnalyze = isDeepAnalysis || pathBEligible;
+
+    if (shouldAnalyze) {
+      const analysisInput = {
+        facts,
+        triggerType,
+        eventId: null,
+        driverProfile,
+        lastFingerprint: force ? null : (state.lastAnalysisFingerprint ?? null),
+        retryNumber: 0,
+      };
+
+      analysisOutput = await runCatalystAnalysis(analysisInput);
+      if (analysisOutput && !analysisOutput.skipped) {
+        aiCalled = true;
+      }
+    }
+
+    // ── Step 6: Update state ─────────────────────────────────────────────────
+    const updatedState: CatalystState = {
+      ...state,
+      signalAccumulation,
+      emergingSetup: hasScheduledEvent ? null : emergingSetup,
+      triggerType,
+      analysis: analysisOutput?.result ?? state.analysis,
+      lastAnalysisFingerprint: analysisOutput?.fingerprint ?? state.lastAnalysisFingerprint,
+      lastAnalysedAt: analysisOutput && !analysisOutput.skipped ? now.toISOString() : state.lastAnalysedAt,
+      lastAnalysisUpdateType: analysisOutput?.result?.analysisUpdateType ?? state.lastAnalysisUpdateType,
+      updatedAt: now.toISOString(),
+    };
+
+    // ── Step 7: Promote to OF if qualified ───────────────────────────────────
+    let promoted = false;
+    if (analysisOutput?.result && qualifiesForPromotion(analysisOutput.result) && !state.promotedAt) {
+      promoteToOpportunityFinder(ticker, companyName, analysisOutput.result, facts);
+      updatedState.promotedAt = now.toISOString();
+      promoted = true;
+    }
+
+    saveCatalystState(ticker, updatedState);
+
+    res.status(200).json({
+      ok: true,
+      ticker,
+      company: companyName,
+      triggerType,
+      analysisUpdateType: updatedState.lastAnalysisUpdateType,
+      opportunityState: updatedState.analysis?.opportunityState ?? null,
+      catalystDirection: updatedState.analysis?.catalystDirection ?? null,
+      thesis: updatedState.analysis?.thesis ?? null,
+      promoted,
+      signalAccumulation: {
+        window14D: signalAccumulation.window14D,
+        momentum: signalAccumulation.signalMomentum,
+        direction: signalAccumulation.overallDirection,
+        evidenceConfidence: signalAccumulation.evidenceConfidence,
+      },
+      emergingSetup: triggerType === "EMERGING_SETUP" ? {
+        state: emergingSetup.state,
+        reasons: emergingSetup.reasons.slice(0, 3),
+        keyDrivers: emergingSetup.keyDrivers,
+      } : null,
+      _debug: {
+        module: MODULE,
+        aiCalled,
+        skipped: analysisOutput?.skipped ?? true,
+        skipReason: analysisOutput?.skipReason ?? (shouldAnalyze ? null : "Not eligible for deep analysis"),
+        tokensUsed: analysisOutput?.tokensUsed ?? 0,
+        driverProfileAvailable: !!driverProfile,
+        signalCount: facts.signals.length,
+        screeningLevel: state.screening?.screeningLevel ?? "Unknown",
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[catalyst-intelligence] analyze error for ${ticker}:`, msg);
+    res.status(500).json({ ok: false, ticker, error: msg });
+  }
+});
+
+/**
+ * POST /api/catalyst-intelligence/driver-profile/:ticker
+ * Force-generates or refreshes the Company Driver Profile.
+ * Body: { force?: boolean }
+ */
+router.post("/catalyst-intelligence/driver-profile/:ticker", async (req, res): Promise<void> => {
+  const ticker = req.params.ticker?.trim().toUpperCase();
+  if (!ticker) {
+    res.status(400).json({ ok: false, error: "Missing ticker" });
+    return;
+  }
+
+  const force = req.body?.force === true;
+
+  try {
+    const state = getCatalystState(ticker);
+    const company = state?.company ?? ticker;
+    const facts = state?.facts;
+
+    const { getUniverseEntry } = await import("../lib/catalyst-universe.js");
+    const universeEntry = getUniverseEntry(ticker);
+
+    const profile = await getOrGenerateDriverProfile(
+      ticker, company,
+      universeEntry?.sector ?? facts?.company.sector ?? null,
+      universeEntry?.industry ?? facts?.company.industry ?? null,
+      force
+    );
+
+    if (!profile) {
+      res.status(500).json({ ok: false, ticker, error: "Driver profile generation failed" });
+      return;
+    }
+
+    res.status(200).json({
+      ok: true,
+      ticker,
+      company,
+      profile,
+      _debug: { module: MODULE, aiCalled: true },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ ok: false, ticker, error: msg });
+  }
+});
+
+/**
+ * GET /api/catalyst-intelligence/promotions
+ * Returns all active Catalyst → Opportunity Finder promotions.
+ */
+router.get("/catalyst-intelligence/promotions", (_req, res) => {
+  const active = getActivePromotions();
+  const contextBlock = buildPromotionsContextBlock();
+
+  res.status(200).json({
+    ok: true,
+    count: active.length,
+    promotions: active,
+    contextBlock,
+    _debug: { module: MODULE },
   });
 });
 

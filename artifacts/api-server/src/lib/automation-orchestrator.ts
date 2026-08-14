@@ -404,19 +404,20 @@ const MODULE_DEFAULTS: ModuleDefaults[] = [
     marketHoursOnly: false,
   },
   {
-    // Catalyst Intelligence — Part 1: manual screening only (supportsAutomaticRun: false).
-    // Part 2 will enable automatic scheduling once deep AI analysis is implemented.
+    // Catalyst Intelligence — Part 2: full pipeline (screening + AI analysis).
+    // Runs after CM/news/events to ensure latest intelligence is available.
+    // Each run: screen all universe tickers, then run deep AI for eligible ones.
     moduleId: "catalyst-intelligence",
     displayName: "Catalyst Intelligence",
     scheduleType: "after",
-    defaultIntervalMinutes: 720,  // every 12 hours when auto is enabled (Part 2)
+    defaultIntervalMinutes: 720,  // every 12 hours (screening is stable within a day)
     minimumIntervalMinutes: 60,
     maximumIntervalMinutes: 1440,
-    staleAfterMinutes: 720,       // 12 hours — screening is stable within a day
+    staleAfterMinutes: 720,
     dependencies: [],
     runAfter: ["company-monitor", "news-monitor", "event-monitor"],
-    priority: 85,                 // runs after all foundation modules, before command-brief
-    supportsAutomaticRun: false,  // Part 2 will enable this
+    priority: 85,                 // runs after foundation modules, before command-brief
+    supportsAutomaticRun: true,   // Part 2: AI analysis enabled
     marketHoursOnly: false,
   },
   {
