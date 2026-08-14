@@ -1,0 +1,531 @@
+PART 2 CORRECTION — CONNECT THE PIPELINE END-TO-END
+
+Do NOT redesign Catalyst Intelligence.
+
+Most of the Part 2 components are good and should be preserved.
+
+However, inspection of the implementation shows that several new components are
+not actually connected to the production Catalyst pipeline.
+
+Fix the following issues.
+
+
+==================================================
+1. CRITICAL — CATALYST SCREENING DOES NOT USE THE NEW UNIVERSE
+==================================================
+
+catalyst-universe.ts correctly contains collectAllScreenableTickers(), including
+the proactive universe.
+
+However routes/catalyst-intelligence.ts still contains its own old
+collectScreenableTickers() implementation which only collects:
+
+- Portfolio Manager
+- Opportunity Finder
+- Company Monitor
+
+This defeats the main purpose of Part 2.
+
+REMOVE this duplicated old discovery logic.
+
+Use the canonical catalyst-universe abstraction.
+
+POST /api/catalyst-intelligence/screen must be capable of screening candidates
+that are NOT already:
+
+- portfolio holdings
+- Opportunity Finder candidates
+- Company Monitor entries.
+
+There must be ONE canonical implementation for the screenable universe.
+
+
+==================================================
+2. DO NOT RELY ON A SMALL HARDCODED STOCK LIST AS THE REAL UNIVERSE
+==================================================
+
+catalyst-universe.ts currently contains DANISH_SEED and US_SEED hardcoded ticker
+lists.
+
+A small static seed can remain as fallback/test/bootstrap data if useful.
+
+It must NOT be the production definition of:
+
+"supported Danish and US equities".
+
+Inspect the existing Saxo instrument/security-search capabilities.
+
+Build the production universe from actual supported/tradeable Saxo instruments
+where possible.
+
+Store/cache the resulting universe so this does NOT repeatedly call Saxo.
+
+The universe should contain compact metadata:
+
+ticker
+company
+exchange
+country
+currency
+sector/industry where available
+UIC/instrument identifier
+tradeable
+active
+
+If Saxo cannot provide the complete universe through the currently implemented
+API, report exactly what is missing instead of pretending the static seed is the
+complete market universe.
+
+
+==================================================
+3. CRITICAL — GENERAL COMPANY EVENTS ARE NOT CONNECTED TO CATALYST SCREENING
+==================================================
+
+Part 2 created:
+
+catalyst-company-events.ts
+routes/company-events.ts
+
+with support for:
+
+Investor Day
+Capital Markets Day
+Company Meeting
+Product Launch
+AI Model Launch
+FDA
+Clinical Readout
+Strategy Update
+etc.
+
+This is good.
+
+BUT routes/catalyst-intelligence.ts still primarily uses:
+
+findNextEarningsDate()
+
+and builds CatalystFacts around earnings.
+
+Fix this.
+
+Catalyst screening must use the general stored CompanySpecificEvent architecture.
+
+For each ticker:
+
+look for upcoming CompanySpecificEvents
+
+choose/evaluate relevant upcoming catalysts
+
+and build CatalystFacts from the actual event.
+
+EARNINGS is one ScheduledCatalystType.
+
+It must NOT be the only real production path.
+
+
+==================================================
+4. CONNECT COMPANY EVENT DISCOVERY TO AUTOMATION
+==================================================
+
+Currently:
+
+POST /api/company-events/discover/:ticker
+
+can discover scheduled events via web search.
+
+But this appears to be primarily a manually callable endpoint.
+
+That is insufficient.
+
+The system must proactively discover upcoming events.
+
+Design a COST-SAFE orchestrator-controlled discovery process.
+
+IMPORTANT:
+
+Do NOT web-search every stock on every Run All.
+
+Use:
+
+cached event state
+last discovery timestamp
+event fingerprints
+minimum refresh windows
+existing Event Monitor information
+official/structured sources where available
+
+Only perform web discovery when due.
+
+The orchestrator should progressively maintain upcoming company catalysts.
+
+The result must be:
+
+A company can enter Catalyst Intelligence because the system discovered a
+scheduled event — without the user manually opening that company first.
+
+
+==================================================
+5. SPACE-X-STYLE FLOW MUST WORK END-TO-END
+==================================================
+
+The following generic scenario must work:
+
+Company X is NOT:
+
+- in portfolio
+- in Opportunity Finder
+- in Company Monitor.
+
+There is a publicly known company meeting/product/technology event in 5 days.
+
+The system discovers the event.
+
+↓
+
+Company X becomes a Catalyst candidate.
+
+↓
+
+Pre-event screening occurs.
+
+↓
+
+If sufficiently important, Company Driver Profile is generated/reused.
+
+↓
+
+Expectations/reporting/rumors are investigated.
+
+↓
+
+Price Context is evaluated.
+
+↓
+
+Catalyst Intelligence can produce:
+
+MONITOR
+INVESTIGATE
+HIGH_INTEREST
+
+↓
+
+If qualified, Company X can be promoted to Opportunity Finder.
+
+NO manual addition of Company X should be required.
+
+
+==================================================
+6. CRITICAL — EMERGING SETUP MUST WORK WITHOUT AN EVENT
+==================================================
+
+Current analyze/:ticker logic can stop with:
+
+"No upcoming event found — no facts to analyze"
+
+before Emerging Setup analysis can meaningfully occur.
+
+This conflicts with PATH B.
+
+PATH B explicitly means:
+
+NO scheduled event required.
+
+Refactor CatalystFacts / screening so a valid CatalystFacts object can exist for:
+
+triggerType = EMERGING_SETUP
+
+with:
+
+event = null / optional
+
+rather than requiring a fake earnings event.
+
+Then:
+
+signals
+company state
+price context
+sector
+market
+news
+
+can create an Emerging Setup.
+
+Do NOT require earnings or any scheduled event for PATH B.
+
+
+==================================================
+7. CONNECT DRIVER-DIRECTED RESEARCH TO STORED SIGNALS
+==================================================
+
+catalyst-driver-profile.ts contains buildDriverSearchTopics().
+
+Good.
+
+But deep Catalyst analysis currently mainly injects the driver profile into the
+AI call and lets web search happen inside that analysis.
+
+That is not enough for stateful Signal Accumulation.
+
+Implement the intended flow:
+
+CompanyDriverProfile
+
+→ determine current driver information already available from
+  News Monitor / Event Monitor / Sector Monitor / Market Monitor
+
+→ identify missing/material driver indicators
+
+→ targeted research only where warranted
+
+→ normalize findings into LeadingIndicatorSignal records
+
+→ store signals with:
+   signalId
+   ticker
+   driver
+   direction
+   observationDate
+   publishedAt where available
+   source
+   sourceType
+   sourceOriginId
+   canonicalSource
+   sourceQuality
+   freshness
+   causal relevance
+   fact/interpretation classification
+
+→ feed STORED signals into SignalAccumulationState
+
+→ then run deep Catalyst analysis.
+
+This is necessary so 7D/14D/30D signal accumulation represents actual historical
+evidence rather than only the signals present in one AI request.
+
+
+==================================================
+8. DO NOT DUPLICATE RESEARCH
+==================================================
+
+Before driver-directed web research:
+
+reuse existing stored signals.
+
+If a driver was researched recently and nothing material has changed:
+
+do not search again.
+
+Use a research fingerprint / freshness mechanism.
+
+The Catalyst feature must remain token/cost efficient.
+
+
+==================================================
+9. EVENT EXPECTATION PROFILE
+==================================================
+
+EventExpectationProfile types exist.
+
+Ensure this is actually populated and used for scheduled non-earnings events.
+
+For an Investor Day / Company Meeting / Product Launch etc. capture:
+
+confirmedTopics
+expectedTopics
+officialHints
+reliableReportingExpectations
+analystExpectations
+credibleRumors
+unverifiedRumors
+marketNarrative
+potentialSurpriseAreas
+alreadyWidelyExpected
+unknowns
+
+Preserve strict distinction between:
+
+FACT
+RELIABLE REPORTING
+RUMOR
+AI INTERPRETATION.
+
+Do not invent expectations when no reliable evidence exists.
+
+
+==================================================
+10. ORCHESTRATOR PIPELINE
+==================================================
+
+After correction, the conceptual automated pipeline should actually be:
+
+SUPPORTED UNIVERSE
+        ↓
+CHEAP EVENT / CHANGE DISCOVERY
+        ↓
+SCHEDULED CATALYSTS + EMERGING SIGNALS
+        ↓
+CHEAP SCREENING
+        ↓
+DRIVER PROFILE only for serious candidates
+        ↓
+TARGETED SIGNAL RESEARCH only where needed
+        ↓
+SIGNAL ACCUMULATION
+        ↓
+DEEP CATALYST AI only for promoted candidates
+        ↓
+OPPORTUNITY FINDER
+        ↓
+TRADE DECISION
+
+Do not run deep AI across the whole universe.
+
+
+==================================================
+11. TEST THE CONNECTIONS, NOT ONLY THE COMPONENTS
+==================================================
+
+Add end-to-end deterministic integration tests.
+
+TEST A — NEW COMPANY DISCOVERY
+
+Ticker is not in Portfolio, OF or CM.
+
+Ticker exists only in supported universe.
+
+Scheduled high-impact event exists.
+
+Expected:
+
+ticker enters Catalyst screening.
+
+
+TEST B — NON-EARNINGS EVENT
+
+Company has Investor Day in 5 days.
+
+Expected:
+
+CatalystFacts event type = INVESTOR_DAY
+
+NOT Earnings.
+
+
+TEST C — SPACEX-STYLE
+
+Company exists only in universe.
+
+Known technology/company event upcoming.
+
+Positive independent pre-event evidence exists.
+
+Price has not strongly run ahead.
+
+Expected:
+
+company can progress to INVESTIGATE/HIGH_INTEREST and promotion eligibility.
+
+
+TEST D — EMERGING SETUP WITHOUT EVENT
+
+No upcoming event exists.
+
+Multiple independent positive signals accumulate.
+
+Price stabilizes after weakness.
+
+Expected:
+
+CatalystFacts can be created with triggerType EMERGING_SETUP.
+
+No "No upcoming event found" rejection.
+
+
+TEST E — SIGNAL PERSISTENCE
+
+Driver-directed research discovers signal S1.
+
+Later run discovers S2.
+
+Both remain available to 14D/30D SignalAccumulationState where still fresh.
+
+Expected:
+
+signal accumulation uses historical stored signals, not only current-run signals.
+
+
+TEST F — NO DUPLICATE PAID WORK
+
+Immediately rerun unchanged case.
+
+Expected:
+
+no repeated event web discovery
+no repeated driver research
+no repeated driver profile generation
+no deep Catalyst AI call.
+
+
+==================================================
+12. IMPORTANT
+==================================================
+
+Do NOT remove the good Part 2 components.
+
+This is primarily an INTEGRATION correction.
+
+The individual engines exist.
+
+The problem is that the production flow currently still contains old Part 1
+assumptions and duplicated discovery logic.
+
+We need the actual end-to-end application behavior to match the architecture.
+
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+After fixing, explicitly report:
+
+1. How /api/catalyst-intelligence/screen now gets its tickers.
+
+2. Whether the production universe is Saxo-derived or still static, and why.
+
+3. How a completely NEW ticker can enter Catalyst Intelligence.
+
+4. How scheduled company-event discovery runs automatically.
+
+5. How non-earnings events enter CatalystFacts.
+
+6. Demonstrate that Investor Day/Product Launch/Company Meeting work.
+
+7. Demonstrate Emerging Setup works with NO event.
+
+8. How driver-directed findings are persisted between runs.
+
+9. How SignalAccumulation gets historical signals.
+
+10. How duplicate web/AI calls are prevented.
+
+11. End-to-end test results.
+
+12. Remaining limitations.
+
+Do not claim Part 2 is complete unless all four paths work end-to-end:
+
+NEW UNIVERSE COMPANY
+→ SCHEDULED EVENT
+→ CATALYST
+
+NON-EARNINGS EVENT
+→ CATALYST
+
+NO EVENT
+→ EMERGING SETUP
+→ CATALYST
+
+CATALYST
+→ OPPORTUNITY FINDER PROMOTION

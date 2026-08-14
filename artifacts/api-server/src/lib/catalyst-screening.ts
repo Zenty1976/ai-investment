@@ -160,10 +160,10 @@ export function computeCatalystFingerprint(facts: CatalystFacts): string {
   const pa = facts.price.priceAsymmetryFacts;
 
   const key = {
-    // Event context (binned daysUntilEvent to 7-day buckets)
-    eventDate:   facts.event.eventDate,
-    daysBucket:  Math.floor(facts.event.daysUntilEvent / 7) * 7,
-    eventType:   facts.event.eventType,
+    // Event context (binned daysUntilEvent to 7-day buckets; null-safe for PATH B)
+    eventDate:   facts.event?.eventDate ?? "",
+    daysBucket:  Math.floor((facts.event?.daysUntilEvent ?? 999) / 7) * 7,
+    eventType:   facts.event?.eventType ?? "Other",
 
     // Price behavior (high-level categories — excludes minor daily noise)
     priceState:       facts.price.priceState,

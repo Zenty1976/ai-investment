@@ -425,15 +425,19 @@ export interface PriceAsymmetryFacts {
 export type CatalystEventType =
   | "Earnings"
   | "GuidanceUpdate"
+  | "InvestorDay"          // Investor Day / Capital Markets Day (major)
   | "CapitalMarketsDay"
+  | "CompanyMeeting"       // Company or shareholder meeting
+  | "ProductLaunch"        // Product launch, tech demo, keynote, developer conference
+  | "ClinicalReadout"      // Clinical trial readout
+  | "RegulatoryDecision"   // FDA decision, regulatory approval/rejection
   | "AGM"
-  | "ProductLaunch"
-  | "RegulatoryDecision"
   | "Other";
 
 export type CatalystEventSource =
   | "CompanyMonitor"    // from CM.earningsAndGuidance.nextKnownEventDate
   | "EventMonitor"      // from event-monitor events list
+  | "CompanyEvents"     // from catalyst-company-events store (web-discovered)
   | "Manual";           // user-provided
 
 /**
@@ -472,7 +476,11 @@ export interface CatalystFacts {
   /** ISO timestamp when this facts object was assembled. */
   assembledAt: string;
 
-  event: CatalystEvent;
+  /**
+   * The upcoming scheduled event (PATH A), or null for PATH B (emerging setup).
+   * When null, triggerType is EMERGING_SETUP and event-related fields are unavailable.
+   */
+  event: CatalystEvent | null;
 
   price: {
     /** Current price (reference only — do not use for investment decisions). */

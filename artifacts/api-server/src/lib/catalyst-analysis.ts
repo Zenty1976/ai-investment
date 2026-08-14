@@ -71,15 +71,16 @@ export function shouldSkipAnalysis(
 function buildCompactFacts(facts: CatalystFacts, driverSummary: string | null): string {
   const lines: string[] = [];
 
-  // Identity
-  const company = facts.event.company ?? facts.event.ticker;
-  lines.push(`COMPANY: ${company} (${facts.event.ticker})`);
+  // Identity — event may be null (PATH B)
+  const company = facts.event?.company ?? facts.company.sector ?? "Unknown";
+  const tickerStr = facts.event?.ticker ?? "?";
+  lines.push(`COMPANY: ${company} (${tickerStr})`);
   if (facts.company.sector) lines.push(`SECTOR: ${facts.company.sector}`);
   if (facts.company.industry) lines.push(`INDUSTRY: ${facts.company.industry}`);
 
   // Event context
   const ev = facts.event;
-  if (ev.eventDate) {
+  if (ev && ev.eventDate) {
     lines.push(`EVENT: ${ev.eventType} in ${ev.daysUntilEvent}D (${ev.eventDate})`);
     lines.push(`EVENT SOURCE: ${ev.source} (confidence: ${ev.sourceConfidence})`);
   } else {
@@ -274,7 +275,7 @@ export async function runCatalystAnalysis(
   // ── Fingerprint skip ───────────────────────────────────────────────────────
   const currentFingerprint = computeCatalystFingerprint(facts);
   if (lastFingerprint && currentFingerprint === lastFingerprint) {
-    const noChangeResult = buildNoChangeResult(facts.event.company, facts.event.ticker, triggerType, eventId);
+    const noChangeResult = buildNoChangeResult(facts.event?.company ?? "Unknown", facts.event?.ticker ?? "?", triggerType, eventId);
     return {
       result: noChangeResult,
       fingerprint: currentFingerprint,
@@ -296,8 +297,9 @@ export async function runCatalystAnalysis(
   const compactFacts = buildCompactFacts(facts, driverSummary);
 
   const upcomingEvent = facts.event;
-  const companyName = facts.event.company ?? facts.event.ticker;
-  const userPrompt = `Analyze the pre-event catalyst opportunity for ${companyName} (${facts.event.ticker}).
+  const companyName = facts.event?.company ?? facts.company.investmentView ?? "Unknown Company";
+  const tickerForPrompt = facts.event?.ticker ?? "?";
+  const userPrompt = `Analyze the pre-event catalyst opportunity for ${companyName} (${tickerForPrompt}).
 
 TRIGGER PATH: ${triggerType}
 ${upcomingEvent?.eventDate ? `UPCOMING EVENT: ${upcomingEvent.eventType} on ${upcomingEvent.eventDate} (${upcomingEvent.daysUntilEvent ?? "?"}D away)` : "UPCOMING EVENT: None (emerging setup)"}

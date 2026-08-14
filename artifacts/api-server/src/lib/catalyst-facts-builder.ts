@@ -312,16 +312,31 @@ function extractCompanyInfo(cmResult: Record<string, unknown>): {
 
 export interface CatalystFactsInputs {
   ticker: string;
-  event: CatalystEvent;
+  /**
+   * PATH A: The scheduled upcoming event.
+   * PATH B (EMERGING_SETUP): null — no event required.
+   * When null, price asymmetry uses a default 45-day window.
+   */
+  event: CatalystEvent | null;
+  /**
+   * Additional signals to merge from the persistent signal store.
+   * These are historical signals from prior runs (for 7D/14D/30D accumulation).
+   */
+  storedSignals?: LeadingIndicatorSignal[];
 }
 
 /**
  * Assemble CatalystFacts for a ticker from existing repository data.
+ *
+ * Supports PATH A (event != null) and PATH B (event = null, EMERGING_SETUP).
+ * For PATH B, price asymmetry uses a default 45-day window and event-related
+ * fields are null/unavailable.
+ *
  * Returns a complete CatalystFacts object with all available data populated
  * and all unavailable data clearly marked in dataQuality.
  */
 export function buildCatalystFacts(inputs: CatalystFactsInputs): CatalystFacts {
-  const { ticker, event } = inputs;
+  const { ticker, event, storedSignals = [] } = inputs;
   const assembledAt = new Date().toISOString();
   const missingFields: string[] = [];
   const staleFields: string[] = [];
@@ -346,8 +361,10 @@ export function buildCatalystFacts(inputs: CatalystFactsInputs): CatalystFacts {
   const pc = getPriceContext(ticker);
   if (!pc) missingFields.push("price-context");
 
+  // For PATH B (no event), use a neutral 45-day window for price asymmetry
+  const daysForAsymmetry = event?.daysUntilEvent ?? 45;
   const priceAsymmetryFacts = pc
-    ? buildPriceAsymmetryFacts(pc, event.daysUntilEvent, DEFAULT_CATALYST_SCREENING_CONFIG)
+    ? buildPriceAsymmetryFacts(pc, daysForAsymmetry, DEFAULT_CATALYST_SCREENING_CONFIG)
     : {
         preEventRunupPct: null, preEventRunupPeriod: null,
         recentMomentum5D: null, recentMomentum10D: null,
@@ -374,11 +391,17 @@ export function buildCatalystFacts(inputs: CatalystFactsInputs): CatalystFacts {
   const driverProfile = getDriverProfile(ticker) ?? null;
   if (!driverProfile) missingFields.push("company-driver-profile");
 
-  // ── Signals (Part 1: from CM + News) ──────────────────────────────────────
-  const signals: LeadingIndicatorSignal[] = [
+  // ── Signals: current-run (CM + News) + historical (signal store) ──────────
+  const currentRunSignals: LeadingIndicatorSignal[] = [
     ...extractSignalsFromCompanyMonitor(ticker, cmResult, assembledAt),
     ...(newsEntry?.result ? extractSignalsFromNews(ticker, newsEntry.result as Record<string, unknown>, assembledAt) : []),
   ];
+
+  // Merge with stored historical signals (Part 2: driver-directed research)
+  // Deduplicate by signalId — current-run signals take precedence
+  const currentRunIds = new Set(currentRunSignals.map(s => s.signalId));
+  const historicalOnly = storedSignals.filter(s => !currentRunIds.has(s.signalId));
+  const signals: LeadingIndicatorSignal[] = [...currentRunSignals, ...historicalOnly];
 
   // ── Material news extraction ───────────────────────────────────────────────
   const allNews = (newsEntry?.result as Record<string, unknown> | undefined)?.news;

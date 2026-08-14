@@ -1,9 +1,9 @@
 {
   "portfolio-manager": {
     "status": "Failed",
-    "lastRunAt": "2026-08-14T06:47:38.593Z",
+    "lastRunAt": "2026-08-14T08:18:06.092Z",
     "lastSuccessfulRunAt": "2026-08-13T20:44:09.806Z",
-    "nextRunAt": "2026-08-14T07:47:38.597Z",
+    "nextRunAt": "2026-08-14T09:18:06.097Z",
     "lastError": "HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}",
     "currentJobId": null,
     "waitingForDeps": [],
@@ -11,9 +11,9 @@
   },
   "market-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T06:41:40.338Z",
-    "lastSuccessfulRunAt": "2026-08-14T06:41:48.599Z",
-    "nextRunAt": "2026-08-14T07:11:48.610Z",
+    "lastRunAt": "2026-08-14T07:52:23.915Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:36.354Z",
+    "nextRunAt": "2026-08-14T08:22:36.365Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -21,9 +21,9 @@
   },
   "news-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T06:41:40.340Z",
-    "lastSuccessfulRunAt": "2026-08-14T06:41:50.968Z",
-    "nextRunAt": "2026-08-14T07:11:51.096Z",
+    "lastRunAt": "2026-08-14T07:52:23.931Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:36.383Z",
+    "nextRunAt": "2026-08-14T08:22:36.391Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -31,9 +31,9 @@
   },
   "event-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T04:51:22.568Z",
-    "lastSuccessfulRunAt": "2026-08-14T04:51:26.686Z",
-    "nextRunAt": "2026-08-14T07:51:26.695Z",
+    "lastRunAt": "2026-08-14T07:52:23.932Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:31.337Z",
+    "nextRunAt": "2026-08-14T10:52:31.348Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -61,21 +61,19 @@
   },
   "market-alerts": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T05:31:53.932Z",
-    "lastSuccessfulRunAt": "2026-08-14T06:31:40.125Z",
-    "nextRunAt": "2026-08-14T06:46:40.147Z",
+    "lastRunAt": "2026-08-14T08:12:49.344Z",
+    "lastSuccessfulRunAt": "2026-08-14T08:12:49.682Z",
+    "nextRunAt": "2026-08-14T08:27:49.703Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [
-      "portfolio-manager"
-    ],
-    "lastSkippedUnchanged": true
+    "waitingForDeps": [],
+    "lastSkippedUnchanged": false
   },
   "risk-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T04:51:22.602Z",
-    "lastSuccessfulRunAt": "2026-08-14T04:51:40.452Z",
-    "nextRunAt": "2026-08-14T06:51:40.580Z",
+    "lastRunAt": "2026-08-14T07:52:23.973Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:41.676Z",
+    "nextRunAt": "2026-08-14T09:52:41.705Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -88,7 +86,9 @@
     "nextRunAt": "2026-08-14T07:51:36.164Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [],
+    "waitingForDeps": [
+      "portfolio-manager"
+    ],
     "lastSkippedUnchanged": false
   },
   "opportunity-finder": {
@@ -103,9 +103,9 @@
   },
   "trade-decision-engine": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T04:51:22.606Z",
-    "lastSuccessfulRunAt": "2026-08-14T04:51:40.954Z",
-    "nextRunAt": "2026-08-14T06:51:41.195Z",
+    "lastRunAt": "2026-08-14T07:52:23.977Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:48.468Z",
+    "nextRunAt": "2026-08-14T09:52:48.489Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -113,13 +113,13 @@
   },
   "trade-review": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T04:51:41.197Z",
-    "lastSuccessfulRunAt": "2026-08-14T06:11:14.722Z",
-    "nextRunAt": "2026-08-14T08:11:14.734Z",
+    "lastRunAt": "2026-08-14T07:52:48.491Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:48.518Z",
+    "nextRunAt": "2026-08-14T09:52:48.542Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
-    "lastSkippedUnchanged": true
+    "lastSkippedUnchanged": false
   },
   "investor-watch": {
     "status": "Idle",
@@ -133,9 +133,9 @@
   },
   "catalyst-intelligence": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T06:45:03.533Z",
-    "lastSuccessfulRunAt": "2026-08-14T06:45:08.474Z",
-    "nextRunAt": "2026-08-14T18:45:08.475Z",
+    "lastRunAt": "2026-08-14T07:52:36.392Z",
+    "lastSuccessfulRunAt": "2026-08-14T07:52:41.625Z",
+    "nextRunAt": "2026-08-14T19:52:41.625Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],

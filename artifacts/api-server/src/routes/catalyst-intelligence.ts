@@ -1,15 +1,24 @@
 /**
- * Catalyst Intelligence Route — Part 2 (AI Analysis + Signal Accumulation)
+ * Catalyst Intelligence Route — Part 2 (Full Pipeline, Corrected)
  *
  * Endpoints:
- *   POST /api/catalyst-intelligence/screen            — run deterministic screening
+ *   POST /api/catalyst-intelligence/screen            — screening for all universe tickers
  *   POST /api/catalyst-intelligence/screen/:ticker    — screen a specific ticker
- *   POST /api/catalyst-intelligence/analyze/:ticker   — deep AI analysis for a ticker
+ *   POST /api/catalyst-intelligence/analyze/:ticker   — deep AI analysis (PATH A or B)
  *   POST /api/catalyst-intelligence/driver-profile/:ticker — generate/refresh driver profile
  *   GET  /api/catalyst-intelligence/status            — all tracked tickers' states
  *   GET  /api/catalyst-intelligence/promotions        — active OF promotions
+ *   GET  /api/catalyst-intelligence/universe          — universe status + Saxo report (§13)
  *   GET  /api/catalyst-intelligence/debug/:ticker     — full debug dump
  *   GET  /api/catalyst-intelligence/facts/:ticker     — assembled CatalystFacts
+ *
+ * Integration fixes (correction spec):
+ *   1. Universe: collectAllScreenableTickers() from catalyst-universe (includes seed)
+ *   2. Events: CompanySpecificEvents checked first; earnings is the FALLBACK
+ *   3. PATH B: analyze/:ticker builds facts with event=null when no event found
+ *   4. Signal persistence: stored signals included in facts for accumulation windows
+ *   5. Proactive event discovery: cost-safe, gated by shouldSkipDiscovery()
+ *   6. Saxo universe: enrichUniverseWithSaxo() runs non-blocking during screen
  */
 
 import { Router } from "express";
@@ -22,29 +31,91 @@ import { buildCatalystFacts } from "../lib/catalyst-facts-builder.js";
 import { buildPriceAsymmetryFacts } from "../lib/catalyst-price-asymmetry.js";
 import { screenCatalystCandidate } from "../lib/catalyst-screening.js";
 import { DEFAULT_CATALYST_SCREENING_CONFIG } from "../lib/catalyst-types.js";
+import type {
+  CatalystEvent, CatalystState, PriceAsymmetry, TriggerType,
+  CatalystEventType, ScheduledCatalystType,
+} from "../lib/catalyst-types.js";
 import {
   getOrGenerateDriverProfile, getDriverProfile,
 } from "../lib/catalyst-driver-profile.js";
-import {
-  computeSignalAccumulationState,
-} from "../lib/catalyst-signal-accumulation.js";
-import {
-  detectEmergingSetup, emergingSetupWarrantsAnalysis,
-} from "../lib/catalyst-emerging-setup.js";
-import {
-  runCatalystAnalysis, qualifiesForPromotion,
-} from "../lib/catalyst-analysis.js";
+import { computeSignalAccumulationState } from "../lib/catalyst-signal-accumulation.js";
+import { detectEmergingSetup, emergingSetupWarrantsAnalysis } from "../lib/catalyst-emerging-setup.js";
+import { runCatalystAnalysis, qualifiesForPromotion } from "../lib/catalyst-analysis.js";
 import {
   promoteToOpportunityFinder, getActivePromotions, buildPromotionsContextBlock,
 } from "../lib/catalyst-promotion.js";
-import type {
-  CatalystEvent, CatalystState, PriceAsymmetry, TriggerType,
-} from "../lib/catalyst-types.js";
+import {
+  collectAllScreenableTickers, getUniverseEntry,
+} from "../lib/catalyst-universe.js";
+import {
+  getUpcomingEventsForTicker, daysUntilEventDate,
+} from "../lib/catalyst-company-events.js";
+import type { CompanySpecificEvent } from "../lib/catalyst-types.js";
+import {
+  getStoredSignals, mergeStoredSignals,
+} from "../lib/catalyst-signal-store.js";
+import {
+  discoverEventsForTicker, shouldSkipDiscovery,
+} from "../lib/catalyst-event-discovery.js";
+import {
+  enrichUniverseWithSaxo, getSaxoUniverseStatus,
+} from "../lib/catalyst-saxo-universe.js";
+import { researchDriverSignals } from "../lib/catalyst-signal-research.js";
 
 const router = Router();
 const MODULE = "catalyst-intelligence";
 
-// ── Event detection ────────────────────────────────────────────────────────────
+// ── Max proactive discoveries per screen run (cost control) ───────────────────
+const MAX_PROACTIVE_DISCOVERIES = 5;
+
+// ── Event type mapping ────────────────────────────────────────────────────────
+
+/**
+ * Map ScheduledCatalystType (catalyst-company-events) to CatalystEventType (catalyst-types).
+ * ScheduledCatalystType is the more granular set; CatalystEventType is the compact analysis type.
+ */
+function scheduledTypeToCatalystEventType(t: ScheduledCatalystType): CatalystEventType {
+  switch (t) {
+    case "EARNINGS":                                      return "Earnings";
+    case "GUIDANCE_UPDATE":                               return "GuidanceUpdate";
+    case "INVESTOR_DAY":                                  return "InvestorDay";
+    case "CAPITAL_MARKETS_DAY":                           return "CapitalMarketsDay";
+    case "COMPANY_MEETING":   case "SHAREHOLDER_MEETING": return "CompanyMeeting";
+    case "PRODUCT_LAUNCH":    case "AI_MODEL_LAUNCH":
+    case "TECHNOLOGY_DEMONSTRATION": case "DEVELOPER_CONFERENCE":
+    case "KEYNOTE":                                       return "ProductLaunch";
+    case "CLINICAL_READOUT":                              return "ClinicalReadout";
+    case "FDA_DECISION":      case "REGULATORY_DECISION":
+    case "COURT_DECISION":                                return "RegulatoryDecision";
+    default:                                              return "Other";
+  }
+}
+
+/**
+ * Convert a CompanySpecificEvent to the CatalystEvent shape used in facts + AI analysis.
+ */
+function companyEventToCatalystEvent(
+  ev: CompanySpecificEvent,
+  ticker: string,
+  company: string,
+  nowIso: string,
+): CatalystEvent {
+  return {
+    ticker,
+    company,
+    eventType: scheduledTypeToCatalystEventType(ev.eventType),
+    eventDate: ev.eventDate,
+    daysUntilEvent: daysUntilEventDate(ev.eventDate, nowIso),
+    reportingPeriod: ev.eventType === "EARNINGS" ? inferReportingPeriod(ev.eventDate) : null,
+    // Map "DuringMarket" → "Unknown" since CatalystEvent.marketTiming doesn't include it
+    marketTiming: ev.beforeAfterMarket === "DuringMarket" ? "Unknown" : ev.beforeAfterMarket,
+    source: "CompanyEvents",
+    sourceConfidence: ev.isConfirmed ? "High" : "Low",
+    classification: "Unknown",
+  };
+}
+
+// ── Earnings date detection (fallback only) ────────────────────────────────────
 
 interface EarningsDate {
   date: string;
@@ -53,6 +124,10 @@ interface EarningsDate {
   confidence: "High" | "Medium" | "Low";
 }
 
+/**
+ * Fallback: find an earnings date from CM.earningsAndGuidance or Event Monitor.
+ * Only called when getUpcomingEventsForTicker() returns nothing in the window.
+ */
 function findNextEarningsDate(
   ticker: string,
   cmResult: Record<string, unknown> | undefined,
@@ -60,7 +135,7 @@ function findNextEarningsDate(
 ): EarningsDate | null {
   const todayMs = today.getTime();
 
-  // ── Source 1: Company Monitor nextKnownEventDate (primary) ────────────────
+  // Source 1: Company Monitor nextKnownEventDate
   const eg = cmResult?.earningsAndGuidance as Record<string, unknown> | undefined;
   const cmDate = String(eg?.nextKnownEventDate ?? "").trim();
 
@@ -72,12 +147,12 @@ function findNextEarningsDate(
     }
   }
 
-  // ── Source 2: Event Monitor — scan for earnings events matching ticker ─────
+  // Source 2: Event Monitor — scan for earnings events matching ticker
   const eiState = analysisRepository.get<{
     events: Array<{
       id: string; title: string; date: string; status: string;
       category: string; affectedMarkets?: string[];
-    }>
+    }>;
   }>("event-intelligence");
 
   if (eiState?.result?.events) {
@@ -85,12 +160,10 @@ function findNextEarningsDate(
     for (const ev of eiState.result.events) {
       if (ev.status === "passed") continue;
       const titleUpper = ev.title.toUpperCase();
-      // Match on ticker fragment or earnings-related keywords
-      const mentionsTicker = titleUpper.includes(companyBase) ||
-        titleUpper.includes(ticker.toUpperCase());
+      const mentionsTicker =
+        titleUpper.includes(companyBase) || titleUpper.includes(ticker.toUpperCase());
       const isEarnings = /EARNINGS|RESULTS|REPORT|QUARTERLY|ANNUAL/.test(titleUpper);
       if (!mentionsTicker || !isEarnings) continue;
-
       if (!/^\d{4}-\d{2}-\d{2}$/.test(ev.date)) continue;
       const eventMs = new Date(ev.date + "T00:00:00Z").getTime();
       const daysUntil = Math.round((eventMs - todayMs) / 86_400_000);
@@ -103,13 +176,12 @@ function findNextEarningsDate(
   return null;
 }
 
-// ── Derive reporting period from event date ────────────────────────────────────
+// ── Reporting period helper ───────────────────────────────────────────────────
 
 function inferReportingPeriod(eventDate: string): string | null {
   const d = new Date(eventDate + "T00:00:00Z");
   if (isNaN(d.getTime())) return null;
-  const month = d.getUTCMonth() + 1; // 1-indexed
-  // Rough heuristic: reports roughly 4-6 weeks after quarter end
+  const month = d.getUTCMonth() + 1;
   if (month >= 1  && month <= 3)  return `Q4 ${d.getUTCFullYear() - 1}`;
   if (month >= 4  && month <= 6)  return `Q1 ${d.getUTCFullYear()}`;
   if (month >= 7  && month <= 9)  return `Q2 ${d.getUTCFullYear()}`;
@@ -125,33 +197,69 @@ interface ScreenTickerResult {
   error: string | null;
 }
 
+/**
+ * Deterministic screening for one ticker.
+ *
+ * Event discovery priority (spec §3):
+ *   1. CompanySpecificEvents store — any type (EARNINGS, INVESTOR_DAY, etc.)
+ *   2. CM / Event Monitor earnings fallback
+ *   3. null event (PATH B eligible)
+ *
+ * Historical signals from the persistent signal store are included
+ * so 7D/14D/30D accumulation windows work correctly.
+ */
 function screenTicker(ticker: string, now: Date): ScreenTickerResult {
   const screenedAt = now.toISOString();
 
   try {
-    // Get Company Monitor entry
+    // ── Company name resolution ────────────────────────────────────────────────
+    // Priority: universe entry → CM entry → ticker symbol
+    const universeEntry = getUniverseEntry(ticker);
+
     const cmEntry = analysisRepository.get<Record<string, unknown>>(
       `company-monitor:${ticker.toUpperCase()}`
     );
     const cmResult = cmEntry?.result;
+    const cmCompanyObj = cmResult?.company as Record<string, unknown> | undefined;
     const company = String(
-      (cmResult?.company as Record<string, unknown> | undefined)?.name ?? ticker
+      universeEntry?.company ??
+      cmCompanyObj?.name ??
+      (typeof cmResult?.company === "string" ? cmResult.company : null) ??
+      ticker
     ).trim() || ticker;
 
-    // Find upcoming event
-    const earningsDate = findNextEarningsDate(ticker, cmResult, now);
+    // ── Step 1: Find best upcoming event (spec §3) ────────────────────────────
+    // First: check the CompanySpecificEvents store for ANY event type
+    const storedEvents = getUpcomingEventsForTicker(
+      ticker,
+      DEFAULT_CATALYST_SCREENING_CONFIG.maxDaysUntilEvent,
+      screenedAt
+    );
 
-    // Get price context
-    const pc = getPriceContext(ticker);
-    const priceAsymmetryFacts = pc && earningsDate
-      ? buildPriceAsymmetryFacts(pc, earningsDate.daysUntil, DEFAULT_CATALYST_SCREENING_CONFIG)
-      : null;
+    // Filter to events within the minimum window and rank by impact × proximity
+    const IMPACT_SCORE: Record<string, number> = { High: 3, Medium: 2, Low: 1, Unknown: 1 };
+    const rankedEvents = storedEvents
+      .filter(ev => {
+        const days = daysUntilEventDate(ev.eventDate, screenedAt);
+        return days >= DEFAULT_CATALYST_SCREENING_CONFIG.minDaysUntilEvent;
+      })
+      .sort((a, b) => {
+        const impA = IMPACT_SCORE[a.potentialMarketImpact] ?? 1;
+        const impB = IMPACT_SCORE[b.potentialMarketImpact] ?? 1;
+        if (impA !== impB) return impB - impA; // higher impact first
+        return a.eventDate.localeCompare(b.eventDate); // earlier date first
+      });
 
-    const priceAsymmetry: PriceAsymmetry = priceAsymmetryFacts?.asymmetry ?? "Neutral";
+    let event: CatalystEvent | null = null;
 
-    // Build event object for facts assembly
-    const event: CatalystEvent | null = earningsDate
-      ? {
+    if (rankedEvents.length > 0) {
+      // Use the best stored event (any type)
+      event = companyEventToCatalystEvent(rankedEvents[0], ticker, company, screenedAt);
+    } else {
+      // Fallback: look for earnings in CM / Event Monitor
+      const earningsDate = findNextEarningsDate(ticker, cmResult, now);
+      if (earningsDate) {
+        event = {
           ticker,
           company,
           eventType: "Earnings",
@@ -162,35 +270,33 @@ function screenTicker(ticker: string, now: Date): ScreenTickerResult {
           source: earningsDate.source,
           sourceConfidence: earningsDate.confidence,
           classification: "Unknown",
-        }
+        };
+      }
+      // If still null → PATH B eligible (event = null)
+    }
+
+    // ── Step 2: Price context ─────────────────────────────────────────────────
+    const pc = getPriceContext(ticker);
+    const daysForAsymmetry = event?.daysUntilEvent ?? 45;
+    const priceAsymmetryFacts = pc
+      ? buildPriceAsymmetryFacts(pc, daysForAsymmetry, DEFAULT_CATALYST_SCREENING_CONFIG)
       : null;
+    const priceAsymmetry: PriceAsymmetry = priceAsymmetryFacts?.asymmetry ?? "Neutral";
 
-    // Assemble CatalystFacts (needed for fingerprint even when screening excludes)
-    const facts = event
-      ? buildCatalystFacts({ ticker, event })
-      : buildCatalystFacts({
-          ticker,
-          event: {
-            ticker, company,
-            eventType: "Earnings",
-            eventDate: "",
-            daysUntilEvent: 999,
-            reportingPeriod: null,
-            marketTiming: "Unknown",
-            source: "CompanyMonitor",
-            sourceConfidence: "Low",
-            classification: "Unknown",
-          },
-        });
+    // ── Step 3: Load stored signals (for accumulation windows) ───────────────
+    const storedSignals = getStoredSignals(ticker, 30); // last 30 days
 
-    // Count relevant (non-neutral) signals
+    // ── Step 4: Assemble CatalystFacts ────────────────────────────────────────
+    const facts = buildCatalystFacts({ ticker, event, storedSignals });
+
+    // ── Step 5: Count relevant signals ────────────────────────────────────────
     const relevantSignalCount = facts.signals.filter(s => s.direction !== "Neutral").length;
 
-    // Run deterministic screening
+    // ── Step 6: Deterministic screening ───────────────────────────────────────
     const screening = screenCatalystCandidate({
       ticker,
       company,
-      daysUntilEvent: earningsDate?.daysUntil ?? null,
+      daysUntilEvent: event?.daysUntilEvent ?? null,
       priceAsymmetry,
       investmentView: facts.company.investmentView,
       earningsGuidanceTrend: facts.company.earningsGuidanceTrend,
@@ -203,22 +309,29 @@ function screenTicker(ticker: string, now: Date): ScreenTickerResult {
       screenedAt,
     });
 
-    // Preserve existing Part 2 state fields when overwriting screening
+    // ── Step 7: Build and save state ──────────────────────────────────────────
     const existingState = getCatalystState(ticker);
 
     const state: CatalystState = {
       ticker,
       company,
       screening,
-      facts: event ? facts : null,
+      // Store facts if event is present (PATH A) or if eligible for PATH B
+      facts: (event || screening.eligible) ? facts : null,
       analysis: existingState?.analysis ?? null,
       lastAnalysisFingerprint: existingState?.lastAnalysisFingerprint ?? null,
       lastScreenedAt: screenedAt,
       lastAnalysedAt: existingState?.lastAnalysedAt ?? null,
-      eventPassed: !earningsDate || earningsDate.daysUntil < 0,
+      eventPassed: event ? event.daysUntilEvent < 0 : false,
       updatedAt: screenedAt,
-      // Part 2 fields
-      discoverySource: existingState?.discoverySource ?? null,
+      // Part 2 fields — preserve across screen runs
+      // DiscoverySource: derive from company monitor + universe presence
+      // (portfolio/OF flags are only on collectAllScreenableTickers(), not EquityUniverseEntry)
+      discoverySource: existingState?.discoverySource ?? (
+        cmResult ? "COMPANY_SIGNAL"
+        : universeEntry ? "UNIVERSE_EVENT"
+        : null
+      ) as CatalystState["discoverySource"],
       triggerType: existingState?.triggerType ?? null,
       signalAccumulation: existingState?.signalAccumulation ?? null,
       emergingSetup: existingState?.emergingSetup ?? null,
@@ -235,71 +348,107 @@ function screenTicker(ticker: string, now: Date): ScreenTickerResult {
   }
 }
 
-// ── Collect tickers to screen ──────────────────────────────────────────────────
+// ── Proactive event discovery (cost-safe) ─────────────────────────────────────
 
-function collectScreenableTickers(): string[] {
-  const tickers = new Set<string>();
+/**
+ * Proactively discover events for universe-seed tickers that:
+ *   a) Are not yet in portfolio/OF/CM (pure universe candidates), AND
+ *   b) Have no recent stored events, AND
+ *   c) Haven't been discovered recently (shouldSkipDiscovery gate)
+ *
+ * Runs a maximum of MAX_PROACTIVE_DISCOVERIES AI calls per screen run.
+ * Failures are silently swallowed — proactive discovery is best-effort.
+ */
+async function runProactiveEventDiscovery(
+  allTickers: ReturnType<typeof collectAllScreenableTickers>,
+  nowIso: string,
+): Promise<{ discovered: number; skipped: number; candidates: string[] }> {
+  // Only target pure universe-seed tickers (not already in watchlist sources)
+  const candidates = allTickers.filter(t =>
+    t.inUniverseSeed && !t.inPortfolio && !t.inOpportunityFinder && !t.inCompanyMonitor
+  );
 
-  // From portfolio manager
-  const pmEntry = analysisRepository.get<Record<string, unknown>>("portfolio-manager");
-  const positions = (pmEntry?.result as Record<string, unknown> | undefined)?.positions;
-  if (Array.isArray(positions)) {
-    for (const pos of positions) {
-      const sym = String((pos as Record<string, unknown>)["symbol"] ?? "").trim();
-      if (sym) tickers.add(sym.toUpperCase());
+  const toDiscover = candidates.filter(t => !shouldSkipDiscovery(t.ticker, nowIso));
+  const limited = toDiscover.slice(0, MAX_PROACTIVE_DISCOVERIES);
+
+  let discovered = 0;
+  for (const t of limited) {
+    try {
+      const result = await discoverEventsForTicker(t.ticker, t.company, false);
+      if (!result.skipped && result.discovered > 0) discovered++;
+    } catch {
+      // Non-fatal
     }
   }
 
-  // From opportunity finder
-  const ofEntry = analysisRepository.get<Record<string, unknown>>("opportunity-finder");
-  const candidates = (ofEntry?.result as Record<string, unknown> | undefined)?.candidates;
-  if (Array.isArray(candidates)) {
-    for (const c of candidates) {
-      const sym = String((c as Record<string, unknown>)["ticker"] ?? "").trim();
-      if (sym) tickers.add(sym.toUpperCase());
-    }
-  }
-
-  // From existing company-monitor entries
-  const allEntries = analysisRepository.getAll();
-  for (const entry of allEntries) {
-    if (entry.moduleName.startsWith("company-monitor:")) {
-      const sym = entry.moduleName.replace("company-monitor:", "").toUpperCase();
-      if (sym) tickers.add(sym);
-    }
-  }
-
-  return [...tickers];
+  return {
+    discovered,
+    skipped: toDiscover.length - limited.length,
+    candidates: limited.map(t => t.ticker),
+  };
 }
 
 // ── Endpoints ──────────────────────────────────────────────────────────────────
 
 /**
  * POST /api/catalyst-intelligence/screen
- * Runs deterministic screening for all known tickers.
- * Body: { tickers?: string[] } — if provided, screen only those tickers.
+ *
+ * Runs deterministic screening for all universe tickers.
+ * Uses collectAllScreenableTickers() which includes portfolio + OF + CM + universe seed.
+ *
+ * Also triggers:
+ *   - Proactive event discovery for pure universe-seed tickers (cost-safe)
+ *   - Background Saxo universe enrichment (non-blocking)
+ *
+ * Body: { tickers?: string[], skipDiscovery?: boolean }
  */
-router.post("/catalyst-intelligence/screen", (req, res) => {
-  const requestedTickers: string[] = Array.isArray(req.body?.tickers)
-    ? req.body.tickers.map((t: unknown) => String(t).trim().toUpperCase()).filter(Boolean)
-    : collectScreenableTickers();
+router.post("/catalyst-intelligence/screen", async (req, res): Promise<void> => {
+  const now = new Date();
+  const nowIso = now.toISOString();
 
-  if (requestedTickers.length === 0) {
-    return res.status(200).json({
+  // Get all screenable tickers from the canonical universe function
+  const allScreenable = collectAllScreenableTickers();
+
+  let tickersToScreen: string[];
+  if (Array.isArray(req.body?.tickers) && req.body.tickers.length > 0) {
+    const requested = req.body.tickers.map((t: unknown) => String(t).trim().toUpperCase()).filter(Boolean);
+    tickersToScreen = requested;
+  } else {
+    tickersToScreen = allScreenable.map(t => t.ticker);
+  }
+
+  if (tickersToScreen.length === 0) {
+    res.status(200).json({
       ok: true,
       screened: [],
       skipped: [],
-      message: "No tickers found to screen. Run portfolio-manager or opportunity-finder first.",
+      message: "No tickers in universe. Add holdings to portfolio, run opportunity-finder, or check catalyst-universe.",
       _debug: { module: MODULE },
     });
+    return;
   }
 
-  const now = new Date();
+  // Proactive event discovery — async but awaited before screening to ensure events are available
+  const skipDiscovery = req.body?.skipDiscovery === true;
+  let discoveryStats = { discovered: 0, skipped: 0, candidates: [] as string[] };
+  if (!skipDiscovery) {
+    try {
+      discoveryStats = await runProactiveEventDiscovery(allScreenable, nowIso);
+    } catch {
+      // Non-fatal — continue with screening
+    }
+  }
+
+  // Background Saxo universe enrichment (fire-and-forget — uses cache so rarely makes API calls)
+  const seedEntries = (await import("../lib/catalyst-universe.js")).getAllUniverseEntries();
+  enrichUniverseWithSaxo(seedEntries).catch(() => { /* non-fatal */ });
+
+  // Screen each ticker (synchronous — deterministic only)
   const screened: object[] = [];
   const skipped: string[] = [];
   const errors: Record<string, string> = {};
 
-  for (const ticker of requestedTickers) {
+  for (const ticker of tickersToScreen) {
     const result = screenTicker(ticker, now);
     if (result.error) {
       errors[ticker] = result.error;
@@ -311,29 +460,37 @@ router.post("/catalyst-intelligence/screen", (req, res) => {
         eligible: result.state.screening?.eligible ?? false,
         screeningLevel: result.state.screening?.screeningLevel,
         daysUntilEvent: result.state.screening?.daysUntilEvent,
+        eventType: result.state.facts?.event?.eventType ?? null,
         preliminaryState: result.state.screening?.preliminaryState,
         priceAsymmetry: result.state.screening?.priceAsymmetry,
         materialFingerprint: result.state.screening?.materialFingerprint,
         screeningReasons: result.state.screening?.screeningReasons ?? [],
         exclusionReason: result.state.screening?.exclusionReason ?? null,
+        discoverySource: result.state.discoverySource,
       });
     }
   }
 
   const eligibleCount = (screened as Array<{ eligible: boolean }>).filter(s => s.eligible).length;
 
-  return res.status(200).json({
+  res.status(200).json({
     ok: true,
     screened,
     skipped,
     errors: Object.keys(errors).length > 0 ? errors : undefined,
     summary: {
-      total: requestedTickers.length,
+      universeSize: allScreenable.length,
+      total: tickersToScreen.length,
       eligible: eligibleCount,
-      excluded: requestedTickers.length - eligibleCount - skipped.length,
+      excluded: tickersToScreen.length - eligibleCount - skipped.length,
       skipped: skipped.length,
     },
-    _debug: { module: MODULE, aiCalled: false, screenedAt: now.toISOString() },
+    proactiveDiscovery: discoveryStats,
+    _debug: {
+      module: MODULE,
+      aiCalled: discoveryStats.discovered > 0,
+      screenedAt: nowIso,
+    },
   });
 });
 
@@ -362,7 +519,6 @@ router.post("/catalyst-intelligence/screen/:ticker", (req, res) => {
 
 /**
  * GET /api/catalyst-intelligence/status
- * Returns current catalyst state for all tracked tickers.
  */
 router.get("/catalyst-intelligence/status", (_req, res) => {
   const allStates = getAllCatalystStates();
@@ -373,12 +529,15 @@ router.get("/catalyst-intelligence/status", (_req, res) => {
     eligible: s.screening?.eligible ?? false,
     screeningLevel: s.screening?.screeningLevel ?? "Excluded",
     daysUntilEvent: s.screening?.daysUntilEvent ?? null,
+    eventType: s.facts?.event?.eventType ?? null,
     preliminaryState: s.screening?.preliminaryState ?? "NotInteresting",
     priceAsymmetry: s.screening?.priceAsymmetry ?? "Neutral",
     lastScreenedAt: s.lastScreenedAt,
     lastAnalysedAt: s.lastAnalysedAt,
     eventPassed: s.eventPassed,
     hasAnalysis: !!s.analysis,
+    discoverySource: s.discoverySource ?? null,
+    triggerType: s.triggerType ?? null,
   }));
 
   return res.status(200).json({
@@ -391,8 +550,39 @@ router.get("/catalyst-intelligence/status", (_req, res) => {
 });
 
 /**
+ * GET /api/catalyst-intelligence/universe
+ * Universe status + Saxo enrichment report (spec §13, Question 2).
+ */
+router.get("/catalyst-intelligence/universe", (_req, res) => {
+  const { getAllUniverseEntries, getUniverseSize } = require("../lib/catalyst-universe.js");
+  const universeEntries = getAllUniverseEntries();
+  const sizes = getUniverseSize();
+  const saxoStatus = getSaxoUniverseStatus();
+
+  return res.status(200).json({
+    ok: true,
+    universe: {
+      total: sizes.total,
+      danish: sizes.danish,
+      us: sizes.us,
+      entries: universeEntries.map((e: ReturnType<typeof getAllUniverseEntries>[number]) => ({
+        ticker: e.ticker,
+        company: e.company,
+        exchange: e.exchange,
+        country: e.country,
+        sector: e.sector,
+        uic: e.uic,
+        source: e.source,
+        tradeable: e.tradeable,
+      })),
+    },
+    saxoEnrichment: saxoStatus,
+    _debug: { module: MODULE },
+  });
+});
+
+/**
  * GET /api/catalyst-intelligence/debug/:ticker
- * Full debug dump including screening result, facts, and fingerprint.
  */
 router.get("/catalyst-intelligence/debug/:ticker", (req, res) => {
   const ticker = req.params.ticker?.trim().toUpperCase();
@@ -404,9 +594,11 @@ router.get("/catalyst-intelligence/debug/:ticker", (req, res) => {
     return res.status(404).json({
       ok: false,
       ticker,
-      error: `No catalyst state found for ${ticker}. Run POST /api/catalyst-intelligence/screen/:ticker first.`,
+      error: `No catalyst state for ${ticker}. Run POST /api/catalyst-intelligence/screen/:ticker first.`,
     });
   }
+
+  const storedSignals = getStoredSignals(ticker, 30);
 
   return res.status(200).json({
     ok: true,
@@ -417,7 +609,9 @@ router.get("/catalyst-intelligence/debug/:ticker", (req, res) => {
       fingerprintFromScreening: state.screening?.materialFingerprint ?? null,
       factsAssembledAt: state.facts?.assembledAt ?? null,
       dataQuality: state.facts?.dataQuality ?? null,
+      eventType: state.facts?.event?.eventType ?? null,
       signalCount: state.facts?.signals.length ?? 0,
+      storedSignalCount: storedSignals.length,
       signalBreakdown: state.facts?.signals.map(s => ({
         signalId: s.signalId,
         driver: s.driver,
@@ -425,6 +619,7 @@ router.get("/catalyst-intelligence/debug/:ticker", (req, res) => {
         source: s.source,
         sourceQuality: s.sourceQuality,
         freshness: s.freshness,
+        informationCategory: s.informationCategory,
       })) ?? [],
     },
   });
@@ -432,8 +627,6 @@ router.get("/catalyst-intelligence/debug/:ticker", (req, res) => {
 
 /**
  * GET /api/catalyst-intelligence/facts/:ticker
- * Returns the assembled CatalystFacts for inspection/debugging.
- * Useful for verifying what will be sent to the Part 2 AI analysis.
  */
 router.get("/catalyst-intelligence/facts/:ticker", (req, res) => {
   const ticker = req.params.ticker?.trim().toUpperCase();
@@ -445,7 +638,7 @@ router.get("/catalyst-intelligence/facts/:ticker", (req, res) => {
     return res.status(404).json({
       ok: false,
       ticker,
-      error: `No catalyst facts found for ${ticker}. Run screen first.`,
+      error: `No catalyst facts for ${ticker}. Run screen first.`,
     });
   }
 
@@ -462,15 +655,18 @@ router.get("/catalyst-intelligence/facts/:ticker", (req, res) => {
 /**
  * POST /api/catalyst-intelligence/analyze/:ticker
  *
- * Runs the full Part 2 Catalyst Intelligence pipeline for a single ticker:
- *   1. Screen (if not already screened)
- *   2. Compute signal accumulation (deterministic)
- *   3. Detect emerging setup (PATH B, if no scheduled event)
- *   4. Get or generate driver profile (cached, expensive)
- *   5. Run deep AI analysis (fingerprint-skipped if no material change)
- *   6. Promote to Opportunity Finder if qualified
+ * Full Part 2 pipeline for one ticker:
+ *   1. Screen (if not screened yet)
+ *   2. Build PATH B facts if no event found (null event)
+ *   3. Compute signal accumulation with historical stored signals
+ *   4. Detect emerging setup (PATH B check)
+ *   5. Get/generate driver profile
+ *   6. Driver-directed signal research (cost-safe, freshness-gated)
+ *   7. Rebuild facts with all accumulated signals
+ *   8. Deep AI analysis (fingerprint-skipped if unchanged)
+ *   9. Promote to OF if qualified
  *
- * Body: { force?: boolean } — if true, re-runs even if fingerprint unchanged
+ * Body: { force?: boolean }
  */
 router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<void> => {
   const ticker = req.params.ticker?.trim().toUpperCase();
@@ -481,9 +677,10 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
 
   const force = req.body?.force === true;
   const now = new Date();
+  const nowIso = now.toISOString();
 
   try {
-    // ── Step 1: Ensure screening is current ─────────────────────────────────
+    // ── Step 1: Ensure screening is current ────────────────────────────────────
     let state = getCatalystState(ticker);
     if (!state || !state.lastScreenedAt) {
       const screenResult = screenTicker(ticker, now);
@@ -494,28 +691,35 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
       state = screenResult.state;
     }
 
-    if (!state.facts) {
-      res.status(200).json({
-        ok: true, ticker,
-        skipped: true,
-        skipReason: "No upcoming event found — no facts to analyze",
-        state: null,
-        _debug: { module: MODULE, aiCalled: false },
-      });
-      return;
-    }
-
-    const facts = state.facts;
     const companyName = state.company;
 
-    // ── Step 2: Compute signal accumulation ──────────────────────────────────
-    const prevSignalIds = state.signalAccumulation
-      ? [...(state.signalAccumulation.window14D ? [] : [])]
-      : [];
-    const signalAccumulation = computeSignalAccumulationState(ticker, facts.signals, prevSignalIds);
+    // ── Step 2: Build facts (PATH A or PATH B) ─────────────────────────────────
+    // PATH A: event found during screening → state.facts is populated
+    // PATH B: no event → state.facts may be null OR event may be null
+    //         We still proceed with signal accumulation + emerging setup
 
-    // ── Step 3: Emerging setup (PATH B — only if no scheduled event) ─────────
-    const hasScheduledEvent = !!facts.event.eventDate;
+    let facts = state.facts;
+
+    if (!facts) {
+      // No facts yet — build PATH B facts with null event
+      // Include all stored signals for signal accumulation
+      const storedSignals = getStoredSignals(ticker, 30);
+      facts = buildCatalystFacts({ ticker, event: null, storedSignals });
+    }
+
+    // ── Step 3: Compute signal accumulation ────────────────────────────────────
+    // Use all available signals (current facts + stored historical)
+    const storedSignals = getStoredSignals(ticker, 30);
+    const currentSignalIds = new Set(facts.signals.map(s => s.signalId));
+    const allSignals = [
+      ...facts.signals,
+      ...storedSignals.filter(s => !currentSignalIds.has(s.signalId)),
+    ];
+    const prevSignalIds: string[] = []; // No prev IDs needed — accumulation tracks internally
+    const signalAccumulation = computeSignalAccumulationState(ticker, allSignals, prevSignalIds);
+
+    // ── Step 4: Detect emerging setup (PATH B) ─────────────────────────────────
+    const hasScheduledEvent = !!(facts.event?.eventDate);
     const emergingSetup = detectEmergingSetup({
       signalAccumulation,
       momentum5D: facts.price.priceAsymmetryFacts.recentMomentum5D,
@@ -528,65 +732,91 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
 
     // Determine trigger type
     const triggerType: TriggerType = hasScheduledEvent
-      ? (facts.event.eventType === "Earnings" ? "EARNINGS" : "SCHEDULED_EVENT")
+      ? (facts.event!.eventType === "Earnings" ? "EARNINGS" : "SCHEDULED_EVENT")
       : "EMERGING_SETUP";
 
-    // ── Step 4: Driver profile ───────────────────────────────────────────────
-    // Generate driver profile if eligible and not fresh
+    // ── Step 5: Eligibility check ──────────────────────────────────────────────
     const isEligible = state.screening?.eligible ?? false;
     const isDeepAnalysis = state.screening?.screeningLevel === "DeepAnalysis";
-    const pathBEligible = triggerType === "EMERGING_SETUP" && emergingSetupWarrantsAnalysis(emergingSetup);
+    const pathBEligible =
+      triggerType === "EMERGING_SETUP" && emergingSetupWarrantsAnalysis(emergingSetup);
 
+    const shouldAnalyze = isDeepAnalysis || pathBEligible;
+
+    // ── Step 6: Driver profile ─────────────────────────────────────────────────
     let driverProfile = getDriverProfile(ticker) ?? null;
-    if ((isDeepAnalysis || pathBEligible) && !driverProfile && companyName) {
-      const universeEntry = (await import("../lib/catalyst-universe.js")).getUniverseEntry(ticker);
+    if ((isDeepAnalysis || pathBEligible) && !driverProfile) {
+      const universeEntry = getUniverseEntry(ticker);
       driverProfile = await getOrGenerateDriverProfile(
-        ticker, companyName,
+        ticker,
+        companyName,
         universeEntry?.sector ?? facts.company.sector,
         universeEntry?.industry ?? facts.company.industry
       );
     }
 
-    // ── Step 5: Deep AI analysis ─────────────────────────────────────────────
+    // ── Step 7: Driver-directed signal research ────────────────────────────────
+    // Only runs if eligible and driver profile is available.
+    // Cost-safe: isSignalResearchFresh() gate prevents re-runs within 24h.
+    let researchResult = null;
+    if (shouldAnalyze && driverProfile) {
+      researchResult = await researchDriverSignals(
+        ticker,
+        companyName,
+        driverProfile,
+        facts.event?.daysUntilEvent ?? null,
+        force
+      );
+
+      // Rebuild facts with all accumulated signals (current + historical + new research)
+      if (researchResult.allStoredSignals.length > 0) {
+        facts = buildCatalystFacts({
+          ticker,
+          event: facts.event,
+          storedSignals: researchResult.allStoredSignals,
+        });
+      }
+    }
+
+    // ── Step 8: Deep AI analysis ───────────────────────────────────────────────
     let analysisOutput = null;
     let aiCalled = false;
 
-    const shouldAnalyze = isDeepAnalysis || pathBEligible;
-
     if (shouldAnalyze) {
-      const analysisInput = {
+      analysisOutput = await runCatalystAnalysis({
         facts,
         triggerType,
         eventId: null,
         driverProfile,
         lastFingerprint: force ? null : (state.lastAnalysisFingerprint ?? null),
         retryNumber: 0,
-      };
-
-      analysisOutput = await runCatalystAnalysis(analysisInput);
+      });
       if (analysisOutput && !analysisOutput.skipped) {
         aiCalled = true;
       }
     }
 
-    // ── Step 6: Update state ─────────────────────────────────────────────────
+    // ── Step 9: Update state ───────────────────────────────────────────────────
     const updatedState: CatalystState = {
       ...state,
+      facts,
       signalAccumulation,
-      emergingSetup: hasScheduledEvent ? null : emergingSetup,
+      emergingSetup: triggerType === "EMERGING_SETUP" ? emergingSetup : null,
       triggerType,
       analysis: analysisOutput?.result ?? state.analysis,
       lastAnalysisFingerprint: analysisOutput?.fingerprint ?? state.lastAnalysisFingerprint,
-      lastAnalysedAt: analysisOutput && !analysisOutput.skipped ? now.toISOString() : state.lastAnalysedAt,
-      lastAnalysisUpdateType: analysisOutput?.result?.analysisUpdateType ?? state.lastAnalysisUpdateType,
-      updatedAt: now.toISOString(),
+      lastAnalysedAt:
+        analysisOutput && !analysisOutput.skipped ? nowIso : state.lastAnalysedAt,
+      lastAnalysisUpdateType:
+        analysisOutput?.result?.analysisUpdateType ?? state.lastAnalysisUpdateType,
+      updatedAt: nowIso,
     };
 
-    // ── Step 7: Promote to OF if qualified ───────────────────────────────────
+    // ── Step 10: Promote to OF if qualified ────────────────────────────────────
     let promoted = false;
     if (analysisOutput?.result && qualifiesForPromotion(analysisOutput.result) && !state.promotedAt) {
       promoteToOpportunityFinder(ticker, companyName, analysisOutput.result, facts);
-      updatedState.promotedAt = now.toISOString();
+      updatedState.promotedAt = nowIso;
       promoted = true;
     }
 
@@ -597,6 +827,7 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
       ticker,
       company: companyName,
       triggerType,
+      pathType: hasScheduledEvent ? "PATH_A" : "PATH_B",
       analysisUpdateType: updatedState.lastAnalysisUpdateType,
       opportunityState: updatedState.analysis?.opportunityState ?? null,
       catalystDirection: updatedState.analysis?.catalystDirection ?? null,
@@ -608,11 +839,22 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
         direction: signalAccumulation.overallDirection,
         evidenceConfidence: signalAccumulation.evidenceConfidence,
       },
-      emergingSetup: triggerType === "EMERGING_SETUP" ? {
-        state: emergingSetup.state,
-        reasons: emergingSetup.reasons.slice(0, 3),
-        keyDrivers: emergingSetup.keyDrivers,
-      } : null,
+      emergingSetup: triggerType === "EMERGING_SETUP"
+        ? {
+            state: emergingSetup.state,
+            reasons: emergingSetup.reasons.slice(0, 3),
+            keyDrivers: emergingSetup.keyDrivers,
+            warrantsAnalysis: pathBEligible,
+          }
+        : null,
+      event: facts.event
+        ? {
+            eventType: facts.event.eventType,
+            eventDate: facts.event.eventDate,
+            daysUntilEvent: facts.event.daysUntilEvent,
+            source: facts.event.source,
+          }
+        : null,
       _debug: {
         module: MODULE,
         aiCalled,
@@ -621,6 +863,9 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
         tokensUsed: analysisOutput?.tokensUsed ?? 0,
         driverProfileAvailable: !!driverProfile,
         signalCount: facts.signals.length,
+        storedSignalCount: storedSignals.length,
+        newResearchSignals: researchResult?.newSignals.length ?? 0,
+        researchSkipped: researchResult?.skipped ?? true,
         screeningLevel: state.screening?.screeningLevel ?? "Unknown",
       },
     });
@@ -633,7 +878,7 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
 
 /**
  * POST /api/catalyst-intelligence/driver-profile/:ticker
- * Force-generates or refreshes the Company Driver Profile.
+ * Generate or refresh the Company Driver Profile.
  * Body: { force?: boolean }
  */
 router.post("/catalyst-intelligence/driver-profile/:ticker", async (req, res): Promise<void> => {
@@ -649,12 +894,11 @@ router.post("/catalyst-intelligence/driver-profile/:ticker", async (req, res): P
     const state = getCatalystState(ticker);
     const company = state?.company ?? ticker;
     const facts = state?.facts;
-
-    const { getUniverseEntry } = await import("../lib/catalyst-universe.js");
     const universeEntry = getUniverseEntry(ticker);
 
     const profile = await getOrGenerateDriverProfile(
-      ticker, company,
+      ticker,
+      company,
       universeEntry?.sector ?? facts?.company.sector ?? null,
       universeEntry?.industry ?? facts?.company.industry ?? null,
       force
@@ -680,7 +924,6 @@ router.post("/catalyst-intelligence/driver-profile/:ticker", async (req, res): P
 
 /**
  * GET /api/catalyst-intelligence/promotions
- * Returns all active Catalyst → Opportunity Finder promotions.
  */
 router.get("/catalyst-intelligence/promotions", (_req, res) => {
   const active = getActivePromotions();

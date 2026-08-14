@@ -1,992 +1,5 @@
 [
   {
-    "id": "a83701e8-d33e-4c80-b873-8cf0acfb4587",
-    "timestamp": "2026-08-13T20:38:48.155Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "Highest-ranked opportunity: Pfizer Inc. (PFE) — score 85 — Pfizer offers strong diversification into the healthcare sector, aligning with current market trends and upcoming product launches."
-  },
-  {
-    "id": "d3bbed13-5cd0-4631-b86d-dd0bd399c732",
-    "timestamp": "2026-08-13T20:38:48.157Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "NEE entered the list at rank 2 (score: 80)"
-  },
-  {
-    "id": "149ad02b-9bd0-47f8-89d1-d7a898b31597",
-    "timestamp": "2026-08-13T20:38:48.159Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "CAT entered the list at rank 3 (score: 78)"
-  },
-  {
-    "id": "07fb678a-675e-431e-bfd2-42f0f632bf12",
-    "timestamp": "2026-08-13T20:38:48.160Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "AMT entered the list at rank 4 (score: 75)"
-  },
-  {
-    "id": "d6eddca3-8a6a-4eb7-84f9-6c0aa7c46964",
-    "timestamp": "2026-08-13T20:38:48.162Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "DIS entered the list at rank 5 (score: 72)"
-  },
-  {
-    "id": "444e5290-2668-4d4b-a2f1-c4eda7971ce1",
-    "timestamp": "2026-08-13T20:38:48.164Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "NVDA left the list (was rank 1)"
-  },
-  {
-    "id": "39abdf56-1c78-4406-8e78-97fb4104de2d",
-    "timestamp": "2026-08-13T20:38:48.165Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "PG left the list (was rank 3)"
-  },
-  {
-    "id": "455fee0e-3de0-4245-aebe-ea2dda53ff07",
-    "timestamp": "2026-08-13T20:38:48.167Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "TSLA left the list (was rank 4)"
-  },
-  {
-    "id": "4db997c9-2cd4-4940-9a94-c97870cc99cf",
-    "timestamp": "2026-08-13T20:38:48.169Z",
-    "module": "Opportunity Finder",
-    "level": "internal",
-    "message": "BABA left the list (was rank 5)"
-  },
-  {
-    "id": "079206a5-cdc6-49b0-acee-62201028524a",
-    "timestamp": "2026-08-13T20:38:48.182Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder completed via RunAllNow (16739ms, change: Medium)"
-  },
-  {
-    "id": "6fd0b9e1-1b00-4b2a-8982-6dda02b809f5",
-    "timestamp": "2026-08-13T20:38:49.601Z",
-    "module": "Price Context",
-    "level": "info",
-    "message": "Stage 8.5: 2 new candidate(s) enriched"
-  },
-  {
-    "id": "ba4c822e-0c70-44b9-a1fc-47c1cb17dac4",
-    "timestamp": "2026-08-13T20:38:49.609Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "e021a6cd-a24e-4892-ac0b-0dc374f428b7",
-    "timestamp": "2026-08-13T20:39:24.141Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[gate] \"Prepare to buy Caterpillar for industrials exposure post-macro events\" (CAT): Multi-source gate failed (Only 1/2 required Supporting modules (OpportunityFinder)). Downgraded from PrepareToBuy to Review."
-  },
-  {
-    "id": "f934e13d-caec-4989-8453-72b72043afa4",
-    "timestamp": "2026-08-13T20:39:24.143Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] PFE (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "e88944c6-6845-466c-b6af-09b19dd786f6",
-    "timestamp": "2026-08-13T20:39:24.302Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] NEE (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "11a321d9-3ff1-4349-a0cf-3c34f3ce4456",
-    "timestamp": "2026-08-13T20:39:24.304Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] CAT (Review): score=5 band=Insufficient supporting=[OpportunityFinder] opposing=[] stale=[CompanyMonitor]"
-  },
-  {
-    "id": "0751bf48-629e-4c43-afe3-550914310540",
-    "timestamp": "2026-08-13T20:39:24.357Z",
-    "module": "TradeDecisionOutcome",
-    "level": "internal",
-    "message": "Opportunity:PFE: v1 created (New)"
-  },
-  {
-    "id": "059152ad-1db5-4fa7-a09a-db13bc5a473f",
-    "timestamp": "2026-08-13T20:39:24.384Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "cd744005-202c-4a57-8655-b5b6c0b0d486",
-    "timestamp": "2026-08-13T20:39:24.395Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "a861cd8b-d13f-4f1b-b14f-a203f2510259",
-    "timestamp": "2026-08-13T20:39:24.397Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: WaitForEvents | Readiness: 72/100"
-  },
-  {
-    "id": "983a0bbe-2f58-4243-866e-1d7e4df98389",
-    "timestamp": "2026-08-13T20:39:24.399Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "4 WaitingForReevaluation"
-  },
-  {
-    "id": "7de4c625-4cff-4866-adb0-1cf2db8b7907",
-    "timestamp": "2026-08-13T20:39:24.400Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "New: Prepare to buy Pfizer for healthcare sector re-entry post-macro events; Prepare to buy NextEra Energy for utilities sector diversification post-macro events; Prepare to buy Caterpillar for industrials exposure post-macro events"
-  },
-  {
-    "id": "d2713dfe-b514-4fc2-8356-c7cc5fbf8521",
-    "timestamp": "2026-08-13T20:39:24.402Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Withdrawn (subject absent): NVDA, PG"
-  },
-  {
-    "id": "13463c3b-92fb-4c9c-925a-62b7f4ec6cbf",
-    "timestamp": "2026-08-13T20:39:24.404Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Gate: 1 decision(s) downgraded"
-  },
-  {
-    "id": "3d4b2aa7-ddf9-46bd-b088-4f88b842a8df",
-    "timestamp": "2026-08-13T20:39:24.428Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via RunAllNow (34822ms, change: High)"
-  },
-  {
-    "id": "2436f21c-ba1d-429e-a7f1-022f0a1748ef",
-    "timestamp": "2026-08-13T20:39:24.444Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "40eec821-f7ac-4885-b340-e78068a8a4b0",
-    "timestamp": "2026-08-13T20:39:24.445Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision PFE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "23a79443-774d-40c3-a4f8-2c2e99ea7635",
-    "timestamp": "2026-08-13T20:39:24.447Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NEE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "ec3c2665-f48f-4498-9dd0-f7f9e91a37eb",
-    "timestamp": "2026-08-13T20:39:24.503Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (65ms, change: Medium)"
-  },
-  {
-    "id": "bf2fbbcf-2cf8-431d-9972-1815da52740e",
-    "timestamp": "2026-08-13T20:39:24.519Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "2fd30409-de53-4229-9e22-eb6ba4bf7733",
-    "timestamp": "2026-08-13T20:39:25.123Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Stage 9.5: Company Monitor covering 3 ticker(s) introduced by TDE — CAT, AMT, DIS"
-  },
-  {
-    "id": "8c7a67f6-ea81-46ef-94f8-17765e3640f7",
-    "timestamp": "2026-08-13T20:39:25.127Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for CAT (trigger: RunAllNow)"
-  },
-  {
-    "id": "02bf09e4-3fc8-49d6-b229-93511cf3c6e4",
-    "timestamp": "2026-08-13T20:39:27.983Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Command Brief generated (3436ms): attention — High cash position limits return potential; monitor upcoming macro events."
-  },
-  {
-    "id": "30922d18-7b33-4f77-b77b-30bcd55a364b",
-    "timestamp": "2026-08-13T20:39:28.024Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief completed via Dependency (3518ms, change: Medium)"
-  },
-  {
-    "id": "3299bf36-97fe-43e1-9dc9-f685567ee990",
-    "timestamp": "2026-08-13T20:39:28.271Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "CAT: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "40dd4538-d10e-4f90-a592-66fdc1aed7ce",
-    "timestamp": "2026-08-13T20:39:28.310Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (3185ms, change: Medium)"
-  },
-  {
-    "id": "8b497be2-5c83-4030-829b-69cb83572392",
-    "timestamp": "2026-08-13T20:39:28.312Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:CAT changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "c7e2cfa8-5ce9-4c0d-b453-7e2a11c9a7b1",
-    "timestamp": "2026-08-13T20:39:28.631Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for AMT (trigger: RunAllNow)"
-  },
-  {
-    "id": "cd10708d-ed4a-4965-b89a-7258628d03a5",
-    "timestamp": "2026-08-13T20:39:38.789Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for AMT: FullAnalysis, rating Buy, strength 75, meaningfulChange=Medium"
-  },
-  {
-    "id": "5dabbc0b-e85a-4fb1-90e5-3e18b1e70e09",
-    "timestamp": "2026-08-13T20:39:38.813Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (10184ms, change: High)"
-  },
-  {
-    "id": "64776c21-b39f-4d67-bf97-a5e46ff6abf5",
-    "timestamp": "2026-08-13T20:39:38.814Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:AMT changed (High) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "747a4777-dfc3-4da1-9265-d7a9a1729d67",
-    "timestamp": "2026-08-13T20:39:39.136Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for DIS (trigger: RunAllNow)"
-  },
-  {
-    "id": "eb8617d7-e0ae-4542-b473-a6f5a799ca6f",
-    "timestamp": "2026-08-13T20:39:52.193Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for DIS: FullAnalysis, rating Watch, strength 55, meaningfulChange=Medium"
-  },
-  {
-    "id": "7913b093-d39b-45c5-a8ad-27d536630d40",
-    "timestamp": "2026-08-13T20:39:52.215Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (13082ms, change: High)"
-  },
-  {
-    "id": "a3cbcdfa-6d3b-4c6b-83f3-3f4cc5db3a71",
-    "timestamp": "2026-08-13T20:39:52.216Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:DIS changed (High) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "089d5c4e-c3b8-462c-8edb-f049cf057058",
-    "timestamp": "2026-08-13T20:39:52.638Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
-  },
-  {
-    "id": "2ba48908-ed67-41dd-963a-a88e01bacdb5",
-    "timestamp": "2026-08-13T20:39:52.639Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision PFE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "47f471e6-14ea-4533-a282-5ecb0ee2e3b5",
-    "timestamp": "2026-08-13T20:39:52.641Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NEE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "1aaa9085-f2c3-4506-be2b-2b78aad96d80",
-    "timestamp": "2026-08-13T20:39:52.677Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via RunAllNow (41ms, change: None)"
-  },
-  {
-    "id": "0a8c2ecd-3046-436b-be8f-b44dc5240ddc",
-    "timestamp": "2026-08-13T20:39:52.684Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "c1161fbc-a586-476b-9a9c-c5f49fcf8729",
-    "timestamp": "2026-08-13T20:39:55.286Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Command Brief generated (2586ms): attention — High cash position limits return potential; monitor upcoming macro events."
-  },
-  {
-    "id": "e6845490-9a80-4f2d-8a24-4fa5c4de29c1",
-    "timestamp": "2026-08-13T20:39:55.311Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief completed via Dependency (2631ms, change: Medium)"
-  },
-  {
-    "id": "45a95683-5ec4-4e2e-b54a-dc506ec013a9",
-    "timestamp": "2026-08-13T20:39:55.640Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle completed in 111s"
-  },
-  {
-    "id": "5de8c50f-5b6e-414a-a5eb-f84d82d85125",
-    "timestamp": "2026-08-13T20:41:55.857Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [1d2a9ee9-0c42-4a66-b3fb-2f1e8a1861f1]"
-  },
-  {
-    "id": "4d0c6ca3-f4b5-45f7-837f-9cd6e3cfa961",
-    "timestamp": "2026-08-13T20:41:55.863Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "8f66170a-bc79-4ba0-ad26-7ca545075348",
-    "timestamp": "2026-08-13T20:41:56.304Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
-  },
-  {
-    "id": "4a36473b-fe0f-46c3-9830-963c4019c011",
-    "timestamp": "2026-08-13T20:41:56.331Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (468ms, change: High)"
-  },
-  {
-    "id": "8c96a492-ef28-4858-b4fd-333f00f856ff",
-    "timestamp": "2026-08-13T20:41:56.812Z",
-    "module": "Price Context",
-    "level": "info",
-    "message": "Stage 1.5: 2 symbol(s) refreshed from 2 known targets"
-  },
-  {
-    "id": "91b67085-6794-4d90-9218-346adbf7219e",
-    "timestamp": "2026-08-13T20:41:56.828Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor SKIPPED_RECENT — last run 3.9min ago (min refresh: 15min, trigger: RunAllNow)"
-  },
-  {
-    "id": "5d8565ee-0e76-4205-b369-13dc0d78b41b",
-    "timestamp": "2026-08-13T20:41:56.840Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor SKIPPED_RECENT — last run 3.9min ago (min refresh: 15min, trigger: RunAllNow)"
-  },
-  {
-    "id": "137a0069-2b57-454c-b1af-3b2671d63401",
-    "timestamp": "2026-08-13T20:41:56.847Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "8279b744-d788-4849-84a7-2a828bd49158",
-    "timestamp": "2026-08-13T20:41:56.865Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Maintenance (no material change): 5 event(s) — materialVersion unchanged"
-  },
-  {
-    "id": "ff917e2b-cecc-48f1-84e4-c83303b5fdd9",
-    "timestamp": "2026-08-13T20:41:56.872Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "event-monitor completed via RunAllNow (29ms, change: None)"
-  },
-  {
-    "id": "1146383f-aecc-4f95-898d-02f227ed60c4",
-    "timestamp": "2026-08-13T20:41:56.872Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "4f28a9f3-e60d-4ebe-9091-ff9976ce4115",
-    "timestamp": "2026-08-13T20:41:56.874Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "fb3b3f3b-ea09-4956-8bc8-f284dae3b56c",
-    "timestamp": "2026-08-13T20:41:56.875Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "123624dc-7114-4ca4-b5f7-c9ccc91516bb",
-    "timestamp": "2026-08-13T20:41:56.876Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "88625cf0-36a1-4f57-a2da-4365c8ce9e14",
-    "timestamp": "2026-08-13T20:41:56.877Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "430395b5-f76e-4fd6-8545-8a51060ab73e",
-    "timestamp": "2026-08-13T20:41:57.356Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor SKIPPED_RECENT — last run 32.2min ago (min refresh: 180min, trigger: RunAllNow)"
-  },
-  {
-    "id": "36c7fa1c-bda4-4569-8cb2-dd9c485ed4bd",
-    "timestamp": "2026-08-13T20:41:57.868Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: wen6wu, last AI: 2026-08-13T20:38:14.417Z, age: 4min"
-  },
-  {
-    "id": "a8e80bad-28af-4257-b442-5163254da061",
-    "timestamp": "2026-08-13T20:41:58.398Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: rywmra, last AI: 2026-08-13T20:38:17.921Z, age: 4min"
-  },
-  {
-    "id": "757a20b8-da41-4db3-bad8-26a68939b60e",
-    "timestamp": "2026-08-13T20:41:58.912Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: 18wrno4, last AI: 2026-08-13T20:38:27.430Z, age: 4min"
-  },
-  {
-    "id": "cbcecec2-e98a-4900-ace9-984fc7ce915b",
-    "timestamp": "2026-08-13T20:41:59.417Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NEE (trigger: RunAllNow)"
-  },
-  {
-    "id": "40b0058c-8e88-4fd2-9e8c-1e9cfa3b3c1b",
-    "timestamp": "2026-08-13T20:42:01.501Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "NEE: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "52326df3-a6bd-4bd5-9522-b6ca4f21c000",
-    "timestamp": "2026-08-13T20:42:01.593Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (2179ms, change: Medium)"
-  },
-  {
-    "id": "b46f41c4-622f-4837-876b-83c850c93af0",
-    "timestamp": "2026-08-13T20:42:01.594Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:NEE changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "1fd49f74-0023-4afc-8536-6eb587782492",
-    "timestamp": "2026-08-13T20:42:01.926Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: 14673bm, last AI: 2026-08-13T20:39:25.125Z, age: 3min"
-  },
-  {
-    "id": "90b1a7a6-ac58-44de-878a-3695672f4470",
-    "timestamp": "2026-08-13T20:42:02.430Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "8aa1dcdc-fdcc-45fc-8695-75e92fa2f644",
-    "timestamp": "2026-08-13T20:42:02.451Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked (engine): no new material developments (1ms, aiCalls=0)"
-  },
-  {
-    "id": "d84fad88-9397-4679-93d3-b5f7ff18815c",
-    "timestamp": "2026-08-13T20:42:02.487Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via RunAllNow (59ms, change: Medium)"
-  },
-  {
-    "id": "e6d80664-e601-4af8-9502-b04325cd8eed",
-    "timestamp": "2026-08-13T20:42:02.934Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "ca72f088-aac8-4f6c-8f60-40dd17a0fd62",
-    "timestamp": "2026-08-13T20:42:02.939Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Skipping AI call — RiskFacts fingerprint unchanged (34e4e93bee32169a)"
-  },
-  {
-    "id": "95d53fc3-52cf-4d72-83cd-6ba359216f95",
-    "timestamp": "2026-08-13T20:42:02.974Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via RunAllNow (42ms, change: None)"
-  },
-  {
-    "id": "f2ab6f5e-f498-4743-b0cf-b34ec07a594e",
-    "timestamp": "2026-08-13T20:42:02.975Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "917400dd-1163-4365-be51-34968467abbd",
-    "timestamp": "2026-08-13T20:42:02.978Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "6e0c5ef1-d6bb-4bc7-be0d-0e8e5a7dfe6c",
-    "timestamp": "2026-08-13T20:42:02.980Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "b3b378e3-40b5-4261-8eab-cbdedd989a21",
-    "timestamp": "2026-08-13T20:42:03.437Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "a953de57-2a04-4a26-be30-fec670b0cc77",
-    "timestamp": "2026-08-13T20:42:03.439Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Portfolio analysis skipped — no material portfolio change detected"
-  },
-  {
-    "id": "f160c6f3-a8f0-4a82-9df0-3d4789998b4a",
-    "timestamp": "2026-08-13T20:42:03.474Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer completed via RunAllNow (39ms, change: None)"
-  },
-  {
-    "id": "59bdfac9-a97b-4596-9fae-2f41652853fa",
-    "timestamp": "2026-08-13T20:42:03.475Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "df21e1e8-7142-4f38-94d0-40256149d439",
-    "timestamp": "2026-08-13T20:42:03.484Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "72f993c8-675e-4b9c-bb1c-d8ab4d82abb1",
-    "timestamp": "2026-08-13T20:42:03.486Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "db152fbf-dae1-4295-8882-8066dfd562be",
-    "timestamp": "2026-08-13T20:42:03.950Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder SKIPPED_RECENT — last run 3.5min ago (min refresh: 180min, trigger: RunAllNow)"
-  },
-  {
-    "id": "5b627b5d-3273-4ed8-96f2-498e24a4a930",
-    "timestamp": "2026-08-13T20:42:04.455Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "7c08cc18-c744-4681-ad4c-6198ae8af33f",
-    "timestamp": "2026-08-13T20:42:04.826Z",
-    "module": "Portfolio Manager v2",
-    "level": "info",
-    "message": "CIO analysis complete — health 62/100 (C), 4 high-severity drift, confidence Low"
-  },
-  {
-    "id": "66463853-259e-422b-8115-8d7dbb038d3a",
-    "timestamp": "2026-08-13T20:42:38.413Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] PFE (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "9a740fa9-cfdc-46e6-b39e-1401a4efb03d",
-    "timestamp": "2026-08-13T20:42:38.414Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] NEE (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "2d11a1c1-9805-413d-b04f-264a8ecbbaea",
-    "timestamp": "2026-08-13T20:42:38.470Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "5c981015-0056-4293-9fad-fc3475d31a87",
-    "timestamp": "2026-08-13T20:42:38.471Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "771e8171-9f46-40e9-b924-58f6c4da4fd6",
-    "timestamp": "2026-08-13T20:42:38.475Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 85/100"
-  },
-  {
-    "id": "aaa29336-1342-4566-ae7d-e02e29490706",
-    "timestamp": "2026-08-13T20:42:38.477Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "4 WaitingForReevaluation"
-  },
-  {
-    "id": "c2ccadf0-adca-4e19-8b7e-1b26d7add188",
-    "timestamp": "2026-08-13T20:42:38.479Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Preserved Unchanged: PFE, NEE"
-  },
-  {
-    "id": "f7cac2a1-44c6-4b3e-aff2-cfbd22a05c85",
-    "timestamp": "2026-08-13T20:42:38.515Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via RunAllNow (34063ms, change: High)"
-  },
-  {
-    "id": "362981cd-00a1-43ee-9c71-098e58d5a2c2",
-    "timestamp": "2026-08-13T20:42:38.522Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "ccfc3945-fd97-443e-8589-1db52aefb284",
-    "timestamp": "2026-08-13T20:42:38.523Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision PFE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "115913ec-6699-405e-abbc-8d58cb3b1326",
-    "timestamp": "2026-08-13T20:42:38.526Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NEE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "28e8197e-3bcf-4ecd-856d-5db4bb13d960",
-    "timestamp": "2026-08-13T20:42:38.561Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (43ms, change: Medium)"
-  },
-  {
-    "id": "5d982475-7ce3-40e0-ac09-2a4bd74e414c",
-    "timestamp": "2026-08-13T20:42:38.566Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "738ba2f0-c483-449c-a8eb-46af676fc650",
-    "timestamp": "2026-08-13T20:42:38.984Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review SKIPPED_UNCHANGED — fingerprint: zsly7h, last AI: 2026-08-13T20:42:38.517Z, age: 0min"
-  },
-  {
-    "id": "22c23b04-e896-419d-8f23-1fe2000d29b5",
-    "timestamp": "2026-08-13T20:42:44.068Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Command Brief generated (5490ms): attention — High cash position limits return potential; monitor upcoming macro events."
-  },
-  {
-    "id": "1268f19b-2fc5-4a30-80b6-13172589570c",
-    "timestamp": "2026-08-13T20:42:44.092Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief completed via Dependency (5528ms, change: Medium)"
-  },
-  {
-    "id": "08c08f8c-9e51-4b39-81ae-522dfc21fcc4",
-    "timestamp": "2026-08-13T20:42:44.994Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle completed in 49s"
-  },
-  {
-    "id": "d012d8e4-e221-4daf-954c-f06d9aca3ee7",
-    "timestamp": "2026-08-13T20:44:09.334Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [678423eb-d075-4243-b9bc-bd0291e35be2]"
-  },
-  {
-    "id": "dc5933eb-7110-4491-9127-9e21b247f050",
-    "timestamp": "2026-08-13T20:44:09.339Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "ae560b93-ee51-461a-b688-b40ec4cab8a5",
-    "timestamp": "2026-08-13T20:44:09.768Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
-  },
-  {
-    "id": "0a5f2c75-941c-46e1-8b51-c2426bacb40e",
-    "timestamp": "2026-08-13T20:44:09.804Z",
-    "module": "Portfolio Manager v2",
-    "level": "info",
-    "message": "CIO analysis complete — health 62/100 (C), 4 high-severity drift, confidence Low (AI reused — inputs unchanged)"
-  },
-  {
-    "id": "9aa161e3-bd1a-4bbb-b57d-d08f4265e116",
-    "timestamp": "2026-08-13T20:44:09.815Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (478ms, change: High)"
-  },
-  {
-    "id": "7cb2ddde-e4d3-44c4-adf7-90fe29a32869",
-    "timestamp": "2026-08-13T20:44:10.232Z",
-    "module": "Price Context",
-    "level": "info",
-    "message": "Stage 1.5: 2 symbol(s) refreshed from 2 known targets"
-  },
-  {
-    "id": "96e7803a-f0d6-46a9-b7b9-8e0a4dc61da9",
-    "timestamp": "2026-08-13T20:44:10.244Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor SKIPPED_RECENT — last run 6.1min ago (min refresh: 15min, trigger: RunAllNow)"
-  },
-  {
-    "id": "48833374-b3ed-405d-a664-0c5794832dec",
-    "timestamp": "2026-08-13T20:44:10.255Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor SKIPPED_RECENT — last run 6.1min ago (min refresh: 15min, trigger: RunAllNow)"
-  },
-  {
-    "id": "57dacfe2-628f-4e22-ae24-0027ff4edbb2",
-    "timestamp": "2026-08-13T20:44:10.261Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "9f9e0e41-90bf-4075-8c59-334ad00d867c",
-    "timestamp": "2026-08-13T20:44:10.278Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Maintenance (no material change): 5 event(s) — materialVersion unchanged"
-  },
-  {
-    "id": "9fd25262-8d3c-4bf7-bf4e-49071de144b1",
-    "timestamp": "2026-08-13T20:44:10.281Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "event-monitor completed via RunAllNow (24ms, change: None)"
-  },
-  {
-    "id": "b13f425f-c513-46da-9000-b7e654221ae9",
-    "timestamp": "2026-08-13T20:44:10.282Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "caf390f5-3af0-4d99-b84c-086669ab8768",
-    "timestamp": "2026-08-13T20:44:10.284Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "cf3b8e3e-3790-4ad1-9e7a-24b82b5d0949",
-    "timestamp": "2026-08-13T20:44:10.285Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "211667f5-2c29-4b2c-815f-eed35e894eed",
-    "timestamp": "2026-08-13T20:44:10.286Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "1eed4c9f-1bb5-427a-8155-6047f063ce92",
-    "timestamp": "2026-08-13T20:44:10.287Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "f68039a3-3d84-4dae-b85d-631b186ead47",
-    "timestamp": "2026-08-13T20:44:10.778Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor SKIPPED_RECENT — last run 34.4min ago (min refresh: 180min, trigger: RunAllNow)"
-  },
-  {
-    "id": "1ec590c4-cb58-43f8-aca0-b0734ef27796",
-    "timestamp": "2026-08-13T20:44:11.291Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: wen6wu, last AI: 2026-08-13T20:38:14.417Z, age: 6min"
-  },
-  {
-    "id": "153841b7-ef4d-4ff5-bbef-7a997e4a7004",
-    "timestamp": "2026-08-13T20:44:11.807Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: rywmra, last AI: 2026-08-13T20:38:17.921Z, age: 6min"
-  },
-  {
-    "id": "68a6d46d-e704-4ed5-8741-8ae66feadcea",
-    "timestamp": "2026-08-13T20:44:12.321Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: 18wrno4, last AI: 2026-08-13T20:38:27.430Z, age: 6min"
-  },
-  {
-    "id": "e6e9ae90-2de0-4a07-9809-2381030d933f",
-    "timestamp": "2026-08-13T20:44:12.832Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: ice3d6, last AI: 2026-08-13T20:41:59.414Z, age: 2min"
-  },
-  {
-    "id": "142b658b-3286-4148-b832-73690c544fd7",
-    "timestamp": "2026-08-13T20:44:13.345Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor SKIPPED_UNCHANGED — fingerprint: 14673bm, last AI: 2026-08-13T20:39:25.125Z, age: 5min"
-  },
-  {
-    "id": "a348cd7b-a8d3-4b5c-887c-dedd9991647d",
-    "timestamp": "2026-08-13T20:44:13.851Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "bef2451d-f30e-40eb-bd75-ca3b3c27419b",
-    "timestamp": "2026-08-13T20:44:13.871Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked (engine): no new material developments (0ms, aiCalls=0)"
-  },
-  {
-    "id": "f6a0104a-b106-4a4e-94d1-e627305d2052",
-    "timestamp": "2026-08-13T20:44:13.900Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via RunAllNow (51ms, change: Medium)"
-  },
-  {
-    "id": "4d17d64a-f26b-4158-9331-e64493ba53c0",
-    "timestamp": "2026-08-13T20:44:14.353Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "cad98c14-a2a9-4902-a26a-31f24b0bf99b",
-    "timestamp": "2026-08-13T20:44:14.354Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Skipping AI call — RiskFacts fingerprint unchanged (34e4e93bee32169a)"
-  },
-  {
-    "id": "f6727804-8cb8-4139-93c3-8d0931bd1f91",
-    "timestamp": "2026-08-13T20:44:14.382Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via RunAllNow (31ms, change: None)"
-  },
-  {
-    "id": "c6c04e42-8b5c-4b77-9fd6-39d9b72d23ee",
-    "timestamp": "2026-08-13T20:44:14.383Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
     "id": "fb68dbb9-ff68-4e68-9adc-32e6a4ec26a8",
     "timestamp": "2026-08-13T20:44:14.386Z",
     "module": "AutomationOrchestrator",
@@ -3495,6 +2508,993 @@
   {
     "id": "87e3d71f-43e4-415f-ab50-bbab25946983",
     "timestamp": "2026-08-14T06:47:38.605Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "0ce71c72-77f7-4db7-ba31-05aaa28ba3c6",
+    "timestamp": "2026-08-14T06:48:08.626Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a13d8a8f-e5a9-4469-9283-350e905651a6",
+    "timestamp": "2026-08-14T06:48:38.631Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ee98c5cb-1e62-45ae-b502-117d2c2b92ac",
+    "timestamp": "2026-08-14T06:49:08.646Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "e2f43079-a8e8-4169-afe0-9141beecbada",
+    "timestamp": "2026-08-14T06:49:38.653Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9f5cc004-e3e7-41e6-beae-a726aea0f419",
+    "timestamp": "2026-08-14T06:50:08.661Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "8ad7c3e1-790e-4205-89b2-d6f95fb1c268",
+    "timestamp": "2026-08-14T06:50:38.681Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "6cd47d12-38cb-4aab-ae58-c39643a67291",
+    "timestamp": "2026-08-14T06:51:08.717Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "92ff3345-7bac-464d-8311-e36dbd36aade",
+    "timestamp": "2026-08-14T06:51:38.709Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "c572fe6e-9941-419e-9f5b-111eeccfcc14",
+    "timestamp": "2026-08-14T06:51:58.718Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "50ce0439-8dd4-4f3d-828d-9727ccd8f35a",
+    "timestamp": "2026-08-14T06:51:58.774Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked (engine): no new material developments (3ms, aiCalls=0)"
+  },
+  {
+    "id": "3fd43824-32c0-48d0-83cc-72a1d022807d",
+    "timestamp": "2026-08-14T06:51:58.816Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Dependency (114ms, change: Medium)"
+  },
+  {
+    "id": "e5d9e96d-5127-4904-9472-52010077f125",
+    "timestamp": "2026-08-14T06:51:58.817Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: portfolio-manager"
+  },
+  {
+    "id": "f6836d20-fbb3-441f-a47b-6b4fd5281779",
+    "timestamp": "2026-08-14T06:52:08.730Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b5763ff1-3e73-4d64-a87c-568a9276dddd",
+    "timestamp": "2026-08-14T06:52:38.725Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "00c3779b-df6a-4c36-ab63-772225a74190",
+    "timestamp": "2026-08-14T06:53:08.746Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "f84474eb-ba47-4f64-8e66-1cc573330bbc",
+    "timestamp": "2026-08-14T06:53:38.753Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "5d68949e-5fce-4628-a9bf-01b5cbf273fd",
+    "timestamp": "2026-08-14T06:54:08.771Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7aa40500-ecbc-40db-b119-fd0cc5619859",
+    "timestamp": "2026-08-14T06:54:38.780Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "4bd6a9f6-f111-4054-8aee-0a57db94013d",
+    "timestamp": "2026-08-14T06:55:08.775Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "6edca57c-7210-4e56-a79e-847f9cf1ffe1",
+    "timestamp": "2026-08-14T06:55:38.838Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "19e83d65-148d-4e72-94fb-7725c6b1e329",
+    "timestamp": "2026-08-14T06:56:08.806Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "8a5e9b86-7559-445a-b9e2-7efd1133f346",
+    "timestamp": "2026-08-14T06:56:38.821Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "3e7d7394-a2c1-40f4-b1b6-8134cafda1f2",
+    "timestamp": "2026-08-14T06:57:08.829Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "625ba4eb-660b-4179-b364-ab2cf475df7e",
+    "timestamp": "2026-08-14T06:57:38.837Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9c7311a6-1c27-4e30-bda3-1e611b17c07c",
+    "timestamp": "2026-08-14T06:58:08.864Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ff5a2cf2-a1ff-443f-b059-e2d26ae818e6",
+    "timestamp": "2026-08-14T06:58:38.870Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "f8456cc3-7429-4d3a-a896-605d7de4130c",
+    "timestamp": "2026-08-14T06:59:08.890Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "e950a4b8-1c1f-4cf7-9b1d-e506b07582c1",
+    "timestamp": "2026-08-14T06:59:38.899Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "55301e81-faa7-4cd2-aa53-aff30e986488",
+    "timestamp": "2026-08-14T07:00:08.894Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "05ba3011-2146-443f-a43f-89d3dfa72c04",
+    "timestamp": "2026-08-14T07:00:38.927Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "09d52460-d2b7-4e86-805c-2019b40bcb39",
+    "timestamp": "2026-08-14T07:01:09.068Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7a7db731-a122-4aeb-aab5-b12603f4d1a6",
+    "timestamp": "2026-08-14T07:01:38.939Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9af4705e-c7b8-4323-821f-5258570392cd",
+    "timestamp": "2026-08-14T07:02:08.955Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "c4fa4645-8038-40ba-becc-8010d91a1838",
+    "timestamp": "2026-08-14T07:02:38.958Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "510f2855-248c-47f5-9e63-fb9072a83b2b",
+    "timestamp": "2026-08-14T07:52:18.912Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "5efe033b-f276-4cfc-82be-157edf995d6f",
+    "timestamp": "2026-08-14T07:52:23.971Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts SKIPPED_UNCHANGED — fingerprint: y8e9iz, last AI: 2026-08-14T06:51:58.701Z, age: 60min"
+  },
+  {
+    "id": "453cf3ba-58fc-4cb4-8a69-96d79ac5c69a",
+    "timestamp": "2026-08-14T07:52:24.033Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review SKIPPED_UNCHANGED — fingerprint: 1u6ousp, last AI: 2026-08-14T04:51:41.197Z, age: 181min"
+  },
+  {
+    "id": "a97e0336-9664-40c6-88bf-7414f40abc01",
+    "timestamp": "2026-08-14T07:52:24.055Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "b9db45f8-c618-4994-9395-41a72a738bd8",
+    "timestamp": "2026-08-14T07:52:24.077Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "aaa34798-5cb4-4693-98da-34aa388def00",
+    "timestamp": "2026-08-14T07:52:24.081Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "7261dc47-1bed-46c1-8c54-b424c99ea1b1",
+    "timestamp": "2026-08-14T07:52:24.095Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "dc083fb8-3610-4bc4-90b5-9b9ad3f4d9e7",
+    "timestamp": "2026-08-14T07:52:24.108Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "a8f4e920-2cc4-4ffc-ba3d-75bb4c16bb30",
+    "timestamp": "2026-08-14T07:52:31.333Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Discovery (MATERIAL CHANGE): 5 event(s), 2 high, 0 new, 4 updated, 0 duplicates ignored"
+  },
+  {
+    "id": "1bd3affa-761c-4a03-b0e4-7791867f1c0e",
+    "timestamp": "2026-08-14T07:52:31.349Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "event-monitor completed via Scheduled (7416ms, change: Medium)"
+  },
+  {
+    "id": "b9374ac5-0c48-440a-8452-4657b93407ca",
+    "timestamp": "2026-08-14T07:52:31.434Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: trade-decision-engine, portfolio-manager, risk-analyzer"
+  },
+  {
+    "id": "05d1dede-b8d1-4911-8526-2316352b2567",
+    "timestamp": "2026-08-14T07:52:36.313Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "catalyst-intelligence completed via Dependency (4872ms, change: None)"
+  },
+  {
+    "id": "6e5094e5-1c92-42b9-9458-96e296dc6520",
+    "timestamp": "2026-08-14T07:52:36.317Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "37bcd653-710e-476c-80f2-99b75ed816d9",
+    "timestamp": "2026-08-14T07:52:36.326Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed (no material change): Positive sentiment, Low risk — materialVersion unchanged"
+  },
+  {
+    "id": "534a07ea-4b8a-43bb-a062-6a369df08c1f",
+    "timestamp": "2026-08-14T07:52:36.352Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed (MATERIAL CHANGE): 7 market-moving stories found"
+  },
+  {
+    "id": "a17013c4-93cb-40e9-9fb4-7e7779cf7549",
+    "timestamp": "2026-08-14T07:52:36.366Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (12450ms, change: None)"
+  },
+  {
+    "id": "0d3ce8ce-9fe6-4985-b43e-3297fe8ed5c5",
+    "timestamp": "2026-08-14T07:52:36.367Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "sector-monitor downstream skipped — upstream change was None"
+  },
+  {
+    "id": "ae0ef1a2-a883-4f8d-84a8-bdce0ace4af9",
+    "timestamp": "2026-08-14T07:52:36.370Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts downstream skipped — upstream change was None"
+  },
+  {
+    "id": "191646a3-e961-44a9-8ddb-068f57ed3241",
+    "timestamp": "2026-08-14T07:52:36.372Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "13167f0d-33cd-4d55-add4-06a3a0803b02",
+    "timestamp": "2026-08-14T07:52:36.391Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (12460ms, change: Medium)"
+  },
+  {
+    "id": "41a46e36-80ca-422b-8004-544d29e9d703",
+    "timestamp": "2026-08-14T07:52:41.626Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "catalyst-intelligence completed via Dependency (5233ms, change: None)"
+  },
+  {
+    "id": "bc0ea27c-77c9-455b-9bb5-3875f1033623",
+    "timestamp": "2026-08-14T07:52:41.648Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Risk analysis completed"
+  },
+  {
+    "id": "d708fe34-aa31-41f8-b1b0-5f28629cfc0e",
+    "timestamp": "2026-08-14T07:52:41.649Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk score: 50 ▲ 5 (was 45)"
+  },
+  {
+    "id": "4e9cec5c-98e5-4cbe-ad89-5d7f82541666",
+    "timestamp": "2026-08-14T07:52:41.654Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Highest portfolio risk: Serve Robotics Execution and Valuation Risk [Company, High severity]"
+  },
+  {
+    "id": "7ae0dbf7-786c-4edb-9f36-2bd3ab8bed44",
+    "timestamp": "2026-08-14T07:52:41.664Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Novo Nordisk Pricing Pressure and Competition"
+  },
+  {
+    "id": "2d7e46cb-50e9-4bc2-8d9e-37d1630cb12d",
+    "timestamp": "2026-08-14T07:52:41.666Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "New risk detected: Macro Uncertainty from Geopolitical and AI Stock Risks"
+  },
+  {
+    "id": "8d264984-37ea-48a3-92d9-b81960abf78f",
+    "timestamp": "2026-08-14T07:52:41.668Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Weak Investment Case and Avoid Rating for Serve Robotics"
+  },
+  {
+    "id": "b71ea3c1-ec6a-4dd1-9298-ab0662337438",
+    "timestamp": "2026-08-14T07:52:41.669Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Novo Nordisk Price Volatility"
+  },
+  {
+    "id": "548bf385-63f7-427a-abde-22810b3a051e",
+    "timestamp": "2026-08-14T07:52:41.671Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Risk resolved: Macro Uncertainty from Geopolitical and Central Bank Risks"
+  },
+  {
+    "id": "395a7075-0b2c-49e2-a862-1d05ef15d5d8",
+    "timestamp": "2026-08-14T07:52:41.673Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "RiskFacts fingerprint: 963c5285ea2b3fd2 (AI called; previous was fb0a76e96cf53360)"
+  },
+  {
+    "id": "a8d5f914-8845-4382-aa01-b21ca0254fa6",
+    "timestamp": "2026-08-14T07:52:41.705Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer completed via Dependency (17732ms, change: Medium)"
+  },
+  {
+    "id": "9d1a4fd6-0761-4e45-9626-331a24ec4524",
+    "timestamp": "2026-08-14T07:52:41.706Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: trade-decision-engine, portfolio-manager"
+  },
+  {
+    "id": "c6834f9f-2fa7-438d-94aa-4d4b7953c6e3",
+    "timestamp": "2026-08-14T07:52:48.395Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] PFE (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "7fa934cc-9f8a-4c26-8d25-0bb533d2856a",
+    "timestamp": "2026-08-14T07:52:48.396Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] NEE (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "3a2d52fd-aa78-4b3a-9af5-352e0dca80ec",
+    "timestamp": "2026-08-14T07:52:48.445Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "1b8d7648-e635-4354-8bd1-b1868d172fd1",
+    "timestamp": "2026-08-14T07:52:48.446Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "b7371f3f-8851-49da-aea3-b5fe7ca18ec5",
+    "timestamp": "2026-08-14T07:52:48.451Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: WaitForEvents | Readiness: 72/100"
+  },
+  {
+    "id": "be5bd351-b99c-4eb0-bf34-8605788bf80c",
+    "timestamp": "2026-08-14T07:52:48.453Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "3 WaitingForReevaluation"
+  },
+  {
+    "id": "14f1b735-ce57-4447-9490-3e4b35203ab8",
+    "timestamp": "2026-08-14T07:52:48.463Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "New: Review Caterpillar as a potential industrials candidate after macro events"
+  },
+  {
+    "id": "f0af88a5-64cc-4e2e-9d14-c229275fb6c1",
+    "timestamp": "2026-08-14T07:52:48.465Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Preserved Unchanged: PFE, NEE"
+  },
+  {
+    "id": "548b779c-e829-42f0-8b38-dfebfac04670",
+    "timestamp": "2026-08-14T07:52:48.489Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine completed via Dependency (24512ms, change: High)"
+  },
+  {
+    "id": "9ad21743-c383-4ec4-b22d-93ebbd702f1a",
+    "timestamp": "2026-08-14T07:52:48.504Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: trade-review, portfolio-manager"
+  },
+  {
+    "id": "e414f994-d49e-4004-b73a-35084b2b9f95",
+    "timestamp": "2026-08-14T07:52:48.506Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
+  },
+  {
+    "id": "45e391b5-bf8f-4f7a-b895-8d3af4ce98ff",
+    "timestamp": "2026-08-14T07:52:48.507Z",
+    "module": "TradeReview",
+    "level": "internal",
+    "message": "Decision PFE: WaitingForReevaluation — not converted to proposal"
+  },
+  {
+    "id": "71085589-34d9-48be-beb8-f50decc13954",
+    "timestamp": "2026-08-14T07:52:48.509Z",
+    "module": "TradeReview",
+    "level": "internal",
+    "message": "Decision NEE: WaitingForReevaluation — not converted to proposal"
+  },
+  {
+    "id": "3682a813-e204-4785-9b0f-45d34c07da7a",
+    "timestamp": "2026-08-14T07:52:48.542Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via Dependency (51ms, change: Medium)"
+  },
+  {
+    "id": "4a5a07d9-1f18-4230-a5ec-0c70b6fd5346",
+    "timestamp": "2026-08-14T07:52:48.543Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: portfolio-manager"
+  },
+  {
+    "id": "a8a7d4c3-c7c5-4af7-a4a3-495512ef804f",
+    "timestamp": "2026-08-14T07:52:59.907Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "3337b464-3275-42d1-a7ee-2df994e75379",
+    "timestamp": "2026-08-14T07:53:28.924Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7b2f8184-2966-4ace-b53d-e0c229ea140c",
+    "timestamp": "2026-08-14T07:53:58.958Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "3a393591-65b8-4210-9fc5-f08d685f5529",
+    "timestamp": "2026-08-14T07:54:28.945Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "c7269dee-070a-441f-b2b1-48adf84496e0",
+    "timestamp": "2026-08-14T07:54:58.959Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "61a4669b-d887-42ba-add4-9fde78fe9713",
+    "timestamp": "2026-08-14T07:55:29.087Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "8f4eee46-0624-46ea-b586-8e071f34f43c",
+    "timestamp": "2026-08-14T07:55:58.985Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "6361ce69-a0ad-4e63-8e13-9980a4e435c4",
+    "timestamp": "2026-08-14T07:56:28.988Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "adcc5be6-aeca-482c-a22b-732d64a2abe2",
+    "timestamp": "2026-08-14T07:56:59.009Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b3fb9f6b-889d-4697-b88f-3b0f4abe77bf",
+    "timestamp": "2026-08-14T07:57:28.990Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "44648033-5a57-4794-9e04-cbf8f3937c6e",
+    "timestamp": "2026-08-14T07:57:59.023Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b3c78b9d-8270-48f7-8c28-33611879de11",
+    "timestamp": "2026-08-14T07:58:29.028Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "f786cab0-1561-4eb2-9235-8d43035e6835",
+    "timestamp": "2026-08-14T07:58:59.049Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9f537aa4-aed0-46ee-ae67-6ccca848be5d",
+    "timestamp": "2026-08-14T07:59:29.064Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "6fb92a2c-131d-462b-bfec-bd1f1441fa58",
+    "timestamp": "2026-08-14T07:59:59.064Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "d06ad1e0-2b63-4be1-974c-e3f4250fda1b",
+    "timestamp": "2026-08-14T08:00:29.090Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "21941d71-a7cd-437c-b11e-71be24699db5",
+    "timestamp": "2026-08-14T08:00:59.098Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a135af56-49da-4ee2-a69b-4c5dac7c5528",
+    "timestamp": "2026-08-14T08:01:29.112Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a6c68f7b-f38e-4079-9f49-0c38e5e9d459",
+    "timestamp": "2026-08-14T08:01:59.132Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b2d259ce-cb97-4334-b763-044c672a8394",
+    "timestamp": "2026-08-14T08:02:29.126Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "060219a1-fe1c-4420-ba85-9915c3693e16",
+    "timestamp": "2026-08-14T08:02:59.131Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "658b972c-1f2c-4af1-a729-04d66bfd653f",
+    "timestamp": "2026-08-14T08:03:29.161Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7ef208d3-c132-4cef-b9d7-2276a9dfdb40",
+    "timestamp": "2026-08-14T08:03:59.169Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7e27298f-ead9-4b58-8efb-6742d339689c",
+    "timestamp": "2026-08-14T08:04:29.242Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ed46f7ae-f7b4-4fd6-b47e-7759664b9ab5",
+    "timestamp": "2026-08-14T08:04:59.180Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7c807040-7eaa-4857-a83d-54c32ea09b0e",
+    "timestamp": "2026-08-14T08:05:29.201Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "d3d7fbd8-46af-44ed-bfbc-c0c67af1a027",
+    "timestamp": "2026-08-14T08:05:59.218Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "0f9e1341-1b17-45a7-bdf2-730475e7dada",
+    "timestamp": "2026-08-14T08:06:29.238Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a7e4a908-2369-408a-bfa1-e8a7f81e632d",
+    "timestamp": "2026-08-14T08:06:59.344Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "2dc27668-2761-4d93-b5d2-d36d29ac5d8a",
+    "timestamp": "2026-08-14T08:07:29.227Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b55e04a6-f972-4249-936a-dc7884034b2c",
+    "timestamp": "2026-08-14T08:07:59.247Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9350adff-1ced-49e0-859e-6ad965fa9f7f",
+    "timestamp": "2026-08-14T08:08:29.257Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "4b635e97-bfd5-40a2-8a07-8c89111e39c9",
+    "timestamp": "2026-08-14T08:08:59.281Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ce9a272c-1738-4f4c-aabe-1852ad21cd49",
+    "timestamp": "2026-08-14T08:09:29.295Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b8d43d2a-02bc-4361-b73b-74c1ebb8dffc",
+    "timestamp": "2026-08-14T08:09:59.308Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "28177798-2bdd-4132-a686-7bcfd57111b7",
+    "timestamp": "2026-08-14T08:10:29.318Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "77f02d63-f296-44c1-8ae6-d74ca544766d",
+    "timestamp": "2026-08-14T08:10:59.344Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "99405bec-d7a7-4a0f-b72f-3b343142f801",
+    "timestamp": "2026-08-14T08:11:29.333Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "04cb16d6-ce89-4dc7-a8a7-acb3f05a3e99",
+    "timestamp": "2026-08-14T08:11:59.349Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "152e14e4-8490-4904-9fde-b7541506feea",
+    "timestamp": "2026-08-14T08:12:29.353Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b12f31ae-3626-4627-8798-b4091a39cf49",
+    "timestamp": "2026-08-14T08:12:49.356Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "aeb19efe-359c-4c20-92b6-6fec1de76fb8",
+    "timestamp": "2026-08-14T08:12:49.393Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts completed via deterministic engine (2ms, change: High)"
+  },
+  {
+    "id": "2ccb4a18-4614-4953-b0f5-3f8c183e651d",
+    "timestamp": "2026-08-14T08:12:49.394Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "3 new alert(s): Jackson Hole Economic Symposium; State Employment and Unemployment Report; Cisco Systems' Stock Drops Amid Profit Margin Concerns and AI-Stock Volatility"
+  },
+  {
+    "id": "3aabde32-6e4b-475b-8010-6f444941affb",
+    "timestamp": "2026-08-14T08:12:49.594Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Technology Sector Sees Mixed Performance Amid AI Developments; Cisco Systems' Stock Drops Amid Profit Margin Concerns"
+  },
+  {
+    "id": "a131b5ae-64f3-47fa-9b6c-f00016d4d28d",
+    "timestamp": "2026-08-14T08:12:49.680Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: Technology sector: weak outlook, weakening trend [Sector]"
+  },
+  {
+    "id": "5c43d7f3-6d78-4b33-878a-a7c4a9379345",
+    "timestamp": "2026-08-14T08:12:49.704Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Dependency (359ms, change: High)"
+  },
+  {
+    "id": "d996ced6-cbe0-42ea-a3c9-483ffbdc2ada",
+    "timestamp": "2026-08-14T08:12:49.705Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: portfolio-manager"
+  },
+  {
+    "id": "190c8275-5475-472e-b214-2313dc736531",
+    "timestamp": "2026-08-14T08:12:59.440Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "cf66d2cd-cde5-4fd9-9943-d0f96fa60b42",
+    "timestamp": "2026-08-14T08:13:29.376Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "bfc6fd73-a3ac-41bd-9ed7-bab1bbe50e6c",
+    "timestamp": "2026-08-14T08:13:59.391Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "5fef477c-c18b-42c6-8b97-7203bac84bb1",
+    "timestamp": "2026-08-14T08:14:29.399Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "668dc399-b724-4306-9aa6-bdfe9561568c",
+    "timestamp": "2026-08-14T08:14:59.418Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a911817e-02c7-4dc3-91a3-2d0deb700437",
+    "timestamp": "2026-08-14T08:15:29.417Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ee03644d-d360-4745-8dd4-79e290ab6a1f",
+    "timestamp": "2026-08-14T08:15:56.031Z",
+    "module": "AutomationOrchestrator",
+    "level": "warning",
+    "message": "Startup: marked 1 abandoned job(s) as failed"
+  },
+  {
+    "id": "35e57e80-43ca-40e2-acce-4ee46dda841d",
+    "timestamp": "2026-08-14T08:15:56.035Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "b85e5ec6-5a06-4299-8193-d565789f930d",
+    "timestamp": "2026-08-14T08:16:11.158Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "e08fbcee-4c39-49a2-941a-5aaf076dc98d",
+    "timestamp": "2026-08-14T08:16:36.061Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "6ccab68e-bbaf-4db5-8d8b-111e502ed177",
+    "timestamp": "2026-08-14T08:17:06.086Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "afadf4c6-6212-4c09-88c3-adc910feab11",
+    "timestamp": "2026-08-14T08:17:36.083Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "0f90292b-89aa-4879-be2c-02f3212c16eb",
+    "timestamp": "2026-08-14T08:18:06.097Z",
     "module": "AutomationOrchestrator",
     "level": "error",
     "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
