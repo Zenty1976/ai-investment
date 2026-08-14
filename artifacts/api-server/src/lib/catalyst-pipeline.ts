@@ -28,6 +28,7 @@
  */
 
 import { getCatalystState, getAllCatalystStates, saveCatalystState } from "./catalyst-repository.js";
+import { expirePromotion } from "./catalyst-promotion.js";
 import {
   deriveLifecycleState, isEligibleForAutoAnalysis, isInBackoff,
   needsPostEventReassessment,
@@ -248,6 +249,35 @@ async function seedUniverseDiscoveredStates(nowIso: string): Promise<number> {
  *
  * Returns the count of newly-marked candidates.
  */
+/**
+ * Compute the UTC millisecond threshold after which an event is considered to have occurred.
+ *
+ * Precision hierarchy (spec §5):
+ *   1. If the event has an exact datetime, use that.
+ *   2. BeforeMarket: event occurs around market open.
+ *      Conservative threshold = 14:30 UTC (US market open / European midday).
+ *   3. AfterMarket: event occurs after market close.
+ *      Conservative threshold = 22:00 UTC (after-hours reporting window closed).
+ *   4. Unknown timing: do NOT mark as passed at 00:00 UTC on the event day.
+ *      Conservative fallback = NEXT calendar day at 06:00 UTC so a same-day
+ *      event is never prematurely marked as post-event.
+ */
+function computeEventThresholdMs(eventDate: string, marketTiming: string | null | undefined): number {
+  if (marketTiming === "BeforeMarket") {
+    // Event happens around or before market open (14:30 UTC for US)
+    return new Date(eventDate + "T14:30:00Z").getTime();
+  }
+  if (marketTiming === "AfterMarket") {
+    // Event happens after market close — after-market reporting ends ~22:00 UTC
+    return new Date(eventDate + "T22:00:00Z").getTime();
+  }
+  // Unknown timing: conservative — next calendar day at 06:00 UTC
+  // Prevents premature marking when event date is known but session timing is not.
+  const nextDay = new Date(eventDate + "T06:00:00Z");
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  return nextDay.getTime();
+}
+
 export function markPostEventCandidates(nowIso: string): number {
   const all = getAllCatalystStates();
   let marked = 0;
@@ -259,17 +289,27 @@ export function markPostEventCandidates(nowIso: string): number {
     const eventDate = state.facts?.event?.eventDate;
     if (!eventDate) continue;
 
-    const eventMs = new Date(eventDate + "T00:00:00Z").getTime();
+    // Prefer marketTiming (from CatalystFacts), fall back to beforeAfterMarket
+    // (from raw CompanySpecificEvent stored on the state).
+    const evt = state.facts?.event as Record<string, unknown> | undefined;
+    const marketTiming = (evt?.marketTiming ?? evt?.beforeAfterMarket ?? null) as string | null;
+
+    const eventThresholdMs = computeEventThresholdMs(eventDate, marketTiming);
     const nowMs = new Date(nowIso).getTime();
 
-    if (nowMs > eventMs && state.analysis) {
-      // Event has passed AND we had a pre-event analysis → needs post-event reassessment
+    if (nowMs > eventThresholdMs && state.analysis) {
+      // Event has passed AND we had a pre-event analysis → needs post-event reassessment.
       saveCatalystState(state.ticker, {
         ...state,
         eventPassed: true,
         postEventAssessmentRequired: true,
         updatedAt: nowIso,
       });
+
+      // Expire the old pre-event promotion immediately so OF/TDE do not consume a
+      // stale pre-event thesis after the catalyst occurred (spec §7).
+      expirePromotion(state.ticker);
+
       marked++;
     }
   }
@@ -543,7 +583,16 @@ export async function runPostEventReassessment(
     // Force a fresh analysis — pre-event fingerprint is stale by definition
     const result = await analyze(ticker, { force: true, nowIso });
 
-    // Clear the post-event flag regardless of outcome
+    if (result.error) {
+      // FAILURE: record backoff but keep postEventAssessmentRequired = true so the
+      // next pipeline cycle retries. The old pre-event thesis remains non-actionable
+      // (promotion was already expired by markPostEventCandidates). Never restore
+      // the stale thesis as fresh by clearing the flag prematurely (spec §6).
+      _recordFailure(ticker, `post-event reassessment: ${result.error}`, nowIso);
+      return { ok: false, error: result.error };
+    }
+
+    // SUCCESS: only now clear the post-event flag.
     const freshState = getCatalystState(ticker);
     if (freshState) {
       saveCatalystState(ticker, {
@@ -553,14 +602,10 @@ export async function runPostEventReassessment(
       });
     }
 
-    if (result.error) {
-      _recordFailure(ticker, `post-event reassessment: ${result.error}`, nowIso);
-      return { ok: false, error: result.error };
-    }
-
     return { ok: true, error: null };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // Unexpected throw: same rule — keep flag set, record backoff.
     _recordFailure(ticker, `post-event reassessment failed: ${msg}`, nowIso);
     return { ok: false, error: msg };
   }

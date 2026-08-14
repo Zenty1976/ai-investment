@@ -172,7 +172,9 @@ describe("Recent-Run Guard & markAIAnalysis", () => {
     // computeFingerprint returns null for them, so setFingerprint is never called
     // by the orchestrator, meaning the only way to set lastAIAnalysisAt is via
     // markAIAnalysis.
-    const noFingerprintModules = ["market-monitor", "news-monitor", "opportunity-finder"];
+    // opportunity-finder now has STATIC_DEPS: ["catalyst-promotions"] so it WILL return
+    // a non-null fingerprint. Only market-monitor and news-monitor are truly dep-free.
+    const noFingerprintModules = ["market-monitor", "news-monitor"];
     for (const mod of noFingerprintModules) {
       const fp = computeFingerprint(mod, ["AAPL"]);
       assert.equal(fp, null, `${mod}: computeFingerprint must return null (no static deps)`);
@@ -184,7 +186,6 @@ describe("Recent-Run Guard & markAIAnalysis", () => {
     const freshKeys = [
       "market-monitor-s8-fresh",
       "news-monitor-s8-fresh",
-      "opportunity-finder-s8-fresh",
     ];
 
     for (const key of freshKeys) {

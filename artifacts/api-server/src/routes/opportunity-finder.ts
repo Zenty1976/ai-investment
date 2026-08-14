@@ -23,6 +23,7 @@ import { analysisRepository } from "../lib/analysis-repository";
 import { companyIdentityStore } from "../lib/company-identity";
 import { getAllPriceContexts } from "../lib/price-context-service.js";
 import { OBSERVATION_MODULE_MIN_REFRESH_MINUTES } from "../lib/dependency-fingerprint-service.js";
+import { buildPromotionsContextBlock } from "../lib/catalyst-promotion.js";
 import {
   getPortfolioAnalyzerAiContext,
   getMarketAiContext,
@@ -79,12 +80,24 @@ Avoid recommending companies already held in the portfolio unless there is a com
 
 INFORMATION PRIORITY:
 1. Current portfolio positions, position sizes, and cash — the baseline to improve upon
-2. Portfolio Analyzer conclusions — identified gaps, weaknesses, and opportunities
-3. Sector Monitor
-4. Event Monitor
-5. Market Monitor
-6. News Monitor
-7. Web search results (verify and supplement — not replace — the stored analyses)
+2. Catalyst Intelligence promotions — proactively identified pre-event setups (see below)
+3. Portfolio Analyzer conclusions — identified gaps, weaknesses, and opportunities
+4. Sector Monitor
+5. Event Monitor
+6. Market Monitor
+7. News Monitor
+8. Web search results (verify and supplement — not replace — the stored analyses)
+
+CATALYST INTELLIGENCE PROMOTIONS:
+The Catalyst Intelligence system proactively identifies companies with upcoming pre-event setups before any user interaction.
+When Catalyst promotions are present in the context block, treat them as PRIORITY CANDIDATES to evaluate.
+Rules for Catalyst promotions:
+- They are NOT automatically approved — you must still rigorously evaluate each one against all other candidates
+- A company in this list may not be in the portfolio and may have no Company Monitor data — that is expected and intentional
+- Catalyst HIGH_INTEREST does not guarantee an Opportunity Finder recommendation
+- Compare each Catalyst candidate against the full opportunity landscape, not just each other
+- If a Catalyst candidate scores well on timing, catalyst quality, and portfolio fit, rank it highly
+- If it does not fit the portfolio's current needs, explain why and rank it lower
 
 COMPANY MONITOR CONTEXT:
 Company Monitor analyses are available only for current portfolio holdings and previously analysed companies already stored in the system.
@@ -145,6 +158,7 @@ Return exactly:
 function buildUserPrompt(
   nowIso: string,
   portfolioContext: string,
+  catalystBlock: string,
   portfolioAnalyzerContext: string | null,
   marketContext: string | null,
   eventContext: string | null,
@@ -161,6 +175,15 @@ function buildUserPrompt(
     "Current Portfolio (your baseline — find opportunities that improve this):",
     portfolioContext,
   ];
+
+  // Catalyst Intelligence promotions — priority input #2, directly after portfolio
+  if (catalystBlock) {
+    blocks.push(
+      "",
+      "Catalyst Intelligence (priority candidates proactively identified — evaluate these rigorously):",
+      catalystBlock
+    );
+  }
 
   if (portfolioAnalyzerContext) {
     blocks.push(
@@ -351,6 +374,12 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
     );
   }
 
+  // ── Catalyst Intelligence promotions — priority input #2 ─────────────────
+  // Active promotions: proactively-identified pre-event setups from the autonomous
+  // catalyst pipeline. Injected as a priority input before Portfolio Analyzer so OF
+  // evaluates these candidates alongside everything else.
+  const catalystBlock = buildPromotionsContextBlock();
+
   req.log.info(
     {
       hasPortfolioAnalyzer: !!portfolioAnalyzerContext,
@@ -359,6 +388,7 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
       hasNews: !!newsContext,
       hasSector: !!sectorContext,
       holdingCompanyContextCount: Object.keys(companyContexts).length,
+      catalystPromotionsCount: catalystBlock ? catalystBlock.split("\n").filter(l => l.startsWith("  ") || l.match(/^\w/)).length : 0,
     },
     "Context loaded from Analysis Repository"
   );
@@ -400,6 +430,7 @@ router.post("/opportunity-finder/analyze", async (req, res): Promise<void> => {
         buildUserPrompt(
           nowIso,
           portfolioContext,
+          catalystBlock,
           portfolioAnalyzerContext,
           marketContext,
           eventContext,

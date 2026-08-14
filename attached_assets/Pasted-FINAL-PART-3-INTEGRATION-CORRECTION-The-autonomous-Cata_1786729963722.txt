@@ -1,0 +1,341 @@
+FINAL PART 3 INTEGRATION CORRECTION
+
+The autonomous Catalyst pipeline is now largely correct.
+
+KEEP the current implementation.
+
+Do NOT redesign Catalyst Intelligence.
+
+However, inspection of the actual code reveals one critical missing downstream
+connection and two post-event correctness issues.
+
+
+==================================================
+1. CRITICAL — OPPORTUNITY FINDER DOES NOT CONSUME CATALYST PROMOTIONS
+==================================================
+
+Catalyst analysis correctly calls:
+
+promoteToOpportunityFinder(...)
+
+and stores compact promotions under:
+
+"catalyst-promotions"
+
+catalyst-promotion.ts also already provides:
+
+buildPromotionsContextBlock()
+
+However, routes/opportunity-finder.ts does NOT currently import or consume
+Catalyst promotions.
+
+Therefore a newly discovered Catalyst company can be marked PROMOTED but
+Opportunity Finder never actually receives the candidate.
+
+Fix this.
+
+Opportunity Finder must consume active Catalyst promotions as a PRIORITY INPUT.
+
+Use the existing compact promotion representation.
+
+Do NOT send full Catalyst analysis/debug data.
+
+Add something conceptually like:
+
+const catalystContext = buildPromotionsContextBlock();
+
+to the Opportunity Finder input.
+
+The Opportunity Finder system prompt must understand:
+
+- these companies were proactively identified by Catalyst Intelligence
+- they are priority candidates to EVALUATE
+- they are NOT automatically approved opportunities
+- OF must still compare them against other opportunities
+- Catalyst HIGH_INTEREST does not guarantee OF recommendation
+
+Catalyst promotions should be considered even when the ticker:
+
+- is not in portfolio
+- has never been in Company Monitor
+- was never previously an Opportunity Finder candidate
+
+This is the entire point of proactive Catalyst discovery.
+
+
+==================================================
+2. OPPORTUNITY FINDER FINGERPRINT / INVALIDATION
+==================================================
+
+A new or materially changed Catalyst promotion must make Opportunity Finder
+eligible for reassessment.
+
+Currently catalyst-promotions appears in Trade Decision dependencies but not
+Opportunity Finder's dependency logic.
+
+Add catalyst-promotions as a material dependency of Opportunity Finder.
+
+Do not trigger OF for non-material Catalyst state changes.
+
+Use materialVersion/fingerprint behavior.
+
+When Opportunity Finder successfully processes a Catalyst promotion,
+acknowledgePromotion(ticker) may be used if appropriate.
+
+Do not make acknowledgement remove the promotion from future context while it is
+still materially relevant.
+
+
+==================================================
+3. TRADE DECISION MUST RECEIVE CATALYST INFORMATION IF IT DEPENDS ON IT
+==================================================
+
+Trade Decision's fingerprint currently includes:
+
+"catalyst-promotions"
+
+This means Catalyst changes can wake Trade Decision.
+
+But Trade Decision does not appear to receive the Catalyst promotion context in
+its actual AI prompt.
+
+This is inconsistent and may cause paid TDE calls without the information that
+triggered them.
+
+Fix this.
+
+Trade Decision should receive a COMPACT Catalyst context only for relevant
+tickers/candidates.
+
+Use the existing:
+
+buildCatalystTdeContext(ticker)
+
+or an equivalent compact structured representation.
+
+Do NOT inject all Catalyst research.
+
+For relevant decision candidates provide:
+
+ticker
+triggerType
+event type/date
+catalyst direction
+evidence confidence
+expectation gap
+price asymmetry
+opportunity state
+short thesis
+key risks/invalidation
+INTENTIONAL_PRE_EVENT_THESIS flag
+
+Trade Decision remains the final decision engine.
+
+Catalyst Intelligence must never automatically create Buy/Ready.
+
+
+==================================================
+4. PREFERRED DOWNSTREAM FLOW
+==================================================
+
+The real production flow must now be:
+
+NEW MARKET-UNIVERSE TICKER
+→ Catalyst discovers setup
+→ deep Catalyst analysis
+→ Catalyst HIGH_INTEREST
+→ promotion stored
+→ Opportunity Finder fingerprint changes
+→ Opportunity Finder receives Catalyst candidate
+→ Opportunity Finder evaluates it
+→ OF material result changes if warranted
+→ Trade Decision fingerprint changes
+→ Trade Decision receives relevant Catalyst + OF context
+→ decision
+
+Do NOT skip Opportunity Finder and send every Catalyst candidate directly to
+Trade Decision.
+
+TDE may receive Catalyst context for additional reasoning, but Opportunity Finder
+remains the opportunity comparison layer.
+
+
+==================================================
+5. POST-EVENT TIME CORRECTNESS
+==================================================
+
+markPostEventCandidates() currently effectively treats:
+
+eventDate + T00:00:00Z
+
+as the event occurrence.
+
+This can mark an event as passed before it actually occurred.
+
+Example:
+
+US earnings on 2026-08-20 AFTER MARKET
+
+must not become post-event at 00:00 UTC on August 20.
+
+Use the most precise available event timestamp.
+
+Preferred hierarchy:
+
+1. exact event date-time if known
+2. event date + BeforeMarket / AfterMarket information
+3. conservative fallback when only date is known
+
+When only a date is known, do NOT mark it passed at the start of that date.
+
+Use a conservative end-of-day/local-market fallback.
+
+Do not allow stale pre-event thesis to become post-event too early.
+
+
+==================================================
+6. POST-EVENT FAILURE SAFETY
+==================================================
+
+runPostEventReassessment() currently clears:
+
+postEventAssessmentRequired = false
+
+even before checking whether the reassessment returned an error.
+
+Fix this.
+
+The flag must only be cleared after a SUCCESSFUL post-event reassessment.
+
+If reassessment fails:
+
+postEventAssessmentRequired must remain true
+failure/backoff state should be recorded
+old pre-event analysis remains explicitly stale/non-actionable
+
+Never silently restore the old pre-event thesis as fresh.
+
+
+==================================================
+7. EXPIRING PRE-EVENT PROMOTIONS
+==================================================
+
+When a scheduled event has occurred:
+
+the old pre-event Catalyst promotion must no longer be treated as a fresh
+pre-event opportunity.
+
+Expire or mark the promotion stale immediately when post-event reassessment is
+required.
+
+After successful post-event reassessment:
+
+create/update a new promotion only if the new Catalyst analysis still warrants it.
+
+This prevents Opportunity Finder/TDE from consuming an old pre-event thesis after
+the catalyst happened.
+
+
+==================================================
+8. TESTS
+==================================================
+
+No paid OpenAI/web calls.
+
+Add end-to-end tests:
+
+A. CATALYST → OF
+
+Ticker exists only in universe.
+
+Catalyst deep analysis returns HIGH_INTEREST /
+SendToOpportunityFinder.
+
+Expected:
+promotion stored
+Opportunity Finder context contains ticker
+OF dependency fingerprint changes.
+
+
+B. OF → TDE
+
+Catalyst promotion becomes relevant and OF evaluates it.
+
+Expected:
+TDE receives compact Catalyst context for that candidate.
+
+
+C. NO FAKE TDE WAKE
+
+Non-material Catalyst change:
+TDE fingerprint unchanged.
+
+
+D. AFTER-MARKET EVENT
+
+Event:
+2026-08-20
+AfterMarket
+
+At 2026-08-20 12:00 UTC:
+NOT post-event.
+
+After actual/conservative event time:
+post-event reassessment required.
+
+
+E. UNKNOWN EVENT TIME
+
+Event date only.
+
+Do NOT mark passed at 00:00 UTC.
+
+Use conservative fallback.
+
+
+F. POST-EVENT FAILURE
+
+Reassessment fails.
+
+Expected:
+postEventAssessmentRequired remains true
+candidate remains stale
+pre-event thesis not actionable.
+
+
+G. POST-EVENT SUCCESS
+
+Reassessment succeeds.
+
+Expected:
+flag clears
+old pre-event promotion no longer used
+new promotion only if new result qualifies.
+
+
+==================================================
+9. FINAL VERIFICATION
+==================================================
+
+Do not consider Part 3 complete until this actual path is demonstrated:
+
+UNFOLLOWED TICKER
+→ CATALYST DISCOVERY
+→ ANALYSIS
+→ PROMOTION
+→ OPPORTUNITY FINDER ACTUALLY RECEIVES IT
+→ TRADE DECISION ACTUALLY RECEIVES RELEVANT CATALYST CONTEXT
+
+without manual intervention.
+
+Report:
+
+1. Opportunity Finder changes.
+2. Catalyst dependency changes.
+3. Trade Decision prompt/context changes.
+4. Post-event time handling.
+5. Promotion expiry behavior.
+6. Failure safety.
+7. Tests and total passing count.
+
+Do not change model routing or Catalyst budgets in this correction.

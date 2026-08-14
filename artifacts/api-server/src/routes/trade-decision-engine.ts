@@ -34,6 +34,7 @@ import {
   getEventAiContext,
   getCompanyAiContext,
 } from "../lib/downstream-ai-context.js";
+import { buildCatalystTdeContext, getActivePromotions } from "../lib/catalyst-promotion.js";
 import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
 import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
@@ -1373,6 +1374,27 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
 
   // §4: Market, News, Sector removed — their implications are in PA, RA, Alerts above.
   addCtx("OPPORTUNITY FINDER (priority 6)", opportunityContext, userPromptSections);
+
+  // Catalyst Intelligence — compact non-actionable context for relevant tickers
+  // Relevant = portfolio holdings + OF candidates + all actively-promoted tickers
+  // buildCatalystTdeContext returns null when no active promotion exists for the ticker.
+  const catalystRelevantTickers = [
+    ...new Set([
+      ...allPositions.map(p => p.ticker),
+      ...rawOpportunities.map(o => String(o.ticker ?? "").toUpperCase()).filter(Boolean),
+      ...getActivePromotions().map(p => p.ticker.toUpperCase()),
+    ]),
+  ];
+  const catalystContextLines = catalystRelevantTickers
+    .map(t => buildCatalystTdeContext(t))
+    .filter((ctx): ctx is string => ctx !== null);
+  if (catalystContextLines.length > 0) {
+    userPromptSections.push(
+      `\nCATALYST INTELLIGENCE (priority 6.5 — non-actionable pre-event context; INTENTIONAL_PRE_EVENT_THESIS requires manual approval):\n` +
+      catalystContextLines.join("\n\n")
+    );
+  }
+
   addCtx("EVENT MONITOR (priority 7)",      eventContext,       userPromptSections);
 
   if (prevDecisionsSummary) {

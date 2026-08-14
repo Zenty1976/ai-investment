@@ -75,6 +75,11 @@ const STATIC_DEPS: Record<string, string[]> = {
     "market-monitor", "news-monitor", "event-monitor", "sector-monitor",
     "risk-analyzer", "portfolio-analyzer", "opportunity-finder",
   ],
+  // Catalyst Intelligence promotions make OF eligible for reassessment when a new
+  // pre-event opportunity is identified. This is the critical link: promotion → OF wakes.
+  "opportunity-finder": [
+    "catalyst-promotions",
+  ],
   "trade-decision-engine": [
     "portfolio-manager",
     "portfolio-analyzer", "risk-analyzer", "market-alerts", "opportunity-finder",

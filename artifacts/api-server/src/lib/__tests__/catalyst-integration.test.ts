@@ -1,478 +1,622 @@
 /**
- * Catalyst Intelligence Integration Tests (spec §13, Tests A–F)
+ * Catalyst Integration Tests (spec correction §8, tests A–G)
  *
- * These tests verify that the correction fixes are correctly wired together.
- * All tests are deterministic — no AI calls, no Saxo calls.
+ * Tests the complete downstream flow:
+ *   Catalyst → Opportunity Finder → Trade Decision Engine
  *
- * Test A — New company from universe seed is included in screening
- * Test B — Non-earnings event (INVESTOR_DAY) is picked up in screening
- * Test C — SpaceX-style: pure universe company with product launch event
- * Test D — PATH B: buildCatalystFacts succeeds with null event
- * Test E — Signal persistence: stored signals survive across runs + deduplicate
- * Test F — No duplicate work: shouldSkipDiscovery + isSignalResearchFresh gates
+ * All pino-free. No OpenAI calls.
+ *
+ * A. Catalyst → OF: promotion stored, OF context contains ticker, OF dependency satisfied
+ * B. OF → TDE:   TDE receives compact Catalyst context for promoted ticker
+ * C. No fake TDE wake: non-material catalyst change does not affect catalyst-promotions materialVersion
+ * D. After-market event: not marked post-event at 12:00 UTC; marked after 22:00 UTC threshold
+ * E. Unknown event time: conservative next-day fallback, NOT marked at 00:00 UTC on event day
+ * F. Post-event failure: postEventAssessmentRequired stays true, pre-event thesis not actionable
+ * G. Post-event success: flag clears, old promotion expired, new promotion only if qualifies
  */
 
-import { test, describe, beforeEach, afterEach } from "node:test";
+import { describe, test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
-// ── Repository isolation ──────────────────────────────────────────────────────
-
-// We import the analysis-repository BEFORE other imports so we can reset it between tests.
+// ── Pino-free imports only ────────────────────────────────────────────────────
+import {
+  promoteToOpportunityFinder,
+  buildPromotionsContextBlock,
+  buildCatalystTdeContext,
+  getActivePromotions,
+  getPromotionForTicker,
+  expirePromotion,
+} from "../catalyst-promotion.js";
+import {
+  markPostEventCandidates,
+  runPostEventReassessment,
+  type CatalystAnalyzeStrategy,
+} from "../catalyst-pipeline.js";
+import {
+  getCatalystState, saveCatalystState,
+} from "../catalyst-repository.js";
 import { analysisRepository } from "../analysis-repository.js";
+import type { CatalystState, CatalystFacts, CatalystAnalysisResult } from "../catalyst-types.js";
+import { setMarketUniverseProvider, SeedMarketUniverseProvider } from "../market-universe-provider.js";
 
-function clearRepository(): void {
-  // analysisRepository.clear() if available, else do a targeted delete
-  // We store test tickers under unique keys to avoid cross-test pollution
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// ── Unit-under-test imports ────────────────────────────────────────────────────
+const NOW_ISO = "2026-08-14T12:00:00Z";
+const NOW_MS  = new Date(NOW_ISO).getTime();
 
-// NOTE: catalyst-facts-builder.ts is NOT imported here.
-// It transitively pulls in price-context-service → logger → pino, which uses
-// require("node:os") — incompatible with the esbuild ESM test runner.
-// PATH B (null event) TypeScript compatibility is verified by: tsc --noEmit ✓
-
-import { collectAllScreenableTickers, getAllUniverseEntries } from "../catalyst-universe.js";
-import {
-  mergeStoredSignals, getStoredSignals, isSignalResearchFresh,
-  recordSignalResearch, buildResearchFingerprint,
-} from "../catalyst-signal-store.js";
-import {
-  saveCompanyEvents, getUpcomingEventsForTicker, daysUntilEventDate,
-} from "../catalyst-company-events.js";
-import {
-  shouldSkipDiscovery, DISCOVERY_MIN_INTERVAL_MS,
-} from "../catalyst-event-gate.js";
-import type {
-  LeadingIndicatorSignal, CompanySpecificEvent, ScheduledCatalystType,
-  CatalystFacts,
-} from "../catalyst-types.js";
-
-// ── Test helpers ──────────────────────────────────────────────────────────────
-
-const NOW_ISO = new Date("2026-08-14T10:00:00Z").toISOString();
-const FUTURE_30 = "2026-09-13"; // 30 days from NOW_ISO
-const FUTURE_12 = "2026-08-26"; // 12 days
-const FUTURE_5  = "2026-08-19"; // 5 days
-
-function makeSignal(
-  id: string,
-  direction: LeadingIndicatorSignal["direction"] = "Positive",
-  daysAgo = 0
-): LeadingIndicatorSignal {
-  const date = new Date(NOW_ISO);
-  date.setDate(date.getDate() - daysAgo);
-  const ts = date.toISOString();
+function makeFacts(ticker: string, eventDate: string | null, marketTiming = "Unknown"): CatalystFacts {
   return {
-    signalId: id,
-    driver: "Test Driver",
-    direction,
-    observedFact: `Observed fact for ${id}`,
-    interpretation: null,
-    previousContext: null,
-    observationDate: ts.slice(0, 10),
-    source: "Test",
-    sourceType: "CompanyMonitor",
-    sourceQuality: "ReliableReporting",
-    sourceConfidence: "Medium",
-    leadTimeRelevance: "High",
-    companyImpactReason: "Integration test signal",
-    freshness: "Fresh",
-    informationCategory: "RELIABLE_REPORTING",
-    sourceOriginId: "test-source",
-    canonicalSource: "Test",
-    availableAt: ts,
+    ticker, company: `${ticker} Corp`,
+    event: eventDate ? {
+      ticker, company: `${ticker} Corp`,
+      eventType: "Earnings",
+      eventDate,
+      daysUntilEvent: Math.round((new Date(eventDate).getTime() - NOW_MS) / 86_400_000),
+      marketTiming,  // This is the field used by computeEventThresholdMs
+      reportingPeriod: "Q2",
+      source: "CompanyMonitor",
+      sourceConfidence: "High",
+      classification: "Unknown",
+    } as unknown as CatalystFacts["event"] : null,
+    signals: [],
+    price: { priceAsymmetryFacts: { asymmetry: "Attractive" } } as unknown as CatalystFacts["price"],
+    company: {} as CatalystFacts["company"],
+    risks: [],
+    dataQuality: {} as CatalystFacts["dataQuality"],
+    sector: null as unknown as CatalystFacts["sector"],
   };
 }
 
-function makeCompanyEvent(
-  ticker: string,
-  eventType: ScheduledCatalystType,
-  eventDate: string,
-  isConfirmed = true
-): CompanySpecificEvent {
+function makeAnalysis(opportunityState = "HighInterest"): CatalystAnalysisResult {
   return {
-    eventId: `${ticker}-${eventType}-${eventDate}`,
-    ticker: ticker.toUpperCase(),
+    opportunityState: opportunityState as CatalystAnalysisResult["opportunityState"],
+    catalystDirection: "POSITIVE",
+    thesis: `Strong pre-event setup — ${opportunityState}`,
+    alreadyPricedIn: "LOW",
+    expectationGap: "MODERATE",
+    evidenceConfidence: "HIGH",
+    priceAsymmetry: "Attractive",
+    triggerType: "EARNINGS",
+    riskFactors: ["Execution risk"],
+    invalidationConditions: ["Miss by >5%"],
+    supportingSignalIds: ["s1"],
+    contradictingSignalIds: [],
+    recommendedNextStep: "SendToOpportunityFinder",
+    analysisUpdateType: "FULL_ANALYSIS",
+  };
+}
+
+function makeState(ticker: string, overrides: Partial<CatalystState> = {}): CatalystState {
+  return {
+    ticker,
     company: `${ticker} Corp`,
-    eventType,
-    title: `${eventType} for ${ticker}`,
-    eventDate,
-    eventTime: null,
-    beforeAfterMarket: "BeforeMarket",
-    isConfirmed,
-    expectedTopics: [],
-    potentialMarketImpact: eventType === "EARNINGS" ? "High" : "Medium",
-    uncertainty: "Low",
-    source: "Test",
-    sourceType: "ReliableReporting",
-    sourceOriginId: null,
-    canonicalSource: null,
-    classification: "Unknown",
-    discoveredAt: NOW_ISO,
-    lastUpdatedAt: NOW_ISO,
+    screening: null, facts: null, analysis: null,
+    lastAnalysisFingerprint: null,
+    lastScreenedAt: null, lastAnalysedAt: null,
+    eventPassed: false,
+    updatedAt: NOW_ISO,
+    discoverySource: null, triggerType: null,
+    signalAccumulation: null, emergingSetup: null,
+    promotedAt: null, lastAnalysisUpdateType: null,
+    failureCount: 0, lastError: null, retryEligibleAt: null,
+    postEventAssessmentRequired: false,
+    ...overrides,
+  } as CatalystState;
+}
+
+/** Successful mock strategy that stores analysis + promotion. */
+function successStrategy(
+  opportunityState = "HighInterest",
+  shouldPromote = true
+): CatalystAnalyzeStrategy {
+  return async (ticker, opts) => {
+    const nowIso = opts.nowIso ?? new Date().toISOString();
+    const existingState = getCatalystState(ticker);
+    const facts = makeFacts(ticker, null);
+    const analysis = makeAnalysis(opportunityState);
+
+    const updated: CatalystState = {
+      ...makeState(ticker),
+      ...existingState,
+      facts,
+      analysis,
+      lastAnalysedAt: nowIso,
+      postEventAssessmentRequired: false,
+      updatedAt: nowIso,
+    };
+    saveCatalystState(ticker, updated);
+
+    if (shouldPromote) {
+      promoteToOpportunityFinder(ticker, `${ticker} Corp`, analysis, facts);
+    }
+
+    return {
+      error: null,
+      promoted: shouldPromote,
+      aiCalled: true,
+      driverProfileGenerated: false,
+      researchRan: false,
+      analysisUpdateType: "FULL_ANALYSIS",
+      opportunityState,
+      state: updated,
+    };
   };
 }
 
-// ── Test A: Universe seed → collectAllScreenableTickers ───────────────────────
+/** Failing mock strategy. */
+const failStrategy: CatalystAnalyzeStrategy = async () => ({
+  error: "Simulated reassessment failure",
+  promoted: false, aiCalled: false,
+  driverProfileGenerated: false, researchRan: false,
+  analysisUpdateType: null, opportunityState: null,
+});
 
-describe("Test A — Universe includes seed tickers", () => {
-  test("collectAllScreenableTickers includes entries from static universe seed", () => {
-    const all = collectAllScreenableTickers();
+// ── Test A: Catalyst → Opportunity Finder ─────────────────────────────────────
 
-    // Static seed has Danish and US equities — must be present
-    assert.ok(all.length > 0, "Should return at least one screeable ticker");
+describe("A: Catalyst promotion feeds Opportunity Finder context", () => {
+  const TICKER = "INT_A_TICKER";
 
-    // Verify at least one known seed ticker is present
-    const tickers = all.map(t => t.ticker);
-    const hasNovo = tickers.includes("NOVO B");
-    const hasApple = tickers.includes("AAPL");
+  beforeEach(() => {
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
+    // Save pre-promotion state
+    saveCatalystState(TICKER, makeState(TICKER));
+  });
+
+  test("buildPromotionsContextBlock() contains the promoted ticker", () => {
+    const facts = makeFacts(TICKER, "2026-08-25");
+    const analysis = makeAnalysis("HighInterest");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, analysis, facts);
+
+    const block = buildPromotionsContextBlock();
+    assert.ok(block.length > 0, "Block must be non-empty after promotion");
     assert.ok(
-      hasNovo || hasApple,
-      `Expected at least one seed ticker (NOVO B or AAPL) in: ${tickers.slice(0, 5).join(", ")}`
+      block.includes(TICKER),
+      `Block must contain ${TICKER}:\n${block}`
     );
   });
 
-  test("universe seed tickers have inUniverseSeed=true", () => {
-    const all = collectAllScreenableTickers();
-    const seedEntry = all.find(t => t.ticker === "NOVO B" || t.ticker === "AAPL");
+  test("context block header signals priority to OF", () => {
+    const facts = makeFacts(TICKER, "2026-08-25");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
 
-    if (!seedEntry) return; // seed may not be present if portfolio overrides — acceptable
+    const block = buildPromotionsContextBlock();
+    assert.ok(
+      block.includes("CATALYST INTELLIGENCE PROMOTIONS"),
+      "Block must have CATALYST INTELLIGENCE PROMOTIONS header"
+    );
+    assert.ok(
+      block.includes("priority candidates"),
+      "Block must describe these as priority candidates"
+    );
+  });
 
+  test("promotion materialVersion increments when new promotion is saved", () => {
+    const before = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
+
+    const facts = makeFacts(TICKER, "2026-08-25");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+
+    const after = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
+    assert.ok(
+      after > before,
+      `materialVersion must increase after promotion: before=${before}, after=${after}`
+    );
+  });
+
+  test("promotion is active and retrievable", () => {
+    const facts = makeFacts(TICKER, "2026-08-25");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+
+    const active = getActivePromotions();
+    const found = active.find(p => p.ticker === TICKER.toUpperCase());
+    assert.ok(found, `${TICKER} should appear in getActivePromotions()`);
+    assert.equal(found!.opportunityState, "HighInterest");
+    assert.ok(found!.thesis.length > 0, "Promotion must have a thesis");
+  });
+
+  test("a ticker NOT yet promoted does not appear in the context block", () => {
+    // No promotion stored for this ticker
+    const block = buildPromotionsContextBlock();
+    // Either block is empty or doesn't contain this ticker
+    if (block.length > 0) {
+      assert.ok(
+        !block.includes("INT_A_NOPROMOTE"),
+        "Unpromoted ticker must not appear in context block"
+      );
+    }
+  });
+});
+
+// ── Test B: OF context → Trade Decision Engine ───────────────────────────────
+
+describe("B: Catalyst context reaches Trade Decision Engine", () => {
+  const TICKER = "INT_B_TDE";
+
+  beforeEach(() => {
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
+  });
+
+  test("buildCatalystTdeContext() returns non-null for promoted ticker", () => {
+    const facts = makeFacts(TICKER, "2026-08-22");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+
+    const ctx = buildCatalystTdeContext(TICKER);
+    assert.ok(ctx !== null, "TDE context must be non-null for promoted ticker");
+  });
+
+  test("TDE context contains required compact fields", () => {
+    const facts = makeFacts(TICKER, "2026-08-22");
+    const analysis = makeAnalysis("HighInterest");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, analysis, facts);
+
+    const ctx = buildCatalystTdeContext(TICKER)!;
+
+    assert.ok(ctx.includes("CATALYST INTELLIGENCE CONTEXT"), "Must have header");
+    assert.ok(ctx.includes("POSITIVE"), "Must include catalystDirection");
+    assert.ok(ctx.includes("HighInterest"), "Must include opportunityState");
+    assert.ok(ctx.includes("INTENTIONAL_PRE_EVENT_THESIS"), "Must have non-actionable flag");
+    assert.ok(ctx.includes("requires manual approval"), "Must require manual approval");
+  });
+
+  test("buildCatalystTdeContext() returns null for non-promoted ticker", () => {
+    const ctx = buildCatalystTdeContext("INT_B_NO_PROMO");
+    assert.equal(ctx, null, "Non-promoted ticker must return null from TDE context builder");
+  });
+
+  test("TDE context includes event details when event is available", () => {
+    const facts = makeFacts(TICKER, "2026-08-22");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+
+    const ctx = buildCatalystTdeContext(TICKER)!;
+    assert.ok(ctx.includes("2026-08-22"), "Must include event date");
+  });
+
+  test("expired promotions do not generate TDE context", () => {
+    const facts = makeFacts(TICKER, "2026-08-22");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+
+    // Expire the promotion
+    expirePromotion(TICKER);
+
+    const ctx = buildCatalystTdeContext(TICKER);
+    assert.equal(ctx, null, "Expired promotion must not generate TDE context");
+  });
+});
+
+// ── Test C: Non-material change does not wake TDE/OF ─────────────────────────
+
+describe("C: Non-material catalyst change does not affect promotions materialVersion", () => {
+  const TICKER = "INT_C_NOMATERIAL";
+
+  beforeEach(() => {
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
+    saveCatalystState(TICKER, makeState(TICKER));
+  });
+
+  test("saving catalyst state does not change catalyst-promotions materialVersion", () => {
+    const before = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
+
+    // Non-material change: update the state's lastScreenedAt without touching promotions
+    const state = getCatalystState(TICKER);
+    saveCatalystState(TICKER, {
+      ...state!,
+      lastScreenedAt: new Date(NOW_MS + 60_000).toISOString(),
+    });
+
+    const after = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
     assert.equal(
-      seedEntry.inUniverseSeed,
-      true,
-      "Seed ticker should have inUniverseSeed=true"
+      after, before,
+      `Non-material catalyst state change must not change catalyst-promotions materialVersion (${before} → ${after})`
     );
   });
 
-  test("getAllUniverseEntries returns complete static seed", () => {
-    const entries = getAllUniverseEntries();
-    assert.ok(entries.length >= 40, `Expected ≥40 universe entries, got ${entries.length}`);
-    // Danish equities
-    const danish = entries.filter(e => e.country === "DK");
-    assert.ok(danish.length >= 15, `Expected ≥15 Danish entries, got ${danish.length}`);
-    // US equities
-    const us = entries.filter(e => e.country === "US");
-    assert.ok(us.length >= 15, `Expected ≥15 US entries, got ${us.length}`);
+  test("only promotion saves change the materialVersion", () => {
+    // Multiple non-promotion saves — materialVersion stays
+    const startVersion = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
+    for (let i = 0; i < 5; i++) {
+      const state = getCatalystState(TICKER);
+      saveCatalystState(TICKER, { ...state!, updatedAt: new Date(NOW_MS + i * 1000).toISOString() });
+    }
+    const midVersion = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
+    assert.equal(midVersion, startVersion, "5 non-promotion saves must not change materialVersion");
+
+    // Now promote — materialVersion must change
+    const facts = makeFacts(TICKER, "2026-09-01");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+    const afterVersion = analysisRepository.get("catalyst-promotions")?.materialVersion ?? 0;
+    assert.ok(afterVersion > midVersion, "Promotion must increase materialVersion");
   });
 });
 
-// ── Test B: Non-earnings event → screenTicker uses it ────────────────────────
+// ── Test D: After-market event timing ─────────────────────────────────────────
 
-describe("Test B — Non-earnings event (INVESTOR_DAY) is detected", () => {
-  const TICKER_B = "TESTB_INTEG";
+describe("D: After-market event — not marked before threshold, marked after", () => {
+  const TICKER = "INT_D_AFTERMARKET";
+  const EVENT_DATE = "2026-08-20";
 
   beforeEach(() => {
-    // Store an INVESTOR_DAY event 5 days from now
-    const events: CompanySpecificEvent[] = [
-      makeCompanyEvent(TICKER_B, "INVESTOR_DAY", FUTURE_5),
-    ];
-    saveCompanyEvents(TICKER_B, events);
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
   });
 
-  test("getUpcomingEventsForTicker returns INVESTOR_DAY event", () => {
-    const upcoming = getUpcomingEventsForTicker(TICKER_B, 90, NOW_ISO);
-    assert.ok(upcoming.length > 0, "Should find at least one upcoming event");
-    const investorDay = upcoming.find(ev => ev.eventType === "INVESTOR_DAY");
-    assert.ok(investorDay, "Should find INVESTOR_DAY event");
-    assert.equal(investorDay!.eventDate, FUTURE_5);
-  });
+  function setupState(marketTiming: string) {
+    const facts = makeFacts(TICKER, EVENT_DATE, marketTiming);
+    saveCatalystState(TICKER, makeState(TICKER, {
+      facts,
+      analysis: makeAnalysis("Investigate"),
+      lastAnalysedAt: new Date(NOW_MS - 24 * 3_600_000).toISOString(),
+    }));
+  }
 
-  test("INVESTOR_DAY event is stored and retrievable", () => {
-    const upcoming = getUpcomingEventsForTicker(TICKER_B, 90, NOW_ISO);
-    assert.ok(upcoming.some(ev => ev.eventType === "INVESTOR_DAY"));
-  });
+  test("AfterMarket: NOT post-event at 12:00 UTC on event day (threshold is 22:00 UTC)", () => {
+    setupState("AfterMarket");
 
-  test("non-earnings event within window qualifies for screening window", () => {
-    const upcoming = getUpcomingEventsForTicker(TICKER_B, 90, NOW_ISO);
-    const ev = upcoming.find(ev => ev.eventType === "INVESTOR_DAY");
-    assert.ok(ev, "INVESTOR_DAY event should be found");
+    // Noon UTC on event day — before the 22:00 threshold
+    const noonEventDay = "2026-08-20T12:00:00Z";
+    const marked = markPostEventCandidates(noonEventDay);
 
-    // Verify event date is within 90 days
-    const eventDate = new Date(ev!.eventDate + "T00:00:00Z").getTime();
-    const nowMs = new Date(NOW_ISO).getTime();
-    const daysUntil = Math.round((eventDate - nowMs) / 86_400_000);
-    assert.ok(daysUntil >= 0 && daysUntil <= 90, `Days until event should be 0-90, got ${daysUntil}`);
-  });
-});
-
-// ── Test C: SpaceX-style — pure universe company, product launch ──────────────
-
-describe("Test C — SpaceX-style: universe company with product launch", () => {
-  const TICKER_C = "TESTC_INTEG"; // Pure universe ticker — not in portfolio/OF/CM
-
-  beforeEach(() => {
-    // Store a PRODUCT_LAUNCH event 12 days from now
-    const events: CompanySpecificEvent[] = [
-      makeCompanyEvent(TICKER_C, "PRODUCT_LAUNCH", FUTURE_12),
-    ];
-    saveCompanyEvents(TICKER_C, events);
-
-    // Store some positive signals
-    mergeStoredSignals(TICKER_C, [
-      makeSignal("tc-signal-1", "Positive", 3),
-      makeSignal("tc-signal-2", "StronglyPositive", 5),
-    ]);
-  });
-
-  test("getUpcomingEventsForTicker finds PRODUCT_LAUNCH for SpaceX-style company", () => {
-    const upcoming = getUpcomingEventsForTicker(TICKER_C, 90, NOW_ISO);
-    assert.ok(upcoming.length > 0, "Should find upcoming event");
-    assert.equal(upcoming[0].eventType, "PRODUCT_LAUNCH");
-  });
-
-  test("stored signals are accessible for SpaceX-style company", () => {
-    const signals = getStoredSignals(TICKER_C, 30);
-    assert.ok(signals.length >= 2, `Should have stored signals, got ${signals.length}`);
-    assert.ok(
-      signals.some(s => s.direction === "Positive" || s.direction === "StronglyPositive"),
-      "Should have positive signals"
-    );
-  });
-
-  test("event is within the 90-day screening window", () => {
-    const upcoming = getUpcomingEventsForTicker(TICKER_C, 90, NOW_ISO);
-    const ev = upcoming.find(e => e.eventType === "PRODUCT_LAUNCH");
-    assert.ok(ev, "PRODUCT_LAUNCH should be found");
-
-    // daysUntilEventDate is a pure function — safe to import here
-    const days = daysUntilEventDate(ev!.eventDate, NOW_ISO);
-    assert.ok(days >= 0 && days <= 90, `Days until event should be 0-90, got ${days}`);
-    assert.ok(days <= 14, `PRODUCT_LAUNCH should be within 14 days (got ${days})`);
-  });
-
-  test("stored signals and event are independently correct", () => {
-    const upcoming = getUpcomingEventsForTicker(TICKER_C, 90, NOW_ISO);
-    const signals = getStoredSignals(TICKER_C, 30);
-
-    // Both data sources exist and are consistent
-    assert.ok(upcoming.some(e => e.eventType === "PRODUCT_LAUNCH"), "PRODUCT_LAUNCH should be stored");
-    assert.ok(signals.length >= 2, "Positive signals should be stored");
-    // Together these would qualify: 1 high-impact event + 2 positive signals
-    const positiveCount = signals.filter(s => s.direction === "Positive" || s.direction === "StronglyPositive").length;
-    assert.ok(positiveCount >= 2, `Expected ≥2 positive signals, got ${positiveCount}`);
-  });
-});
-
-// ── Test D: PATH B — CatalystFacts with null event ────────────────────────────
-
-describe("Test D — PATH B: buildCatalystFacts with null event", () => {
-  const TICKER_D = "TESTD_INTEG";
-
-  beforeEach(() => {
-    // Store positive signals (simulating emerging setup)
-    mergeStoredSignals(TICKER_D, [
-      makeSignal("td-signal-1", "Positive", 2),
-      makeSignal("td-signal-2", "Positive", 5),
-      makeSignal("td-signal-3", "StronglyPositive", 8),
-    ]);
-  });
-
-  // PATH B is verified at the TYPE level by TypeScript compilation (tsc --noEmit).
-  // CatalystFacts.event: CatalystEvent | null — null is valid and handled.
-  // The following tests verify the PREREQUISITE conditions for PATH B.
-
-  test("stored signals are retrievable for PATH B ticker", () => {
-    // PATH B requires signals to exist (signal accumulation drives the setup detection)
-    const signals = getStoredSignals(TICKER_D, 30);
-    assert.ok(signals.length >= 3, `Expected ≥3 stored signals, got ${signals.length}`);
-  });
-
-  test("PATH B ticker has no scheduled upcoming events (precondition)", () => {
-    // No CompanySpecificEvents were stored for TICKER_D → PATH B is the only path
-    const upcoming = getUpcomingEventsForTicker(TICKER_D, 90, NOW_ISO);
-    assert.equal(upcoming.length, 0, "PATH B ticker should have no upcoming events");
-  });
-
-  test("signals span multiple time windows (required for accumulation)", () => {
-    const signals = getStoredSignals(TICKER_D);
-    // Check that we have signals from different ages (2d, 5d, 8d)
-    const byAge = signals.filter(s => s.signalId.startsWith("td-signal-"));
-    assert.ok(byAge.length >= 3, "Should have 3 signals across different time windows");
-  });
-
-  test("positive signals outnumber neutral for emerging setup", () => {
-    const signals = getStoredSignals(TICKER_D, 30);
-    const positiveCount = signals.filter(s =>
-      s.direction === "Positive" || s.direction === "StronglyPositive"
-    ).length;
-    const neutralCount = signals.filter(s => s.direction === "Neutral").length;
-    assert.ok(positiveCount > neutralCount, "Should have more positive than neutral signals for PATH B");
-  });
-
-  test("CatalystFacts interface allows null event (TypeScript structural check)", () => {
-    // Verify via structural assignment — this compiles because event: CatalystEvent | null
-    const nullEventFacts: Pick<CatalystFacts, "event"> = { event: null };
-    assert.equal(nullEventFacts.event, null, "CatalystFacts.event can be null (PATH B)");
-  });
-});
-
-// ── Test E: Signal persistence ────────────────────────────────────────────────
-
-describe("Test E — Signal persistence across runs", () => {
-  const TICKER_E = "TESTE_INTEG";
-
-  test("signals persist after merge", () => {
-    const batch1 = [
-      makeSignal("te-signal-a", "Positive", 1),
-      makeSignal("te-signal-b", "Negative", 2),
-    ];
-    mergeStoredSignals(TICKER_E, batch1);
-
-    const stored = getStoredSignals(TICKER_E);
-    assert.ok(stored.length >= 2, `Expected ≥2 signals, got ${stored.length}`);
-    assert.ok(stored.some(s => s.signalId === "te-signal-a"), "signal-a should be stored");
-    assert.ok(stored.some(s => s.signalId === "te-signal-b"), "signal-b should be stored");
-  });
-
-  test("signals from batch 2 are merged with batch 1", () => {
-    const batch1 = [makeSignal("te-batch1-1", "Positive", 3)];
-    const batch2 = [makeSignal("te-batch2-1", "Negative", 1)];
-
-    mergeStoredSignals(TICKER_E, batch1);
-    mergeStoredSignals(TICKER_E, batch2);
-
-    const stored = getStoredSignals(TICKER_E);
-    assert.ok(stored.some(s => s.signalId === "te-batch1-1"), "batch1 signal should persist");
-    assert.ok(stored.some(s => s.signalId === "te-batch2-1"), "batch2 signal should be added");
-  });
-
-  test("duplicate signal ID overwrites with newer version", () => {
-    const original = makeSignal("te-dedup", "Positive", 5);
-    const updated = { ...makeSignal("te-dedup", "StronglyPositive", 1) };
-
-    mergeStoredSignals(TICKER_E, [original]);
-    mergeStoredSignals(TICKER_E, [updated]);
-
-    const stored = getStoredSignals(TICKER_E);
-    const found = stored.find(s => s.signalId === "te-dedup");
-    assert.ok(found, "Dedup signal should exist");
-    assert.equal(found!.direction, "StronglyPositive", "Newer version (StronglyPositive) should overwrite");
-  });
-
-  test("maxDaysOld filter excludes old signals", () => {
-    const freshSignal = makeSignal("te-fresh", "Positive", 1);    // 1 day ago
-    const staleSignal = makeSignal("te-stale", "Negative", 25);   // 25 days ago
-
-    mergeStoredSignals(TICKER_E, [freshSignal, staleSignal]);
-
-    // Filter to only last 7 days
-    const recent = getStoredSignals(TICKER_E, 7);
-    assert.ok(recent.some(s => s.signalId === "te-fresh"), "Fresh signal (1d) should appear in 7-day filter");
-
-    // The stale signal should NOT appear in the 7-day filter
-    const staleInRecent = recent.find(s => s.signalId === "te-stale");
-    assert.equal(staleInRecent, undefined, "Stale signal (25d) should NOT appear in 7-day filter");
-  });
-
-  test("getStoredSignals without maxDaysOld returns all", () => {
-    const old = makeSignal("te-all-old", "Neutral", 60);
-    const fresh = makeSignal("te-all-fresh", "Positive", 0);
-
-    mergeStoredSignals(TICKER_E, [old, fresh]);
-
-    const all = getStoredSignals(TICKER_E);
-    assert.ok(all.some(s => s.signalId === "te-all-old"), "Old signal should appear without age filter");
-    assert.ok(all.some(s => s.signalId === "te-all-fresh"), "Fresh signal should appear without age filter");
-  });
-});
-
-// ── Test F: No duplicate paid work ────────────────────────────────────────────
-
-describe("Test F — No duplicate paid work (freshness gates)", () => {
-  const TICKER_F = "TESTF_INTEG";
-
-  // ── F1: Discovery gate ──────────────────────────────────────────────────────
-
-  test("shouldSkipDiscovery returns skip reason when recently discovered", () => {
-    // Simulate recent discovery: store events with lastDiscoveredAt = now
-    const events: CompanySpecificEvent[] = [
-      makeCompanyEvent(TICKER_F, "EARNINGS", FUTURE_30),
-    ];
-    saveCompanyEvents(TICKER_F, events); // sets lastDiscoveredAt = now
-
-    const skipReason = shouldSkipDiscovery(TICKER_F, NOW_ISO);
-    assert.ok(
-      skipReason !== null,
-      "shouldSkipDiscovery should return a skip reason after recent discovery"
-    );
-    assert.ok(
-      typeof skipReason === "string",
-      "Skip reason should be a string"
-    );
-  });
-
-  test("shouldSkipDiscovery returns null when no events stored", () => {
-    // Pure ticker with no stored events and no lastDiscoveredAt
-    const FRESH_TICKER = "TESTF_FRESH_INTEG";
-    const skipReason = shouldSkipDiscovery(FRESH_TICKER, NOW_ISO);
+    const state = getCatalystState(TICKER);
     assert.equal(
-      skipReason,
-      null,
-      "shouldSkipDiscovery should return null (allow discovery) for ticker with no stored state"
+      state!.postEventAssessmentRequired, false,
+      "AfterMarket event must NOT be marked as post-event at noon UTC"
+    );
+    assert.equal(marked, 0, "No tickers should be marked at noon UTC for AfterMarket event");
+  });
+
+  test("AfterMarket: IS post-event at 23:00 UTC on event day (after 22:00 threshold)", () => {
+    setupState("AfterMarket");
+
+    // 23:00 UTC on event day — past the 22:00 threshold
+    const eveningEventDay = "2026-08-20T23:00:00Z";
+    const marked = markPostEventCandidates(eveningEventDay);
+
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, true,
+      "AfterMarket event must be marked as post-event at 23:00 UTC (past 22:00 threshold)"
+    );
+    assert.equal(state!.eventPassed, true, "eventPassed must be set to true");
+    assert.ok(marked >= 1, "At least 1 ticker should be marked");
+  });
+
+  test("BeforeMarket: NOT post-event at 08:00 UTC on event day (threshold is 14:30 UTC)", () => {
+    setupState("BeforeMarket");
+
+    const earlyEventDay = "2026-08-20T08:00:00Z";
+    const marked = markPostEventCandidates(earlyEventDay);
+
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, false,
+      "BeforeMarket event must NOT be marked as post-event at 08:00 UTC"
+    );
+    assert.equal(marked, 0);
+  });
+
+  test("BeforeMarket: IS post-event at 15:00 UTC on event day (past 14:30 threshold)", () => {
+    setupState("BeforeMarket");
+
+    const afterOpenEventDay = "2026-08-20T15:00:00Z";
+    const marked = markPostEventCandidates(afterOpenEventDay);
+
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, true,
+      "BeforeMarket event must be marked as post-event at 15:00 UTC (past 14:30 threshold)"
+    );
+    assert.ok(marked >= 1);
+  });
+});
+
+// ── Test E: Unknown event timing — conservative fallback ─────────────────────
+
+describe("E: Unknown event timing — conservative next-day fallback", () => {
+  const TICKER = "INT_E_UNKNOWN_TIMING";
+  const EVENT_DATE = "2026-08-20";
+
+  beforeEach(() => {
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
+    const facts = makeFacts(TICKER, EVENT_DATE, "Unknown");
+    saveCatalystState(TICKER, makeState(TICKER, {
+      facts,
+      analysis: makeAnalysis("Investigate"),
+      lastAnalysedAt: new Date(NOW_MS - 24 * 3_600_000).toISOString(),
+    }));
+  });
+
+  test("NOT marked at 00:00:00 UTC on the event day itself (midnight start)", () => {
+    const midnightOnDay = "2026-08-20T00:00:00Z";
+    markPostEventCandidates(midnightOnDay);
+
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, false,
+      "Unknown-timing event must NOT be marked at 00:00 UTC on event day"
     );
   });
 
-  test("shouldSkipDiscovery skips when ≥2 upcoming events already stored", () => {
-    // Store 2 upcoming events
-    const events: CompanySpecificEvent[] = [
-      makeCompanyEvent(TICKER_F, "EARNINGS", FUTURE_30),
-      makeCompanyEvent(TICKER_F, "INVESTOR_DAY", FUTURE_12),
-    ];
-    saveCompanyEvents(TICKER_F, events);
+  test("NOT marked at 23:59:59 UTC on the event day (still before next-day threshold)", () => {
+    const beforeMidnight = "2026-08-20T23:59:59Z";
+    markPostEventCandidates(beforeMidnight);
 
-    // Manually clear lastDiscoveredAt to bypass the time gate
-    // (we can't directly manipulate this, but the ≥2 events gate should trigger)
-    const skipReason = shouldSkipDiscovery(TICKER_F, NOW_ISO);
-    // Either the time gate OR the event count gate triggers — at least one
-    assert.ok(skipReason !== null, "Should skip when adequate events already stored");
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, false,
+      "Unknown-timing event must NOT be marked before next-day 06:00 UTC threshold"
+    );
   });
 
-  // ── F2: Research freshness gate ─────────────────────────────────────────────
+  test("IS marked at 07:00 UTC the next day (past next-day 06:00 threshold)", () => {
+    const nextDay = "2026-08-21T07:00:00Z";
+    const marked = markPostEventCandidates(nextDay);
 
-  test("isSignalResearchFresh returns false before any research is recorded", () => {
-    const NEVER_RESEARCHED = "TESTF_NORESEARCH";
-    const isFresh = isSignalResearchFresh(NEVER_RESEARCHED, "any-fingerprint");
-    assert.equal(isFresh, false, "Should not be fresh before any research");
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, true,
+      "Unknown-timing event must be marked at 07:00 UTC next day (past 06:00 threshold)"
+    );
+    assert.equal(state!.eventPassed, true);
+    assert.ok(marked >= 1);
+  });
+});
+
+// ── Test F: Post-event reassessment failure — flag must stay set ──────────────
+
+describe("F: Post-event failure — postEventAssessmentRequired stays true", () => {
+  const TICKER = "INT_F_FAIL";
+
+  beforeEach(() => {
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
+
+    // Promote first, so there's an active pre-event promotion
+    const facts = makeFacts(TICKER, "2026-08-10");
+    promoteToOpportunityFinder(TICKER, `${TICKER} Corp`, makeAnalysis(), facts);
+
+    // Set state: event passed, reassessment required
+    saveCatalystState(TICKER, makeState(TICKER, {
+      facts,
+      analysis: makeAnalysis("HighInterest"),
+      lastAnalysedAt: new Date(NOW_MS - 5 * 24 * 3_600_000).toISOString(),
+      eventPassed: true,
+      postEventAssessmentRequired: true,
+    }));
   });
 
-  test("isSignalResearchFresh returns true immediately after recording", () => {
-    const fp = buildResearchFingerprint(TICKER_F, ["revenue growth", "GLP-1 demand"]);
-    recordSignalResearch(TICKER_F, fp);
+  test("failed reassessment keeps postEventAssessmentRequired = true", async () => {
+    const result = await runPostEventReassessment(TICKER, NOW_ISO, failStrategy);
 
-    const isFresh = isSignalResearchFresh(TICKER_F, fp);
-    assert.equal(isFresh, true, "Should be fresh immediately after recording");
+    assert.equal(result.ok, false, "Result must indicate failure");
+    assert.ok(result.error?.includes("Simulated"), "Error message must be preserved");
+
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, true,
+      "postEventAssessmentRequired must stay true after failed reassessment"
+    );
   });
 
-  test("isSignalResearchFresh returns false when fingerprint changes", () => {
-    const fp1 = buildResearchFingerprint(TICKER_F, ["revenue growth"]);
-    const fp2 = buildResearchFingerprint(TICKER_F, ["margin expansion", "new product"]);
-
-    recordSignalResearch(TICKER_F, fp1);
-
-    // Different fingerprint → not fresh (situation changed)
-    const isFresh = isSignalResearchFresh(TICKER_F, fp2);
-    assert.equal(isFresh, false, "Should not be fresh when fingerprint differs");
+  test("failed reassessment increments failure count for backoff", async () => {
+    const before = getCatalystState(TICKER)?.failureCount ?? 0;
+    await runPostEventReassessment(TICKER, NOW_ISO, failStrategy);
+    const after = getCatalystState(TICKER)?.failureCount ?? 0;
+    assert.ok(after > before, "Failure count must increment after failed reassessment");
   });
 
-  test("buildResearchFingerprint is deterministic", () => {
-    const topics = ["revenue growth", "GLP-1 demand", "pipeline news"];
-    const fp1 = buildResearchFingerprint(TICKER_F, topics);
-    const fp2 = buildResearchFingerprint(TICKER_F, topics);
-    assert.equal(fp1, fp2, "Fingerprint should be deterministic for same inputs");
+  test("failed reassessment does not restore old pre-event thesis as fresh", async () => {
+    await runPostEventReassessment(TICKER, NOW_ISO, failStrategy);
+
+    // The state must still show postEventAssessmentRequired = true
+    const state = getCatalystState(TICKER);
+    assert.equal(
+      state!.postEventAssessmentRequired, true,
+      "Old thesis must not be treated as fresh — flag must remain set"
+    );
   });
 
-  test("buildResearchFingerprint differs for different tickers", () => {
-    const topics = ["revenue growth"];
-    const fp1 = buildResearchFingerprint("AAPL", topics);
-    const fp2 = buildResearchFingerprint("MSFT", topics);
-    assert.notEqual(fp1, fp2, "Fingerprints should differ for different tickers");
+  test("promotion is already expired before reassessment (expired by markPostEventCandidates)", () => {
+    // markPostEventCandidates skips states where postEventAssessmentRequired is already true.
+    // Reset the state to simulate FIRST detection (the event just passed, not yet flagged).
+    const facts = makeFacts(TICKER, "2026-08-10"); // event was 4 days ago
+    saveCatalystState(TICKER, makeState(TICKER, {
+      facts,
+      analysis: makeAnalysis("HighInterest"),
+      lastAnalysedAt: new Date(NOW_MS - 5 * 24 * 3_600_000).toISOString(),
+      eventPassed: false,               // not yet detected by pipeline
+      postEventAssessmentRequired: false, // not yet flagged
+    }));
+    // At this point INT_F_FAIL has an active promotion (created in beforeEach)
+    // and the state has eventPassed=false — markPostEventCandidates should:
+    // 1. detect the past event (eventDate=2026-08-10, nowIso=2026-08-14T12:00 → past threshold)
+    // 2. mark postEventAssessmentRequired=true
+    // 3. call expirePromotion(TICKER)
+    markPostEventCandidates(NOW_ISO);
+
+    // The promotion should now be expired
+    const promotion = getPromotionForTicker(TICKER);
+    // getPromotionForTicker returns null for expired promotions
+    assert.equal(promotion, null, "Pre-event promotion must be expired when markPostEventCandidates detects a past event");
+  });
+});
+
+// ── Test G: Post-event success — flag clears, old promotion expired ───────────
+
+describe("G: Post-event success — flag clears, old promotion behavior", () => {
+  const TICKER_WITH_NEW = "INT_G_SUCCESS_WITH";
+  const TICKER_WITHOUT  = "INT_G_SUCCESS_WITHOUT";
+
+  beforeEach(() => {
+    setMarketUniverseProvider(new SeedMarketUniverseProvider([]));
+
+    for (const ticker of [TICKER_WITH_NEW, TICKER_WITHOUT]) {
+      const facts = makeFacts(ticker, "2026-08-10");
+      // Old promotion (pre-event — already expired when post-event was marked)
+      promoteToOpportunityFinder(ticker, `${ticker} Corp`, makeAnalysis("HighInterest"), facts);
+      expirePromotion(ticker); // simulate what markPostEventCandidates does
+
+      saveCatalystState(ticker, makeState(ticker, {
+        facts,
+        analysis: makeAnalysis("HighInterest"),
+        lastAnalysedAt: new Date(NOW_MS - 5 * 24 * 3_600_000).toISOString(),
+        eventPassed: true,
+        postEventAssessmentRequired: true,
+      }));
+    }
   });
 
-  test("buildResearchFingerprint differs for different topics", () => {
-    const fp1 = buildResearchFingerprint(TICKER_F, ["topic-a", "topic-b"]);
-    const fp2 = buildResearchFingerprint(TICKER_F, ["topic-c", "topic-d"]);
-    assert.notEqual(fp1, fp2, "Fingerprints should differ for different topics");
+  test("successful reassessment clears postEventAssessmentRequired", async () => {
+    const result = await runPostEventReassessment(
+      TICKER_WITH_NEW, NOW_ISO,
+      successStrategy("Monitor", false) // post-event: less exciting, no promotion
+    );
+
+    assert.equal(result.ok, true, "Reassessment must succeed");
+
+    const state = getCatalystState(TICKER_WITH_NEW);
+    assert.equal(
+      state!.postEventAssessmentRequired, false,
+      "postEventAssessmentRequired must be false after successful reassessment"
+    );
+  });
+
+  test("new promotion created only if new analysis qualifies", async () => {
+    // Strategy that promotes (high interest even after event)
+    const withPromoStrategy = successStrategy("HighInterest", true);
+    await runPostEventReassessment(TICKER_WITH_NEW, NOW_ISO, withPromoStrategy);
+
+    // New promotion should exist (old one was expired, new one created by strategy)
+    const newPromo = getPromotionForTicker(TICKER_WITH_NEW);
+    assert.ok(newPromo, "New promotion must be created if post-event analysis qualifies");
+    assert.equal(newPromo!.opportunityState, "HighInterest");
+  });
+
+  test("no new promotion if post-event analysis does not qualify", async () => {
+    // Strategy that does NOT promote (Monitor outcome after event)
+    const withoutPromoStrategy = successStrategy("Monitor", false);
+    await runPostEventReassessment(TICKER_WITHOUT, NOW_ISO, withoutPromoStrategy);
+
+    const promo = getPromotionForTicker(TICKER_WITHOUT);
+    assert.equal(promo, null, "No new promotion should be created if post-event analysis does not qualify");
+  });
+
+  test("old pre-event promotion is not used after successful reassessment", async () => {
+    // The old promotion was already expired in beforeEach (simulating markPostEventCandidates)
+    // After reassessment without re-promoting, the active promotions list must not contain stale data
+    await runPostEventReassessment(
+      TICKER_WITHOUT, NOW_ISO,
+      successStrategy("Monitor", false)
+    );
+
+    const activePromos = getActivePromotions();
+    const stalePromo = activePromos.find(p => p.ticker === TICKER_WITHOUT.toUpperCase());
+    assert.equal(stalePromo, undefined, "Old pre-event promotion must not be in active promotions after reassessment");
+  });
+
+  test("successful reassessment does not increment failure count", async () => {
+    const before = getCatalystState(TICKER_WITH_NEW)?.failureCount ?? 0;
+    await runPostEventReassessment(
+      TICKER_WITH_NEW, NOW_ISO,
+      successStrategy("Monitor", false)
+    );
+    const after = getCatalystState(TICKER_WITH_NEW)?.failureCount ?? 0;
+    assert.equal(after, before, "Failure count must not increment after successful reassessment");
   });
 });
