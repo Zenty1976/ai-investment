@@ -1022,4 +1022,53 @@ export interface CatalystState {
 
   /** Type of the most recent AI analysis update. */
   lastAnalysisUpdateType: AnalysisUpdateType | null;
+
+  // ── Part 3 additions ──────────────────────────────────────────────────────
+
+  /**
+   * Number of consecutive analysis failures for this ticker.
+   * Resets to 0 on any successful analysis.
+   */
+  failureCount?: number;
+
+  /**
+   * Error message from the last failed analysis attempt.
+   * Null when no failure or after a successful run.
+   */
+  lastError?: string | null;
+
+  /**
+   * ISO timestamp when this candidate is eligible for retry after failures.
+   * Uses exponential backoff. Null if not in backoff.
+   */
+  retryEligibleAt?: string | null;
+
+  /**
+   * ISO timestamp until which deep analysis is deferred (budget exhausted).
+   * Null if not deferred.
+   */
+  deferredUntil?: string | null;
+
+  /**
+   * Human-readable reason for the current deferral (e.g. budget cap).
+   */
+  deferredReason?: string | null;
+
+  /**
+   * Whether the catalyst event has passed and a fresh post-event analysis
+   * is required. Set by the pipeline when eventDate is in the past AND
+   * a pre-event analysis exists. Cleared after post-event reassessment runs.
+   */
+  postEventAssessmentRequired?: boolean;
+
+  /**
+   * Whether this opportunity is an intentional pre-event thesis
+   * (the trade exists BECAUSE of the upcoming catalyst).
+   *
+   * When true, Trade Decision must independently evaluate whether to enter
+   * before the event. When false, the event is irrelevant to the decision.
+   *
+   * Per spec §8: upcoming events must NOT automatically block OR create trades.
+   */
+  intentionalPreEventThesis?: boolean;
 }

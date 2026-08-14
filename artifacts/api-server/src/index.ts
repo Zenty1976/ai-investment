@@ -4,6 +4,13 @@ import { maybeSaxoRefresh } from "./routes/settings";
 import { automationOrchestrator } from "./lib/automation-orchestrator";
 import { initPolicyStore } from "./lib/trade-decision-policy-store";
 import { initUsageLog } from "./lib/openai-usage-service";
+import {
+  setMarketUniverseProvider,
+  SeedMarketUniverseProvider,
+  SaxoMarketUniverseProvider,
+  CompositeMarketUniverseProvider,
+} from "./lib/market-universe-provider";
+import { getAllUniverseEntries } from "./lib/catalyst-universe";
 
 const rawPort = process.env["PORT"];
 
@@ -23,6 +30,16 @@ if (Number.isNaN(port) || port <= 0) {
 // This validates all built-in profiles (fail-fast) and loads the persisted
 // profile selection from the analysis repository.
 initPolicyStore();
+
+// Initialize Market Universe Provider (Part 3, spec §13).
+// Composite: Saxo for per-ticker UIC enrichment, Seed as fallback/enumeration.
+// NOTE: Saxo cannot enumerate exchange equities — seed is the universe source.
+setMarketUniverseProvider(
+  new CompositeMarketUniverseProvider([
+    new SaxoMarketUniverseProvider(),
+    new SeedMarketUniverseProvider(getAllUniverseEntries()),
+  ])
+);
 
 // Load persisted OpenAI usage log from disk.
 initUsageLog();

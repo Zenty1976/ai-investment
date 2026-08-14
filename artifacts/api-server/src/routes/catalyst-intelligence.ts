@@ -61,6 +61,13 @@ import {
   enrichUniverseWithSaxo, getSaxoUniverseStatus,
 } from "../lib/catalyst-saxo-universe.js";
 import { researchDriverSignals } from "../lib/catalyst-signal-research.js";
+import {
+  runCatalystPipeline, getLastPipelineRun, runPostEventReassessment,
+} from "../lib/catalyst-pipeline.js";
+import { recordCatalystFailure } from "../lib/catalyst-analyze-service.js";
+import { deriveLifecycleState } from "../lib/catalyst-lifecycle.js";
+import { DEFAULT_CATALYST_BUDGET } from "../lib/catalyst-config.js";
+import { getProviderCapabilityReport } from "../lib/market-universe-provider.js";
 
 const router = Router();
 const MODULE = "catalyst-intelligence";
@@ -473,6 +480,16 @@ router.post("/catalyst-intelligence/screen", async (req, res): Promise<void> => 
 
   const eligibleCount = (screened as Array<{ eligible: boolean }>).filter(s => s.eligible).length;
 
+  // ── Part 3: Fire autonomous pipeline in background ──────────────────────────
+  // Picks up DeepAnalysis-eligible candidates and runs deep analysis within
+  // the per-cycle budget. Non-blocking — screen response returns immediately.
+  const skipPipeline = req.body?.skipPipeline === true;
+  if (!skipPipeline) {
+    runCatalystPipeline(DEFAULT_CATALYST_BUDGET, nowIso).catch(pipelineErr => {
+      console.error("[catalyst-intelligence] background pipeline error:", String(pipelineErr));
+    });
+  }
+
   res.status(200).json({
     ok: true,
     screened,
@@ -486,6 +503,11 @@ router.post("/catalyst-intelligence/screen", async (req, res): Promise<void> => 
       skipped: skipped.length,
     },
     proactiveDiscovery: discoveryStats,
+    pipeline: {
+      fired: !skipPipeline,
+      budget: DEFAULT_CATALYST_BUDGET,
+      note: "Pipeline runs asynchronously. Check GET /api/catalyst-intelligence/pipeline for results.",
+    },
     _debug: {
       module: MODULE,
       aiCalled: discoveryStats.discovered > 0,
@@ -872,6 +894,8 @@ router.post("/catalyst-intelligence/analyze/:ticker", async (req, res): Promise<
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`[catalyst-intelligence] analyze error for ${ticker}:`, msg);
+    // Record failure with backoff so pipeline respects it next cycle
+    recordCatalystFailure(ticker, msg, nowIso);
     res.status(500).json({ ok: false, ticker, error: msg });
   }
 });
@@ -935,6 +959,143 @@ router.get("/catalyst-intelligence/promotions", (_req, res) => {
     promotions: active,
     contextBlock,
     _debug: { module: MODULE },
+  });
+});
+
+/**
+ * GET /api/catalyst-intelligence/pipeline
+ *
+ * Returns the result of the last autonomous pipeline run.
+ * Shows: analyzed, deferred, failed counts, budget usage, promotions.
+ */
+router.get("/catalyst-intelligence/pipeline", (_req, res) => {
+  const lastRun = getLastPipelineRun();
+
+  res.status(200).json({
+    ok: true,
+    lastRun,
+    budget: DEFAULT_CATALYST_BUDGET,
+    _debug: { module: MODULE },
+  });
+});
+
+/**
+ * POST /api/catalyst-intelligence/post-event/:ticker
+ *
+ * Trigger post-event reassessment for a ticker whose catalyst has passed.
+ * Clears the pre-event thesis and forces a fresh analysis.
+ *
+ * Per spec §7: "The event should trigger … Catalyst refresh … new post-event assessment."
+ */
+router.post("/catalyst-intelligence/post-event/:ticker", async (req, res): Promise<void> => {
+  const ticker = req.params.ticker?.trim().toUpperCase();
+  if (!ticker) {
+    res.status(400).json({ ok: false, error: "Missing ticker" });
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const result = await runPostEventReassessment(ticker, nowIso);
+
+  res.status(result.ok ? 200 : 400).json({
+    ok: result.ok,
+    ticker,
+    error: result.error ?? null,
+    _debug: { module: MODULE },
+  });
+});
+
+/**
+ * GET /api/catalyst-intelligence/status
+ *
+ * Returns all tracked tickers with their current lifecycle state and key metrics.
+ * Replaces the old status endpoint with lifecycle-aware output (Part 3).
+ *
+ * Sections:
+ *   - upcomingCatalysts: PATH A candidates with events in the window
+ *   - emergingSetups: PATH B candidates (no event, signal accumulation)
+ *   - recentlyPromoted: candidates promoted to OF in the last 7 days
+ *   - deferred: candidates over budget this cycle
+ *   - failed: candidates in error/backoff state
+ */
+router.get("/catalyst-intelligence/status", (_req, res) => {
+  const all = getAllCatalystStates();
+  const nowIso = new Date().toISOString();
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 3_600_000).toISOString();
+
+  type StateRow = {
+    ticker: string;
+    company: string;
+    lifecycleState: string;
+    opportunityState: string | null;
+    eventType: string | null;
+    daysUntilEvent: number | null;
+    priceAsymmetry: string | null;
+    evidenceConfidence: string | null;
+    promotedAt: string | null;
+    lastAnalysedAt: string | null;
+    lastError: string | null;
+    failureCount: number;
+    deferredUntil: string | null;
+    postEventAssessmentRequired: boolean;
+  };
+
+  const rows: StateRow[] = all.map(state => ({
+    ticker: state.ticker,
+    company: state.company,
+    lifecycleState: deriveLifecycleState(state),
+    opportunityState: state.analysis?.opportunityState ?? null,
+    eventType: state.facts?.event?.eventType ?? null,
+    daysUntilEvent: state.facts?.event?.daysUntilEvent ?? state.screening?.daysUntilEvent ?? null,
+    priceAsymmetry: state.screening?.priceAsymmetry ?? null,
+    evidenceConfidence: state.signalAccumulation?.evidenceConfidence ?? null,
+    promotedAt: state.promotedAt ?? null,
+    lastAnalysedAt: state.lastAnalysedAt ?? null,
+    lastError: state.lastError ?? null,
+    failureCount: state.failureCount ?? 0,
+    deferredUntil: state.deferredUntil ?? null,
+    postEventAssessmentRequired: state.postEventAssessmentRequired ?? false,
+  }));
+
+  const upcomingCatalysts = rows.filter(r =>
+    r.daysUntilEvent !== null && r.daysUntilEvent >= 0 &&
+    !["SCREENED_OUT", "FAILED"].includes(r.lifecycleState)
+  ).sort((a, b) => (a.daysUntilEvent ?? 999) - (b.daysUntilEvent ?? 999));
+
+  const emergingSetups = rows.filter(r =>
+    r.daysUntilEvent === null && r.lifecycleState !== "SCREENED_OUT" && r.lifecycleState !== "FAILED"
+  );
+
+  const recentlyPromoted = rows.filter(r =>
+    r.promotedAt && r.promotedAt >= sevenDaysAgo
+  ).sort((a, b) => (b.promotedAt ?? "").localeCompare(a.promotedAt ?? ""));
+
+  const deferred = rows.filter(r =>
+    r.deferredUntil && r.deferredUntil > nowIso
+  );
+
+  const failed = rows.filter(r => r.lifecycleState === "FAILED" || r.failureCount > 0);
+
+  const stale = rows.filter(r => r.postEventAssessmentRequired);
+
+  res.status(200).json({
+    ok: true,
+    upcomingCatalysts,
+    emergingSetups,
+    recentlyPromoted,
+    deferred,
+    failed,
+    stale,
+    counts: {
+      total: rows.length,
+      upcomingCatalysts: upcomingCatalysts.length,
+      emergingSetups: emergingSetups.length,
+      recentlyPromoted: recentlyPromoted.length,
+      deferred: deferred.length,
+      failed: failed.length,
+      stale: stale.length,
+    },
+    _debug: { module: MODULE, generatedAt: nowIso },
   });
 });
 

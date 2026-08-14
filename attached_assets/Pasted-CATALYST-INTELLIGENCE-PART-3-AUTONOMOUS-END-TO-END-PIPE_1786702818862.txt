@@ -1,0 +1,1065 @@
+CATALYST INTELLIGENCE — PART 3
+AUTONOMOUS END-TO-END PIPELINE + BROAD MARKET DISCOVERY
+
+BACKGROUND
+
+Parts 1 and 2 have built the Catalyst Intelligence foundation.
+
+The current implementation now includes, among other things:
+
+- CatalystFacts
+- CatalystRepository/state
+- price asymmetry
+- CompanyDriverProfile
+- CompanySpecificEvents
+- non-earnings scheduled catalysts
+- proactive event discovery
+- LeadingIndicatorSignals
+- driver-directed research
+- SignalAccumulation
+- Emerging Setup detection
+- deep Catalyst analysis
+- Opportunity Finder promotion
+- Catalyst Watch UI
+- material fingerprints / freshness guards
+- centralized model routing
+
+IMPORTANT:
+
+Inspect the ACTUAL current code before modifying anything.
+
+Do not rewrite working Part 1/Part 2 components.
+
+This task is primarily about connecting the system into a genuinely autonomous,
+cost-controlled intelligence pipeline and improving market coverage.
+
+
+==================================================
+1. PRIMARY OBJECTIVE
+==================================================
+
+The system should work even when the user does nothing.
+
+The desired behavior is:
+
+MARKET UNIVERSE
+
+→ discover upcoming potentially market-moving catalysts
+
+AND
+
+→ detect accumulating material signals
+
+→ cheap screening
+
+→ identify interesting candidates
+
+→ create/reuse Company Driver Profile where necessary
+
+→ targeted driver research where necessary
+
+→ build/update Signal Accumulation
+
+→ build CatalystFacts
+
+→ deep Catalyst AI analysis ONLY when warranted
+
+→ promote strong cases to Opportunity Finder
+
+→ trigger/update Trade Decision when decision-relevant
+
+→ surface result to user.
+
+The user should NOT need to:
+
+open a company
+manually add it to Company Monitor
+press Analyze
+manually run Catalyst research
+
+for this pipeline to work.
+
+
+==================================================
+2. AUDIT THE CURRENT END-TO-END FLOW FIRST
+==================================================
+
+Before changing code, trace the current production flow from:
+
+Automation Orchestrator
+→ /api/catalyst-intelligence/screen
+→ candidate discovery
+→ event discovery
+→ screening
+→ signal research
+→ deep catalyst analysis
+→ promotion
+→ Opportunity Finder
+→ Trade Decision.
+
+Report internally which steps currently happen automatically and which require
+manual invocation.
+
+Then implement ONLY the missing links.
+
+Do not duplicate existing working logic.
+
+
+==================================================
+3. AUTOMATIC CANDIDATE LIFECYCLE
+==================================================
+
+Introduce/complete a clear Catalyst candidate lifecycle.
+
+Suggested states:
+
+DISCOVERED
+SCREENED_OUT
+WATCHING
+RESEARCH_REQUIRED
+RESEARCHING
+ANALYSIS_REQUIRED
+ANALYZING
+MONITOR
+INVESTIGATE
+HIGH_INTEREST
+PROMOTED
+STALE
+FAILED
+
+Do not create unnecessary complexity if equivalent states already exist.
+
+The purpose is to make the pipeline deterministic:
+
+A candidate discovered by Event Monitor or Emerging Setup detection must know
+what should happen next.
+
+The frontend must NOT be responsible for progressing the lifecycle.
+
+
+==================================================
+4. AUTOMATIC DEEP ANALYSIS
+==================================================
+
+Currently verify whether a candidate identified by screening automatically reaches
+deep Catalyst analysis.
+
+If not, fix it.
+
+The orchestrator/backend should automatically call deep Catalyst analysis when
+the candidate satisfies eligibility rules.
+
+Examples of eligibility:
+
+- scheduled catalyst has sufficiently high potential impact
+- screening result = INVESTIGATE/HIGH_INTEREST equivalent
+- significant new driver signals appeared
+- SignalAccumulation materially strengthened
+- EventExpectationProfile materially changed
+- event is approaching and previous analysis is stale
+- important contradictory evidence appeared
+
+Do NOT deep-analyze every discovered candidate.
+
+
+==================================================
+5. ESCALATION FUNNEL
+==================================================
+
+Use an explicit cost-controlled funnel.
+
+LEVEL 0 — UNIVERSE
+
+No OpenAI.
+No web search per company.
+
+Only compact instrument metadata.
+
+
+LEVEL 1 — DISCOVERY
+
+Prefer structured/cached information.
+
+Identify:
+
+upcoming events
+existing material news/events
+significant company/sector changes
+possible emerging setups.
+
+Very cheap.
+
+
+LEVEL 2 — SCREENING
+
+Backend deterministic logic.
+
+PriceContext
+event proximity
+event importance
+existing signals
+company state if available
+sector/market changes
+
+No strong AI.
+
+
+LEVEL 3 — TARGETED RESEARCH
+
+Only candidates that passed screening.
+
+Reuse existing intelligence first.
+
+Perform driver-directed web research only for missing/material information.
+
+Cheap model where appropriate.
+
+
+LEVEL 4 — DEEP CATALYST ANALYSIS
+
+Only serious candidates.
+
+Use current centralized strong-analysis model routing.
+
+Compact CatalystFacts only.
+
+
+LEVEL 5 — PROMOTION
+
+Opportunity Finder receives only relevant candidates.
+
+
+LEVEL 6 — DECISION
+
+Trade Decision receives material Catalyst opportunities only.
+
+
+==================================================
+6. DYNAMIC ANALYSIS DEPTH
+==================================================
+
+Do not treat every candidate equally.
+
+A company with:
+
+event in 27 days
++
+weak evidence
+
+should consume almost no expensive resources.
+
+A company with:
+
+event in 3 days
++
+multiple independent material signals
++
+attractive price asymmetry
++
+new expectation changes
+
+deserves deeper/fresher analysis.
+
+Create configurable escalation logic based on:
+
+daysUntilEvent
+event potential impact
+signal accumulation strength
+evidence confidence
+price asymmetry
+expectation gap where available
+new material evidence
+previous Catalyst state
+
+Do NOT use ticker-specific rules.
+
+
+==================================================
+7. AUTOMATIC RE-EVALUATION AROUND EVENTS
+==================================================
+
+This is critical.
+
+For an interesting scheduled catalyst:
+
+BEFORE event:
+Catalyst Intelligence may produce:
+
+HIGH_INTEREST
+or
+CANDIDATE_FOR_TRADE_DECISION.
+
+WHEN event occurs:
+
+the old pre-event thesis must NOT simply remain valid.
+
+The event should trigger:
+
+News/Event refresh
+Company Monitor refresh
+Price Context refresh
+Catalyst refresh
+Opportunity Finder refresh
+Trade Decision refresh.
+
+The system must then make a NEW post-event assessment.
+
+Example:
+
+PRE-EVENT:
+positive thesis
+
+↓
+
+earnings/product announcement happens
+
+↓
+
+NEW DATA
+
+↓
+
+NEW assessment.
+
+Do not execute an old planned trade based on stale pre-event assumptions.
+
+
+==================================================
+8. INTENTIONAL PRE-EVENT THESIS
+==================================================
+
+Preserve the distinction:
+
+EVENT_BLOCKED
+
+versus
+
+INTENTIONAL_PRE_EVENT_THESIS.
+
+An upcoming event must NOT automatically block a trade.
+
+But it also must NOT automatically create one.
+
+Catalyst Intelligence may tell Trade Decision:
+
+"This opportunity exists specifically BECAUSE of the upcoming catalyst."
+
+Trade Decision must then independently consider:
+
+Catalyst evidence
+price asymmetry
+portfolio exposure
+risk
+position sizing
+overall market
+other opportunities.
+
+Do not automatically create Buy/Ready from Catalyst HighInterest.
+
+
+==================================================
+9. OPPORTUNITY FINDER AUTOMATION
+==================================================
+
+Verify that Catalyst promotion actually causes Opportunity Finder to update
+without manual user action.
+
+A newly discovered ticker must be able to follow:
+
+NEW TICKER
+
+→ Catalyst HIGH_INTEREST
+
+→ Opportunity Finder candidate
+
+without being manually added elsewhere first.
+
+Avoid duplicate candidates.
+
+Preserve provenance:
+
+Opportunity Finder should know:
+
+source = CATALYST_INTELLIGENCE
+
+and preferably:
+
+triggerType
+eventId
+catalystState
+catalystDirection
+evidenceConfidence
+priceAsymmetry
+expectationGap
+updatedAt.
+
+
+==================================================
+10. TRADE DECISION AUTOMATION
+==================================================
+
+When Catalyst Intelligence / Opportunity Finder produces a MATERIAL new opportunity,
+Trade Decision should become eligible for reassessment.
+
+Do NOT run Trade Decision every time a minor Catalyst field changes.
+
+Use materialVersion/fingerprint/dependency logic.
+
+Trade Decision should receive a compact Catalyst context.
+
+It must understand:
+
+scheduled catalyst
+earnings catalyst
+emerging setup
+intentional pre-event thesis
+event risk
+already-priced-in assessment
+evidence confidence
+invalidation conditions.
+
+Do not send full Catalyst debug/research to Trade Decision.
+
+
+==================================================
+11. BROAD MARKET UNIVERSE — REMOVE STATIC-SEED DEPENDENCY
+==================================================
+
+The current implementation still relies substantially on:
+
+DANISH_SEED
+US_SEED
+
+for proactive discovery.
+
+This is not sufficient long-term.
+
+Investigate the ACTUAL existing Saxo API implementation and available instrument
+search/reference endpoints.
+
+Determine whether the application can obtain a broad list of supported/tradeable:
+
+Danish equities
+US equities
+
+using Saxo.
+
+IMPORTANT:
+
+Do not assume it can.
+
+Test/inspect the API capabilities already available in the code.
+
+
+==================================================
+12. IF SAXO CAN PROVIDE THE UNIVERSE
+==================================================
+
+If Saxo can provide sufficiently broad instrument discovery:
+
+implement a cached MarketUniverseRepository.
+
+Populate it periodically.
+
+Store:
+
+ticker
+companyName
+UIC
+assetType
+exchange
+country
+currency
+sector
+industry
+tradable
+active
+lastVerifiedAt
+
+where available.
+
+Do NOT request this entire universe on every Run All.
+
+Refresh slowly, for example daily/weekly depending on data stability.
+
+Use incremental updates where possible.
+
+
+==================================================
+13. IF SAXO CANNOT PROVIDE THE UNIVERSE
+==================================================
+
+If Saxo cannot provide reliable exchange-wide discovery:
+
+DO NOT fake it.
+
+DO NOT pretend DANISH_SEED + US_SEED is the full universe.
+
+Keep the seed as fallback/bootstrap only.
+
+Create a clean MarketUniverseProvider interface so another data provider can be
+added later.
+
+Example conceptual interface:
+
+getSupportedMarkets()
+
+getEquities(market)
+
+searchInstrument()
+
+getInstrumentMetadata()
+
+refreshUniverse()
+
+The rest of Catalyst Intelligence must depend on this abstraction rather than
+directly on hardcoded arrays.
+
+In the final report explain exactly what external capability would be required.
+
+Do NOT add a paid external provider in this task without approval.
+
+
+==================================================
+14. UNIVERSE SIZE MUST NOT CREATE COST EXPLOSION
+==================================================
+
+A broad universe may contain thousands of stocks.
+
+Therefore:
+
+NEVER:
+
+web-search every ticker
+run Company Monitor for every ticker
+generate Driver Profiles for every ticker
+fetch huge price histories for every ticker every cycle
+call OpenAI for every ticker.
+
+Use cheap universe metadata + event/change discovery first.
+
+Only promoted candidates receive expensive treatment.
+
+
+==================================================
+15. EVENT DISCOVERY AT SCALE
+==================================================
+
+Review the current proactive company-event discovery.
+
+If it currently requires a separate web search per ticker, that approach does NOT
+scale to the whole US/Danish universe.
+
+Improve the architecture.
+
+Preferred hierarchy:
+
+1. structured/bulk event/calendar source if available
+2. existing Event Monitor discoveries
+3. official/company feeds where efficient
+4. targeted per-company web discovery ONLY for shortlisted candidates
+
+Do not solve market-wide event discovery by doing thousands of web searches.
+
+
+==================================================
+16. IMPORTANT DATA GAP REPORT
+==================================================
+
+We still need reliable data for:
+
+historical earnings
+actual vs consensus
+analyst estimates
+estimate revisions
+guidance history
+
+where possible.
+
+Do NOT let OpenAI invent these.
+
+During this task, inspect whether any CURRENT connected data source/Saxo endpoint
+can provide these.
+
+If not:
+
+leave the existing interfaces intact
+mark unavailable/partial
+and report the gap.
+
+Do not add a new provider without approval.
+
+
+==================================================
+17. MATERIALITY / FRESHNESS MATRIX
+==================================================
+
+Create or centralize sensible refresh rules.
+
+Examples conceptually:
+
+Market universe:
+slow refresh
+
+Company Driver Profile:
+very slow / material-change only
+
+Scheduled event discovery:
+moderate refresh, increasing near event
+
+Price Context:
+more frequent for active candidates
+
+Signal research:
+only when stale/materially triggered
+
+Deep Catalyst AI:
+material-change only
+
+Opportunity Finder:
+when promoted/material Catalyst changes
+
+Trade Decision:
+only decision-relevant changes.
+
+Use configuration, not scattered magic numbers.
+
+
+==================================================
+18. COST BUDGET / SAFETY
+==================================================
+
+Add Catalyst-specific run budgets.
+
+For example configurable maximums per orchestrator cycle:
+
+max new event web discoveries
+max driver research candidates
+max deep Catalyst AI analyses
+max newly generated Driver Profiles
+
+Do NOT silently discard excess candidates.
+
+Queue/defer them based on priority.
+
+Priority should consider:
+
+event proximity
+potential impact
+signal strength
+portfolio relevance
+price movement
+staleness.
+
+Expose deferred counts in debug/system health.
+
+
+==================================================
+19. FAILURE ISOLATION
+==================================================
+
+One failed ticker must NOT abort the entire Catalyst cycle.
+
+Per candidate:
+
+try
+process
+record success/failure
+continue.
+
+Store:
+
+lastError
+lastAttempt
+retryEligibleAt
+failureCount
+
+Use sensible backoff.
+
+Do not repeatedly burn tokens on a candidate that consistently fails.
+
+
+==================================================
+20. POINT-IN-TIME SAFETY
+==================================================
+
+Preserve historical cutoff safety.
+
+All evidence used for Catalyst analysis should retain where possible:
+
+publishedAt
+observedAt
+availableAt.
+
+Regression/backtest mode must exclude information that was not available at the
+simulated decision timestamp.
+
+This will be essential later when we evaluate whether the engine REALLY would have
+found Maersk/other historical cases beforehand.
+
+
+==================================================
+21. CATALYST WATCH — MAKE THE PIPELINE VISIBLE
+==================================================
+
+Do not redesign the dashboard heavily.
+
+But Catalyst Watch should make autonomous behavior understandable.
+
+Compactly show:
+
+UPCOMING CATALYSTS
+
+ticker
+event
+days
+state
+evidence
+price setup
+
+EMERGING SETUPS
+
+ticker
+reason
+state
+signal direction
+
+RECENTLY PROMOTED
+
+ticker
+destination
+time
+
+DEFERRED / FAILED
+
+count only, Details for more.
+
+Examples:
+
+MAERSK B
+Earnings · 3d
+HIGH INTEREST
+Evidence: High
+Price: Attractive
+
+XYZ
+Investor Day · 5d
+INVESTIGATE
+
+ABC
+Emerging Setup
+Signals accelerating
+DEVELOPING
+
+
+==================================================
+22. "WHY IS THIS HERE?"
+==================================================
+
+For every Catalyst candidate, Details/debug must answer:
+
+Why was this ticker discovered?
+
+Why was it promoted past screening?
+
+What event triggered it?
+
+OR
+
+what accumulated signals triggered it?
+
+Which Company Drivers matter?
+
+What evidence is confirmed?
+
+What is rumor?
+
+What is AI interpretation?
+
+What price behavior matters?
+
+What might already be priced in?
+
+What contradicts the thesis?
+
+Why did/didn't AI run?
+
+Why did/didn't Opportunity Finder receive it?
+
+Why did/didn't Trade Decision rerun?
+
+
+==================================================
+23. DO NOT CREATE ANOTHER GIANT MODULE
+==================================================
+
+Preserve responsibilities:
+
+Event Monitor
+= known events
+
+News Monitor
+= news observation
+
+Company Monitor
+= stateful company understanding
+
+Catalyst Intelligence
+= pre-event/emerging setup reasoning
+
+Opportunity Finder
+= opportunity comparison
+
+Trade Decision
+= decision
+
+Trade Review
+= actionable human approval
+
+Orchestrator
+= execution/dependencies.
+
+Do not merge these into Catalyst Intelligence.
+
+
+==================================================
+24. REGRESSION TEST — MAERSK STYLE
+==================================================
+
+Use stored/synthetic point-in-time data only.
+
+Known earnings approaching.
+
+Multiple independent relevant drivers improving.
+
+Price not fully run ahead.
+
+Expected pipeline:
+
+UNIVERSE
+→ EVENT
+→ SCREEN
+→ RESEARCH
+→ HIGH INTEREST
+→ OPPORTUNITY FINDER ELIGIBLE.
+
+No manual analyze call.
+
+
+==================================================
+25. REGRESSION TEST — SPACEX STYLE
+==================================================
+
+Use generic/synthetic company data.
+
+Company not previously followed.
+
+Known upcoming company/technology meeting.
+
+Credible pre-event expectations/signals.
+
+Price not fully run ahead.
+
+Expected:
+
+UNIVERSE
+→ EVENT DISCOVERY
+→ SCREEN
+→ EXPECTATION/DRIVER RESEARCH
+→ INVESTIGATE/HIGH INTEREST
+→ OF ELIGIBLE.
+
+No manual company addition.
+
+No knowledge from after event cutoff.
+
+
+==================================================
+26. REGRESSION TEST — EMERGING SETUP
+==================================================
+
+No known event.
+
+Signals accumulate over multiple stored observations.
+
+Company drivers improve.
+
+Price stabilizes.
+
+Expected:
+
+UNIVERSE
+→ SIGNAL ACCUMULATION
+→ EMERGING SETUP
+→ ANALYSIS
+→ potential promotion.
+
+No fake scheduled event.
+
+
+==================================================
+27. REGRESSION TEST — NO OVERANALYSIS
+==================================================
+
+Create 100+ synthetic universe companies.
+
+Only a few have relevant catalysts/signals.
+
+Expected:
+
+most remain at Level 0/1.
+
+Only shortlisted candidates reach research.
+
+Only very few reach deep AI eligibility.
+
+Verify with mocks/counters.
+
+NO paid calls.
+
+
+==================================================
+28. REGRESSION TEST — AUTOMATIC CHAIN
+==================================================
+
+This test is especially important.
+
+Start with a new ticker that exists only in Market Universe.
+
+Inject a qualifying scheduled event and supporting stored evidence.
+
+Trigger ONE orchestrator Catalyst cycle.
+
+Verify that, according to eligibility:
+
+candidate is discovered
+screened
+researched/reused
+deep analysis is triggered/reused
+result is stored
+promotion occurs
+Opportunity Finder receives candidate
+
+without calling manual:
+
+/analyze/:ticker
+
+from the test/user.
+
+
+==================================================
+29. REGRESSION TEST — POST EVENT
+==================================================
+
+Candidate has strong pre-event thesis.
+
+Then simulate event occurring with materially different actual information.
+
+Expected:
+
+old pre-event state becomes stale
+new evidence is incorporated
+new analysis is required
+Trade Decision cannot rely on old pre-event recommendation.
+
+
+==================================================
+30. NO PAID TESTING
+==================================================
+
+All tests:
+
+mocks
+fixtures
+stored responses
+deterministic calculations.
+
+No live OpenAI calls.
+No paid web calls merely for validation.
+
+
+==================================================
+31. DO NOT CHANGE MODEL ROUTING YET
+==================================================
+
+Use the existing centralized model routing.
+
+Do not change global model choices as part of this task.
+
+We will separately benchmark whether another OpenAI model improves Catalyst reasoning
+after the pipeline is correct.
+
+
+==================================================
+32. FINAL REPORT
+==================================================
+
+After implementation report:
+
+1. Exact automatic Catalyst flow before this task.
+
+2. Exact automatic Catalyst flow after this task.
+
+3. Whether deep Catalyst analysis now runs automatically.
+
+4. Eligibility rules for deep analysis.
+
+5. How Catalyst automatically promotes to Opportunity Finder.
+
+6. How Trade Decision is invalidated/re-run by material Catalyst changes.
+
+7. How post-event reassessment works.
+
+8. How intentional pre-event thesis is represented.
+
+9. How broad the current production market universe actually is.
+
+10. Whether Saxo can supply the full DK/US universe.
+
+11. If not, exact MarketUniverseProvider abstraction implemented.
+
+12. Whether any hardcoded seed lists remain and what they are used for.
+
+13. How event discovery scales across the universe.
+
+14. Catalyst refresh/freshness rules.
+
+15. Per-cycle cost budgets.
+
+16. Failure/backoff behavior.
+
+17. Point-in-time protections.
+
+18. Maersk-style regression result.
+
+19. SpaceX-style scheduled-event regression result.
+
+20. Emerging Setup regression result.
+
+21. 100+ company cost-control regression result.
+
+22. Automatic end-to-end regression result.
+
+23. Post-event regression result.
+
+24. Tests and total pass count.
+
+25. Remaining data gaps.
+
+26. Recommended next step.
+
+MOST IMPORTANT SUCCESS CRITERION:
+
+A company that the user has NEVER manually followed must be able to travel:
+
+MARKET UNIVERSE
+→ CATALYST/EVENT/SIGNAL DISCOVERY
+→ SCREENING
+→ RESEARCH
+→ CATALYST ANALYSIS
+→ OPPORTUNITY FINDER
+
+automatically,
+
+while the vast majority of market-universe companies consume ZERO expensive
+OpenAI calls.
