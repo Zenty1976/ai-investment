@@ -79,6 +79,9 @@ const STATIC_DEPS: Record<string, string[]> = {
     "portfolio-manager",
     "portfolio-analyzer", "risk-analyzer", "market-alerts", "opportunity-finder",
     "event-monitor",
+    // Catalyst Intelligence promotions — material catalyst promotion bumps TDE fingerprint
+    // so the Trade Decision Engine reassesses when a new pre-event opportunity is identified.
+    "catalyst-promotions",
   ],
   "command-brief": [
     "trade-decision-engine", "risk-analyzer", "portfolio-analyzer", "market-alerts",

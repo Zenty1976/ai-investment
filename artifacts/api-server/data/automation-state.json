@@ -1,9 +1,9 @@
 {
   "portfolio-manager": {
     "status": "Failed",
-    "lastRunAt": "2026-08-14T10:40:09.843Z",
+    "lastRunAt": "2026-08-14T17:47:37.648Z",
     "lastSuccessfulRunAt": "2026-08-13T20:44:09.806Z",
-    "nextRunAt": "2026-08-14T11:40:09.855Z",
+    "nextRunAt": "2026-08-14T18:47:37.653Z",
     "lastError": "HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}",
     "currentJobId": null,
     "waitingForDeps": [],
@@ -11,9 +11,9 @@
   },
   "market-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T10:20:20.590Z",
-    "lastSuccessfulRunAt": "2026-08-14T10:20:26.145Z",
-    "nextRunAt": "2026-08-14T10:50:26.166Z",
+    "lastRunAt": "2026-08-14T17:29:32.579Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:53.032Z",
+    "nextRunAt": "2026-08-14T17:59:53.053Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -21,9 +21,9 @@
   },
   "news-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T10:20:20.592Z",
-    "lastSuccessfulRunAt": "2026-08-14T10:20:30.124Z",
-    "nextRunAt": "2026-08-14T10:50:30.260Z",
+    "lastRunAt": "2026-08-14T17:29:32.580Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:47.169Z",
+    "nextRunAt": "2026-08-14T17:59:47.183Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -31,9 +31,9 @@
   },
   "event-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T07:52:23.932Z",
-    "lastSuccessfulRunAt": "2026-08-14T07:52:31.337Z",
-    "nextRunAt": "2026-08-14T10:52:31.348Z",
+    "lastRunAt": "2026-08-14T17:29:32.592Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:47.130Z",
+    "nextRunAt": "2026-08-14T20:29:47.143Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -51,9 +51,9 @@
   },
   "company-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T04:51:22.632Z",
-    "lastSuccessfulRunAt": "2026-08-14T04:51:26.408Z",
-    "nextRunAt": "2026-08-14T10:51:26.523Z",
+    "lastRunAt": "2026-08-14T17:29:32.706Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:47.510Z",
+    "nextRunAt": "2026-08-14T23:29:47.544Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -61,21 +61,9 @@
   },
   "market-alerts": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T08:32:56.432Z",
-    "lastSuccessfulRunAt": "2026-08-14T10:20:20.604Z",
-    "nextRunAt": "2026-08-14T10:35:20.616Z",
-    "lastError": null,
-    "currentJobId": null,
-    "waitingForDeps": [
-      "portfolio-manager"
-    ],
-    "lastSkippedUnchanged": true
-  },
-  "risk-analyzer": {
-    "status": "Idle",
-    "lastRunAt": "2026-08-14T07:52:23.973Z",
-    "lastSuccessfulRunAt": "2026-08-14T07:52:41.676Z",
-    "nextRunAt": "2026-08-14T09:52:41.705Z",
+    "lastRunAt": "2026-08-14T17:29:32.619Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:33.067Z",
+    "nextRunAt": "2026-08-14T17:44:33.122Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [
@@ -83,11 +71,21 @@
     ],
     "lastSkippedUnchanged": false
   },
+  "risk-analyzer": {
+    "status": "Idle",
+    "lastRunAt": "2026-08-14T17:29:32.623Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:33.226Z",
+    "nextRunAt": "2026-08-14T19:29:33.238Z",
+    "lastError": null,
+    "currentJobId": null,
+    "waitingForDeps": [],
+    "lastSkippedUnchanged": false
+  },
   "portfolio-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T10:20:20.618Z",
-    "lastSuccessfulRunAt": "2026-08-14T10:20:37.896Z",
-    "nextRunAt": "2026-08-14T13:20:37.923Z",
+    "lastRunAt": "2026-08-14T17:29:32.625Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:53.058Z",
+    "nextRunAt": "2026-08-14T20:29:53.087Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -95,43 +93,39 @@
   },
   "opportunity-finder": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:38:31.442Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:15.354Z",
-    "nextRunAt": "2026-08-14T08:44:15.365Z",
+    "lastRunAt": "2026-08-14T13:48:24.275Z",
+    "lastSuccessfulRunAt": "2026-08-14T13:48:52.748Z",
+    "nextRunAt": "2026-08-15T01:48:52.761Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [
-      "portfolio-manager"
-    ],
-    "lastSkippedUnchanged": true
+    "waitingForDeps": [],
+    "lastSkippedUnchanged": false
   },
   "trade-decision-engine": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T07:52:23.977Z",
-    "lastSuccessfulRunAt": "2026-08-14T07:52:48.468Z",
-    "nextRunAt": "2026-08-14T09:52:48.489Z",
+    "lastRunAt": "2026-08-14T17:29:32.629Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:56.965Z",
+    "nextRunAt": "2026-08-14T19:29:56.992Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [
-      "portfolio-manager"
-    ],
+    "waitingForDeps": [],
     "lastSkippedUnchanged": false
   },
   "trade-review": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T07:52:48.491Z",
-    "lastSuccessfulRunAt": "2026-08-14T10:20:20.638Z",
-    "nextRunAt": "2026-08-14T12:20:20.649Z",
+    "lastRunAt": "2026-08-14T17:29:56.995Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:57.019Z",
+    "nextRunAt": "2026-08-14T19:29:57.173Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
-    "lastSkippedUnchanged": true
+    "lastSkippedUnchanged": false
   },
   "investor-watch": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T04:51:22.569Z",
-    "lastSuccessfulRunAt": "2026-08-14T04:52:17.333Z",
-    "nextRunAt": "2026-08-14T10:52:17.342Z",
+    "lastRunAt": "2026-08-14T17:29:32.605Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:30:23.587Z",
+    "nextRunAt": "2026-08-14T23:30:23.600Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -139,9 +133,9 @@
   },
   "catalyst-intelligence": {
     "status": "Idle",
-    "lastRunAt": "2026-08-14T10:20:30.280Z",
-    "lastSuccessfulRunAt": "2026-08-14T10:20:37.846Z",
-    "nextRunAt": "2026-08-14T22:20:37.846Z",
+    "lastRunAt": "2026-08-14T17:29:47.147Z",
+    "lastSuccessfulRunAt": "2026-08-14T17:29:52.620Z",
+    "nextRunAt": "2026-08-15T05:29:52.620Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],

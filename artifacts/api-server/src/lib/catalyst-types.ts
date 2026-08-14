@@ -646,6 +646,7 @@ export type AnalysisUpdateType = "FULL_ANALYSIS" | "MATERIAL_UPDATE" | "NO_MATER
  * Logged in _debug for full decision-chain visibility (spec §30).
  */
 export type DiscoverySource =
+  | "UNIVERSE_SEED"        // seeded from MarketUniverseProvider (DISCOVERED state, not yet screened)
   | "UNIVERSE_EVENT"       // discovered via market universe + upcoming event
   | "EXISTING_EVENT"       // from existing EventRecord or CompanySpecificEvent
   | "NEWS_SIGNAL"          // from news-monitor signals

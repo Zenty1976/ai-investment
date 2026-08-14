@@ -1,0 +1,322 @@
+PART 3 IS NOT COMPLETE — FINISH THE AUTONOMOUS CATALYST PIPELINE
+
+Do NOT redesign or rewrite the existing Catalyst Intelligence components.
+
+The current implementation already has:
+
+- universe screening
+- scheduled event discovery
+- CatalystFacts
+- CompanyDriverProfile
+- driver-directed signal research
+- SignalAccumulation
+- Emerging Setup
+- deep Catalyst AI analysis
+- Opportunity Finder promotion
+
+KEEP THESE.
+
+The missing issue is that these components are still not connected into the
+fully autonomous Part 3 production pipeline.
+
+==================================================
+1. CRITICAL — SCREEN MUST PROGRESS ELIGIBLE CANDIDATES AUTOMATICALLY
+==================================================
+
+Currently:
+
+POST /api/catalyst-intelligence/screen
+
+performs discovery + screening,
+
+while:
+
+POST /api/catalyst-intelligence/analyze/:ticker
+
+performs:
+
+driver profile
+→ signal research
+→ deep Catalyst AI
+→ promotion to Opportunity Finder.
+
+This means the pipeline still requires a separate analyze call.
+
+Fix this.
+
+Create an orchestrator/backend Catalyst cycle that:
+
+1. discovers/screens candidates
+2. identifies candidates eligible for further work
+3. progresses them automatically
+4. performs driver profile generation only when needed
+5. performs signal research only when needed
+6. performs deep Catalyst analysis only when eligible
+7. promotes qualified results to Opportunity Finder
+
+No frontend/manual analyze call may be required.
+
+Keep /analyze/:ticker as a manual/debug endpoint if useful.
+
+==================================================
+2. ADD A CLEAR CANDIDATE LIFECYCLE
+==================================================
+
+Introduce or complete a lightweight lifecycle, for example:
+
+DISCOVERED
+WATCHING
+RESEARCH_REQUIRED
+ANALYSIS_REQUIRED
+MONITOR
+INVESTIGATE
+HIGH_INTEREST
+PROMOTED
+DEFERRED
+FAILED
+
+Do not overengineer it.
+
+The backend/orchestrator must know what the next step is for each candidate.
+
+==================================================
+3. COST BUDGETS PER CYCLE
+==================================================
+
+The current MAX_PROACTIVE_DISCOVERIES = 5 is not sufficient as the only budget.
+
+Add centralized/configurable Catalyst cycle budgets for:
+
+maxEventDiscoveries
+maxDriverProfilesGenerated
+maxDriverResearches
+maxDeepCatalystAnalyses
+
+Do not discard candidates above the budget.
+
+Mark them DEFERRED and process highest-priority candidates first on later cycles.
+
+Priority should consider:
+
+event proximity
+potential impact
+screening strength
+signal accumulation
+evidence confidence
+price asymmetry
+staleness
+portfolio relevance
+
+==================================================
+4. AUTOMATIC OPPORTUNITY FINDER CHAIN
+==================================================
+
+When deep Catalyst analysis qualifies for promotion:
+
+promote automatically to Opportunity Finder.
+
+Verify that Opportunity Finder is then eligible to update through existing
+orchestrator dependency/material-version logic.
+
+No manual user action.
+
+Preserve catalyst provenance.
+
+==================================================
+5. AUTOMATIC TRADE DECISION INVALIDATION
+==================================================
+
+A material Catalyst promotion/update must make Trade Decision eligible for
+reassessment through the existing dependency/fingerprint system.
+
+Do NOT call Trade Decision for tiny Catalyst changes.
+
+Use materialVersion.
+
+==================================================
+6. POST-EVENT REASSESSMENT
+==================================================
+
+Implement the missing post-event lifecycle.
+
+When a scheduled catalyst occurs/passes:
+
+the PRE-EVENT thesis must become stale.
+
+Trigger/require refresh of relevant:
+
+Event/News
+Company Monitor
+Price Context
+Catalyst Intelligence
+
+and then downstream Opportunity Finder / Trade Decision as materially appropriate.
+
+An old INTENTIONAL_PRE_EVENT_THESIS must never remain actionable after the event
+without a new post-event assessment.
+
+Add an explicit state such as:
+
+POST_EVENT_REASSESSMENT_REQUIRED
+
+or equivalent.
+
+==================================================
+7. MARKET UNIVERSE PROVIDER ABSTRACTION
+==================================================
+
+The current code correctly documents that Saxo cannot provide the complete DK/US
+exchange universe through the currently implemented instrument endpoint.
+
+Do NOT pretend the static seed is complete.
+
+Implement the requested MarketUniverseProvider abstraction.
+
+The Catalyst pipeline must depend on this interface rather than directly on
+DANISH_SEED / US_SEED.
+
+Implement providers conceptually such as:
+
+StaticSeedUniverseProvider
+SaxoEnrichmentProvider / existing enrichment where appropriate
+
+The static seed may remain the current fallback provider.
+
+The architecture must allow a future external complete-universe provider without
+changing Catalyst Intelligence.
+
+Expose clearly in debug/UI:
+
+Universe source
+Coverage/limitation
+Approximate number of equities covered
+
+Do NOT add a paid external provider yet.
+
+==================================================
+8. FAILURE ISOLATION / BACKOFF
+==================================================
+
+One candidate failure must not abort the Catalyst cycle.
+
+Track per candidate:
+
+failureCount
+lastError
+lastAttemptAt
+retryEligibleAt
+
+Use backoff.
+
+Do not repeatedly spend AI/web tokens on a failing ticker.
+
+==================================================
+9. AUTOMATIC END-TO-END TEST
+==================================================
+
+Add a deterministic integration test where:
+
+Ticker X exists ONLY in Market Universe.
+
+A qualifying scheduled event is injected.
+
+Supporting signals are available.
+
+ONE Catalyst orchestrator cycle is triggered.
+
+Verify automatically:
+
+X discovered
+→ screened
+→ research/profile performed or reused
+→ deep analysis performed via mocked AI
+→ result stored
+→ promotion created
+→ Opportunity Finder receives/is eligible to receive X
+
+The test must NOT manually call:
+
+/analyze/:ticker
+
+==================================================
+10. EMERGING SETUP END-TO-END TEST
+==================================================
+
+Ticker Y exists only in universe.
+
+NO event.
+
+Stored signals accumulate and price setup qualifies.
+
+One Catalyst cycle:
+
+→ Emerging Setup
+→ research/analysis eligibility
+→ mocked deep analysis
+→ potential promotion
+
+No fake event and no manual analyze call.
+
+==================================================
+11. COST CONTROL TEST
+==================================================
+
+Use 100+ synthetic universe companies.
+
+Only a few qualify.
+
+Verify:
+
+most receive no AI/web work.
+
+Enforce configured budgets.
+
+Excess qualifying candidates become DEFERRED rather than lost.
+
+==================================================
+12. POST-EVENT TEST
+==================================================
+
+Simulate:
+
+HIGH_INTEREST pre-event candidate
+→ event occurs
+→ old pre-event analysis becomes stale
+→ POST_EVENT_REASSESSMENT_REQUIRED
+→ old pre-event thesis cannot remain actionable
+→ new mocked post-event analysis is required before downstream decision state is fresh.
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+Do not claim Part 3 complete until you can demonstrate:
+
+A)
+NEW UNIVERSE TICKER
+→ AUTOMATIC SCREEN
+→ AUTOMATIC RESEARCH
+→ AUTOMATIC DEEP ANALYSIS
+→ AUTOMATIC OF PROMOTION
+
+B)
+EMERGING SETUP WITHOUT EVENT
+→ same autonomous progression
+
+C)
+POST-EVENT
+→ old thesis invalidated/staled
+→ new assessment required
+
+D)
+Broad-universe provider abstraction exists even though current production provider
+may still be the limited static seed.
+
+Also report:
+
+- per-cycle budgets
+- deferred queue behavior
+- failure/backoff behavior
+- tests and total pass count
+
+NO paid OpenAI/web calls for tests.

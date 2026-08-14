@@ -683,7 +683,8 @@ describe("Budget and Freshness Config", () => {
   });
 
   test("isInBackoff returns false when retryEligibleAt has passed", () => {
-    const pastRetry = new Date(Date.now() - 60 * 60_000).toISOString(); // 1h ago
+    // Use a fixed past timestamp relative to NOW_ISO (not Date.now() which is non-deterministic)
+    const pastRetry = new Date(new Date(NOW_ISO).getTime() - 60 * 60_000).toISOString(); // 1h before NOW_ISO
     const state = makeSyntheticState("BACKOFF_TEST3", { retryEligibleAt: pastRetry });
     assert.equal(isInBackoff(state, NOW_ISO), false, "Past retryEligibleAt → not in backoff");
   });
@@ -725,28 +726,54 @@ describe("Lifecycle State Derivation", () => {
     assert.equal(deriveLifecycleState(state), "STALE");
   });
 
-  test("HIGH_INTEREST state from HighInterest analysis", () => {
+  test("HIGH_INTEREST state from HighInterest analysis (fresh)", () => {
+    // lastAnalysedAt must be set to a recent time so analysis is NOT stale
+    const recentTs = new Date(new Date(NOW_ISO).getTime() - 60 * 60_000).toISOString(); // 1h ago
     const state = makeSyntheticState("HI_TEST", {
       screening: makeScreeningResult("HI_TEST", "DeepAnalysis", 5, "HighInterest"),
       analysis: { opportunityState: "HighInterest" } as any,
+      lastAnalysedAt: recentTs,
     });
-    assert.equal(deriveLifecycleState(state), "HIGH_INTEREST");
+    assert.equal(deriveLifecycleState(state, NOW_ISO), "HIGH_INTEREST");
   });
 
-  test("INVESTIGATE state from Investigate analysis", () => {
+  test("INVESTIGATE state from Investigate analysis (fresh)", () => {
+    const recentTs = new Date(new Date(NOW_ISO).getTime() - 60 * 60_000).toISOString();
     const state = makeSyntheticState("INV_TEST", {
       screening: makeScreeningResult("INV_TEST", "DeepAnalysis", 10, "Investigate"),
       analysis: { opportunityState: "Investigate" } as any,
+      lastAnalysedAt: recentTs,
     });
-    assert.equal(deriveLifecycleState(state), "INVESTIGATE");
+    assert.equal(deriveLifecycleState(state, NOW_ISO), "INVESTIGATE");
   });
 
-  test("MONITOR state from Monitor analysis", () => {
+  test("MONITOR state from Monitor analysis (fresh)", () => {
+    const recentTs = new Date(new Date(NOW_ISO).getTime() - 60 * 60_000).toISOString();
     const state = makeSyntheticState("MON_TEST", {
       screening: makeScreeningResult("MON_TEST", "SignalAssessment", 20, "Monitor"),
       analysis: { opportunityState: "Monitor" } as any,
+      lastAnalysedAt: recentTs,
     });
-    assert.equal(deriveLifecycleState(state), "MONITOR");
+    assert.equal(deriveLifecycleState(state, NOW_ISO), "MONITOR");
+  });
+
+  test("ANALYSIS_REQUIRED state when analysis is stale (no lastAnalysedAt)", () => {
+    // When lastAnalysedAt is null, isCatalystAnalysisStale() → true → ANALYSIS_REQUIRED
+    const state = makeSyntheticState("STALE_ANALYSIS_TEST", {
+      screening: makeScreeningResult("STALE_ANALYSIS_TEST", "DeepAnalysis", 10, "Investigate"),
+      analysis: { opportunityState: "Investigate" } as any,
+      lastAnalysedAt: null, // stale — never recorded
+    });
+    assert.equal(deriveLifecycleState(state, NOW_ISO), "ANALYSIS_REQUIRED");
+  });
+
+  test("DEFERRED state when deferredUntil is in the future", () => {
+    const futureDeferred = new Date(new Date(NOW_ISO).getTime() + 30 * 60_000).toISOString(); // 30min from NOW_ISO
+    const state = makeSyntheticState("DEFER_TEST", {
+      screening: makeScreeningResult("DEFER_TEST", "DeepAnalysis", 10, "Investigate"),
+      deferredUntil: futureDeferred,
+    });
+    assert.equal(deriveLifecycleState(state, NOW_ISO), "DEFERRED");
   });
 
   test("lifecycle state labels cover all states", () => {

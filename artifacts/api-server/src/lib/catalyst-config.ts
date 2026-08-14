@@ -103,10 +103,13 @@ export function computeRetryBackoff(
 export function isCatalystAnalysisStale(
   lastAnalysedAtIso: string | null,
   daysUntilEvent: number | null,
-  freshness: Pick<CatalystFreshnessConfig, "deepAnalysisMs"> = DEFAULT_CATALYST_FRESHNESS
+  freshness: Pick<CatalystFreshnessConfig, "deepAnalysisMs"> = DEFAULT_CATALYST_FRESHNESS,
+  /** Override current time (ms since epoch) — used for deterministic testing. */
+  nowMs?: number
 ): boolean {
   if (!lastAnalysedAtIso) return true;
-  const ageMs = Date.now() - new Date(lastAnalysedAtIso).getTime();
+  const now = nowMs ?? Date.now();
+  const ageMs = now - new Date(lastAnalysedAtIso).getTime();
 
   // Event approaching (< 3 days): always refresh if > 4h old
   if (daysUntilEvent !== null && daysUntilEvent <= 3) {
