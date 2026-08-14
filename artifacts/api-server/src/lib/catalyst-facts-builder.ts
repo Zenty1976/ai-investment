@@ -465,6 +465,7 @@ export function buildCatalystFacts(inputs: CatalystFactsInputs): CatalystFacts {
     },
     history:      unavailableEarningsHistory(),
     expectations: unavailableExpectations(),
+    behaviorProfile: null, // Computed by EarningsBehaviorCalculator when price history + earnings dates are available
     company: {
       investmentView:       companyInfo.investmentView,
       investmentCaseStrength: companyInfo.investmentCaseStrength,
@@ -493,9 +494,10 @@ export function buildCatalystFacts(inputs: CatalystFactsInputs): CatalystFacts {
       missingFields,
       staleFields,
       overallSourceConfidence,
-      earningsHistoryAvailable: false,
-      consensusDataAvailable:   false,
-      driverProfileAvailable:   !!driverProfile,
+      earningsHistoryAvailable:   false,
+      consensusDataAvailable:     false,
+      driverProfileAvailable:     !!driverProfile,
+      earningsBehaviorAvailable:  false, // set to true when EarningsBehaviorCalculator produces a profile
     },
   };
 }

@@ -11,6 +11,7 @@ import {
   CompositeMarketUniverseProvider,
 } from "./lib/market-universe-provider";
 import { getAllUniverseEntries } from "./lib/catalyst-universe";
+import { seedUniverseIfEmpty } from "./lib/market-universe-repository";
 
 const rawPort = process.env["PORT"];
 
@@ -31,15 +32,48 @@ if (Number.isNaN(port) || port <= 0) {
 // profile selection from the analysis repository.
 initPolicyStore();
 
-// Initialize Market Universe Provider (Part 3, spec §13).
+// Initialize Market Universe Provider (Part 3/4, spec §2-3).
 // Composite: Saxo for per-ticker UIC enrichment, Seed as fallback/enumeration.
 // NOTE: Saxo cannot enumerate exchange equities — seed is the universe source.
+const allEntries = getAllUniverseEntries();
 setMarketUniverseProvider(
   new CompositeMarketUniverseProvider([
     new SaxoMarketUniverseProvider(),
-    new SeedMarketUniverseProvider(getAllUniverseEntries()),
+    new SeedMarketUniverseProvider(allEntries),
   ])
 );
+
+// Seed the Market Universe Repository so data-coverage reports have a baseline.
+// Idempotent — only writes if the exchange key is absent from the repository.
+// Groups by exchange and seeds each one separately.
+{
+  const byExchange = new Map<string, typeof allEntries>();
+  for (const entry of allEntries) {
+    const ex = entry.exchange.toUpperCase();
+    if (!byExchange.has(ex)) byExchange.set(ex, []);
+    byExchange.get(ex)!.push(entry);
+  }
+  for (const [exchange, entries] of byExchange) {
+    seedUniverseIfEmpty(exchange, entries.map(e => ({
+      ticker: e.ticker,
+      company: e.company,
+      exchange: e.exchange,
+      country: e.country,
+      currency: e.currency,
+      sector: e.sector ?? null,
+      industry: e.industry ?? null,
+      uic: e.uic ?? null,
+      tradeable: e.tradeable,
+      active: e.active,
+      lastVerifiedAt: null,
+      source: "STATIC_SEED" as const,
+    })));
+  }
+  logger.info(
+    { exchanges: [...byExchange.keys()], total: allEntries.length },
+    "Market Universe Repository seeded (STATIC_SEED — limited coverage)"
+  );
+}
 
 // Load persisted OpenAI usage log from disk.
 initUsageLog();

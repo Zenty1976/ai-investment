@@ -25,6 +25,7 @@ import openaiUsageRouter from "./openai-usage";
 import portfolioIntelligenceRouter from "./portfolio-intelligence";
 import catalystIntelligenceRouter from "./catalyst-intelligence";
 import companyEventsRouter from "./company-events";
+import dataCoverageRouter from "./data-coverage";
 
 const router: IRouter = Router();
 
@@ -54,5 +55,6 @@ router.use(openaiUsageRouter);
 router.use(portfolioIntelligenceRouter);
 router.use(catalystIntelligenceRouter);
 router.use(companyEventsRouter);
+router.use(dataCoverageRouter);
 
 export default router;

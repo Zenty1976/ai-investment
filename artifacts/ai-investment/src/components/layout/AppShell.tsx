@@ -21,6 +21,7 @@ import {
   Users,
   Zap,
   Crosshair,
+  Database,
 } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { format } from "date-fns"
@@ -68,6 +69,7 @@ const NAV_ITEMS = [
   { label: "REVIEW",      href: "/trade-review",   icon: ClipboardList, enabled: true  },
   { label: "BRIEF",       href: "/command-brief",  icon: Zap,           enabled: true  },
   { label: "AUTOMATE",   href: "/automation",     icon: Cpu,           enabled: true  },
+  { label: "DATA CVRG",   href: "/data-coverage",  icon: Database,  enabled: true  },
   { label: "LOG & HIST.", href: "/log",           icon: History,    enabled: true  },
   { label: "SETTINGS",    href: "/settings",  icon: Settings,     enabled: true  },
 ]

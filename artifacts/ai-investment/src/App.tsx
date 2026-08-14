@@ -20,6 +20,7 @@ import SystemLog from '@/pages/SystemLog';
 import Automation from '@/pages/Automation';
 import CommandBrief from '@/pages/CommandBrief';
 import CatalystWatch from '@/pages/CatalystWatch';
+import DataCoverage from '@/pages/DataCoverage';
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ function Router() {
         <Route path="/investors" component={InvestorWatch} />
         <Route path="/automation" component={Automation} />
         <Route path="/command-brief" component={CommandBrief} />
+        <Route path="/data-coverage" component={DataCoverage} />
         <Route path="/settings" component={Settings} />
         <Route path="/log" component={SystemLog} />
         <Route component={SimpleNotFound} />

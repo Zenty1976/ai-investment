@@ -240,6 +240,51 @@ export interface EarningsHistoryProfile {
   unavailableReason: string | null;
 }
 
+// ── Earnings behavior profile (deterministic) ─────────────────────────────────
+
+/**
+ * Deterministic profile of historical earnings behavior (spec §15 / §16).
+ * Computed from Saxo OHLC price history + known earnings dates.
+ * Partial when no external provider supplies EPS/revenue actuals.
+ *
+ * DO NOT use these figures to make BUY/SELL rules.
+ * They are evidence inputs for Catalyst Intelligence.
+ */
+export interface EarningsBehaviorProfile {
+  /** Number of past earnings reports analyzed. */
+  reportsAnalyzed: number;
+  /** Historical EPS beat rate (fraction 0-1). Null if no external EPS data. */
+  beatRateEPS: number | null;
+  /** Historical revenue beat rate (fraction 0-1). Null if no external revenue data. */
+  beatRateRevenue: number | null;
+  /** Average EPS surprise % across analyzed reports. Null if no EPS data. */
+  averageEPSSurprisePct: number | null;
+  /** Average revenue surprise % across analyzed reports. Null if no revenue data. */
+  averageRevenueSurprisePct: number | null;
+  /** Average 1-day post-earnings return (Saxo OHLC, deterministic). */
+  average1DReaction: number | null;
+  /** Average 5-day post-earnings return (Saxo OHLC, deterministic). */
+  average5DReaction: number | null;
+  /** Median absolute 1-day move — volatility proxy. */
+  medianAbsolute1DReaction: number | null;
+  /** Times EPS beat but stock fell (priced-in evidence). */
+  beatButStockFellCount: number;
+  /** Times EPS missed but stock rose (market forward-looking evidence). */
+  missButStockRoseCount: number;
+  /** Average absolute 1D move around earnings (historical volatility). */
+  historicalVolatilityAroundEarnings: number | null;
+  /** Price data source (always "Saxo OHLC" when available). */
+  priceDataSource: string;
+  /** Fundamental data source (null when no external provider). */
+  fundamentalDataSource: string | null;
+  lastComputedAt: string;
+  /** True when price reactions are available but EPS/revenue data are not. */
+  isPartial: boolean;
+  /** True when neither price nor fundamental data are available. */
+  isUnavailable: boolean;
+  unavailableReason: string | null;
+}
+
 // ── Analyst expectations / consensus ──────────────────────────────────────────
 
 /**
@@ -500,6 +545,13 @@ export interface CatalystFacts {
   history: EarningsHistoryProfile;
   expectations: ExpectationsProfile;
 
+  /**
+   * Deterministic earnings behavior profile computed from Saxo OHLC + known dates.
+   * Null until enough price history is available for analysis.
+   * Partial when only price data is available (no EPS/revenue from external provider).
+   */
+  behaviorProfile: EarningsBehaviorProfile | null;
+
   company: {
     /** Current investment view from Company Monitor. */
     investmentView: string | null;
@@ -560,6 +612,8 @@ export interface CatalystFacts {
     consensusDataAvailable: boolean;
     /** Whether Company Driver Profile is available. */
     driverProfileAvailable: boolean;
+    /** Whether a (partial or full) earnings behavior profile is available. */
+    earningsBehaviorAvailable: boolean;
   };
 }
 

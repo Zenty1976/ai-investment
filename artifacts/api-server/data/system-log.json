@@ -1,523 +1,5 @@
 [
   {
-    "id": "7b3a4c54-ac61-48d1-80f6-cdb28f6bd1cb",
-    "timestamp": "2026-08-14T08:36:06.528Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "643c680e-cb66-4c2f-bbd3-b1da7ba2c3aa",
-    "timestamp": "2026-08-14T10:20:15.565Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "591fa675-9115-40b2-930c-8ec2ac4e7625",
-    "timestamp": "2026-08-14T10:20:20.617Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts SKIPPED_UNCHANGED — fingerprint: 1mz0ynx, last AI: 2026-08-14T08:32:56.432Z, age: 107min"
-  },
-  {
-    "id": "3986884c-c9a2-4772-bd15-c4ffc9e8149e",
-    "timestamp": "2026-08-14T10:20:20.650Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review SKIPPED_UNCHANGED — fingerprint: 1u6outi, last AI: 2026-08-14T07:52:48.491Z, age: 148min"
-  },
-  {
-    "id": "49cb9c27-f3d2-45c7-a522-033c82ed5e1e",
-    "timestamp": "2026-08-14T10:20:20.683Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "ba66d434-ab4b-48b8-a987-6914f7773517",
-    "timestamp": "2026-08-14T10:20:20.714Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "695e670d-c783-4ab6-8c15-d6b664de34a8",
-    "timestamp": "2026-08-14T10:20:20.718Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "ff15ee18-9127-4a06-ab2b-e7d139ca8c43",
-    "timestamp": "2026-08-14T10:20:26.127Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed (MATERIAL CHANGE): Neutral sentiment, Moderate risk"
-  },
-  {
-    "id": "50675b1e-daaa-4468-a81a-5f9078568f9b",
-    "timestamp": "2026-08-14T10:20:26.166Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via Scheduled (5576ms, change: Medium)"
-  },
-  {
-    "id": "14228cbb-2609-4494-b595-0a40258a7296",
-    "timestamp": "2026-08-14T10:20:26.169Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor waiting for fresh: news-monitor"
-  },
-  {
-    "id": "9f5588ab-4aa7-44a5-9b4b-f66f9488413c",
-    "timestamp": "2026-08-14T10:20:26.264Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder waiting for fresh: portfolio-manager, portfolio-analyzer, news-monitor"
-  },
-  {
-    "id": "de1914d7-91dd-4e11-b025-551ced1fa039",
-    "timestamp": "2026-08-14T10:20:30.120Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed (MATERIAL CHANGE): 8 market-moving stories found"
-  },
-  {
-    "id": "25897a91-d646-44a7-b241-b66dff567ca2",
-    "timestamp": "2026-08-14T10:20:30.261Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via Scheduled (9668ms, change: Medium)"
-  },
-  {
-    "id": "a3b0a6a0-b58b-4708-9779-4e360c913bbe",
-    "timestamp": "2026-08-14T10:20:30.279Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder waiting for fresh: portfolio-manager, portfolio-analyzer, sector-monitor"
-  },
-  {
-    "id": "67b1f1ba-0e25-4552-80a1-a48fcf88979d",
-    "timestamp": "2026-08-14T10:20:30.286Z",
-    "module": "Sector Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "f0b3cd0b-976b-4619-b0e8-fd75f20d2cc4",
-    "timestamp": "2026-08-14T10:20:30.686Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "bb884821-8352-4ba5-8417-58e3ea6690ba",
-    "timestamp": "2026-08-14T10:20:37.847Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (7566ms, change: None)"
-  },
-  {
-    "id": "461425b5-3a58-49f4-a454-4bfbdf5f2f8e",
-    "timestamp": "2026-08-14T10:20:37.870Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Portfolio analysis completed"
-  },
-  {
-    "id": "c39362b1-6823-47aa-b896-62ff418b7ff9",
-    "timestamp": "2026-08-14T10:20:37.871Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Main conclusion: Portfolio is fully in cash with mixed signals from potential holdings"
-  },
-  {
-    "id": "23648748-74a2-4dde-b1b2-80f3d743a717",
-    "timestamp": "2026-08-14T10:20:37.879Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall rating: Fair"
-  },
-  {
-    "id": "2ab0e8d7-7177-4a28-b59a-feb78c2fbc45",
-    "timestamp": "2026-08-14T10:20:37.881Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall outlook: Neutral"
-  },
-  {
-    "id": "57bb0cb2-3c2e-46da-b523-1ad57217f900",
-    "timestamp": "2026-08-14T10:20:37.884Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main concern identified: Opportunity Cost of Full Cash Position — Holding 100% cash may miss out on positive market or sector moves in the next 1–3 months."
-  },
-  {
-    "id": "db0382aa-9cd0-4b03-b515-c3417950257f",
-    "timestamp": "2026-08-14T10:20:37.886Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main opportunity identified: Novo Nordisk EU Product Launches — Upcoming EU launches of Wegovy® pill and HD pen could drive growth and share price appreciation."
-  },
-  {
-    "id": "0ce638f1-db86-4980-b09d-19d9617e65c8",
-    "timestamp": "2026-08-14T10:20:37.888Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Recommended highest-priority action: Monitor Novo Nordisk ahead of Q3 earnings and EU product launches"
-  },
-  {
-    "id": "1f7147ae-ef41-4e0b-901b-2d766cd8c623",
-    "timestamp": "2026-08-14T10:20:37.924Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer completed via Dependency (17305ms, change: Medium)"
-  },
-  {
-    "id": "105d082a-f7fa-4bfa-ba75-ffe78150b83d",
-    "timestamp": "2026-08-14T10:20:37.925Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder waiting for fresh: portfolio-manager, sector-monitor"
-  },
-  {
-    "id": "450ccf1d-011c-44e6-9efd-81d3d41a21d9",
-    "timestamp": "2026-08-14T10:20:37.931Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "11063538-6391-4feb-9738-cc9e72d012c5",
-    "timestamp": "2026-08-14T10:20:39.049Z",
-    "module": "Sector Monitor",
-    "level": "info",
-    "message": "Sector analysis completed (MATERIAL CHANGE): Energy strongest, Communication Services weakest"
-  },
-  {
-    "id": "76db503b-e499-4e60-90b3-7d92011ac4c1",
-    "timestamp": "2026-08-14T10:20:39.066Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor completed via Dependency (8802ms, change: Medium)"
-  },
-  {
-    "id": "b47171f8-e117-45b9-972a-0a07db254b49",
-    "timestamp": "2026-08-14T10:20:39.067Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder waiting for fresh: portfolio-manager"
-  },
-  {
-    "id": "78705c03-1faf-4a35-b92a-734f617affb2",
-    "timestamp": "2026-08-14T10:20:55.587Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "a2786fe5-1429-4148-8b4e-ca5ef0444fd0",
-    "timestamp": "2026-08-14T10:21:25.592Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "c1e97a09-f111-4a66-b24c-9b4b8d18cea7",
-    "timestamp": "2026-08-14T10:21:55.604Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "4371c926-558b-4ee7-b8e3-95012df5de09",
-    "timestamp": "2026-08-14T10:22:25.617Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "51f41224-b38e-44fc-9c44-9cdfea374370",
-    "timestamp": "2026-08-14T10:22:55.608Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "5378194b-53d7-408a-bb90-c9478f29017f",
-    "timestamp": "2026-08-14T10:23:25.631Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "e41b560d-6182-4f01-aa27-0c84241b4e94",
-    "timestamp": "2026-08-14T10:23:55.653Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "d39dd903-b1e9-46c1-bd00-ce1be2746a82",
-    "timestamp": "2026-08-14T10:24:25.701Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "a5cf1039-da27-4f2b-b0ed-6d0986c37fb9",
-    "timestamp": "2026-08-14T10:24:55.679Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "b13ed5dc-5302-4f5f-9a25-078c795539ff",
-    "timestamp": "2026-08-14T10:25:25.680Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "3455aa04-eed1-441b-b7ef-465630fd5687",
-    "timestamp": "2026-08-14T10:25:55.691Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "8bb5bf05-5ff6-409b-920d-9fd4203f1137",
-    "timestamp": "2026-08-14T10:26:25.700Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "d0537100-a433-4084-b7f5-dd95b3116650",
-    "timestamp": "2026-08-14T10:26:55.705Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "b3fd964f-f3f2-48cc-9f5d-4057ee41ae68",
-    "timestamp": "2026-08-14T10:27:25.720Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "c91db234-9950-408b-b212-28c9b2525bdb",
-    "timestamp": "2026-08-14T10:27:55.726Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "c867a9c6-6d7f-47ac-842a-a38e55bfcb03",
-    "timestamp": "2026-08-14T10:28:25.747Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "db739733-5fae-4ed6-b549-e04676a75179",
-    "timestamp": "2026-08-14T10:28:55.755Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "19d65058-8357-4b6e-982e-8221556930e4",
-    "timestamp": "2026-08-14T10:29:25.764Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "0249f5df-109f-48b3-9307-54161206ed45",
-    "timestamp": "2026-08-14T10:29:55.788Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "c0b9d4f5-ed60-45fd-8caf-34c18c0d77d7",
-    "timestamp": "2026-08-14T10:30:25.869Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "3cfc7610-e1ba-4154-af81-ae8fe3aae915",
-    "timestamp": "2026-08-14T10:30:55.811Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "1414eadf-6e8c-41d4-bc06-2a072a2bb6da",
-    "timestamp": "2026-08-14T10:31:25.820Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "fe9b5d5c-be55-4d7f-9e7e-8c466aca754f",
-    "timestamp": "2026-08-14T10:31:55.819Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "f07b0825-1ab7-426d-bab4-030ac4301696",
-    "timestamp": "2026-08-14T10:32:25.838Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "86ad8f84-0840-42f4-9f1e-3e1c2cd63a42",
-    "timestamp": "2026-08-14T10:32:55.852Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "b08c4119-0e80-4730-80ae-4f5159e09cb2",
-    "timestamp": "2026-08-14T10:33:25.872Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "de2596ba-9986-464d-9e32-f17dbfb5910d",
-    "timestamp": "2026-08-14T10:33:55.877Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "a7d9dbba-6c69-486d-8433-27b8aab9c7be",
-    "timestamp": "2026-08-14T10:34:25.899Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "41360550-a838-42fa-a734-043a31c5b82e",
-    "timestamp": "2026-08-14T10:34:55.920Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "54f8f7ac-d981-41c9-b189-1d1a98e9cada",
-    "timestamp": "2026-08-14T10:35:26.083Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "f57e0987-27be-4b86-97bb-0c6854d9bf51",
-    "timestamp": "2026-08-14T10:35:55.920Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "34d9545a-1c8e-413d-9119-b78346dbd443",
-    "timestamp": "2026-08-14T10:36:25.922Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "f1cee9e9-e676-4d28-9273-a6dc05cdc771",
-    "timestamp": "2026-08-14T10:36:55.936Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "a29a4a54-4d05-4781-8f4d-b502ca8d7485",
-    "timestamp": "2026-08-14T10:37:25.955Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "2676ed1d-1610-4f5a-848b-8b2f31255dca",
-    "timestamp": "2026-08-14T10:37:55.956Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "63b0d8e7-52fe-4777-86ea-05f8f0f4a68f",
-    "timestamp": "2026-08-14T10:38:25.964Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "ce13b74d-0464-4aa5-b525-fcc591aabf04",
-    "timestamp": "2026-08-14T10:38:55.974Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "39dca354-b8ae-4b73-b0b4-a697da4969ee",
-    "timestamp": "2026-08-14T10:39:26.004Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "a51fc5a7-5dd9-453c-9564-a1140c5eb64b",
-    "timestamp": "2026-08-14T10:39:29.827Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "69f6d8ce-51f7-4016-8753-72fc7c5d6463",
-    "timestamp": "2026-08-14T10:39:44.924Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "9af403f5-7c87-49fc-92fe-409e10bc7c63",
-    "timestamp": "2026-08-14T10:40:09.855Z",
-    "module": "AutomationOrchestrator",
-    "level": "error",
-    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
-  },
-  {
-    "id": "13caca27-a0dc-493c-a71b-aca56c6ae423",
-    "timestamp": "2026-08-14T10:40:29.875Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "a24b3a76-77de-49fc-8bc3-958ad4deaa54",
-    "timestamp": "2026-08-14T10:40:30.037Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked (engine): no new material developments (2ms, aiCalls=0)"
-  },
-  {
-    "id": "2d6db9c0-6dfe-43fc-b2f2-94d41e56c9ec",
-    "timestamp": "2026-08-14T10:40:30.078Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Dependency (235ms, change: Medium)"
-  },
-  {
     "id": "97b90ac4-405b-4e6a-823f-024a0e464f1b",
     "timestamp": "2026-08-14T10:40:30.080Z",
     "module": "AutomationOrchestrator",
@@ -3495,6 +2977,524 @@
   {
     "id": "14de9861-3eaa-4d14-aabf-001c6c1b31fd",
     "timestamp": "2026-08-14T18:04:07.778Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "d32bbfac-1b6b-4aeb-be5c-94c9c6bd3806",
+    "timestamp": "2026-08-14T18:04:37.780Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "d931e0c3-3807-417f-ba95-55baa6b2593a",
+    "timestamp": "2026-08-14T18:05:07.776Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "8eca430b-6f75-4fe3-b26e-1c2ca036d064",
+    "timestamp": "2026-08-14T18:05:37.794Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "6d1f4c5a-101a-42f0-a1cf-6595ca98720b",
+    "timestamp": "2026-08-14T18:06:07.959Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "203745e3-7421-486b-b13f-8becbce34886",
+    "timestamp": "2026-08-14T18:06:37.839Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9891710e-f74b-42cf-bd72-9a537b1b6c79",
+    "timestamp": "2026-08-14T18:07:07.848Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "07136874-46d0-4a15-8bc2-a06bc571c652",
+    "timestamp": "2026-08-14T18:07:37.842Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ec376d23-6665-42c8-b5c3-aa9866fdae1b",
+    "timestamp": "2026-08-14T18:08:07.916Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7cab3f4f-374f-4ea1-9d4b-33fcb88fe5cf",
+    "timestamp": "2026-08-14T18:08:37.964Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "5088c0ad-50b5-4e3a-b88e-86fd2bb43ec1",
+    "timestamp": "2026-08-14T18:09:07.866Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7404974a-316c-4723-9d17-ab8f78716d29",
+    "timestamp": "2026-08-14T18:09:37.875Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "2939b255-784b-48cb-9923-3da96832d91c",
+    "timestamp": "2026-08-14T18:09:57.861Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Dependency)"
+  },
+  {
+    "id": "3004ed61-b14c-4b75-89fb-0570cd8f5016",
+    "timestamp": "2026-08-14T18:09:57.905Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts completed via deterministic engine (1ms, change: High)"
+  },
+  {
+    "id": "e7ba23c9-efff-4d55-9681-6089fa00480b",
+    "timestamp": "2026-08-14T18:09:57.907Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "4 new alert(s): Brent Crude Oil Prices Rise Amid Iran Conflict; Jackson Hole Economic Symposium Scheduled for August 27; U.S. Retail Sales Decline Raises Economic Concerns; Investors Wary of Stagflation Amid Economic Data"
+  },
+  {
+    "id": "d4228683-e13e-46a7-89b5-5ff7cb50cc7b",
+    "timestamp": "2026-08-14T18:09:58.015Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: U.S. Stocks Near Record Highs Amid Weak Retail Data; Oil Prices Rise Amid Iran Conflict Uncertainty"
+  },
+  {
+    "id": "650fe81c-752e-4352-9c8d-ae8b199f30ec",
+    "timestamp": "2026-08-14T18:09:58.028Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: State Employment and Unemployment Report (in 7 days) [Event]"
+  },
+  {
+    "id": "02b0c90a-79a7-4f67-bb70-fb9b9e014821",
+    "timestamp": "2026-08-14T18:09:58.146Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Dependency (294ms, change: High)"
+  },
+  {
+    "id": "e51ab13c-d764-4aef-af4e-e24587374c91",
+    "timestamp": "2026-08-14T18:09:58.147Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief waiting for fresh: portfolio-manager"
+  },
+  {
+    "id": "6398813f-77db-4b76-a4f5-41db380dda6c",
+    "timestamp": "2026-08-14T18:10:07.872Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "37dea045-4579-4f19-8e5c-9217f527eef6",
+    "timestamp": "2026-08-14T18:10:37.867Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "e7855d62-b34b-49fe-a00f-5792af2884c9",
+    "timestamp": "2026-08-14T18:11:07.875Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "779d3bff-3ff4-4453-a9a7-c534aaf39ec7",
+    "timestamp": "2026-08-14T18:11:37.875Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "7bf652c3-bd64-4797-b77a-b2d681b1879e",
+    "timestamp": "2026-08-14T18:12:07.891Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b7430963-1e8d-4b91-b031-2d6b0a69b3ce",
+    "timestamp": "2026-08-14T18:12:37.888Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "5cab1693-8ee4-4a13-9fce-bc4538eb3f6f",
+    "timestamp": "2026-08-14T18:13:07.908Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b4e92fc3-0048-405e-978f-10fb5844275b",
+    "timestamp": "2026-08-14T18:13:38.059Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "1b2ad5f7-dd30-48f8-a791-5e2101d75cc3",
+    "timestamp": "2026-08-14T18:14:07.913Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9daad199-7b5d-44fc-a8ed-2ab557c4e7bd",
+    "timestamp": "2026-08-14T18:14:37.908Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ae8e035c-1cb6-4c00-89fe-cffee3d8f719",
+    "timestamp": "2026-08-14T18:15:07.915Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "26036f11-0afa-4d3c-9209-6b012101559d",
+    "timestamp": "2026-08-14T18:15:37.911Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "5bff3919-627a-40e9-a77e-bbca94273fc8",
+    "timestamp": "2026-08-14T18:16:07.920Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "d4e88b6a-fbeb-4873-a4ff-7253f6815005",
+    "timestamp": "2026-08-14T18:16:37.920Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "ff4966c4-fb1e-4baf-9f6a-11042089ac69",
+    "timestamp": "2026-08-14T18:17:07.921Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "bd430fc0-53aa-484e-8b0f-eae68399770e",
+    "timestamp": "2026-08-14T18:17:37.934Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "1b2da37b-fd3e-4a53-88ae-961d460bbbb0",
+    "timestamp": "2026-08-14T18:18:08.009Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a6fb3235-f2c1-4e7e-999d-846b64ffcc6b",
+    "timestamp": "2026-08-14T18:18:37.938Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "22c3f3ef-e409-4e45-91b4-71295e497dd3",
+    "timestamp": "2026-08-14T18:19:08.005Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "8ad89484-6543-4c0c-8822-04db5ac48741",
+    "timestamp": "2026-08-14T18:19:37.924Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b85bfad5-cd27-46ee-b2eb-ebcf1ab07f7f",
+    "timestamp": "2026-08-14T18:20:07.932Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "0e3657ca-845b-4cf4-9975-dba52374572f",
+    "timestamp": "2026-08-14T18:20:37.930Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "2813ae14-6317-4031-8ff3-923a8aa83048",
+    "timestamp": "2026-08-14T18:21:07.937Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "e1f525e9-6673-4c5f-a3ce-b9fa9e343a06",
+    "timestamp": "2026-08-14T18:21:37.995Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "5b960cd4-0872-4622-8af5-93c09f31b95a",
+    "timestamp": "2026-08-14T18:22:07.930Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "0f378367-90e4-4ee7-a470-10cfdac79e0b",
+    "timestamp": "2026-08-14T18:22:38.047Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "f2b13a5c-bbe9-4b7a-8074-d971db6ba093",
+    "timestamp": "2026-08-14T18:23:07.936Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "b045dc62-123e-449b-8c76-42d7fd483a84",
+    "timestamp": "2026-08-14T18:23:37.937Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "dd38624e-27d0-40a5-86d1-e791742c9c61",
+    "timestamp": "2026-08-14T18:24:07.940Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "465ab23b-ea60-4039-aec6-b91508e314ee",
+    "timestamp": "2026-08-14T18:24:37.929Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "9663a371-3a34-4bc8-8471-ea1569460ee4",
+    "timestamp": "2026-08-14T18:25:07.938Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "dc9dcc24-06a4-4e39-b386-b525cce9ba49",
+    "timestamp": "2026-08-14T18:25:37.948Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a0b88027-9158-4ff9-9248-426a361e2679",
+    "timestamp": "2026-08-14T18:26:08.013Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "c43cabee-ce39-4398-84ec-ec574bf691c3",
+    "timestamp": "2026-08-14T18:26:37.970Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a22b478c-03fb-469c-b41e-f00c28609764",
+    "timestamp": "2026-08-14T18:27:08.035Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "08378ee8-72f7-43aa-9e36-41aa8417a280",
+    "timestamp": "2026-08-14T18:27:38.107Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "a2bc7bc3-3e83-4762-883b-7a134663bfb0",
+    "timestamp": "2026-08-14T18:28:07.970Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "eb8d86ee-1a29-4e27-bb5c-058f5431d15b",
+    "timestamp": "2026-08-14T18:28:37.956Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "bb2930ef-6ce0-456b-b42e-26020a23c27b",
+    "timestamp": "2026-08-14T18:29:08.029Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "2b5e4eca-3b80-4a6c-ab41-d4dea98356a6",
+    "timestamp": "2026-08-14T18:29:37.952Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "2bc5eaa1-7f67-412e-96a4-d2c7ca8aea36",
+    "timestamp": "2026-08-14T18:29:46.725Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
+  },
+  {
+    "id": "5614cea8-1099-433c-a9a4-2325efb721de",
+    "timestamp": "2026-08-14T18:30:01.795Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"
+  },
+  {
+    "id": "79e56d15-9986-4769-8992-d03907023327",
+    "timestamp": "2026-08-14T18:30:16.767Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts SKIPPED_UNCHANGED — fingerprint: 2rxkrw, last AI: 2026-08-14T18:09:57.851Z, age: 20min"
+  },
+  {
+    "id": "aba38ffe-bc59-4041-93b9-247d0832b02f",
+    "timestamp": "2026-08-14T18:30:16.786Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review SKIPPED_UNCHANGED — fingerprint: jdi0se, last AI: 2026-08-14T17:29:56.995Z, age: 60min"
+  },
+  {
+    "id": "a3df1221-ded5-42f0-b8c0-cd7f6def72f8",
+    "timestamp": "2026-08-14T18:30:16.886Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "5024f2c2-1e64-4770-bc10-b90454ac3892",
+    "timestamp": "2026-08-14T18:30:17.019Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "f43080bf-5c95-4ed5-8921-a8fd100f024c",
+    "timestamp": "2026-08-14T18:30:21.812Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed (no material change): Neutral sentiment, Moderate risk — materialVersion unchanged"
+  },
+  {
+    "id": "8820adca-ebc2-4ac9-9988-6459aa23ff61",
+    "timestamp": "2026-08-14T18:30:21.944Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via Scheduled (5216ms, change: None)"
+  },
+  {
+    "id": "9102101f-51c2-4a4e-85d1-3f5d9a892f31",
+    "timestamp": "2026-08-14T18:30:21.953Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "sector-monitor downstream skipped — upstream change was None"
+  },
+  {
+    "id": "0e658444-9532-46bb-a89b-d08c66b1ad91",
+    "timestamp": "2026-08-14T18:30:21.968Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts downstream skipped — upstream change was None"
+  },
+  {
+    "id": "221307de-cfbc-40a3-bd3c-f6f9ea046f71",
+    "timestamp": "2026-08-14T18:30:21.970Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder downstream skipped — upstream change was None"
+  },
+  {
+    "id": "83a90cc5-1765-4070-962f-6b59051efc21",
+    "timestamp": "2026-08-14T18:30:25.138Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed (MATERIAL CHANGE): 8 market-moving stories found"
+  },
+  {
+    "id": "65401078-4e76-46ee-8eb4-7da47f9f0257",
+    "timestamp": "2026-08-14T18:30:25.167Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via Scheduled (8439ms, change: Medium)"
+  },
+  {
+    "id": "ca39060c-04e8-45b8-b36c-092305370824",
+    "timestamp": "2026-08-14T18:30:33.287Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "catalyst-intelligence completed via Dependency (8110ms, change: None)"
+  },
+  {
+    "id": "9e7580c3-5942-401b-b8fa-3dd08d2b3266",
+    "timestamp": "2026-08-14T18:30:33.299Z",
+    "module": "AutomationOrchestrator",
+    "level": "error",
+    "message": "portfolio-manager failed after 2 attempt(s): fetch failed"
+  },
+  {
+    "id": "3bdd1252-92fb-4274-86b3-761565f51add",
+    "timestamp": "2026-08-14T18:30:56.768Z",
     "module": "AutomationOrchestrator",
     "level": "error",
     "message": "portfolio-manager failed after 2 attempt(s): HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}"

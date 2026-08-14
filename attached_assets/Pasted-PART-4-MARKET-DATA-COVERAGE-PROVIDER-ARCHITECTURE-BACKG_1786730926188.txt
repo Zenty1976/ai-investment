@@ -1,0 +1,1025 @@
+PART 4 — MARKET DATA COVERAGE & PROVIDER ARCHITECTURE
+
+BACKGROUND
+
+Catalyst Intelligence Parts 1–3 are now substantially complete.
+
+We now have an autonomous pipeline capable of:
+
+Market Universe
+→ Catalyst/Event/Signal discovery
+→ Screening
+→ Driver research
+→ Signal accumulation
+→ Deep Catalyst Analysis
+→ Opportunity Finder
+→ Trade Decision
+
+The next problem is DATA COVERAGE.
+
+The intelligence engine cannot discover opportunities that are absent from its
+market/event/fundamental data.
+
+Do NOT add more Catalyst reasoning features in this task.
+
+The purpose of Part 4 is:
+
+1. audit our actual current data coverage
+2. use existing sources better where possible
+3. create clean provider abstractions for missing data
+4. make the application ready for broad DK + US coverage
+5. NEVER allow OpenAI to invent objective financial data.
+
+
+==================================================
+1. FIRST — AUDIT THE ACTUAL CURRENT CODE AND DATA SOURCES
+==================================================
+
+Before implementing anything, inspect the current application.
+
+Map every current source of:
+
+- instrument metadata
+- ticker/company identity
+- price history
+- earnings dates
+- company events
+- earnings actuals
+- earnings estimates
+- analyst consensus
+- estimate revisions
+- revenue estimates
+- EPS estimates
+- company guidance
+- historical guidance
+- financial statements
+- sector/industry
+- market cap
+- corporate actions
+- news
+- event discovery
+
+For each field report internally:
+
+SOURCE
+COVERAGE
+FRESHNESS
+HISTORICAL AVAILABILITY
+RELIABILITY
+COST
+API LIMITATIONS
+
+Do not assume Saxo lacks something merely because current code does not use it.
+
+Inspect the actual Saxo integration/endpoints first.
+
+
+==================================================
+2. MARKET UNIVERSE — PRIMARY PRIORITY
+==================================================
+
+We currently have a MarketUniverseProvider abstraction but production coverage
+still relies partly on static seed lists.
+
+That is insufficient.
+
+The desired universe is broadly:
+
+SUPPORTED/TRADABLE DANISH EQUITIES
++
+SUPPORTED/TRADABLE US EQUITIES
+
+We need thousands of possible companies to be discoverable without manually
+hardcoding tickers.
+
+Determine whether Saxo can enumerate this universe using:
+
+instrument/reference endpoints
+exchange filters
+asset-type filters
+pagination
+search
+other existing OpenAPI capabilities.
+
+Do NOT guess.
+
+If the current Saxo implementation is incomplete but the Saxo API itself supports
+this, implement the missing capability.
+
+
+==================================================
+3. MARKET UNIVERSE REPOSITORY
+==================================================
+
+Create/use a persistent MarketUniverseRepository.
+
+Store compact objective metadata:
+
+instrumentId/UIC
+ticker
+companyName
+exchange
+country
+currency
+assetType
+sector
+industry
+tradable
+active
+source
+lastVerifiedAt
+
+Do NOT store giant API responses.
+
+Universe refresh should be slow.
+
+This data changes relatively infrequently.
+
+Conceptually:
+
+FULL REFRESH:
+daily/weekly as appropriate
+
+INCREMENTAL VERIFICATION:
+when necessary
+
+Do NOT rebuild the entire universe during Run All.
+
+
+==================================================
+4. STATIC SEEDS
+==================================================
+
+DANISH_SEED / US_SEED must NOT define production market coverage.
+
+They may remain for:
+
+fallback
+development
+tests
+bootstrap
+
+but production debug must clearly state when the application is operating with
+limited seed coverage.
+
+Never present seed coverage as:
+
+"US market covered"
+
+
+==================================================
+5. EVENT/CALENDAR DATA AUDIT
+==================================================
+
+Our Catalyst engine depends heavily on knowing BEFOREHAND that something is
+scheduled.
+
+Audit how we currently obtain:
+
+earnings dates
+investor days
+capital markets days
+shareholder meetings
+product events
+technology events
+clinical readouts
+FDA dates
+regulatory decisions
+conferences
+company presentations
+other scheduled catalysts.
+
+Determine which can be obtained from structured sources and which require web
+discovery.
+
+The goal is NOT necessarily one provider for everything.
+
+
+==================================================
+6. EARNINGS CALENDAR IS ESPECIALLY IMPORTANT
+==================================================
+
+We need reliable upcoming earnings dates across the market universe.
+
+This must NOT require:
+
+one OpenAI/web search per ticker.
+
+We need a scalable calendar source.
+
+Determine whether existing sources/Saxo can provide it.
+
+If not, mark this as a specific external data gap.
+
+Desired data:
+
+ticker
+earningsDate
+time:
+BEFORE_MARKET
+AFTER_MARKET
+DURING_MARKET
+UNKNOWN
+
+fiscalQuarter
+fiscalYear
+confirmed/tentative
+source
+lastUpdatedAt
+
+
+==================================================
+7. EARNINGS HISTORY
+==================================================
+
+We need historical earnings information for Catalyst Intelligence.
+
+Desired per report:
+
+reportDate
+fiscalQuarter
+fiscalYear
+
+EPS actual
+EPS estimate
+EPS surprise %
+
+Revenue actual
+Revenue estimate
+Revenue surprise %
+
+guidance where available
+
+stock reaction:
+1D
+5D
+
+Do NOT fabricate missing data.
+
+Determine which parts we can currently obtain reliably.
+
+
+==================================================
+8. ANALYST EXPECTATIONS / CONSENSUS
+==================================================
+
+This is one of the largest current intelligence gaps.
+
+For upcoming earnings we ideally need:
+
+EPS consensus
+Revenue consensus
+
+number of estimates
+
+high/low estimate where available
+
+estimate revision:
+7D
+30D
+60D
+90D
+
+direction of revisions
+
+previous consensus
+
+guidance vs consensus
+
+Do NOT use OpenAI as the source of these numeric facts.
+
+OpenAI may INTERPRET consensus data supplied by a provider.
+
+It must never create the consensus.
+
+
+==================================================
+9. WHY ESTIMATE REVISIONS MATTER
+==================================================
+
+The architecture should support questions such as:
+
+"Analysts still expect EPS 10,
+but estimates have moved from 8 to 10 over the last 30 days."
+
+This is different from:
+
+"Consensus = 10."
+
+The direction and velocity of expectations can be an important pre-earnings
+signal.
+
+Create data structures capable of preserving estimate history rather than only
+the latest consensus snapshot.
+
+
+==================================================
+10. EXPECTATIONS PROVIDER
+==================================================
+
+Create a provider abstraction if one does not already exist.
+
+Conceptually:
+
+ExpectationsDataProvider
+
+getUpcomingEarnings(ticker)
+
+getEarningsHistory(ticker)
+
+getCurrentConsensus(ticker)
+
+getConsensusHistory(ticker)
+
+getEstimateRevisions(ticker)
+
+getCompanyGuidance(ticker)
+
+getHistoricalGuidance(ticker)
+
+Do not require one physical provider to implement every capability.
+
+Each returned result must include provenance.
+
+
+==================================================
+11. PROVIDER CAPABILITIES
+==================================================
+
+Do NOT assume all providers contain all data.
+
+Expose provider capabilities.
+
+Example:
+
+MarketUniverseProvider:
+
+supportsFullUSUniverse = true
+supportsFullDanishUniverse = true
+
+ExpectationsProvider:
+
+supportsEpsConsensus = true
+supportsRevenueConsensus = true
+supportsRevisionHistory = false
+supportsGuidance = false
+
+This allows Catalyst Intelligence to know when evidence is genuinely missing.
+
+
+==================================================
+12. SOURCE PROVENANCE
+==================================================
+
+Every objective financial data object must preserve:
+
+provider
+sourceId where applicable
+retrievedAt
+dataAsOf
+confidence/quality if appropriate
+
+For web-derived facts also preserve:
+
+publishedAt
+source URL/reference
+source classification
+
+This is essential for point-in-time testing later.
+
+
+==================================================
+13. DO NOT CONFUSE WEB RESEARCH WITH STRUCTURED FINANCIAL DATA
+==================================================
+
+Web research is valuable for:
+
+management commentary
+industry indicators
+rumors
+company meetings
+product expectations
+geopolitical developments
+supplier signals
+qualitative catalysts.
+
+Structured providers are preferable for:
+
+earnings dates
+historical actuals
+consensus
+estimate revisions
+price history
+instrument metadata.
+
+Use each source for what it is good at.
+
+
+==================================================
+14. COMPANY FINANCIAL HISTORY
+==================================================
+
+Audit whether we have reliable structured access to:
+
+quarterly revenue
+quarterly operating income
+quarterly net income
+EPS
+gross margin
+operating margin
+free cash flow
+debt
+cash
+
+where appropriate.
+
+Do not add everything simply because it exists.
+
+The purpose is Catalyst/Company analysis.
+
+Store only information likely to materially improve reasoning.
+
+
+==================================================
+15. HISTORICAL PRICE REACTION TO EARNINGS
+==================================================
+
+We already have Saxo price history.
+
+Use backend code where possible to calculate historical price reactions around
+known earnings dates.
+
+Conceptually:
+
+earningsDate
+preEvent5DReturn
+eventTo1DReturn
+eventTo5DReturn
+gapMove if relevant
+volatility
+
+This should be deterministic.
+
+Do NOT ask OpenAI to calculate it.
+
+
+==================================================
+16. EARNINGS BEHAVIOR PROFILE
+==================================================
+
+When sufficient history exists, backend should be capable of deriving compact
+facts such as:
+
+reportsAnalyzed
+beatRateEPS
+beatRateRevenue
+averageEPSsurprise
+averageRevenueSurprise
+
+average1DReaction
+average5DReaction
+
+beatButStockFellCount
+missButStockRoseCount
+
+historicalVolatilityAroundEarnings
+
+Do not turn these into BUY/SELL rules.
+
+They are evidence for Catalyst Intelligence.
+
+
+==================================================
+17. EXPECTATION GAP INPUT
+==================================================
+
+Extend the existing ExpectationsProfile/EarningsHistoryProfile to consume real
+provider data when available.
+
+Catalyst Intelligence should eventually receive compact facts like:
+
+consensusEPS
+consensusRevenue
+
+revisionDirection30D
+revisionMagnitude30D
+
+companyGuidanceVsConsensus
+
+historicalBeatRate
+
+recentBusinessDriverDirection
+
+priceRunup14D
+
+This enables reasoning about:
+
+REAL-WORLD SIGNALS
+versus
+MARKET EXPECTATIONS
+versus
+PRICE POSITIONING.
+
+That is the core of the pre-earnings feature.
+
+
+==================================================
+18. IMPORTANT — DATA QUALITY
+==================================================
+
+Never silently combine conflicting provider values.
+
+If two sources disagree:
+
+preserve both internally
+select according to explicit provider priority/quality
+record conflict
+
+Expose:
+
+dataQuality:
+HIGH
+MEDIUM
+LOW
+
+and:
+
+dataLimitations[]
+
+
+==================================================
+19. MISSING DATA MUST BE SAFE
+==================================================
+
+Catalyst Intelligence must still work when:
+
+consensus unavailable
+revision history unavailable
+guidance unavailable.
+
+But confidence must be reduced appropriately.
+
+Never convert:
+
+UNKNOWN
+
+into:
+
+NEUTRAL.
+
+These mean different things.
+
+
+==================================================
+20. PROVIDER PRIORITY
+==================================================
+
+Create centralized provider priority/fallback logic.
+
+Do not scatter:
+
+if Saxo...
+else provider X...
+else web...
+
+through routes.
+
+Conceptually:
+
+DataProviderRegistry
+
+MarketUniverse
+Price
+EarningsCalendar
+EarningsHistory
+Expectations
+Financials
+
+Each domain resolves to configured provider(s).
+
+
+==================================================
+21. NO NEW PAID PROVIDER YET
+==================================================
+
+IMPORTANT:
+
+Do NOT sign up for or integrate a new paid financial-data provider in this task.
+
+First determine exactly what is missing.
+
+If an external provider is necessary, report candidate requirements.
+
+For each missing capability report:
+
+REQUIRED
+NICE_TO_HAVE
+NOT_NEEDED.
+
+We will choose the provider separately.
+
+
+==================================================
+22. PROVIDER EVALUATION REQUIREMENTS
+==================================================
+
+If external data is required, define what a provider must support.
+
+Evaluate requirements for:
+
+Danish stocks
+US stocks
+market universe
+earnings calendar
+historical earnings
+EPS consensus
+revenue consensus
+estimate revisions
+historical consensus snapshots
+company guidance
+financial statements
+rate limits
+commercial/API usage
+historical depth
+point-in-time data
+cost.
+
+Do not recommend based only on number of API endpoints.
+
+Our use case is specifically:
+
+PRE-EVENT INVESTMENT INTELLIGENCE.
+
+
+==================================================
+23. COST ARCHITECTURE
+==================================================
+
+Structured market data should be cached.
+
+Do not repeatedly request identical data.
+
+Suggested conceptual refresh:
+
+MARKET UNIVERSE:
+slow
+
+EARNINGS CALENDAR:
+daily, more frequent near event if necessary
+
+CONSENSUS:
+daily normally
+more frequent near important earnings
+
+REVISION HISTORY:
+daily
+
+FINANCIAL HISTORY:
+after new report
+
+PRICE:
+existing PriceContext rules
+
+Do not hardcode these exact frequencies if better rules already exist.
+
+Centralize configuration.
+
+
+==================================================
+24. NO TOKEN EXPLOSION
+==================================================
+
+Adding more structured data must NOT result in sending giant datasets to OpenAI.
+
+Backend should reduce raw provider data into compact deterministic facts.
+
+Example:
+
+DO NOT SEND:
+
+40 historical earnings objects
+100 analyst estimate snapshots
+180 price candles.
+
+SEND:
+
+beatRate
+recentSurprises
+revisionDirection
+revisionMagnitude
+historicalReaction
+priceAsymmetry
+key anomalies.
+
+Raw data remains available in debug/details.
+
+
+==================================================
+25. DEBUG / DATA COVERAGE PAGE
+==================================================
+
+Add a compact Data Coverage / Provider Health view or extend existing system/debug
+UI.
+
+Show:
+
+MARKET UNIVERSE
+
+Denmark:
+provider
+number of equities
+last refresh
+coverage status
+
+USA:
+provider
+number of equities
+last refresh
+coverage status
+
+
+EARNINGS CALENDAR
+
+provider
+coverage
+last refresh
+
+
+EXPECTATIONS
+
+EPS consensus:
+AVAILABLE / PARTIAL / UNAVAILABLE
+
+Revenue consensus:
+AVAILABLE / PARTIAL / UNAVAILABLE
+
+Estimate revisions:
+AVAILABLE / PARTIAL / UNAVAILABLE
+
+
+FINANCIAL HISTORY
+
+status
+
+
+Do not clutter the normal investment dashboard.
+
+This is system/debug information.
+
+
+==================================================
+26. CATALYST DEBUG
+==================================================
+
+For a Catalyst candidate show exactly which objective data were available.
+
+Example:
+
+Price history: Saxo ✓
+
+Upcoming earnings: Provider X ✓
+
+EPS consensus: Provider X ✓
+
+Revenue consensus: Provider X ✓
+
+Estimate revisions: unavailable
+
+Company guidance: partial
+
+Driver signals: web/company intelligence ✓
+
+This makes it possible to understand WHY confidence is High/Medium/Low.
+
+
+==================================================
+27. POINT-IN-TIME / HINDSIGHT SAFETY
+==================================================
+
+This is critical.
+
+Design all new repositories so later historical validation can answer:
+
+"What did the system know on 2026-08-10?"
+
+Do not overwrite historical consensus snapshots without retaining necessary history.
+
+For changing data such as analyst consensus store:
+
+value
+dataAsOf
+retrievedAt
+
+where appropriate.
+
+Historical validation must never accidentally use a consensus value published after
+the simulated decision time.
+
+
+==================================================
+28. DATA RETENTION
+==================================================
+
+Do not store unlimited redundant snapshots.
+
+Use sensible deduplication:
+
+If consensus unchanged:
+do not store another identical full snapshot unnecessarily.
+
+If value/revision materially changes:
+store new snapshot.
+
+We need historical state without uncontrolled database growth.
+
+
+==================================================
+29. REGRESSION TEST — CONSENSUS
+==================================================
+
+Use mocked data.
+
+Example:
+
+30 days ago EPS consensus = 8.0
+14 days ago = 8.5
+today = 10.0
+
+Expected backend:
+
+revisionDirection = UP
+revisionMagnitude correctly calculated
+Catalyst receives compact revision fact.
+
+No AI calculation.
+
+
+==================================================
+30. REGRESSION TEST — PRICE + EARNINGS HISTORY
+==================================================
+
+Mock:
+
+historical earnings dates
+actual/estimate
+Saxo PriceContext/history.
+
+Verify deterministic calculation of:
+
+surprise
+1D reaction
+5D reaction
+historical behavior profile.
+
+
+==================================================
+31. REGRESSION TEST — MISSING DATA
+==================================================
+
+No consensus provider data.
+
+Expected:
+
+expectationGap confidence reduced / UNKNOWN as appropriate.
+
+Never fabricate consensus.
+
+Catalyst still functions using available evidence.
+
+
+==================================================
+32. REGRESSION TEST — POINT IN TIME
+==================================================
+
+Snapshots:
+
+Aug 1 consensus = 8
+Aug 10 consensus = 9
+Aug 15 consensus = 11.
+
+Simulated analysis date:
+
+Aug 12.
+
+Expected:
+
+system may use Aug 10 snapshot.
+
+It MUST NOT see Aug 15 = 11.
+
+
+==================================================
+33. REGRESSION TEST — LARGE UNIVERSE
+==================================================
+
+Mock thousands of instruments.
+
+Verify:
+
+universe repository handles them efficiently
+no AI calls
+no per-ticker web searches
+no giant prompt generated.
+
+
+==================================================
+34. DO NOT CHANGE INVESTMENT LOGIC
+==================================================
+
+This task is primarily DATA INFRASTRUCTURE.
+
+Do NOT significantly change:
+
+Opportunity Finder scoring
+Trade Decision behavior
+Catalyst qualitative reasoning
+Portfolio Analyzer
+Risk Analyzer
+
+unless a tiny compatibility change is required.
+
+We want to improve the evidence supplied to these systems, not redesign them.
+
+
+==================================================
+35. FINAL REPORT
+==================================================
+
+After implementation provide a detailed report containing:
+
+1. Current data-source audit.
+
+2. Exactly what Saxo provides.
+
+3. Exactly what Saxo does NOT provide.
+
+4. Actual DK market-universe coverage.
+
+5. Actual US market-universe coverage.
+
+6. Whether hardcoded seed lists are still needed.
+
+7. Current earnings-calendar source and coverage.
+
+8. Historical earnings availability.
+
+9. EPS consensus availability.
+
+10. Revenue consensus availability.
+
+11. Estimate-revision availability.
+
+12. Guidance availability.
+
+13. Financial-history availability.
+
+14. Provider abstractions created/modified.
+
+15. Repositories created/modified.
+
+16. Cache/freshness behavior.
+
+17. Point-in-time protection.
+
+18. Data-quality/conflict handling.
+
+19. Catalyst integration.
+
+20. Debug/Data Coverage UI.
+
+21. Tests and total passing count.
+
+22. Remaining REQUIRED external data gaps.
+
+23. NICE-TO-HAVE external data gaps.
+
+24. Exact requirements for an external provider if one is still needed.
+
+25. Recommended next step.
+
+IMPORTANT:
+
+Do NOT end the report with only:
+
+"We need another provider."
+
+Explain precisely WHICH data are missing and WHY they matter.
+
+
+==================================================
+36. MOST IMPORTANT SUCCESS CRITERION
+==================================================
+
+After this task we must be able to answer objectively:
+
+"Does our application currently have enough data to discover and evaluate
+pre-event opportunities across Danish and US equities?"
+
+For every missing capability we must know:
+
+WHAT is missing
+WHY it matters
+WHICH abstraction will receive it
+and WHAT a future provider must supply.
+
+Do not compensate for missing objective market data by asking OpenAI to guess.
