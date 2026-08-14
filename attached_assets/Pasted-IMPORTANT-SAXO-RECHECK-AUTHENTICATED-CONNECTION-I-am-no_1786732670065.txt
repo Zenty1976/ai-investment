@@ -1,0 +1,474 @@
+IMPORTANT SAXO RECHECK — AUTHENTICATED CONNECTION
+
+I am now logged in/authenticated to Saxo in the application.
+
+Please perform the Saxo capability recheck against the CURRENT AUTHENTICATED
+Saxo connection.
+
+Do NOT rely on previous unauthenticated results.
+
+Do NOT add another external financial-data provider yet.
+
+The purpose of this task is to determine exactly how much of the data we need
+can already be obtained from Saxo when properly authenticated.
+
+
+==================================================
+1. VERIFY AUTHENTICATION FIRST
+==================================================
+
+Before testing capabilities, verify that the backend is actually using the
+authenticated Saxo session/access token.
+
+Report:
+
+- authentication active: yes/no
+- environment: LIVE or SIM
+- account/client access available
+- token/access rights sufficient for reference-data requests
+
+Do NOT expose tokens, secrets, account numbers, or credentials in logs/debug.
+
+
+==================================================
+2. TEST THE SAXO INSTRUMENT UNIVERSE
+==================================================
+
+The previous conclusion that Saxo cannot provide a broad DK/US instrument
+universe may have been caused by testing without proper authentication.
+
+Test the official Saxo reference-data instrument endpoint using the authenticated
+connection.
+
+In particular investigate:
+
+GET /ref/v1/instruments
+
+with:
+
+AssetTypes = Stock
+pagination using $top / $skip
+exchange filtering where appropriate
+
+Do NOT require a known ticker/keyword if the API supports enumeration.
+
+
+==================================================
+3. DANISH EQUITY UNIVERSE
+==================================================
+
+Attempt to enumerate the Danish stocks available to this authenticated Saxo
+account.
+
+Report:
+
+- number of stocks discovered
+- exchanges covered
+- examples of returned instruments
+- whether pagination works
+- whether all pages can be retrieved
+- whether results appear to represent broad market coverage
+
+For each instrument determine which metadata are available, such as:
+
+UIC
+ticker/symbol
+company name
+exchange
+currency
+asset type
+tradability
+primary listing
+country
+sector/industry if available
+
+
+==================================================
+4. US EQUITY UNIVERSE
+==================================================
+
+Repeat the same test for US equities.
+
+Report:
+
+- number of stocks discovered
+- exchanges covered
+- NYSE coverage
+- NASDAQ coverage
+- other US exchanges if available
+- pagination behavior
+- approximate breadth of coverage
+
+We expect potentially thousands of instruments.
+
+Do NOT run OpenAI analysis on these companies.
+
+This is reference-data discovery only.
+
+
+==================================================
+5. IF BROAD SAXO UNIVERSE ENUMERATION WORKS
+==================================================
+
+If authenticated Saxo can provide sufficiently broad DK + US stock enumeration:
+
+integrate this into the existing MarketUniverseProvider architecture.
+
+Production Market Universe should then become primarily:
+
+SAXO-DERIVED UNIVERSE
+
+rather than:
+
+DANISH_SEED + US_SEED.
+
+Use the existing persistent/cached MarketUniverseRepository architecture.
+
+Do NOT fetch the complete universe on every Run All.
+
+Universe data should be cached and refreshed slowly because instrument membership
+does not change every few minutes.
+
+
+==================================================
+6. STATIC SEEDS
+==================================================
+
+If Saxo enumeration works:
+
+DANISH_SEED and US_SEED may remain only for:
+
+- fallback
+- development
+- tests
+- bootstrap when Saxo unavailable
+
+They must NOT define normal production market coverage.
+
+
+==================================================
+7. IMPORTANT — DO NOT EXPLODE CATALYST COST
+==================================================
+
+If Saxo suddenly gives us thousands of US/Danish stocks, do NOT automatically:
+
+- create Company Monitor entries for all of them
+- fetch large price histories for all of them
+- web-search every company
+- generate Driver Profiles for every company
+- call OpenAI for every company
+- run deep Catalyst Analysis for every company.
+
+Preserve the existing Catalyst escalation funnel.
+
+The broad universe is only the discovery universe.
+
+Expensive work must still happen only for shortlisted candidates.
+
+
+==================================================
+8. TEST SAXO PRICE CAPABILITIES
+==================================================
+
+Verify the authenticated Saxo capabilities we already use or can use for:
+
+- current prices
+- historical prices
+- OHLC/candles
+- supported chart periods
+- available history depth
+- market-data access limitations
+
+Do not redesign PriceContext if the current implementation already handles this
+correctly.
+
+Simply report the real authenticated capabilities.
+
+
+==================================================
+9. AUDIT SAXO FUNDAMENTAL / EVENT DATA
+==================================================
+
+Now inspect what the AUTHENTICATED Saxo OpenAPI actually exposes.
+
+Do not limit the audit to endpoints currently used by our application.
+
+Investigate availability of structured data for:
+
+UPCOMING EVENTS
+
+- earnings dates
+- earnings time (before/after market)
+- dividends
+- corporate actions
+- investor/company events if available
+
+
+FINANCIAL HISTORY
+
+- revenue
+- EPS
+- operating income
+- net income
+- margins
+- cash flow
+- balance-sheet data
+
+
+EARNINGS HISTORY
+
+- historical report dates
+- EPS actual
+- EPS estimate
+- revenue actual
+- revenue estimate
+- surprise
+
+
+ANALYST EXPECTATIONS
+
+- EPS consensus
+- revenue consensus
+- number of estimates
+- high/low estimates
+
+
+ESTIMATE REVISIONS
+
+- historical consensus
+- 7D/30D/60D/90D estimate changes
+- analyst upgrades/downgrades where applicable
+
+
+GUIDANCE
+
+- company guidance
+- historical guidance
+
+
+==================================================
+10. DISTINGUISH THREE DIFFERENT RESULTS
+==================================================
+
+For every capability classify it as:
+
+AVAILABLE
+= authenticated Saxo provides it and we can use it.
+
+PARTIAL
+= Saxo provides some of what we need but not enough for full functionality.
+
+UNAVAILABLE
+= no suitable Saxo OpenAPI capability was found.
+
+Do NOT mark something unavailable merely because our CURRENT CODE has not
+implemented it.
+
+Check the actual Saxo API capability.
+
+
+==================================================
+11. OPENAI'S ROLE
+==================================================
+
+Remember that OpenAI/web research can continue to provide qualitative intelligence:
+
+- news
+- rumors
+- management commentary
+- industry developments
+- geopolitical signals
+- supplier/customer signals
+- product-launch expectations
+- company meeting expectations
+- interpretation of available evidence.
+
+This is good.
+
+But OpenAI must NOT invent objective structured numeric facts such as:
+
+EPS consensus
+revenue consensus
+estimate revisions
+historical actual vs estimate.
+
+If Saxo does not provide those, report the gap.
+
+Do NOT solve it by asking OpenAI to guess.
+
+
+==================================================
+12. UPDATE DATA COVERAGE
+==================================================
+
+Update the existing Data Coverage / Provider Health system using the ACTUAL
+authenticated results.
+
+The UI/debug should show real values where possible.
+
+Example:
+
+MARKET UNIVERSE
+
+Denmark
+Provider: Saxo
+Equities discovered: 123
+Status: BROAD/FULL/PARTIAL
+Last refresh: ...
+
+USA
+Provider: Saxo
+Equities discovered: 7,842
+Status: BROAD/FULL/PARTIAL
+Last refresh: ...
+
+Do not hardcode fake coverage percentages.
+
+Calculate coverage/status from actual provider results where possible.
+
+
+==================================================
+13. PROVIDER ARCHITECTURE
+==================================================
+
+Preserve the provider abstractions already created in Part 4.
+
+If Saxo can provide a capability:
+
+implement/use Saxo as the provider for that domain.
+
+Do NOT bypass the provider architecture by putting Saxo-specific calls directly
+through Catalyst routes.
+
+Conceptually:
+
+DataProviderRegistry
+→ MarketUniverseProvider
+→ PriceProvider
+→ EarningsCalendarProvider
+→ ExpectationsProvider
+→ etc.
+
+Catalyst Intelligence should consume normalized provider data, not Saxo-specific
+responses.
+
+
+==================================================
+14. CACHE EVERYTHING APPROPRIATELY
+==================================================
+
+Do not repeatedly call Saxo for stable information.
+
+Examples:
+
+Market universe:
+slow refresh
+
+Instrument metadata:
+slow refresh
+
+Historical financial reports:
+refresh after new report
+
+Upcoming earnings:
+moderate refresh
+
+Consensus:
+refresh according to availability/materiality
+
+Price:
+existing PriceContext behavior.
+
+Use centralized freshness configuration where possible.
+
+
+==================================================
+15. NO OPENAI COST FOR THIS AUDIT
+==================================================
+
+This task should primarily use Saxo/reference API calls and code inspection.
+
+Do NOT trigger paid OpenAI analyses merely to test Saxo capabilities.
+
+Do NOT run the full investment pipeline just to verify this task.
+
+
+==================================================
+16. FINAL REPORT — IMPORTANT
+==================================================
+
+After the authenticated audit, report clearly:
+
+1. Was Saxo authentication successfully used?
+
+2. LIVE or SIM environment?
+
+3. Can Saxo enumerate stocks without knowing their ticker beforehand?
+
+4. Number of Danish stocks discovered.
+
+5. Danish exchanges covered.
+
+6. Number of US stocks discovered.
+
+7. US exchanges covered.
+
+8. Does pagination work across the complete result set?
+
+9. Is the production Market Universe now Saxo-derived?
+
+10. Are static seeds still used in production, and if so why?
+
+11. Current/historical price capabilities.
+
+12. Earnings-calendar availability.
+
+13. Earnings-history availability.
+
+14. EPS actual/estimate availability.
+
+15. Revenue actual/estimate availability.
+
+16. EPS consensus availability.
+
+17. Revenue consensus availability.
+
+18. Estimate-revision availability.
+
+19. Guidance availability.
+
+20. Financial-statement availability.
+
+21. Corporate-action/event availability.
+
+22. Which capabilities are AVAILABLE / PARTIAL / UNAVAILABLE.
+
+23. What code was changed.
+
+24. What provider implementations were added/changed.
+
+25. How caching/freshness works.
+
+26. How many OpenAI calls this task caused.
+    Expected: ZERO.
+
+27. Remaining data gaps.
+
+28. Whether another external data provider is ACTUALLY necessary after this test.
+
+
+==================================================
+17. MOST IMPORTANT
+==================================================
+
+DO NOT integrate another external provider yet.
+
+We first want to know exactly what the authenticated Saxo connection can provide.
+
+If Saxo can provide the broad DK/US universe, use it.
+
+If Saxo can provide additional structured financial/event data, use it through
+the provider architecture.
+
+Only after this authenticated test should we decide whether another provider is
+needed for the remaining gaps.

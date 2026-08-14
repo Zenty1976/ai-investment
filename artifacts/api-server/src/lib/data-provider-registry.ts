@@ -104,7 +104,7 @@ export interface DataCoverageReport {
   priceData: {
     providerName: "Saxo Bank";
     status: "AVAILABLE";
-    historyDepthDays: 92;
+    historyDepthDays: number;
     detail: string;
   };
 
@@ -151,6 +151,14 @@ export function buildDataCoverageReport(): DataCoverageReport {
     exchange: "NASDAQ", count: 0, refreshedAt: "(never)", source: "STATIC_SEED" as const,
     isSeedOnly: true, coverageWarning: "No NASDAQ data seeded.",
   };
+  const nyseStats = allUniverseStats.find(s => s.exchange === "NYSE") ?? {
+    exchange: "NYSE", count: 0, refreshedAt: "(never)", source: "STATIC_SEED" as const,
+    isSeedOnly: true, coverageWarning: "No NYSE data seeded.",
+  };
+  // Combined US count: NASDAQ + NYSE (both Saxo-enumerable)
+  const usEquityCount = nasdaqStats.count + nyseStats.count;
+  const usIsSeedOnly = nasdaqStats.isSeedOnly && nyseStats.isSeedOnly;
+  const usLastRefresh = nasdaqStats.refreshedAt !== "(never)" ? nasdaqStats.refreshedAt : nyseStats.refreshedAt;
 
   const universeProv = isMarketUniverseProviderInitialized()
     ? getMarketUniverseProvider().describeCapability()
@@ -166,30 +174,20 @@ export function buildDataCoverageReport(): DataCoverageReport {
 
   const externalDataGaps: ExternalDataGap[] = [
     {
-      domain: "Market Universe — Danish Equities",
-      priority: "REQUIRED",
+      domain: "Sector / Industry Metadata",
+      priority: "NICE_TO_HAVE",
       description:
-        "Cannot enumerate all CSE/OMX equities. Universe is 25 hardcoded tickers.",
+        "Saxo enumeration does not include sector or industry classification. " +
+        "All ~4,135 Saxo-enumerated records have sector=null and industry=null.",
       whyItMatters:
-        "Catalyst Intelligence can only discover events for tickers in the universe. " +
-        "With 25 tickers, ~90% of the Danish market is invisible to the pipeline.",
-      targetAbstraction: "SaxoMarketUniverseProvider.getEquities() or new ExchangeConstituentProvider",
+        "Sector context helps Catalyst Intelligence filter events appropriately and " +
+        "enables sector-relative comparison. Currently sector comes from static seed " +
+        "for the 25 DK + handful of US tickers that had it.",
+      targetAbstraction: "MarketUniverseRepository enrichment via sector provider",
       requirements:
-        "API that can list all tradeable equities on CSE/OMX by exchange filter. " +
-        "Required fields: ticker, company, exchange, currency. " +
-        "Candidates: STOXX constituent feed, OMX Nordic exchange data, Saxo API extension.",
-    },
-    {
-      domain: "Market Universe — US Equities",
-      priority: "REQUIRED",
-      description:
-        "Cannot enumerate all NYSE/NASDAQ equities. Universe is ~60 hardcoded tickers.",
-      whyItMatters:
-        "Same limitation as DK — only ~0.01% of US market is discoverable.",
-      targetAbstraction: "SaxoMarketUniverseProvider.getEquities() or new ExchangeConstituentProvider",
-      requirements:
-        "API supporting NYSE/NASDAQ equity listing. " +
-        "Candidates: S&P index constituents (FactSet), CRSP, Quandl, Financial Modeling Prep.",
+        "GICS sector + industry per ticker. Can be fetched lazily per-company as " +
+        "it enters the Catalyst pipeline. Candidates: Saxo /ref/v1/instruments/details " +
+        "(no sector field confirmed), FactSet, Financial Modeling Prep.",
     },
     {
       domain: "Earnings Calendar",
@@ -273,31 +271,35 @@ export function buildDataCoverageReport(): DataCoverageReport {
         "Quarterly: revenue, operating income, net income, EPS, gross margin, FCF, debt, cash.",
     },
     {
-      domain: "Market Cap / Sector (structured)",
+      domain: "Market Cap",
       priority: "NICE_TO_HAVE",
       description:
-        "Sector/industry comes from static seed. No live structured metadata.",
+        "No market-cap data in Saxo enumeration response or any authenticated endpoint.",
       whyItMatters:
-        "Sector context helps Catalyst Intelligence filter events appropriately.",
+        "Useful for size-based filtering (micro/small/large cap) and relative performance.",
       targetAbstraction: "MarketUniverseRepository (existing) enriched via provider",
-      requirements: "Market cap, GICS sector/industry per ticker.",
+      requirements: "Market cap per ticker, refreshed at least weekly.",
     },
   ];
 
   const domains: DomainCoverageStatus[] = [
     {
       domain: "Market Universe (DK)",
-      providerName: universeProv?.providerName ?? "SeedMarketUniverseProvider",
+      providerName: universeProv?.providerName ?? "SaxoMarketUniverseProvider",
       status: cseStats.isSeedOnly ? "PARTIAL" : "AVAILABLE",
-      detail: cseStats.coverageWarning ?? `${cseStats.count} equities, last refreshed ${cseStats.refreshedAt}`,
+      detail: cseStats.isSeedOnly
+        ? (cseStats.coverageWarning ?? "Seed only")
+        : `${cseStats.count} equities via Saxo enumeration, last refreshed ${cseStats.refreshedAt}`,
       lastRefreshedAt: cseStats.refreshedAt === "(never)" ? null : cseStats.refreshedAt,
     },
     {
-      domain: "Market Universe (US)",
-      providerName: universeProv?.providerName ?? "SeedMarketUniverseProvider",
-      status: nasdaqStats.isSeedOnly ? "PARTIAL" : "AVAILABLE",
-      detail: nasdaqStats.coverageWarning ?? `${nasdaqStats.count} equities, last refreshed ${nasdaqStats.refreshedAt}`,
-      lastRefreshedAt: nasdaqStats.refreshedAt === "(never)" ? null : nasdaqStats.refreshedAt,
+      domain: "Market Universe (US — NASDAQ + NYSE)",
+      providerName: universeProv?.providerName ?? "SaxoMarketUniverseProvider",
+      status: usIsSeedOnly ? "PARTIAL" : "AVAILABLE",
+      detail: usIsSeedOnly
+        ? "Seed only — Saxo refresh pending"
+        : `${usEquityCount.toLocaleString()} equities (NASDAQ ${nasdaqStats.count} + NYSE ${nyseStats.count}), last refreshed ${usLastRefresh}`,
+      lastRefreshedAt: usLastRefresh === "(never)" ? null : usLastRefresh,
     },
     {
       domain: "Earnings Calendar",
@@ -342,7 +344,10 @@ export function buildDataCoverageReport(): DataCoverageReport {
       domain: "Price History",
       providerName: "Saxo Bank",
       status: "AVAILABLE",
-      detail: "~92 daily OHLC bars via Saxo chart API. 6h cache. Used for price context and earnings behavior.",
+      detail:
+        "~500+ daily OHLC bars (~2 years) via Saxo chart API. " +
+        "Also: weekly, monthly, and 1h intraday bars available. " +
+        "6h cache. Used for price context and earnings behavior calculation.",
       lastRefreshedAt: null,
     },
   ];
@@ -351,18 +356,20 @@ export function buildDataCoverageReport(): DataCoverageReport {
     generatedAt: now,
     marketUniverse: {
       dk: {
-        provider: universeProv?.providerName ?? "SeedMarketUniverseProvider",
+        provider: universeProv?.providerName ?? "SaxoMarketUniverseProvider",
         equityCount: cseStats.count,
         lastRefresh: cseStats.refreshedAt,
         status: cseStats.isSeedOnly ? "SEED_ONLY" : "FULL",
         coverageWarning: cseStats.coverageWarning,
       },
       us: {
-        provider: universeProv?.providerName ?? "SeedMarketUniverseProvider",
-        equityCount: nasdaqStats.count,
-        lastRefresh: nasdaqStats.refreshedAt,
-        status: nasdaqStats.isSeedOnly ? "SEED_ONLY" : "FULL",
-        coverageWarning: nasdaqStats.coverageWarning,
+        provider: universeProv?.providerName ?? "SaxoMarketUniverseProvider",
+        equityCount: usEquityCount,
+        lastRefresh: usLastRefresh,
+        status: usIsSeedOnly ? "SEED_ONLY" : "FULL",
+        coverageWarning: usIsSeedOnly
+          ? `[SEED MODE] Only ${usEquityCount} hardcoded US tickers. Saxo refresh pending.`
+          : null,
       },
       providerName: universeProv?.providerName ?? "none",
       providerCanEnumerate: universeProv?.canEnumerateExchangeEquities ?? false,
@@ -396,11 +403,13 @@ export function buildDataCoverageReport(): DataCoverageReport {
     priceData: {
       providerName: "Saxo Bank",
       status: "AVAILABLE",
-      historyDepthDays: 92,
+      historyDepthDays: 500,
       detail:
-        "Saxo chart API provides ~92 daily OHLC bars per ticker. " +
-        "Price context (trend, volatility, asymmetry) is computed deterministically. " +
-        "Price reactions around earnings can be computed when earnings dates are known.",
+        "Saxo chart API provides ~500+ daily OHLC bars (~2 years) per ticker " +
+        "(confirmed by authenticated audit 2026-08-14). " +
+        "Weekly (Horizon=10080) and monthly (Horizon=43200) bars also available. " +
+        "Intraday (1h, Horizon=60) available for recent periods. " +
+        "Price context (trend, volatility, asymmetry) computed deterministically from daily bars.",
     },
     domains,
     externalDataGaps,

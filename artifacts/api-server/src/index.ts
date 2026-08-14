@@ -12,6 +12,7 @@ import {
 } from "./lib/market-universe-provider";
 import { getAllUniverseEntries } from "./lib/catalyst-universe";
 import { seedUniverseIfEmpty } from "./lib/market-universe-repository";
+import { refreshSaxoUniverseIfStale } from "./lib/saxo-universe-refresh";
 
 const rawPort = process.env["PORT"];
 
@@ -32,9 +33,10 @@ if (Number.isNaN(port) || port <= 0) {
 // profile selection from the analysis repository.
 initPolicyStore();
 
-// Initialize Market Universe Provider (Part 3/4, spec §2-3).
-// Composite: Saxo for per-ticker UIC enrichment, Seed as fallback/enumeration.
-// NOTE: Saxo cannot enumerate exchange equities — seed is the universe source.
+// Initialize Market Universe Provider (Part 3/4 + authenticated Saxo recheck).
+// Composite: Saxo for both bulk enumeration AND per-ticker lookup; Seed as fallback.
+// CONFIRMED (authenticated audit 2026-08-14): Saxo CAN enumerate by ExchangeId.
+//   CSE: 117 DK stocks, NASDAQ: 1,979, NYSE: 2,039 — full pagination available.
 const allEntries = getAllUniverseEntries();
 setMarketUniverseProvider(
   new CompositeMarketUniverseProvider([
@@ -71,9 +73,27 @@ setMarketUniverseProvider(
   }
   logger.info(
     { exchanges: [...byExchange.keys()], total: allEntries.length },
-    "Market Universe Repository seeded (STATIC_SEED — limited coverage)"
+    "Market Universe Repository seeded (STATIC_SEED — Saxo refresh will upgrade this)"
   );
 }
+
+// Background Saxo universe refresh — fire and forget (spec §5).
+// Fetches all CSE, NASDAQ, NYSE equities from authenticated Saxo API and
+// saves to MarketUniverseRepository with source=SAXO_API, overriding the seed.
+// TTL: 7 days — safe to skip if cache is fresh.
+// Does NOT block startup. Does NOT trigger any OpenAI calls.
+refreshSaxoUniverseIfStale().then(result => {
+  if (result.refreshed.length > 0) {
+    logger.info(
+      { refreshed: result.refreshed, counts: result.counts, durationMs: result.durationMs },
+      "Market Universe Repository upgraded to Saxo-enumerated data"
+    );
+  } else if (result.error) {
+    logger.warn({ error: result.error }, "Saxo universe refresh unavailable — using seed");
+  }
+}).catch(err => {
+  logger.warn({ err }, "Saxo universe background refresh failed — using seed fallback");
+});
 
 // Load persisted OpenAI usage log from disk.
 initUsageLog();

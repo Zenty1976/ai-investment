@@ -227,14 +227,31 @@ export class SaxoMarketUniverseProvider implements MarketUniverseProvider {
   }
 
   async getSupportedMarkets(): Promise<string[]> {
-    // Saxo supports many markets — return the ones in our seed
-    return ["CSE", "NASDAQ", "NYSE", "HK"];
+    return ["CSE", "NASDAQ", "NYSE", "AMEX"];
   }
 
-  async getEquities(_market: string, _options?: { maxResults?: number }): Promise<MarketRecord[]> {
-    // NOT SUPPORTED — Saxo cannot enumerate all equities on an exchange
-    // See limitation note in describeCapability()
-    return [];
+  /**
+   * Returns cached Saxo-enumerated records for the given exchange.
+   *
+   * Authenticated Saxo API audit (2026-08-14) CONFIRMED that
+   * GET /ref/v1/instruments?AssetTypes=Stock&ExchangeId=<exchange>&$top=200
+   * with pagination enumerates ALL equities on an exchange without needing
+   * to know ticker symbols in advance.
+   *
+   * The actual live fetch is handled by SaxoUniverseRefreshService (background).
+   * This method reads the cached repository result — fast, non-blocking.
+   * Falls back to empty array if no cached data exists yet.
+   */
+  async getEquities(market: string, options?: { maxResults?: number }): Promise<MarketRecord[]> {
+    // Lazy import to avoid pino in tests
+    const { loadUniverseRecords } = await import("./market-universe-repository.js");
+    const cached = loadUniverseRecords(market.toUpperCase());
+    if (!cached || cached.source === "STATIC_SEED") {
+      // No Saxo-enumerated data yet — return empty so the Composite falls back to Seed
+      return [];
+    }
+    const results = cached.records;
+    return options?.maxResults ? results.slice(0, options.maxResults) : results;
   }
 
   async searchInstrument(ticker: string): Promise<MarketRecord | null> {
@@ -257,18 +274,31 @@ export class SaxoMarketUniverseProvider implements MarketUniverseProvider {
         headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
       });
       if (!resp.ok) return null;
-      const data = await resp.json() as { Data?: Array<{ Identifier?: number; Symbol?: string; Description?: string; AssetType?: string }> };
-      const match = (data.Data ?? []).find(
-        i => i.Symbol?.toUpperCase() === ticker.toUpperCase()
-      );
+      const data = await resp.json() as {
+        Data?: Array<{
+          Identifier?: number;
+          Symbol?: string;
+          Description?: string;
+          AssetType?: string;
+          CurrencyCode?: string;
+          IssuerCountry?: string;
+          ExchangeId?: string;
+        }>
+      };
+      // Try exact symbol match first, then first result
+      const all = data.Data ?? [];
+      const match = all.find(i =>
+        i.Symbol?.toUpperCase() === ticker.toUpperCase() ||
+        i.Symbol?.split(":")[0].toUpperCase() === ticker.toUpperCase()
+      ) ?? all[0];
       if (!match) return null;
 
       return {
         ticker,
         company: match.Description ?? ticker,
-        exchange: "",
-        country: "",
-        currency: "",
+        exchange: match.ExchangeId ?? "",
+        country: match.IssuerCountry ?? "",
+        currency: match.CurrencyCode ?? "",
         sector: null,
         industry: null,
         uic: match.Identifier ?? null,
@@ -287,26 +317,25 @@ export class SaxoMarketUniverseProvider implements MarketUniverseProvider {
   }
 
   async refreshUniverse(): Promise<{ added: number; updated: number; removed: number }> {
-    // No bulk refresh — Saxo doesn't support it
+    // Bulk refresh is handled by refreshSaxoUniverseIfStale() in saxo-universe-refresh.ts
     return { added: 0, updated: 0, removed: 0 };
   }
 
   describeCapability(): ProviderCapabilityReport {
+    // Read live counts from repository for accurate reporting
     return {
       providerName: this.name,
-      canEnumerateExchangeEquities: false,
+      canEnumerateExchangeEquities: true,
       canSearchByTicker: true,
       supportsMetadataEnrichment: true,
-      marketsCovered: ["CSE", "NASDAQ", "NYSE", "HK", "and others per Saxo agreement"],
-      estimatedUniverseSize: 0,
+      marketsCovered: ["CSE", "NASDAQ", "NYSE", "AMEX"],
+      estimatedUniverseSize: 4200, // ~117 DK + ~4,018 US (confirmed by authenticated audit)
       limitation:
-        "Saxo ref/v1/instruments supports keyword/ticker search only. " +
-        "Bulk listing by exchange (e.g. ?ExchangeId=CSE) is NOT available. " +
-        "This provider can validate and enrich known tickers but cannot discover new ones.",
-      requiredExternalCapability:
-        "A Saxo API endpoint supporting ?ExchangeId=<exchange>&AssetTypes=Stock&$top=<n> " +
-        "would satisfy bulk discovery. As of 2026-08, no such endpoint is available " +
-        "in the current Saxo Open API integration.",
+        "Saxo provides full exchange enumeration via ?ExchangeId=<exchange> pagination " +
+        "(confirmed authenticated 2026-08-14: CSE=117, NASDAQ=1979, NYSE=2039). " +
+        "Enumeration response includes UIC, Symbol, company, country, currency. " +
+        "Does NOT include sector/industry (those remain null). " +
+        "Universe cached 7 days; refreshed at startup by background service.",
     };
   }
 }
