@@ -1,0 +1,1393 @@
+NEW FEATURE — CATALYST / PRE-EARNINGS INTELLIGENCE
+PART 1: ARCHITECTURE, DATA FOUNDATION AND SCREENING ENGINE
+
+BACKGROUND
+
+The application is an AI Investor / AI Investor Command Center.
+
+The existing architecture must be preserved:
+
+Monitors observe the world/data
+Analyzers interpret it
+Opportunity Finder identifies opportunities
+Trade Decision decides what should be done
+Trade Review only shows trades that are actionable NOW
+Automation Orchestrator controls scheduling/dependencies
+Investor Watch is informational only
+
+The system is already hybrid:
+objective facts/calculations should be computed deterministically in backend code,
+while OpenAI should be used for qualitative interpretation and reasoning.
+
+DO NOT redesign or replace the existing architecture.
+
+DO NOT create a parallel investment pipeline.
+
+The purpose of this feature is to make the existing system capable of proactively
+identifying situations such as:
+
+"A company reports earnings in 7 days. Multiple real-world leading indicators
+suggest that business conditions have improved materially faster than market
+expectations, while the stock has not yet fully reflected that improvement."
+
+This should eventually allow the system to detect high-interest PRE-EARNINGS
+opportunities before the earnings release.
+
+
+==================================================
+1. IMPORTANT EXAMPLE / TARGET BEHAVIOR
+==================================================
+
+A.P. Møller-Mærsk is the motivating example.
+
+Before a hypothetical earnings release, the system might observe:
+
+- previous quarter had weak Ocean profitability
+- freight rates subsequently improved
+- container volumes increased
+- tariff uncertainty caused companies to frontload imports
+- port/capacity constraints increased
+- geopolitical shipping disruption affected effective capacity
+- Maersk raised guidance
+- subsequent industry indicators remained strong
+- earnings were approaching
+- the share price had NOT already risen enough to completely remove the
+  potential asymmetry
+
+The desired system behavior would NOT be:
+
+"Earnings soon → automatically block buying."
+
+Instead it should recognize:
+
+"Upcoming earnings is itself a potential catalyst."
+
+The system should eventually distinguish:
+
+NORMAL EVENT RISK
+from
+INTENTIONAL PRE-EVENT OPPORTUNITY.
+
+IMPORTANT:
+
+Do NOT hardcode MAERSK or shipping logic into production code.
+
+Maersk is only a regression/example case.
+
+The architecture must work generically for Danish and US companies.
+
+
+==================================================
+2. CORE QUESTION
+==================================================
+
+The new intelligence should eventually answer:
+
+"Is there credible evidence BEFORE the upcoming catalyst that company
+fundamentals/business conditions are developing differently from what the
+market appears to expect, and has the share price already priced this in?"
+
+This contains several separate questions:
+
+A. What does the market currently expect?
+
+B. What do observable company/industry/real-world indicators suggest?
+
+C. Is there an EXPECTATION GAP?
+
+D. Has the stock already moved significantly in anticipation?
+
+E. Historically, how does this company behave around earnings?
+
+F. Is the evidence strong enough and independent enough to matter?
+
+G. Does the resulting risk/reward justify consideration BEFORE the event?
+
+
+==================================================
+3. DO NOT USE ONE SINGLE SCORE
+==================================================
+
+Do NOT reduce this feature to one opaque "AI opportunity score".
+
+The system must preserve separate dimensions.
+
+At minimum:
+
+EarningsSurpriseSignal
+- VeryNegative
+- Negative
+- Neutral
+- Positive
+- VeryPositive
+
+EvidenceConfidence
+- Low
+- Medium
+- High
+
+ExpectationGap
+- StrongNegative
+- Negative
+- Neutral
+- Positive
+- StrongPositive
+- Unknown
+
+PriceAsymmetry
+- Poor
+- Weak
+- Neutral
+- Attractive
+- VeryAttractive
+
+CatalystRisk
+- Low
+- Medium
+- High
+- Extreme
+
+PreEventOpportunityState
+- NotInteresting
+- Monitor
+- Investigate
+- HighInterest
+- CandidateForTradeDecision
+
+Do not pretend these are mathematical probabilities unless we later build and
+validate an actual calibrated probability model.
+
+For example, do NOT display:
+
+"78% probability of earnings beat"
+
+merely because an LLM produced 78.
+
+Qualitative/ordinal confidence is safer until calibrated historically.
+
+
+==================================================
+4. EVENT MONITOR IS THE ENTRY POINT
+==================================================
+
+Do NOT create a separate parallel earnings universe disconnected from Event Monitor.
+
+Upcoming company earnings should be represented through Event Monitor.
+
+Event Monitor should eventually identify:
+
+ticker/company
+event type
+earnings/reporting period
+event date/time where known
+daysUntilEvent
+importance
+source
+source confidence
+
+Add/support an event classification concept that allows an event to be:
+
+RISK
+OPPORTUNITY
+BOTH
+UNKNOWN
+
+IMPORTANT:
+
+This does NOT mean Event Monitor itself decides whether a stock should be bought.
+
+It only identifies the upcoming catalyst and makes it available to Catalyst
+Intelligence.
+
+
+==================================================
+5. FIRST TASK — AUDIT CURRENT DATA SOURCES
+==================================================
+
+BEFORE implementing assumptions about data availability, inspect the actual current
+codebase and current Saxo integration.
+
+Create a DATA CAPABILITY MATRIX for the following.
+
+For each item report:
+
+AVAILABLE NOW
+AVAILABLE BUT NOT YET USED
+CAN BE DERIVED
+NOT AVAILABLE
+UNKNOWN / NEEDS EXTERNAL SOURCE
+
+Data required:
+
+A. Upcoming earnings calendar
+- Danish equities
+- US equities
+- date
+- reporting period
+- before/after market if available
+
+B. Historical earnings
+- previous reporting dates
+- revenue actual
+- EPS actual
+- EBITDA/EBIT where applicable
+- estimates/consensus
+- actual-vs-estimate surprise
+
+C. Historical company guidance
+- previous guidance
+- guidance upgrades
+- guidance downgrades
+
+D. Analyst expectations
+- current consensus
+- estimate revisions
+- target revisions
+- recommendation changes
+
+E. Price history
+- 6 months
+- 3 months
+- 1 month
+- 14 days
+- 5 days
+- 1 day
+- 52-week high/low if available
+
+F. Volume data if available
+
+G. Existing Company Monitor state
+
+H. Existing News Monitor data
+
+I. Existing Event Monitor data
+
+J. Existing Sector Monitor data
+
+K. Existing Market Monitor data
+
+L. existing PriceContext
+
+M. valuation/fundamental data already available
+
+N. company sector/industry classification
+
+DO NOT invent missing data.
+
+If Saxo does not provide something, explicitly report that.
+
+
+==================================================
+6. SAXO PRICE CONTEXT
+==================================================
+
+Reuse the existing Saxo / PriceContext architecture.
+
+Do NOT ask OpenAI to calculate price statistics from raw candles.
+
+Backend should deterministically calculate, where data allows:
+
+return1D
+return5D
+return14D
+return1M
+return3M
+return6M
+
+distanceFrom52WeekHighPct
+distanceFrom52WeekLowPct
+
+volatility
+recentVolatility
+
+drawdownFromRecentHigh
+
+trend6M
+trend3M
+trend1M
+trend14D
+
+recentAcceleration
+recentDeceleration
+
+priceState
+
+recentBehavior
+
+stabilization signal
+
+preEventRunup
+
+Examples of useful classifications:
+
+LONG_DECLINE_STABILIZING
+LONG_DECLINE_STILL_FALLING
+STRONG_UPTREND
+RECENT_BREAKOUT
+SIDEWAYS
+RECENT_SHARP_RUNUP
+RECENT_SHARP_SELLOFF
+
+Do NOT hardcode ticker-specific thresholds.
+
+Use centralized configurable thresholds.
+
+Reuse existing PriceContext calculations wherever possible instead of duplicating
+them.
+
+
+==================================================
+7. PRE-EVENT PRICE ASYMMETRY
+==================================================
+
+Create deterministic facts that help answer:
+
+"Has the market already moved?"
+
+Example:
+
+Company A:
+
+6M = -30%
+1M = -3%
+14D = +1%
+5D = +0.5%
+
+Possible interpretation:
+
+long-term weakness
++
+recent stabilization
++
+little pre-event run-up
+
+Potentially attractive asymmetry.
+
+Company B:
+
+6M = -30%
+1M = +25%
+14D = +22%
+5D = +14%
+
+Same historical weakness, but the market may already be pricing in improvement.
+
+That should REDUCE PriceAsymmetry.
+
+Do NOT make:
+
+"stock is down a lot"
+
+automatically bullish.
+
+A falling stock may be falling for very good reasons.
+
+
+==================================================
+8. HISTORICAL EARNINGS PROFILE
+==================================================
+
+If the required data exists, create a compact EarningsHistoryProfile.
+
+Prefer approximately the previous 8 quarters where available.
+
+Possible structure:
+
+period
+reportDate
+
+revenueActual
+revenueEstimate
+revenueSurprisePct
+
+epsActual
+epsEstimate
+epsSurprisePct
+
+ebitdaActual
+ebitdaEstimate
+ebitdaSurprisePct
+
+guidanceAction:
+RAISED
+MAINTAINED
+LOWERED
+UNKNOWN
+
+priceReaction1D
+priceReaction5D
+
+Do not fabricate metrics when unavailable.
+
+Different companies/sectors care about different metrics.
+
+For example:
+
+banks
+shipping
+pharma
+software
+
+may not all be best evaluated using exactly the same fundamental metric.
+
+The structure must allow sector/company-specific key metrics.
+
+
+==================================================
+9. COMPANY DRIVER PROFILE
+==================================================
+
+Introduce a persistent COMPANY DRIVER PROFILE.
+
+This is important.
+
+OpenAI should NOT rediscover a company's economic drivers every time Catalyst
+Intelligence runs.
+
+The profile should describe:
+
+primaryRevenueDrivers
+primaryMarginDrivers
+costDrivers
+leadingIndicators
+industryIndicators
+macroSensitivities
+geopoliticalSensitivities
+regulatorySensitivities
+importantCompetitors
+companySpecificKPIs
+typicalIndicatorLeadTime
+driverConfidence
+lastMateriallyUpdatedAt
+
+Example ONLY — DO NOT HARDCODE:
+
+A shipping company might have:
+
+freight rates
+container volumes
+capacity utilization
+fuel costs
+port congestion
+global trade
+trade restrictions
+
+A pharmaceutical company might instead have:
+
+prescription trends
+market share
+pricing
+manufacturing capacity
+competitor prescriptions
+insurance coverage
+regulatory decisions
+
+A cloud company might have:
+
+cloud spending
+enterprise IT spending
+AI adoption
+datacenter capacity
+capex
+competitive market share
+
+Company Driver Profile should be generated/maintained by Company Monitor or a
+shared company-intelligence service.
+
+It must be STATEFUL.
+
+Do not regenerate it on every run.
+
+Possible update states:
+
+FullProfile
+MaterialUpdate
+NoMaterialChange
+
+
+==================================================
+10. REAL-WORLD LEADING INDICATORS
+==================================================
+
+Catalyst Intelligence should eventually search for evidence relevant to the
+Company Driver Profile.
+
+Do NOT simply search:
+
+"[company] latest news"
+
+The research should be driver-directed.
+
+Conceptually:
+
+Company Driver Profile
+→ identify relevant leading indicators
+→ search existing News/Event/Market/Sector intelligence first
+→ only perform additional web research when required
+→ extract observable changes
+→ attach sources and dates
+
+Each signal should conceptually contain:
+
+signalName
+driver
+direction:
+STRONGLY_NEGATIVE
+NEGATIVE
+NEUTRAL
+POSITIVE
+STRONGLY_POSITIVE
+
+observedValue or description
+previousValue/context where available
+
+observationDate
+source
+sourceType
+sourceConfidence
+
+leadTimeRelevance
+companyImpactReason
+freshness
+
+IMPORTANT:
+
+Distinguish:
+
+FACT
+
+from
+
+INTERPRETATION.
+
+Example:
+
+FACT:
+US container imports increased X%.
+
+INTERPRETATION:
+This may support stronger container-shipping demand.
+
+Do not store interpretations as if they were raw facts.
+
+
+==================================================
+11. SOURCE QUALITY
+==================================================
+
+Evidence quality matters.
+
+Reuse or introduce source categories similar to Investor Watch:
+
+DIRECT_COMPANY
+REGULATORY_FILING
+OFFICIAL_STATISTICS
+INDUSTRY_DATA
+RELIABLE_REPORTING
+ANALYST_DATA
+SECONDARY_REPORTING
+AI_INTERPRETATION
+
+A strong Catalyst case should preferably be supported by multiple independent
+sources.
+
+Ten articles repeating the same Reuters story are NOT ten independent signals.
+
+
+==================================================
+12. EXPECTATIONS MATTER
+==================================================
+
+This feature is NOT simply:
+
+"Will earnings be good?"
+
+It is:
+
+"Will earnings/business development likely be BETTER OR WORSE THAN EXPECTED?"
+
+Therefore expectations/consensus are critical.
+
+If current consensus data is available, create a compact ExpectationsProfile.
+
+Potential fields:
+
+revenueConsensus
+epsConsensus
+ebitdaConsensus
+otherRelevantMetrics
+
+estimateRevision1M
+estimateRevision3M
+
+numberOfUpwardRevisions
+numberOfDownwardRevisions
+
+recentTargetChanges
+recentRecommendationChanges
+
+expectationsTrend:
+FALLING
+STABLE
+RISING
+RISING_FAST
+UNKNOWN
+
+If these data are NOT currently available from Saxo/current sources:
+
+DO NOT fake them.
+
+Report the missing capability.
+
+Design the interface so an external provider can be plugged in later.
+
+
+==================================================
+13. EXPECTATION GAP
+==================================================
+
+Catalyst Intelligence should compare:
+
+OBSERVED REALITY SIGNALS
+
+versus
+
+MARKET EXPECTATIONS.
+
+Example conceptually:
+
+Consensus has barely changed
+
+BUT
+
+multiple current leading indicators have improved materially
+
+→ possible POSITIVE EXPECTATION GAP.
+
+Alternatively:
+
+Industry data looks excellent
+
+BUT
+
+analysts have already raised estimates sharply
+AND
+the stock is +30% in 14 days
+
+→ much smaller opportunity.
+
+This distinction is central to the feature.
+
+
+==================================================
+14. HISTORICAL CONTEXT / TEMPORARY VS STRUCTURAL
+==================================================
+
+The system should explicitly reason about whether recent weakness appears:
+
+TEMPORARY
+STRUCTURAL
+CYCLICAL
+UNKNOWN
+
+Example:
+
+Company historically performs well.
+
+One recent quarter was weak because a major external driver deteriorated.
+
+That same driver has subsequently reversed materially.
+
+This is potentially interesting.
+
+But:
+
+company has repeatedly missed earnings
++
+industry conditions remain weak
++
+business deterioration appears structural
+
+should NOT become interesting merely because the stock is cheap.
+
+Use Company Monitor's stateful thesis/history where possible.
+
+
+==================================================
+15. CATALYST FACTS
+==================================================
+
+Create a compact typed backend object conceptually named:
+
+CatalystFacts
+
+It should aggregate ONLY the relevant compact facts.
+
+Possible structure:
+
+event:
+  ticker
+  company
+  eventType
+  eventDate
+  daysUntilEvent
+
+price:
+  compact PriceContext
+  preEventRunup
+  priceState
+  priceAsymmetryFacts
+
+history:
+  compact EarningsHistoryProfile
+
+expectations:
+  compact ExpectationsProfile
+
+company:
+  investmentView
+  investmentCaseStrength
+  relevant thesis points
+  CompanyDriverProfile
+  recent material Company Monitor changes
+
+signals:
+  relevant LeadingIndicatorSignals
+
+sector:
+  compact relevant sector state
+
+market:
+  compact relevant market state
+
+news:
+  ONLY material relevant company/driver news
+
+events:
+  ONLY relevant external/company events
+
+risks:
+  known catalyst risks
+
+dataQuality:
+  missing fields
+  stale fields
+  source confidence
+
+Do NOT pass entire raw module outputs to OpenAI.
+
+
+==================================================
+16. CHEAP SCREENING BEFORE STRONG AI
+==================================================
+
+Do NOT run strong OpenAI catalyst analysis on every upcoming earnings company.
+
+Implement a funnel.
+
+Conceptually:
+
+ALL supported equities
+
+→ upcoming earnings next ~30 days
+
+→ deterministic/basic screening
+
+→ driver/signal relevance screening
+
+→ interesting candidates
+
+→ deep Catalyst Intelligence
+
+The exact thresholds should be configurable and not ticker-specific.
+
+The screening may consider:
+
+daysUntilEvent
+availability of price history
+material company change
+material sector change
+material leading indicator change
+price asymmetry
+news/event materiality
+expectation changes where available
+
+A company with no meaningful signal should NOT consume an expensive Catalyst AI
+call.
+
+
+==================================================
+17. PROGRESSIVE ANALYSIS
+==================================================
+
+The system should support increasing attention as the event approaches.
+
+Conceptually:
+
+~30 days:
+cheap/basic screening
+
+~14 days:
+signal assessment if interesting
+
+~7 days:
+deeper catalyst assessment if still interesting
+
+~2-3 days:
+final pre-event assessment if still interesting
+
+Do NOT hardcode this as four mandatory paid AI calls.
+
+Use it as an eligibility framework.
+
+If nothing materially changes:
+
+reuse previous analysis.
+
+If strong new evidence appears:
+
+allow immediate reassessment.
+
+
+==================================================
+18. MATERIAL FINGERPRINT
+==================================================
+
+Catalyst Intelligence must be stateful.
+
+Create a material fingerprint based on structured facts.
+
+It should change when decision-relevant information changes, such as:
+
+event date materially changes
+important price state changes
+large pre-event price move
+new material leading indicator
+important company thesis change
+expectations revision
+guidance change
+important sector regime change
+important relevant external event
+new high-quality contradictory evidence
+
+Do NOT fingerprint:
+
+timestamps
+generated prose
+array ordering
+irrelevant news
+minor price noise
+
+If fingerprint unchanged:
+
+ZERO expensive OpenAI calls.
+
+
+==================================================
+19. OPENAI ROLE
+==================================================
+
+Strong OpenAI should NOT calculate objective facts.
+
+It should answer qualitative questions such as:
+
+1. What do the combined signals imply for the upcoming catalyst?
+
+2. Are the signals causally relevant to this company's earnings?
+
+3. Are there multiple independent supporting signals?
+
+4. Is evidence contradictory?
+
+5. Does the evidence suggest a positive/negative expectation gap?
+
+6. Does recent price action appear to have already reflected the thesis?
+
+7. Does recent weakness appear temporary/cyclical or structural?
+
+8. What is the strongest counterargument?
+
+9. What evidence would invalidate the pre-event thesis?
+
+10. Is this interesting enough to send to Opportunity Finder?
+
+
+==================================================
+20. MODEL ROUTING
+==================================================
+
+Preserve the current centralized model routing.
+
+Do NOT change global model choices in this task.
+
+Use cheap/deterministic screening first.
+
+For deep Catalyst analysis, use the existing strong-analysis model class unless
+the current centralized architecture has a more appropriate equivalent.
+
+Do not hardcode model names inside the module.
+
+Use getModel(...) / centralized routing.
+
+
+==================================================
+21. STRUCTURED AI OUTPUT
+==================================================
+
+Deep Catalyst analysis should return strict structured output.
+
+Conceptually:
+
+{
+  earningsSurpriseSignal:
+    "VeryNegative" | "Negative" | "Neutral" | "Positive" | "VeryPositive",
+
+  evidenceConfidence:
+    "Low" | "Medium" | "High",
+
+  expectationGap:
+    "StrongNegative" | "Negative" | "Neutral" |
+    "Positive" | "StrongPositive" | "Unknown",
+
+  priceAsymmetry:
+    "Poor" | "Weak" | "Neutral" | "Attractive" | "VeryAttractive",
+
+  catalystRisk:
+    "Low" | "Medium" | "High" | "Extreme",
+
+  opportunityState:
+    "NotInteresting" | "Monitor" | "Investigate" |
+    "HighInterest" | "CandidateForTradeDecision",
+
+  thesis: string,
+
+  supportingSignals: [
+    {
+      signalId,
+      reason
+    }
+  ],
+
+  contradictingSignals: [
+    {
+      signalId,
+      reason
+    }
+  ],
+
+  strongestCounterargument: string,
+
+  whatMarketMayBeMissing: string | null,
+
+  alreadyPricedInAssessment: string,
+
+  temporaryVsStructural:
+    "Temporary" | "Cyclical" | "Structural" | "Unknown",
+
+  invalidationConditions: string[],
+
+  dataLimitations: string[],
+
+  recommendedNextStep:
+    "Ignore" | "Monitor" | "ResearchMore" |
+    "SendToOpportunityFinder"
+}
+
+IMPORTANT:
+
+AI must reference existing signal IDs.
+
+It must not invent supporting evidence that is absent from CatalystFacts.
+
+
+==================================================
+22. OPPORTUNITY FINDER INTEGRATION
+==================================================
+
+Do NOT replace Opportunity Finder.
+
+Catalyst Intelligence becomes another compact intelligence input to Opportunity
+Finder.
+
+Opportunity Finder should eventually receive only HIGH-INTEREST relevant catalyst
+cases.
+
+It can compare:
+
+pre-earnings opportunity
+normal fundamental opportunity
+price recovery opportunity
+other existing opportunities
+
+Catalyst Intelligence identifies the setup.
+
+Opportunity Finder determines whether it is attractive relative to other
+opportunities.
+
+
+==================================================
+23. TRADE DECISION INTEGRATION
+==================================================
+
+Do NOT automatically turn HighInterest into BUY.
+
+Trade Decision remains the decision engine.
+
+Trade Decision must consider:
+
+Catalyst Intelligence
+Company Monitor
+Portfolio
+Risk
+position sizing
+price
+other opportunities
+event risk
+
+However, modify the conceptual event-blocking architecture so an upcoming earnings
+event is NOT automatically a blocker in every situation.
+
+Support a distinction between:
+
+EVENT_BLOCKED
+
+and
+
+INTENTIONAL_PRE_EVENT_THESIS
+
+An intentional pre-event trade must only be possible when Catalyst Intelligence
+explicitly supports it.
+
+Trade Decision must still independently decide whether:
+
+Hold
+Watch
+PrepareToBuy
+Buy/Ready
+
+is appropriate.
+
+
+==================================================
+24. TRADE REVIEW
+==================================================
+
+Do NOT change the basic Trade Review philosophy.
+
+Only an actual:
+
+Buy/Ready
+or
+Sell/Ready
+
+decision appears as actionable.
+
+A pre-earnings HighInterest case is NOT automatically actionable.
+
+Trade Review should only see it when Trade Decision has approved it as ready NOW.
+
+
+==================================================
+25. AUTOMATION ORCHESTRATOR
+==================================================
+
+Catalyst Intelligence must be orchestrator-controlled.
+
+NO frontend timers.
+
+The orchestrator should determine:
+
+when screening runs
+which companies are eligible
+which cases need deep analysis
+stale status
+failures
+next update
+
+Use the existing recent-run/material-fingerprint architecture.
+
+Do not create unnecessary repeated OpenAI calls.
+
+
+==================================================
+26. DEBUG / OBSERVABILITY
+==================================================
+
+Create the same quality of debug visibility as other AI modules.
+
+Debug should show:
+
+event
+screening facts
+CatalystFacts
+material fingerprint
+previous fingerprint
+
+screening result
+
+AI called:
+true/false
+
+skip reason
+
+model used
+
+qualitative context sent to AI
+
+raw/parsed AI response
+
+schema validation errors
+
+retry/repair information
+
+web searches used
+
+source list
+
+token usage
+
+estimated cost
+
+We must be able to understand WHY a company was or was not promoted.
+
+
+==================================================
+27. UI — DO NOT OVERBUILD YET
+==================================================
+
+Part 1 does NOT require a giant new dashboard.
+
+Add only enough UI to inspect/debug the feature.
+
+Eventually we may want a compact section such as:
+
+PRE-EARNINGS
+
+MAERSK B     2d     HIGH INTEREST
+XYZ          5d     INVESTIGATE
+ABC          8d     MONITOR
+
+with Details.
+
+But do NOT spend significant time redesigning dashboards in this task.
+
+Architecture/data correctness comes first.
+
+
+==================================================
+28. MAERSK REGRESSION FIXTURE
+==================================================
+
+Create a deterministic historical fixture for testing the architecture.
+
+IMPORTANT:
+
+This is TEST DATA ONLY.
+
+It must never affect production.
+
+Represent a hypothetical pre-earnings Maersk case with a cutoff BEFORE the actual
+earnings release.
+
+The fixture may contain representative structured inputs such as:
+
+previous weak Ocean quarter
+later guidance upgrade
+strong container-volume indicators
+elevated freight-rate environment
+tariff frontloading
+capacity disruption
+mixed geopolitical costs
+limited/relevant recent price behavior
+upcoming earnings
+
+The expected qualitative behavior should be:
+
+NOT:
+NotInteresting
+
+and NOT:
+automatic EventBlocked
+
+It should reach at least:
+
+Investigate or HighInterest
+
+depending on the exact fixture.
+
+IMPORTANT:
+
+Do NOT tune production thresholds specifically so Maersk passes.
+
+The same generic logic must apply to all companies.
+
+
+==================================================
+29. NEGATIVE REGRESSION FIXTURES
+==================================================
+
+This is equally important.
+
+Create synthetic/test historical cases where the engine should NOT become bullish.
+
+Example A:
+
+strong industry data
+BUT
+stock already +35% in 14 days
+AND
+analyst expectations revised sharply upward
+
+Expected:
+price asymmetry weak/poor
+not automatically HighInterest.
+
+Example B:
+
+stock -50%
+BUT
+company repeatedly misses
+business deterioration structural
+leading indicators remain negative
+
+Expected:
+NOT bullish merely because stock is cheap.
+
+Example C:
+
+many positive news articles
+BUT
+all derive from one original source
+
+Expected:
+evidence confidence must NOT be High merely because article count is high.
+
+Example D:
+
+positive real-world signals
+BUT
+they are not causally relevant to the company's earnings drivers
+
+Expected:
+do not promote.
+
+This protects against hindsight bias.
+
+
+==================================================
+30. NO PAID TESTING
+==================================================
+
+Do NOT make paid OpenAI calls merely to validate implementation.
+
+Use:
+
+unit tests
+mock responses
+stored data
+fixtures
+schema tests
+
+We will later test real cases intentionally.
+
+
+==================================================
+31. PART 1 IMPLEMENTATION BOUNDARY
+==================================================
+
+For this first task:
+
+IMPLEMENT:
+
+- data capability audit
+- required shared types/interfaces
+- Company Driver Profile storage architecture
+- CatalystFacts structure
+- price-asymmetry backend calculations where data already exists
+- earnings-history interface
+- expectations interface
+- leading-indicator signal structure
+- source-quality structure
+- deterministic screening architecture
+- material fingerprint
+- catalyst repository/state
+- orchestrator integration skeleton
+- compact debug capability
+- tests/fixtures
+
+ONLY implement real earnings/expectation data ingestion when the required data is
+already clearly available from current sources.
+
+DO NOT fabricate missing integrations.
+
+DO NOT yet enable automatic pre-earnings trading.
+
+DO NOT modify Trade Decision to produce live pre-event BUY decisions in Part 1.
+
+We first need to understand exactly which data are available.
+
+
+==================================================
+32. FINAL REPORT
+==================================================
+
+After Part 1, provide a detailed report containing:
+
+1. Current data capability matrix.
+
+2. Exactly what Saxo provides for this feature.
+
+3. Exactly what Saxo does NOT provide.
+
+4. What existing application data can be reused.
+
+5. Missing external data sources required.
+
+6. Files added.
+
+7. Files modified.
+
+8. Company Driver Profile architecture.
+
+9. CatalystFacts structure.
+
+10. Screening architecture.
+
+11. Price asymmetry calculations.
+
+12. Historical earnings architecture.
+
+13. Expectations architecture.
+
+14. Leading-indicator architecture.
+
+15. Material fingerprint behavior.
+
+16. Orchestrator integration.
+
+17. OpenAI integration planned/implemented.
+
+18. Opportunity Finder integration status.
+
+19. Trade Decision integration status.
+
+20. Tests and results.
+
+21. Maersk regression fixture result.
+
+22. Negative fixture results.
+
+23. Any assumptions you deliberately did NOT make.
+
+24. Recommended PART 2.
+
+IMPORTANT:
+
+Do not hide missing data behind AI.
+
+If we do not currently have reliable consensus, earnings-history or analyst revision
+data, say so clearly.
+
+The objective of Part 1 is to build a robust foundation for a real predictive
+catalyst system — not a demo that looks intelligent because an LLM invents missing
+facts.

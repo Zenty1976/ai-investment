@@ -51,7 +51,13 @@ export type ModuleId =
   | "portfolio-manager" | "market-monitor" | "news-monitor" | "event-monitor"
   | "sector-monitor"   | "company-monitor" | "market-alerts" | "risk-analyzer"
   | "portfolio-analyzer" | "opportunity-finder" | "trade-decision-engine" | "trade-review"
-  | "investor-watch" | "command-brief";
+  | "investor-watch" | "command-brief"
+  /**
+   * Catalyst / Pre-Earnings Intelligence.
+   * Part 1: skeleton — deterministic screening only, supportsAutomaticRun: false.
+   * Part 2: will enable AI deep analysis and automatic scheduling.
+   */
+  | "catalyst-intelligence";
 
 export type AutomationMode = "Manual" | "SemiAutomatic" | "FullAutomatic";
 
@@ -398,8 +404,22 @@ const MODULE_DEFAULTS: ModuleDefaults[] = [
     marketHoursOnly: false,
   },
   {
-    // Command Brief runs LAST — it summarises every other module's latest output
-    // into a compact executive snapshot. It must never make the full cycle fail.
+    // Catalyst Intelligence — Part 1: manual screening only (supportsAutomaticRun: false).
+    // Part 2 will enable automatic scheduling once deep AI analysis is implemented.
+    moduleId: "catalyst-intelligence",
+    displayName: "Catalyst Intelligence",
+    scheduleType: "after",
+    defaultIntervalMinutes: 720,  // every 12 hours when auto is enabled (Part 2)
+    minimumIntervalMinutes: 60,
+    maximumIntervalMinutes: 1440,
+    staleAfterMinutes: 720,       // 12 hours — screening is stable within a day
+    dependencies: [],
+    runAfter: ["company-monitor", "news-monitor", "event-monitor"],
+    priority: 85,                 // runs after all foundation modules, before command-brief
+    supportsAutomaticRun: false,  // Part 2 will enable this
+    marketHoursOnly: false,
+  },
+  {
     moduleId: "command-brief",
     displayName: "Command Brief",
     scheduleType: "after",
@@ -435,8 +455,9 @@ const MODULE_ENDPOINTS: Record<ModuleId, { method: "POST" | "GET"; path: string 
   // POST /generate forces fresh generation (bypasses cache); GET serves existing data.
   "trade-review":         { method: "POST", path: "/api/trade-review/generate" },
   // Investor Watch is informational only — no downstream pipeline connections.
-  "investor-watch":       { method: "POST", path: "/api/investor-watch/analyze" },
-  "command-brief":        { method: "POST", path: "/api/command-brief/analyze" },
+  "investor-watch":         { method: "POST", path: "/api/investor-watch/analyze" },
+  "command-brief":          { method: "POST", path: "/api/command-brief/analyze" },
+  "catalyst-intelligence":  { method: "POST", path: "/api/catalyst-intelligence/screen" },
 };
 
 const MAX_JOBS = 100;

@@ -1,39 +1,39 @@
 {
   "portfolio-manager": {
-    "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:09.336Z",
+    "status": "Failed",
+    "lastRunAt": "2026-08-14T05:27:03.890Z",
     "lastSuccessfulRunAt": "2026-08-13T20:44:09.806Z",
-    "nextRunAt": "2026-08-13T21:44:09.814Z",
-    "lastError": null,
+    "nextRunAt": "2026-08-14T06:27:03.895Z",
+    "lastError": "HTTP 401: {\"error\":\"Not connected to Saxo Bank. Go to Settings and log in first.\"}",
     "currentJobId": null,
     "waitingForDeps": [],
     "lastSkippedUnchanged": false
   },
   "market-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:38:05.374Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:10.233Z",
-    "nextRunAt": "2026-08-13T21:14:10.243Z",
+    "lastRunAt": "2026-08-14T05:21:48.226Z",
+    "lastSuccessfulRunAt": "2026-08-14T05:21:53.673Z",
+    "nextRunAt": "2026-08-14T05:51:53.701Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
-    "lastSkippedUnchanged": true
+    "lastSkippedUnchanged": false
   },
   "news-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:38:05.376Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:10.245Z",
-    "nextRunAt": "2026-08-13T21:14:10.254Z",
+    "lastRunAt": "2026-08-14T05:21:48.228Z",
+    "lastSuccessfulRunAt": "2026-08-14T05:21:55.375Z",
+    "nextRunAt": "2026-08-14T05:51:55.454Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
-    "lastSkippedUnchanged": true
+    "lastSkippedUnchanged": false
   },
   "event-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:10.256Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:10.280Z",
-    "nextRunAt": "2026-08-13T23:44:10.280Z",
+    "lastRunAt": "2026-08-14T04:51:22.568Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:51:26.686Z",
+    "nextRunAt": "2026-08-14T07:51:26.695Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -51,29 +51,31 @@
   },
   "company-monitor": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:41:59.414Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:13.335Z",
-    "nextRunAt": "2026-08-14T02:44:13.344Z",
-    "lastError": null,
-    "currentJobId": null,
-    "waitingForDeps": [],
-    "lastSkippedUnchanged": true
-  },
-  "market-alerts": {
-    "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:13.848Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:13.873Z",
-    "nextRunAt": "2026-08-13T20:59:13.899Z",
+    "lastRunAt": "2026-08-14T04:51:22.632Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:51:26.408Z",
+    "nextRunAt": "2026-08-14T10:51:26.523Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
     "lastSkippedUnchanged": false
   },
+  "market-alerts": {
+    "status": "Idle",
+    "lastRunAt": "2026-08-14T05:11:47.983Z",
+    "lastSuccessfulRunAt": "2026-08-14T05:11:48.396Z",
+    "nextRunAt": "2026-08-14T05:26:48.603Z",
+    "lastError": null,
+    "currentJobId": null,
+    "waitingForDeps": [
+      "portfolio-manager"
+    ],
+    "lastSkippedUnchanged": false
+  },
   "risk-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:14.350Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:14.369Z",
-    "nextRunAt": "2026-08-13T22:44:14.381Z",
+    "lastRunAt": "2026-08-14T04:51:22.602Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:51:40.452Z",
+    "nextRunAt": "2026-08-14T06:51:40.580Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -81,9 +83,9 @@
   },
   "portfolio-analyzer": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:14.853Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:14.868Z",
-    "nextRunAt": "2026-08-13T23:44:14.881Z",
+    "lastRunAt": "2026-08-14T04:51:22.604Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:51:36.083Z",
+    "nextRunAt": "2026-08-14T07:51:36.164Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -101,9 +103,9 @@
   },
   "trade-decision-engine": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:15.869Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:52.212Z",
-    "nextRunAt": "2026-08-13T22:44:52.253Z",
+    "lastRunAt": "2026-08-14T04:51:22.606Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:51:40.954Z",
+    "nextRunAt": "2026-08-14T06:51:41.195Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
@@ -111,23 +113,32 @@
   },
   "trade-review": {
     "status": "Idle",
-    "lastRunAt": "2026-08-13T20:44:52.256Z",
-    "lastSuccessfulRunAt": "2026-08-13T20:44:52.389Z",
-    "nextRunAt": "2026-08-13T22:44:52.397Z",
-    "lastError": null,
-    "currentJobId": null,
-    "waitingForDeps": [],
-    "lastSkippedUnchanged": true
-  },
-  "investor-watch": {
-    "status": "Idle",
-    "lastRunAt": "2026-08-13T16:01:14.623Z",
-    "lastSuccessfulRunAt": "2026-08-13T16:01:49.444Z",
-    "nextRunAt": "2026-08-13T22:01:49.444Z",
+    "lastRunAt": "2026-08-14T04:51:41.197Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:51:41.308Z",
+    "nextRunAt": "2026-08-14T06:51:41.340Z",
     "lastError": null,
     "currentJobId": null,
     "waitingForDeps": [],
     "lastSkippedUnchanged": false
+  },
+  "investor-watch": {
+    "status": "Idle",
+    "lastRunAt": "2026-08-14T04:51:22.569Z",
+    "lastSuccessfulRunAt": "2026-08-14T04:52:17.333Z",
+    "nextRunAt": "2026-08-14T10:52:17.342Z",
+    "lastError": null,
+    "currentJobId": null,
+    "waitingForDeps": [],
+    "lastSkippedUnchanged": false
+  },
+  "catalyst-intelligence": {
+    "status": "Idle",
+    "lastRunAt": null,
+    "lastSuccessfulRunAt": null,
+    "nextRunAt": null,
+    "lastError": null,
+    "currentJobId": null,
+    "waitingForDeps": []
   },
   "command-brief": {
     "status": "Idle",
@@ -136,7 +147,9 @@
     "nextRunAt": "2026-08-13T22:44:55.175Z",
     "lastError": null,
     "currentJobId": null,
-    "waitingForDeps": [],
+    "waitingForDeps": [
+      "portfolio-manager"
+    ],
     "lastSkippedUnchanged": false
   }
 }

@@ -57,6 +57,13 @@ export interface EventRecord {
   lastSeenAt: string;
   /** ISO 8601 — last time content actually changed (not just proximity or metadata) */
   lastChangedAt: string;
+  /**
+   * Whether this event represents a Risk, an Opportunity, both, or is Unknown.
+   * Optional for backward compatibility with existing stored events — defaults to "Unknown"
+   * when absent. Set by the event-monitor AI discovery prompt when classifying events.
+   * Read by Catalyst Intelligence to filter earnings-opportunity events.
+   */
+  classification?: "Risk" | "Opportunity" | "Both" | "Unknown";
 }
 
 /** Persisted state for the event intelligence layer (repository key: event-intelligence) */
