@@ -139,7 +139,7 @@ describe("Recent-Run Guard & markAIAnalysis", () => {
   });
 
   // ── Scenario 7 ──────────────────────────────────────────────────────────────
-  it("SKIPPED_RECENT path does not advance lastAIAnalysisAt", () => {
+  it("SKIPPED_RECENT path does not advance lastAIAnalysisAt", async () => {
     // The orchestrator calls analysisRepository.saveSkipped() for SKIPPED_RECENT.
     // saveSkipped() must not overwrite lastAIAnalysisAt — it only refreshes updatedAt.
     seedEntry("news-monitor", { headline: "Stable" });
@@ -150,6 +150,11 @@ describe("Recent-Run Guard & markAIAnalysis", () => {
     const beforeSkip = analysisRepository.get("news-monitor");
     assert.equal(beforeSkip?.lastAIAnalysisAt, originalTs, "pre-condition: lastAIAnalysisAt should be set");
 
+    // Wait 2 ms so the clock advances at least one millisecond.
+    // Previously writeFileSync added implicit latency; now that saves are async
+    // the gap must be created explicitly so updatedAt is guaranteed to differ.
+    await new Promise(r => setTimeout(r, 2));
+
     // Simulate SKIPPED_RECENT: the orchestrator calls saveSkipped, not markAIAnalysis
     analysisRepository.saveSkipped("news-monitor");
 
@@ -159,10 +164,9 @@ describe("Recent-Run Guard & markAIAnalysis", () => {
       originalTs,
       "lastAIAnalysisAt must be preserved after saveSkipped (not overwritten)"
     );
-    assert.notEqual(
-      afterSkip?.updatedAt,
-      beforeSkip?.updatedAt,
-      "updatedAt should be refreshed by saveSkipped"
+    assert.ok(
+      afterSkip?.updatedAt !== undefined && afterSkip.updatedAt > (beforeSkip?.updatedAt ?? ""),
+      `updatedAt should be refreshed by saveSkipped (before=${beforeSkip?.updatedAt}, after=${afterSkip?.updatedAt})`
     );
   });
 

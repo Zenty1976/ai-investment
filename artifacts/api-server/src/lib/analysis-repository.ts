@@ -21,7 +21,8 @@
  * need to know whether persistence is backed by a file or a database.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync } from "fs";
+import { writeFile, mkdir } from "fs/promises";
 import { resolve } from "path";
 
 const DATA_DIR = resolve(process.cwd(), "data");
@@ -96,20 +97,56 @@ class AnalysisRepository {
     }
   }
 
-  private _persistToDisk(): void {
+  // ── Async debounced persistence ──────────────────────────────────────────────
+  //
+  // Disk writes are fully async so they never block the Node.js event loop.
+  // Rapid successive save() calls are coalesced: only one write fires per
+  // DEBOUNCE_MS window, using a snapshot of the store taken at dispatch time.
+  // This means a run-all cycle (many modules saving in quick succession) causes
+  // at most one disk write every 300 ms instead of one per save().
+
+  private static readonly DEBOUNCE_MS = 300;
+  private _writeTimer: ReturnType<typeof setTimeout> | null = null;
+  private _writeInFlight = false;
+  private _writePending = false;
+
+  private _schedulePersist(): void {
+    if (this._writeTimer !== null) clearTimeout(this._writeTimer);
+    this._writeTimer = setTimeout(() => {
+      this._writeTimer = null;
+      void this._flushToDisk();
+    }, AnalysisRepository.DEBOUNCE_MS);
+  }
+
+  private async _flushToDisk(): Promise<void> {
+    if (this._writeInFlight) {
+      // Another write is already in progress — flag that we need another pass.
+      this._writePending = true;
+      return;
+    }
+    this._writeInFlight = true;
+    this._writePending = false;
     try {
       if (!existsSync(DATA_DIR)) {
-        mkdirSync(DATA_DIR, { recursive: true });
+        await mkdir(DATA_DIR, { recursive: true });
       }
+      // Snapshot the store now (before the async write) so late mutations are
+      // captured in the next debounced write, not lost.
       const data: Record<string, RepositoryEntry> = {};
       for (const [key, entry] of this.store) {
         data[key] = entry;
       }
-      writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
+      await writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
     } catch (err) {
       console.error(
-        `[repository] Failed to persist to disk — in-memory store is unaffected. Error: ${err}`
+        `[repository] Async persist failed — in-memory store is unaffected. Error: ${err}`
       );
+    } finally {
+      this._writeInFlight = false;
+      if (this._writePending) {
+        // A save() arrived while we were writing — flush again immediately.
+        void this._flushToDisk();
+      }
     }
   }
 
@@ -215,7 +252,7 @@ class AnalysisRepository {
       lastAIAnalysisAt:     existing?.lastAIAnalysisAt,
     };
     this.store.set(moduleName, entry as RepositoryEntry);
-    this._persistToDisk();
+    this._schedulePersist();
     return entry;
   }
 
@@ -236,7 +273,7 @@ class AnalysisRepository {
       refreshVersion: (existing.refreshVersion ?? 0) + 1,
     };
     this.store.set(moduleName, entry);
-    this._persistToDisk();
+    this._schedulePersist();
   }
 
   /**
@@ -266,7 +303,7 @@ class AnalysisRepository {
       lastAIAnalysisAt,
     };
     this.store.set(moduleName, entry);
-    this._persistToDisk();
+    this._schedulePersist();
   }
 
   /**
@@ -289,7 +326,7 @@ class AnalysisRepository {
       lastAIAnalysisAt,
     };
     this.store.set(moduleName, entry);
-    this._persistToDisk();
+    this._schedulePersist();
   }
 
   /** Retrieve the latest entry for a module, or undefined if none exists. */
@@ -320,7 +357,7 @@ class AnalysisRepository {
       if (key.startsWith(prefix)) toDelete.push(key);
     }
     for (const key of toDelete) this.store.delete(key);
-    if (toDelete.length > 0) this._persistToDisk();
+    if (toDelete.length > 0) this._schedulePersist();
     return toDelete.length;
   }
 }

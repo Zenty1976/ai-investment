@@ -13,7 +13,8 @@
  * duplicating business logic.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync } from "fs";
+import { writeFile, mkdir as mkdirAsync } from "fs/promises";
 import { resolve } from "path";
 import { randomUUID } from "crypto";
 import { analysisRepository } from "./analysis-repository.js";
@@ -36,13 +37,18 @@ function readJson<T>(file: string, fallback: T): T {
   }
 }
 
+// Async best-effort write — never blocks the event loop.
 function writeJson(file: string, data: unknown): void {
-  try {
-    if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
-    writeFileSync(resolve(DATA_DIR, file), JSON.stringify(data, null, 2), "utf-8");
-  } catch {
-    /* best-effort */
-  }
+  const path = resolve(DATA_DIR, file);
+  const payload = JSON.stringify(data, null, 2);
+  (async () => {
+    try {
+      if (!existsSync(DATA_DIR)) await mkdirAsync(DATA_DIR, { recursive: true });
+      await writeFile(path, payload, "utf-8");
+    } catch {
+      /* best-effort */
+    }
+  })();
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────

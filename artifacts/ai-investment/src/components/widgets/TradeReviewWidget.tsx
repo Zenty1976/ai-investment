@@ -306,7 +306,7 @@ export function TradeReviewWidget() {
               </p>
             )}
             <Button size="sm" variant="ghost" className="h-6 text-[10px] self-start px-0 text-muted-foreground"
-              onClick={() => navigate("/review")}>
+              onClick={() => navigate("/trade-review")}>
               <ExternalLink className="h-3 w-3 mr-1" /> Open
             </Button>
           </>
@@ -379,7 +379,7 @@ export function TradeReviewWidget() {
               qty={qtyOverrides[p.id] ?? p.quantity}
               onQtyChange={handleQtyChange}
               onAction={handleAction}
-              onNavigate={() => navigate("/review")}
+              onNavigate={() => navigate("/trade-review")}
               isMutating={mutatingId === p.id}
               showQty={showQty}
             />
@@ -402,7 +402,7 @@ export function TradeReviewWidget() {
                 key={item.id}
                 item={item}
                 isLast={i === arr.length - 1}
-                onNavigate={() => navigate("/review")}
+                onNavigate={() => navigate("/trade-review")}
               />
             ))}
           </div>
