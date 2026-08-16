@@ -1,691 +1,5 @@
 [
   {
-    "id": "57e219ad-6fb0-440d-a4fc-b052ce13f3a4",
-    "timestamp": "2026-08-16T07:58:35.625Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "41f7b33c-97da-4056-9846-8d61d0f64985",
-    "timestamp": "2026-08-16T07:58:35.627Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NVDA: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "9aaa1310-d6cb-4a28-9b7c-494f9ab16a4e",
-    "timestamp": "2026-08-16T07:58:35.629Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NEE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "0785b8d7-b51d-4e5b-a5e9-1972b788c8db",
-    "timestamp": "2026-08-16T07:58:35.632Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (9ms, change: Medium)"
-  },
-  {
-    "id": "66a6b6c1-bb5a-476b-b677-e5db432af86d",
-    "timestamp": "2026-08-16T07:58:35.636Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "ba73ffe4-2996-4e23-9ffe-8da23f2907f1",
-    "timestamp": "2026-08-16T07:58:36.624Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
-  },
-  {
-    "id": "abcb56d2-6117-4007-8948-dbae63f2d66b",
-    "timestamp": "2026-08-16T07:58:36.625Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NVDA: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "63a5f56e-d69f-430a-83b5-e0ef0353daa5",
-    "timestamp": "2026-08-16T07:58:36.638Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NEE: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "c63ea28b-8fc2-44b3-9fbb-c88ea58975a9",
-    "timestamp": "2026-08-16T07:58:36.643Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via RunAllNow (21ms, change: None)"
-  },
-  {
-    "id": "c753c804-2c9d-48d0-b97d-9f601237bae1",
-    "timestamp": "2026-08-16T07:58:37.910Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Command Brief generated (2273ms): attention — High cash position amid mixed signals and upcoming key events."
-  },
-  {
-    "id": "9112b4ec-722f-416d-90cf-205adaad2424",
-    "timestamp": "2026-08-16T07:58:37.914Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief completed via Dependency (2279ms, change: Medium)"
-  },
-  {
-    "id": "594cc9c5-ef2b-48fa-b7f2-62fe7c84d378",
-    "timestamp": "2026-08-16T07:58:38.623Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle completed in 118s"
-  },
-  {
-    "id": "f37a318c-43c7-43f5-923c-1a43a13418dd",
-    "timestamp": "2026-08-16T08:12:49.480Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: Scheduled)"
-  },
-  {
-    "id": "c3c3a745-7b1f-4628-b7fe-657617ef8fa1",
-    "timestamp": "2026-08-16T08:12:49.487Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market Alerts checked (engine): no new material developments (2ms, aiCalls=0)"
-  },
-  {
-    "id": "e0e88d60-03c7-4a5b-860c-d2b2361d626e",
-    "timestamp": "2026-08-16T08:12:49.499Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via Scheduled (29ms, change: Medium)"
-  },
-  {
-    "id": "9f605dca-87ae-458c-8497-1b5bb156a1ec",
-    "timestamp": "2026-08-16T08:12:49.645Z",
-    "module": "Settings",
-    "level": "warning",
-    "message": "Saxo access token refreshed"
-  },
-  {
-    "id": "78759a4f-52da-4da8-8dde-a7d73f7b36c5",
-    "timestamp": "2026-08-16T08:14:16.448Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Initial run schedule established for unscheduled modules"
-  },
-  {
-    "id": "96087a9b-d50e-4355-8c0f-8ef4bba5b147",
-    "timestamp": "2026-08-16T08:18:24.268Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Full cycle started (Run all now) [6c79ba12-dd55-4a9e-ad37-357a2b5f4d11]"
-  },
-  {
-    "id": "81c6cd4f-9ac4-4000-916d-1ddcc81701a4",
-    "timestamp": "2026-08-16T08:18:24.309Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "21356d26-942f-40c5-b9f1-9c8597f54e5b",
-    "timestamp": "2026-08-16T08:18:24.720Z",
-    "module": "Portfolio Manager",
-    "level": "info",
-    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
-  },
-  {
-    "id": "5dfdacf5-10a2-4847-b178-d3b002c30b0c",
-    "timestamp": "2026-08-16T08:18:24.737Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-manager completed via RunAllNow (460ms, change: None)"
-  },
-  {
-    "id": "635af3e7-a970-4002-9e59-bd23f29c11cc",
-    "timestamp": "2026-08-16T08:18:24.788Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "bb3d0355-4e96-4c4c-b64c-b09d1caf02d0",
-    "timestamp": "2026-08-16T08:18:24.860Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "7e7890e3-c83a-4469-b4b0-dad6c8c6231a",
-    "timestamp": "2026-08-16T08:18:24.862Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "9832b920-8596-4f40-9547-06e33a168538",
-    "timestamp": "2026-08-16T08:18:24.942Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "9330fb29-d1ed-4d97-9ac7-8c26553a02e8",
-    "timestamp": "2026-08-16T08:18:25.025Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "7c2bd4bd-343e-4340-b418-6de13f672187",
-    "timestamp": "2026-08-16T08:18:25.028Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "b045284e-4c71-4d72-9599-7390c1763df1",
-    "timestamp": "2026-08-16T08:18:25.298Z",
-    "module": "Price Context",
-    "level": "info",
-    "message": "Stage 1.5: 2 symbol(s) refreshed from 2 known targets"
-  },
-  {
-    "id": "83876c38-9b29-4d3c-b275-11817d96b7cf",
-    "timestamp": "2026-08-16T08:18:25.304Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "fb5d30d2-b060-4f8d-8539-e763b16c50e7",
-    "timestamp": "2026-08-16T08:18:25.309Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "ff810eff-04c0-4487-a64e-eb4c386cf91b",
-    "timestamp": "2026-08-16T08:18:25.317Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "4323ab05-e5fe-4b5a-b7b1-553562a3134c",
-    "timestamp": "2026-08-16T08:18:25.320Z",
-    "module": "Event Monitor",
-    "level": "info",
-    "message": "Maintenance (no material change): 8 event(s) — materialVersion unchanged"
-  },
-  {
-    "id": "4e626716-888b-4e8a-8902-ce4fa9825b57",
-    "timestamp": "2026-08-16T08:18:25.323Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "event-monitor completed via RunAllNow (21ms, change: None)"
-  },
-  {
-    "id": "9dcf8ebf-c646-4775-88db-54a3544a21a8",
-    "timestamp": "2026-08-16T08:18:25.323Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "be036197-fb43-44f6-b62f-c411b8b13d10",
-    "timestamp": "2026-08-16T08:18:25.328Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "5f7d6975-fe53-49fd-bd5e-47ec8b7ff20d",
-    "timestamp": "2026-08-16T08:18:25.330Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "aa742227-9c6d-4f6f-8613-a362eb8d9c6d",
-    "timestamp": "2026-08-16T08:18:25.333Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "7f8d732a-1f02-4873-8edf-9a5c08f7ff78",
-    "timestamp": "2026-08-16T08:18:25.335Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "abff9e2d-3ee7-4f20-8ead-54cb09a44207",
-    "timestamp": "2026-08-16T08:18:26.319Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (983ms, change: None)"
-  },
-  {
-    "id": "d76372ce-9fd0-491d-b3f1-876f746c056a",
-    "timestamp": "2026-08-16T08:18:28.903Z",
-    "module": "Market Monitor",
-    "level": "info",
-    "message": "Market analysis completed (no material change): Neutral sentiment, Moderate risk — materialVersion unchanged"
-  },
-  {
-    "id": "520e17cd-95e6-4ff1-a52f-7b873bcf91d4",
-    "timestamp": "2026-08-16T08:18:28.908Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-monitor completed via RunAllNow (3608ms, change: None)"
-  },
-  {
-    "id": "faa7f518-c89f-4ef1-8073-2bea983ba0c8",
-    "timestamp": "2026-08-16T08:18:28.908Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor downstream skipped — upstream change was None"
-  },
-  {
-    "id": "cb5617ae-3bf5-48f5-82da-5e636fd026da",
-    "timestamp": "2026-08-16T08:18:28.910Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts downstream skipped — upstream change was None"
-  },
-  {
-    "id": "995a6bd0-7d82-4233-815d-63ceae5ca9c7",
-    "timestamp": "2026-08-16T08:18:28.912Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder downstream skipped — upstream change was None"
-  },
-  {
-    "id": "6dd6d8ee-2500-43c2-86d6-6212e1784361",
-    "timestamp": "2026-08-16T08:18:34.216Z",
-    "module": "Portfolio Manager v2",
-    "level": "info",
-    "message": "CIO analysis complete — health 62/100 (C), 7 high-severity drift, confidence Low"
-  },
-  {
-    "id": "0f0897c1-ad1c-4a1e-a044-e9ffe781c7f4",
-    "timestamp": "2026-08-16T08:18:36.390Z",
-    "module": "News Monitor",
-    "level": "info",
-    "message": "News analysis completed (MATERIAL CHANGE): 5 market-moving stories found"
-  },
-  {
-    "id": "e792d388-c069-4965-ab14-43651eba2700",
-    "timestamp": "2026-08-16T08:18:36.395Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "news-monitor completed via RunAllNow (11094ms, change: Medium)"
-  },
-  {
-    "id": "b2368ec7-4b29-45bc-bf4e-c0b12d732eaa",
-    "timestamp": "2026-08-16T08:18:36.811Z",
-    "module": "Sector Monitor",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "31b49aed-53bc-47b2-8194-411e175515d2",
-    "timestamp": "2026-08-16T08:18:37.125Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (728ms, change: None)"
-  },
-  {
-    "id": "d595dbde-f343-46cf-89a7-fafa2362fd2a",
-    "timestamp": "2026-08-16T08:18:47.170Z",
-    "module": "Sector Monitor",
-    "level": "info",
-    "message": "Sector analysis completed (MATERIAL CHANGE): Energy strongest, Materials weakest"
-  },
-  {
-    "id": "8657ea1e-5b78-48c7-b0f9-311c1f54edca",
-    "timestamp": "2026-08-16T08:18:47.176Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "sector-monitor completed via RunAllNow (10367ms, change: Medium)"
-  },
-  {
-    "id": "a3dae2f9-a8ea-4af3-9a5e-e278626a55ec",
-    "timestamp": "2026-08-16T08:18:48.099Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via RunAllNow (783ms, change: None)"
-  },
-  {
-    "id": "3eb5c090-98f1-4c09-b488-21883467333d",
-    "timestamp": "2026-08-16T08:18:48.824Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NOVOB:XCSE (trigger: RunAllNow)"
-  },
-  {
-    "id": "34e3cd6a-9071-4c8f-a314-63c3a1dbff7f",
-    "timestamp": "2026-08-16T08:18:52.235Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "NOVOB:XCSE: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "aaeb2897-7005-42a5-95ee-a673a7ada8ea",
-    "timestamp": "2026-08-16T08:18:52.242Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (3420ms, change: Medium)"
-  },
-  {
-    "id": "2d91746c-1268-4ab6-b9d3-60d0c8f6f06a",
-    "timestamp": "2026-08-16T08:18:52.375Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for SERV:XNAS (trigger: RunAllNow)"
-  },
-  {
-    "id": "33a19735-cdba-44a2-9a2e-f9a210ad9790",
-    "timestamp": "2026-08-16T08:18:53.119Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (875ms, change: None)"
-  },
-  {
-    "id": "6f731f9d-514f-4c45-9e2b-90dfa224c1e9",
-    "timestamp": "2026-08-16T08:18:54.271Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "SERV:XNAS: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "1ecc3ec3-b8ce-4028-876b-09dcb82d6232",
-    "timestamp": "2026-08-16T08:18:54.275Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (1903ms, change: Medium)"
-  },
-  {
-    "id": "cb05c892-0660-4c48-97a2-c4fbd3cd7458",
-    "timestamp": "2026-08-16T08:18:54.878Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NVDA (trigger: RunAllNow)"
-  },
-  {
-    "id": "00611539-e9e3-46ef-a3dc-eb10a494c331",
-    "timestamp": "2026-08-16T08:18:54.924Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (647ms, change: None)"
-  },
-  {
-    "id": "9190a81c-e2b5-4d95-bb5a-f2811d8fb2d2",
-    "timestamp": "2026-08-16T08:18:56.848Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "NVDA: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "84821865-da13-489c-8d34-86c97b46be03",
-    "timestamp": "2026-08-16T08:18:56.852Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (1976ms, change: Medium)"
-  },
-  {
-    "id": "0a6de39b-3877-41d4-8901-b1a224ca7e24",
-    "timestamp": "2026-08-16T08:18:56.854Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:NVDA changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "69c707ec-f0bb-4425-8039-fe793f104fbc",
-    "timestamp": "2026-08-16T08:18:57.384Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for NEE (trigger: RunAllNow)"
-  },
-  {
-    "id": "128bd467-45d4-47d9-a22f-d816f7a3a27f",
-    "timestamp": "2026-08-16T08:18:57.549Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (696ms, change: None)"
-  },
-  {
-    "id": "6131ea40-9fdf-4d93-8c91-68aca87a18db",
-    "timestamp": "2026-08-16T08:18:59.812Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "NEE: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "d148aa4a-5f48-4a9a-888e-f018873adf54",
-    "timestamp": "2026-08-16T08:18:59.817Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (2435ms, change: Medium)"
-  },
-  {
-    "id": "d8fbc956-1bb7-458a-a52f-3bb57e6cca0f",
-    "timestamp": "2026-08-16T08:18:59.825Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:NEE changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "9adac743-7862-4d28-8157-1a6e0315f202",
-    "timestamp": "2026-08-16T08:18:59.887Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for JNJ (trigger: RunAllNow)"
-  },
-  {
-    "id": "233e168e-77af-4531-971a-624821c585eb",
-    "timestamp": "2026-08-16T08:19:00.656Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (831ms, change: None)"
-  },
-  {
-    "id": "ccb503f7-ea26-46eb-b658-5afbf63f0cc1",
-    "timestamp": "2026-08-16T08:19:02.124Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "JNJ: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
-    "id": "5713c7aa-3771-48bf-99ec-b9dcb42b1f67",
-    "timestamp": "2026-08-16T08:19:02.130Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (2244ms, change: Medium)"
-  },
-  {
-    "id": "e2672faa-c127-4360-a658-47193b4c7132",
-    "timestamp": "2026-08-16T08:19:02.132Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:JNJ changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "c40cf0f2-d7c1-414b-891a-edf3a9973046",
-    "timestamp": "2026-08-16T08:19:02.395Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "1187d1ed-dcc5-4715-a04d-29761f2cfb5f",
-    "timestamp": "2026-08-16T08:19:02.400Z",
-    "module": "Market Alerts",
-    "level": "info",
-    "message": "Market alerts completed via deterministic engine (3ms, change: High)"
-  },
-  {
-    "id": "930a7763-5665-4e38-ad6c-e74f278027c2",
-    "timestamp": "2026-08-16T08:19:02.401Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 new alert(s): U.S. Jobs Report Misses Expectations"
-  },
-  {
-    "id": "bb1c7bbe-5a02-4e7d-8df5-7571e2bf514d",
-    "timestamp": "2026-08-16T08:19:02.402Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "1 alert(s) resolved: Weaker-than-Expected U.S. Jobs Report"
-  },
-  {
-    "id": "4690156b-0116-4dab-915c-1fd78430f56a",
-    "timestamp": "2026-08-16T08:19:02.404Z",
-    "module": "Market Alerts",
-    "level": "internal",
-    "message": "Highest priority alert: NVIDIA Corporation Q2 Fiscal 2027 Financial Results (in 10 days) [Event]"
-  },
-  {
-    "id": "10babc0d-336e-423f-9a64-b02bd626c5ab",
-    "timestamp": "2026-08-16T08:19:02.407Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "market-alerts completed via RunAllNow (14ms, change: High)"
-  },
-  {
-    "id": "18fa0bfa-8413-4563-800a-968a8527fdd1",
-    "timestamp": "2026-08-16T08:19:02.844Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (713ms, change: None)"
-  },
-  {
-    "id": "e187e373-c5b6-43e5-bcc6-4bc1396d504b",
-    "timestamp": "2026-08-16T08:19:02.898Z",
-    "module": "Risk Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "7480c5c2-2c46-4ec5-b558-a418dc93e2d8",
-    "timestamp": "2026-08-16T08:19:02.900Z",
-    "module": "Risk Analyzer",
-    "level": "internal",
-    "message": "Skipping AI call — RiskFacts fingerprint unchanged (3ed4df7b5a1066b8)"
-  },
-  {
-    "id": "e65146d7-7cee-4836-b903-bf19a05b8a13",
-    "timestamp": "2026-08-16T08:19:02.906Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "risk-analyzer completed via RunAllNow (9ms, change: None)"
-  },
-  {
-    "id": "fe4addad-29f4-41fe-8063-fe74e64872bf",
-    "timestamp": "2026-08-16T08:19:02.907Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer downstream skipped — upstream change was None"
-  },
-  {
-    "id": "83a81f04-b471-4633-a481-a585a2bcff51",
-    "timestamp": "2026-08-16T08:19:02.908Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine downstream skipped — upstream change was None"
-  },
-  {
-    "id": "830edb2c-1284-417e-bf8e-f9fa39f3048f",
-    "timestamp": "2026-08-16T08:19:02.910Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "command-brief downstream skipped — upstream change was None"
-  },
-  {
-    "id": "faf99e77-a7af-4595-826f-83d9a824a9b3",
-    "timestamp": "2026-08-16T08:19:03.403Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "addadfd3-5c39-4c96-a7cc-8547419f53eb",
-    "timestamp": "2026-08-16T08:19:12.027Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Portfolio analysis completed"
-  },
-  {
-    "id": "300c4274-df2e-4b5c-bc90-2ecd6c12035d",
-    "timestamp": "2026-08-16T08:19:12.030Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Main conclusion: Portfolio is fully in cash with minimal active exposure amid mixed signals from holdings and cautious sector outlook"
-  },
-  {
-    "id": "a712421f-3fa2-4179-9ff7-80857b2c0379",
-    "timestamp": "2026-08-16T08:19:12.031Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall rating: Fair"
-  },
-  {
-    "id": "e6e026a9-c9b2-47aa-a050-641fe0df3ecd",
-    "timestamp": "2026-08-16T08:19:12.033Z",
-    "module": "Portfolio Analyzer",
-    "level": "info",
-    "message": "Overall outlook: Neutral"
-  },
-  {
-    "id": "ded0b8e9-1365-4dc1-972b-b2a8d7573ccc",
-    "timestamp": "2026-08-16T08:19:12.035Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main concern identified: Serve Robotics Execution and Financial Risk — Revenue miss and guidance cut undermine growth narrative and increase downside risk."
-  },
-  {
-    "id": "64b04255-1e57-483b-801e-344195fcbf33",
-    "timestamp": "2026-08-16T08:19:12.037Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Main opportunity identified: Novo Nordisk EU Product Launches — Upcoming launches of Wegovy® pill and HD pen could drive revenue growth and share price appreciation."
-  },
-  {
-    "id": "ef4eba81-d168-42a3-a677-0dc6e9051b9b",
-    "timestamp": "2026-08-16T08:19:12.038Z",
-    "module": "Portfolio Analyzer",
-    "level": "internal",
-    "message": "Recommended highest-priority action: Review Serve Robotics exposure before upcoming Q2 earnings"
-  },
-  {
-    "id": "29152fd4-f5ff-4d97-850a-bf4bb5555504",
-    "timestamp": "2026-08-16T08:19:12.044Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "portfolio-analyzer completed via RunAllNow (8642ms, change: Medium)"
-  },
-  {
-    "id": "78aa4352-f800-4a86-a2b3-92eb039f0841",
-    "timestamp": "2026-08-16T08:19:12.908Z",
-    "module": "Opportunity Finder",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "126eb164-d261-4b4c-9c7d-ad7257dcffe2",
-    "timestamp": "2026-08-16T08:19:28.443Z",
-    "module": "Opportunity Finder",
-    "level": "info",
-    "message": "Opportunity analysis completed"
-  },
-  {
     "id": "5a918f32-461f-4cdb-a5bc-90c94479bd47",
     "timestamp": "2026-08-16T08:19:28.445Z",
     "module": "Opportunity Finder",
@@ -3498,5 +2812,691 @@
     "module": "AutomationOrchestrator",
     "level": "internal",
     "message": "investor-watch completed via Scheduled (49858ms, change: None)"
+  },
+  {
+    "id": "29dba6dd-f668-4f4b-9002-60808767da9b",
+    "timestamp": "2026-08-16T13:02:05.336Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Automation mode changed: SemiAutomatic → Manual"
+  },
+  {
+    "id": "fe689ca9-2f90-4f78-97de-386b865801fc",
+    "timestamp": "2026-08-16T13:02:12.276Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Full cycle started (Run all now) [78095650-24e3-4613-86b2-5b59f299e352]"
+  },
+  {
+    "id": "651be7a1-2cd1-4d09-b312-af245025c187",
+    "timestamp": "2026-08-16T13:02:12.282Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "6f149469-6d7e-462a-b940-dd6cdd22ca4c",
+    "timestamp": "2026-08-16T13:02:12.681Z",
+    "module": "Portfolio Manager",
+    "level": "info",
+    "message": "Portfolio updated from Saxo: 1 account, 2 positions, available cash 995.739 EUR"
+  },
+  {
+    "id": "dc554c2d-48bf-4144-a20c-6d0a2994affc",
+    "timestamp": "2026-08-16T13:02:12.691Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-manager completed via RunAllNow (413ms, change: None)"
+  },
+  {
+    "id": "a90846df-2453-448f-b407-a69245aedcdb",
+    "timestamp": "2026-08-16T13:02:14.121Z",
+    "module": "Price Context",
+    "level": "info",
+    "message": "Stage 1.5: 50 symbol(s) refreshed from 50 known targets"
+  },
+  {
+    "id": "46abca2a-7773-4e94-bac0-0e36401e7bf7",
+    "timestamp": "2026-08-16T13:02:14.127Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "3a67a258-bc01-4c10-92ac-ae5b11f6ebd6",
+    "timestamp": "2026-08-16T13:02:14.132Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "36c93849-038a-4c58-853a-9e24d364ce2a",
+    "timestamp": "2026-08-16T13:02:14.134Z",
+    "module": "Event Monitor",
+    "level": "info",
+    "message": "Maintenance (no material change): 8 event(s) — materialVersion unchanged"
+  },
+  {
+    "id": "e1508aa7-403c-4bbc-bfe8-77166413bc4e",
+    "timestamp": "2026-08-16T13:02:14.136Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "event-monitor completed via RunAllNow (12ms, change: None)"
+  },
+  {
+    "id": "27898339-1cda-4f87-99b1-3c0e5470f2ee",
+    "timestamp": "2026-08-16T13:02:14.138Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "c99571be-1f07-4fa6-bb45-39160d244aae",
+    "timestamp": "2026-08-16T13:02:21.454Z",
+    "module": "Market Monitor",
+    "level": "info",
+    "message": "Market analysis completed (no material change): Neutral sentiment, Moderate risk — materialVersion unchanged"
+  },
+  {
+    "id": "13d3678d-0fdc-4837-8756-d675b1ff77ae",
+    "timestamp": "2026-08-16T13:02:21.463Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-monitor completed via RunAllNow (7340ms, change: None)"
+  },
+  {
+    "id": "bad859e5-b133-4270-93ee-84d192726ddb",
+    "timestamp": "2026-08-16T13:02:22.651Z",
+    "module": "Portfolio Manager v2",
+    "level": "info",
+    "message": "CIO analysis complete — health 62/100 (C), 8 high-severity drift, confidence Low"
+  },
+  {
+    "id": "33380b06-b74d-41eb-a3b9-dd38d844f79f",
+    "timestamp": "2026-08-16T13:02:25.600Z",
+    "module": "News Monitor",
+    "level": "info",
+    "message": "News analysis completed (MATERIAL CHANGE): 4 market-moving stories found"
+  },
+  {
+    "id": "6e95b08b-a8f2-46d2-8e38-b81929c8ca55",
+    "timestamp": "2026-08-16T13:02:25.613Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "news-monitor completed via RunAllNow (11488ms, change: Medium)"
+  },
+  {
+    "id": "6f8e28c2-b9d1-4931-915a-e8b6b3ec57c6",
+    "timestamp": "2026-08-16T13:02:25.636Z",
+    "module": "Sector Monitor",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "325ad2ce-c6cc-4ef7-8e74-0b3b22d8fd9e",
+    "timestamp": "2026-08-16T13:02:25.689Z",
+    "module": "Sector Monitor",
+    "level": "info",
+    "message": "Sector inputs unchanged — reusing previous qualitative interpretation (0 AI tokens)"
+  },
+  {
+    "id": "ed1b1742-57b5-4f31-b958-7636884d6ec5",
+    "timestamp": "2026-08-16T13:02:25.691Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "sector-monitor completed via RunAllNow (59ms, change: None)"
+  },
+  {
+    "id": "f1c36bb2-a464-4cef-a5d9-91a4c2a90532",
+    "timestamp": "2026-08-16T13:02:26.946Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "catalyst-intelligence completed via RunAllNow (812ms, change: None)"
+  },
+  {
+    "id": "b9b1b6c6-4231-4233-bf2d-2e33616d8a23",
+    "timestamp": "2026-08-16T13:02:27.641Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for NOVOB:XCSE (trigger: RunAllNow)"
+  },
+  {
+    "id": "36e570a9-a12d-4029-9807-f2aca958dea3",
+    "timestamp": "2026-08-16T13:02:29.194Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "NOVOB:XCSE: No material change detected by discovery gate — skipping full analysis"
+  },
+  {
+    "id": "a23e856b-9a96-4372-8ac0-392c010afd3a",
+    "timestamp": "2026-08-16T13:02:29.200Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (1563ms, change: Medium)"
+  },
+  {
+    "id": "8a949f78-adb7-477a-9dbf-6c582ca574f9",
+    "timestamp": "2026-08-16T13:02:30.143Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for SERV:XNAS (trigger: RunAllNow)"
+  },
+  {
+    "id": "92445063-9cc4-4a56-8f71-fb8b20bab9a6",
+    "timestamp": "2026-08-16T13:02:32.570Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "SERV:XNAS: No material change detected by discovery gate — skipping full analysis"
+  },
+  {
+    "id": "b447ae18-0265-418f-b8d6-33e2f2c93441",
+    "timestamp": "2026-08-16T13:02:32.576Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (2436ms, change: Medium)"
+  },
+  {
+    "id": "f274e5f5-ff08-4ea5-b5e8-ba9e9dbae748",
+    "timestamp": "2026-08-16T13:02:32.648Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for NVDA (trigger: RunAllNow)"
+  },
+  {
+    "id": "171639c8-fd8f-4917-a1d4-76378d2146fe",
+    "timestamp": "2026-08-16T13:02:34.289Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "NVDA: No material change detected by discovery gate — skipping full analysis"
+  },
+  {
+    "id": "d3ac066c-b960-48ac-a61e-4862c5b69ef4",
+    "timestamp": "2026-08-16T13:02:34.295Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (1649ms, change: Medium)"
+  },
+  {
+    "id": "c75df099-dfa6-429e-bee9-ac69241aeadf",
+    "timestamp": "2026-08-16T13:02:35.155Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for NEE (trigger: RunAllNow)"
+  },
+  {
+    "id": "fd3e4fc4-480c-485d-8e06-2cfe0508e039",
+    "timestamp": "2026-08-16T13:02:36.805Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "NEE: No material change detected by discovery gate — skipping full analysis"
+  },
+  {
+    "id": "f52fe948-9436-4b57-a29f-8424fed65e0b",
+    "timestamp": "2026-08-16T13:02:36.814Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (1665ms, change: Medium)"
+  },
+  {
+    "id": "50e24537-b200-457c-905c-aaa90d73523b",
+    "timestamp": "2026-08-16T13:02:37.663Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for PFE (trigger: RunAllNow)"
+  },
+  {
+    "id": "e6790840-a7e5-44d8-be57-689bff1e0f5e",
+    "timestamp": "2026-08-16T13:02:39.804Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "PFE: No material change detected by discovery gate — skipping full analysis"
+  },
+  {
+    "id": "4c460df0-ea73-4e59-812d-ed8142ea3a54",
+    "timestamp": "2026-08-16T13:02:39.809Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (2155ms, change: Medium)"
+  },
+  {
+    "id": "affecd0d-0f2e-4fcb-b737-3a666d2f4c6a",
+    "timestamp": "2026-08-16T13:02:40.175Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "4ef5fbb3-e2e9-4d3d-82ee-59aac91fbaa6",
+    "timestamp": "2026-08-16T13:02:40.180Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market alerts completed via deterministic engine (2ms, change: High)"
+  },
+  {
+    "id": "46136d6f-7fb6-4e21-aa90-e91253692ae2",
+    "timestamp": "2026-08-16T13:02:40.181Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "1 new alert(s): U.S. Treasury Yields Rise, Impacting Consumer Spending"
+  },
+  {
+    "id": "7d753f06-6c18-480e-943b-f9e1a635a564",
+    "timestamp": "2026-08-16T13:02:40.183Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "2 alert(s) resolved: Weaker U.S. Jobs Report Reduces Rate Hike Expectations; Weaker U.S. Jobs Report Reduces Rate Hike Expectations"
+  },
+  {
+    "id": "c5c00715-d6e5-45ec-a7cc-b70da1aca120",
+    "timestamp": "2026-08-16T13:02:40.185Z",
+    "module": "Market Alerts",
+    "level": "internal",
+    "message": "Highest priority alert: NVIDIA Corporation Q2 Fiscal 2027 Financial Results (in 10 days) [Event]"
+  },
+  {
+    "id": "9ee88a27-6205-4e39-b2b1-82751ca9400e",
+    "timestamp": "2026-08-16T13:02:40.189Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via RunAllNow (16ms, change: High)"
+  },
+  {
+    "id": "e959652b-6baf-4730-90f8-5683e1a2ae0d",
+    "timestamp": "2026-08-16T13:02:40.680Z",
+    "module": "Risk Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "7c431f55-3624-47f4-bb4f-f922f39653df",
+    "timestamp": "2026-08-16T13:02:40.682Z",
+    "module": "Risk Analyzer",
+    "level": "internal",
+    "message": "Skipping AI call — RiskFacts fingerprint unchanged (3ed4df7b5a1066b8)"
+  },
+  {
+    "id": "166fbf65-9ec7-42ee-afa8-70434dd43ee8",
+    "timestamp": "2026-08-16T13:02:40.686Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "risk-analyzer completed via RunAllNow (9ms, change: None)"
+  },
+  {
+    "id": "fcc8077a-fc71-41da-9e0e-aff533e7e84a",
+    "timestamp": "2026-08-16T13:02:41.182Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "7716f367-08e3-432f-afd5-4651395b6bab",
+    "timestamp": "2026-08-16T13:02:41.185Z",
+    "module": "Portfolio Analyzer",
+    "level": "info",
+    "message": "Portfolio analysis skipped — no material portfolio change detected"
+  },
+  {
+    "id": "9eb713d6-bc92-499f-a633-ce28ea9c68e5",
+    "timestamp": "2026-08-16T13:02:41.190Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "portfolio-analyzer completed via RunAllNow (10ms, change: None)"
+  },
+  {
+    "id": "9699f963-49e9-4d45-a675-3d02fab65226",
+    "timestamp": "2026-08-16T13:02:41.687Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "6b076c95-55a6-4fae-a2f9-096f3c1fb05b",
+    "timestamp": "2026-08-16T13:03:04.525Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Opportunity analysis completed"
+  },
+  {
+    "id": "8c9028a7-a101-4eeb-bf53-92f7b72c64d3",
+    "timestamp": "2026-08-16T13:03:04.526Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Overall opportunity level: High"
+  },
+  {
+    "id": "90ba1f18-3b8f-4903-a281-82eb1c066146",
+    "timestamp": "2026-08-16T13:03:04.539Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "Highest-ranked opportunity: NVIDIA Corporation (NVDA) — score 85 — NVIDIA's strong position in AI and data centers, coupled with upcoming product launches, presents a compelling opportunity."
+  },
+  {
+    "id": "4d82135c-5877-4410-b41a-0fceffba2ba7",
+    "timestamp": "2026-08-16T13:03:04.543Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "BABA entered the list at rank 5 (score: 72)"
+  },
+  {
+    "id": "88a05595-d5c8-4e62-9f4c-daa1082c75d2",
+    "timestamp": "2026-08-16T13:03:04.548Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "GOOGL left the list (was rank 5)"
+  },
+  {
+    "id": "e9ed3367-66c8-4a76-b4ff-1b4c92dfe0a0",
+    "timestamp": "2026-08-16T13:03:04.556Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "opportunity-finder completed via RunAllNow (22875ms, change: Medium)"
+  },
+  {
+    "id": "d727280c-ce55-47fd-921e-39716f70599a",
+    "timestamp": "2026-08-16T13:03:05.197Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "b9968c0f-49ab-46da-bb17-6e775508be9b",
+    "timestamp": "2026-08-16T13:04:02.153Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] NVDA (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "d039c84f-4fe0-4115-bf76-490cfeabf553",
+    "timestamp": "2026-08-16T13:04:02.160Z",
+    "module": "TradeDecisionOutcome",
+    "level": "internal",
+    "message": "Opportunity:NVDA: v13 created (fingerprint changed)"
+  },
+  {
+    "id": "89822062-63c1-4942-b5f1-88ddf8fa2bf5",
+    "timestamp": "2026-08-16T13:04:02.168Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "b35db0d2-ae8f-4704-a2ad-fc9328849211",
+    "timestamp": "2026-08-16T13:04:02.179Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "98203dcb-71c9-40d7-8cae-60ce47396947",
+    "timestamp": "2026-08-16T13:04:02.190Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 78/100"
+  },
+  {
+    "id": "ed86ef3d-c67c-4004-b72e-cca90b54ad8f",
+    "timestamp": "2026-08-16T13:04:02.201Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "2 WaitingForReevaluation"
+  },
+  {
+    "id": "9f575099-8b7b-45bf-bd81-d336970a0479",
+    "timestamp": "2026-08-16T13:04:02.211Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Changed: Strengthened Review Serve Robotics pending Q3 earnings and liquidity clarity"
+  },
+  {
+    "id": "5317aa1c-71aa-42d9-b740-3a5e17a9ba02",
+    "timestamp": "2026-08-16T13:04:02.221Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Preserved Unchanged: NVDA"
+  },
+  {
+    "id": "3c1c8539-4a0e-43a4-9027-1b945c859de5",
+    "timestamp": "2026-08-16T13:04:02.240Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-decision-engine completed via RunAllNow (57046ms, change: High)"
+  },
+  {
+    "id": "4a9a92c9-af80-41e3-8402-b82e607136ec",
+    "timestamp": "2026-08-16T13:04:02.705Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Stage 9.5: Company Monitor covering 1 ticker(s) introduced by TDE — BABA"
+  },
+  {
+    "id": "ef4fa32c-2575-4456-945b-d859ca2bebf1",
+    "timestamp": "2026-08-16T13:04:02.710Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "Scheduled run for BABA (trigger: RunAllNow)"
+  },
+  {
+    "id": "8de82bcd-641b-41cb-9206-5e78aeb99e25",
+    "timestamp": "2026-08-16T13:04:04.446Z",
+    "module": "Company Monitor",
+    "level": "info",
+    "message": "BABA: No material change detected by discovery gate — skipping full analysis"
+  },
+  {
+    "id": "96b0f881-5bd5-439a-83a8-fc75982c576f",
+    "timestamp": "2026-08-16T13:04:04.451Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "company-monitor completed via RunAllNow (1743ms, change: Medium)"
+  },
+  {
+    "id": "2d780082-940c-4092-bd17-464cb434e76f",
+    "timestamp": "2026-08-16T13:04:05.215Z",
+    "module": "TradeReview",
+    "level": "info",
+    "message": "Orchestrated run (trigger: RunAllNow): generating fresh trade review"
+  },
+  {
+    "id": "a046df8d-e40e-448b-95ea-1db4f41da74b",
+    "timestamp": "2026-08-16T13:04:05.218Z",
+    "module": "TradeReview",
+    "level": "internal",
+    "message": "Decision NVDA: WaitingForReevaluation — not converted to proposal"
+  },
+  {
+    "id": "b143b8a4-0edc-4a30-8e8e-c620e7482998",
+    "timestamp": "2026-08-16T13:04:05.237Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "trade-review completed via RunAllNow (23ms, change: Medium)"
+  },
+  {
+    "id": "f90920fa-4918-4e1a-9e9d-a5ae56a9b1ea",
+    "timestamp": "2026-08-16T13:04:05.717Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Scheduled run (trigger: RunAllNow)"
+  },
+  {
+    "id": "5f4a2ae2-a9b2-486f-9d5e-db1bbb1b5afb",
+    "timestamp": "2026-08-16T13:04:08.389Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (2669ms): attention — High macro event risks and mixed company signals require monitoring. | 3 upcoming opportunity(-ies)"
+  },
+  {
+    "id": "c81c6e71-60e1-4567-83a2-d23031a9fc87",
+    "timestamp": "2026-08-16T13:04:08.394Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "command-brief completed via RunAllNow (2679ms, change: Medium)"
+  },
+  {
+    "id": "eb7c2b32-5cab-494a-81d0-ed13c322d169",
+    "timestamp": "2026-08-16T13:04:09.217Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Full cycle completed in 117s"
+  },
+  {
+    "id": "2ebaea3e-4092-472c-a8ba-50395955ee81",
+    "timestamp": "2026-08-16T13:07:16.647Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "33851db2-cfdc-4a1b-85e4-e1c627363678",
+    "timestamp": "2026-08-16T13:08:21.528Z",
+    "module": "Opportunity Finder",
+    "level": "user",
+    "message": "User manually started opportunity analysis"
+  },
+  {
+    "id": "3249d13b-942d-432e-a99e-438f999a5545",
+    "timestamp": "2026-08-16T13:08:40.168Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Opportunity analysis completed"
+  },
+  {
+    "id": "be4e936a-6454-48d1-86ba-fa0032730e69",
+    "timestamp": "2026-08-16T13:08:40.170Z",
+    "module": "Opportunity Finder",
+    "level": "info",
+    "message": "Overall opportunity level: High"
+  },
+  {
+    "id": "7b31e414-1848-48c7-a55b-7ad5160d9965",
+    "timestamp": "2026-08-16T13:08:40.183Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "Highest-ranked opportunity: NVIDIA Corporation (NVDA) — score 85 — NVIDIA's leadership in AI and upcoming earnings report position it as a strong candidate for portfolio diversification and growth."
+  },
+  {
+    "id": "98a8fd4b-c75f-45d7-91ea-4fb609c58115",
+    "timestamp": "2026-08-16T13:08:40.195Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "CSCO entered the list at rank 2 (score: 80)"
+  },
+  {
+    "id": "30d02c6c-6ea5-4290-a2e4-034784f061bd",
+    "timestamp": "2026-08-16T13:08:40.206Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "HD entered the list at rank 3 (score: 78)"
+  },
+  {
+    "id": "2843eb79-300d-405b-8369-4899a5b742f0",
+    "timestamp": "2026-08-16T13:08:40.217Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "LLY entered the list at rank 4 (score: 75)"
+  },
+  {
+    "id": "aa86421c-64b8-4855-8fb7-edffa197b610",
+    "timestamp": "2026-08-16T13:08:40.227Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "AVGO entered the list at rank 5 (score: 72)"
+  },
+  {
+    "id": "7e6054c9-7de5-4cb7-8014-5e898ee978e9",
+    "timestamp": "2026-08-16T13:08:40.238Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "NEE left the list (was rank 2)"
+  },
+  {
+    "id": "9053827a-c073-4241-a4a1-cc85cae40a8d",
+    "timestamp": "2026-08-16T13:08:40.249Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "PFE left the list (was rank 3)"
+  },
+  {
+    "id": "8d9ae5d4-2f75-43c9-bfb4-8a2a33fb56ab",
+    "timestamp": "2026-08-16T13:08:40.260Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "TSLA left the list (was rank 4)"
+  },
+  {
+    "id": "fb29414a-9c71-4320-b2ba-45a5d2543b1a",
+    "timestamp": "2026-08-16T13:08:40.270Z",
+    "module": "Opportunity Finder",
+    "level": "internal",
+    "message": "BABA left the list (was rank 5)"
+  },
+  {
+    "id": "8e104fd0-8003-4d9b-8b7a-329482335dbc",
+    "timestamp": "2026-08-16T13:12:35.500Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "37d4babc-6fed-4d91-8137-03911725fc17",
+    "timestamp": "2026-08-16T13:12:56.902Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] NVDA (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "6cc7e6dd-951b-479f-8405-8a905de02cdf",
+    "timestamp": "2026-08-16T13:12:56.906Z",
+    "module": "TradeDecisionOutcome",
+    "level": "internal",
+    "message": "Opportunity:NVDA: v14 created (fingerprint changed)"
+  },
+  {
+    "id": "94d6201c-2745-4b13-88b1-2633efd4a1a5",
+    "timestamp": "2026-08-16T13:12:56.907Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "4c1a8c46-c207-4b1a-8afa-46e84faa4277",
+    "timestamp": "2026-08-16T13:12:56.909Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "69cde144-7212-4e1f-aa31-7558be2f47a7",
+    "timestamp": "2026-08-16T13:12:56.911Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 78/100"
+  },
+  {
+    "id": "6677b2ab-2082-4a49-83b0-9363614585b5",
+    "timestamp": "2026-08-16T13:12:56.913Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "3 WaitingForReevaluation"
+  },
+  {
+    "id": "bf59a197-32db-401e-ad44-b985e117ec97",
+    "timestamp": "2026-08-16T13:12:56.915Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "New: Wait for Cisco earnings before considering new exposure"
+  },
+  {
+    "id": "d30cbad5-2d57-41b2-ba3a-5ffd8b0bace7",
+    "timestamp": "2026-08-16T13:12:56.916Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Preserved Unchanged: NVDA"
+  },
+  {
+    "id": "77e7a75e-91d8-4632-8076-69daef4e37fb",
+    "timestamp": "2026-08-16T13:12:56.918Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Withdrawn (subject absent): NEE"
   }
 ]

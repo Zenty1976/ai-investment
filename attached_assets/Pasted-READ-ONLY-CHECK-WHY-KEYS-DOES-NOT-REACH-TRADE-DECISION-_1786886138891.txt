@@ -1,0 +1,194 @@
+READ-ONLY CHECK — WHY KEYS DOES NOT REACH TRADE DECISION
+
+Do NOT modify any code.
+Do NOT run OpenAI.
+Do NOT run web searches.
+Do NOT run another Full Update.
+Use only the current stored state, logs, debug data, and existing code.
+
+We now know the following:
+
+* KEYS was discovered by Catalyst Intelligence
+* KEYS received a successful deep Catalyst analysis
+* Catalyst result:
+
+  * opportunityState = HighInterest
+  * catalystDirection = POSITIVE
+  * evidenceConfidence = Medium
+  * triggerType = EARNINGS
+* KEYS was promoted to Opportunity Finder
+* However, KEYS is not visible in the latest Opportunity Finder top opportunities
+* KEYS is also not present in the latest Trade Decision Engine decisions
+
+The latest Trade Decision Engine currently contains decisions for:
+
+* portfolio/macro wait
+* SERV
+* CSCO
+* NVDA
+* NOVO
+
+The purpose of this task is ONLY to determine exactly where KEYS disappears and why.
+
+1. VERIFY KEYS PROMOTION STATE
+
+Inspect the current stored Catalyst promotion for KEYS.
+
+Report:
+
+* promotion exists: yes/no
+* active/stale/expired
+* promotedAt
+* catalyst opportunityState
+* catalystDirection
+* evidenceConfidence
+* event/date
+* priceAsymmetry
+* short thesis
+* whether buildPromotionsContextBlock() currently contains KEYS
+
+2. VERIFY OPPORTUNITY FINDER INPUT
+
+Inspect the ACTUAL input/context used for the most recent Opportunity Finder run.
+
+Do not infer from code alone.
+
+Report:
+
+* Was KEYS included in the Catalyst promotions context sent to Opportunity Finder?
+* If yes, show the compact KEYS context that OF received.
+* If no, explain exactly why not.
+
+Then inspect the Opportunity Finder prompt/output rules.
+
+Determine:
+
+* Is OF limited to approximately 5 candidates?
+* Is it allowed to omit a Catalyst HighInterest promotion?
+* Does any rule require promoted Catalyst candidates to receive an explicit OF evaluation?
+* Did OF evaluate KEYS internally but simply not return it?
+* Or was KEYS never considered?
+
+3. VERIFY TRADE DECISION CANDIDATE CONSTRUCTION
+
+Inspect the code that builds the ticker/candidate universe for Trade Decision.
+
+Determine whether KEYS should enter TDE via:
+
+A) Opportunity Finder top candidates
+B) active Catalyst promotions
+C) both
+
+Report the exact current code path.
+
+Then inspect the ACTUAL most recent Trade Decision input.
+
+Report:
+
+* Was KEYS included as a candidate?
+* Was buildCatalystTdeContext("KEYS") non-null?
+* What exact compact Catalyst context was available for KEYS?
+* Was KEYS included in the prompt sent to the Trade Decision AI?
+
+4. IF KEYS WAS SENT TO TRADE DECISION
+
+If KEYS WAS in the TDE input but does not appear in the final decisions:
+
+determine exactly why.
+
+Inspect:
+
+* output schema
+* system prompt
+* requested/max number of decisions
+* candidate prioritization
+* truncation logic
+* post-processing/filtering
+* deduplication
+* event blocking
+* portfolio-only restrictions
+* OF-only restrictions
+
+Answer specifically:
+
+Does Trade Decision have a rule/implicit behavior like:
+
+"return approximately 5 decisions"
+
+which allows a valid Catalyst HighInterest candidate to disappear completely?
+
+If yes, identify the exact code/prompt responsible.
+
+5. IF KEYS WAS NOT SENT TO TRADE DECISION
+
+Identify the exact missing connection.
+
+For example:
+
+Catalyst promotion not active
+Catalyst promotion not included in candidate ticker set
+Ticker normalization mismatch
+KEYS vs KEYS:XNAS mismatch
+Promotion filtered by OF dependency
+buildCatalystTdeContext returned null
+Other
+
+Be precise.
+
+6. CHECK TICKER NORMALIZATION
+
+Explicitly check whether a symbol mismatch contributes to the issue.
+
+Compare all stored forms of KEYS across:
+
+* Market Universe
+* Catalyst Intelligence
+* catalyst-promotions
+* Opportunity Finder
+* Trade Decision
+
+Examples:
+
+KEYS
+KEYS:XNAS
+other exchange-qualified form
+
+Report whether normalization is correct.
+
+7. IMPORTANT DESIGN QUESTION
+
+Answer this directly:
+
+With the CURRENT design, can this happen?
+
+Catalyst discovers:
+HighInterest / POSITIVE pre-event opportunity
+
+but because OF/TDE return only a small number of candidates,
+
+the stock disappears entirely from the user-facing decision flow.
+
+YES or NO.
+
+If YES, explain where.
+
+8. FINAL CONCLUSION
+
+Finish with exactly one of:
+
+A) KEYS NEVER REACHED OF
+B) KEYS REACHED OF BUT NEVER REACHED TDE
+C) KEYS REACHED TDE INPUT BUT WAS DROPPED FROM OUTPUT
+D) TICKER/NORMALIZATION BUG
+E) OTHER
+
+Then classify the required fix:
+
+NONE
+SMALL
+MEDIUM
+LARGE
+
+Do NOT fix anything yet.
+
+I only want the exact root cause and the smallest possible recommended correction.
