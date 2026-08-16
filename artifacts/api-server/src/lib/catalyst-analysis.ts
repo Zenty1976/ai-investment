@@ -21,7 +21,7 @@
 
 import { callAi, callAiWithWebSearch, extractAiErrorDebug } from "./ai-service.js";
 import { getModel } from "./ai-model-config.js";
-import { z } from "zod";
+import { normalizeAiResponse } from "./ai-response-normalizer.js";
 import type {
   CatalystFacts,
   CatalystAnalysisResult,
@@ -42,6 +42,13 @@ import type {
 } from "./catalyst-types.js";
 import { buildDriverProfileSummary } from "./catalyst-driver-profile.js";
 import { computeCatalystFingerprint } from "./catalyst-screening.js";
+import {
+  AnalysisResponseSchema,
+  ANALYSIS_SCHEMA_DESCRIPTION,
+} from "./catalyst-analysis-schema.js";
+
+// Re-export so catalyst-analyze-service.ts keeps its existing import path.
+export { qualifiesForPromotion } from "./catalyst-analysis-schema.js";
 
 // ── Fingerprint-based skip ─────────────────────────────────────────────────────
 
@@ -172,32 +179,6 @@ function buildCompactFacts(facts: CatalystFacts, driverSummary: string | null): 
   return lines.join("\n");
 }
 
-// ── Response schema ────────────────────────────────────────────────────────────
-
-const AnalysisResponseSchema = z.object({
-  triggerType:           z.enum(["SCHEDULED_EVENT", "EARNINGS", "EMERGING_SETUP"]),
-  catalystType:          z.string().nullable().optional(),
-  eventId:               z.string().nullable().optional(),
-  catalystDirection:     z.enum(["STRONGLY_NEGATIVE", "NEGATIVE", "NEUTRAL", "POSITIVE", "STRONGLY_POSITIVE"]),
-  evidenceConfidence:    z.enum(["Low", "Medium", "High"]),
-  expectationGap:        z.enum(["StrongNegative", "Negative", "Neutral", "Positive", "StrongPositive", "Unknown"]),
-  priceAsymmetry:        z.enum(["Poor", "Weak", "Neutral", "Attractive", "VeryAttractive"]),
-  alreadyPricedIn:       z.enum(["LOW", "MEDIUM", "HIGH", "UNKNOWN"]),
-  catalystRisk:          z.enum(["Low", "Medium", "High", "Extreme"]),
-  opportunityState:      z.enum(["NotInteresting", "Monitor", "Investigate", "HighInterest", "CandidateForTradeDecision"]),
-  temporaryVsStructural: z.enum(["LikelyTemporary", "Mixed", "LikelyStructural", "Unknown"]),
-  earningsSurpriseSignal: z.enum(["StrongPositiveSurprise", "PositiveSurprise", "InLine", "NegativeSurprise", "StrongNegativeSurprise", "InsufficientData"]).nullable().optional(),
-  thesis:                      z.string(),
-  whatMarketMayBeMissing:      z.string().nullable().optional(),
-  strongestCounterargument:    z.string(),
-  alreadyPricedInAssessment:   z.string(),
-  invalidationConditions:      z.array(z.string()),
-  dataLimitations:             z.array(z.string()),
-  supportingSignalIds:         z.array(z.string()),
-  contradictingSignalIds:      z.array(z.string()),
-  recommendedNextStep:         z.enum(["Pass", "Monitor", "RunCompanyAnalysis", "PreparePosition", "ActNow", "WaitForData"]),
-});
-
 // ── System prompt ──────────────────────────────────────────────────────────────
 
 function buildSystemPrompt(): string {
@@ -205,7 +186,7 @@ function buildSystemPrompt(): string {
 
 CRITICAL RULES:
 1. SIGNAL ID INTEGRITY: Every signalId you reference in supportingSignalIds or contradictingSignalIds MUST appear in the KEY SIGNALS section of the input. Never invent signal IDs.
-2. EXPECTATION GAP: Focus on what the MARKET expects vs what you assess is likely. If market expectation data is unavailable, set to "Unknown".
+2. EXPECTATION GAP: Focus on what the MARKET expects vs what you assess is likely. If market expectation data is unavailable, set expectationGap to "Unknown".
 3. ALREADY PRICED IN: Assess whether the thesis is already reflected in the current price. Consider the priceAsymmetry context carefully.
 4. DATA LIMITATIONS: List any material data gaps that reduce confidence.
 5. TOKEN SAFETY: Do not request or summarize data not provided to you.
@@ -221,7 +202,8 @@ EARNINGS vs NON-EARNINGS:
 - For EARNINGS trigger: assess earningsSurpriseSignal based on visible leading indicators
 - For non-earnings (SCHEDULED_EVENT, EMERGING_SETUP): set earningsSurpriseSignal to null
 
-OUTPUT: strict JSON matching the schema. thesis ≤ 280 chars. strongestCounterargument ≤ 200 chars.`;
+OUTPUT FORMAT — respond with ONLY this JSON object at the ROOT LEVEL (no wrapper like "analysis" or "result"). Use EXACT enum values shown:
+${ANALYSIS_SCHEMA_DESCRIPTION}`;
 }
 
 // ── Phase 1: Driver-directed research context ──────────────────────────────────
@@ -337,10 +319,34 @@ Return strict JSON.`;
       }
     );
 
-    const parsed = AnalysisResponseSchema.safeParse(raw);
+    // ── Normalize + validate ───────────────────────────────────────────────
+    // 1. Deterministic normalizer: repairs enum casing, null→[], whitespace.
+    const { normalized, changes: normChanges } = normalizeAiResponse(raw, AnalysisResponseSchema);
+    if (normChanges.length > 0) {
+      console.info(
+        "[catalyst-analysis] Normalizer repaired formatting:",
+        normChanges.map(c => c.path).join(", "),
+      );
+    }
+    let parsed = AnalysisResponseSchema.safeParse(normalized);
+
+    // 2. One-shot repair retry if normalization didn't fix everything.
+    if (!parsed.success) {
+      console.warn(
+        "[catalyst-analysis] Schema validation failed after normalizer — attempting repair retry:",
+        JSON.stringify(parsed.error.issues.slice(0, 3)),
+      );
+      const repaired = await attemptSchemaRepair(raw, parsed.error, retryNumber);
+      if (repaired) {
+        // Rebuild a successful safeParse result from the repaired data so the
+        // rest of the function is unchanged.
+        parsed = AnalysisResponseSchema.safeParse(repaired.data);
+      }
+    }
+
     if (!parsed.success) {
       const issuesSummary = JSON.stringify(parsed.error.issues.slice(0, 3));
-      console.error("[catalyst-analysis] Schema validation failed:", issuesSummary);
+      console.error("[catalyst-analysis] Schema validation failed (after normalizer + repair):", issuesSummary);
       // Throw so the caller can apply failure tracking / backoff
       throw new Error(`Catalyst analysis schema validation failed: ${issuesSummary}`);
     }
@@ -448,15 +454,70 @@ function buildNoChangeResult(
   };
 }
 
-// ── Promotion threshold check ─────────────────────────────────────────────────
+// ── One-shot schema repair retry ──────────────────────────────────────────────
 
-/** Whether this analysis result qualifies for promotion to Opportunity Finder. */
-export function qualifiesForPromotion(result: CatalystAnalysisResult): boolean {
-  return (
-    result.opportunityState === "HighInterest" ||
-    result.opportunityState === "CandidateForTradeDecision"
-  ) && (
-    result.catalystDirection === "POSITIVE" ||
-    result.catalystDirection === "STRONGLY_POSITIVE"
-  ) && result.analysisUpdateType !== "NO_MATERIAL_CHANGE";
+/**
+ * If Phase 2 returns valid JSON that fails Zod validation, attempt exactly ONE
+ * cheap repair call.  The repair prompt sends the failed JSON + validation
+ * errors + the explicit schema — the model corrects structural issues only
+ * (field names, enum casing, missing required fields).
+ *
+ * DOES NOT re-run web research.  Uses getModel("repair") = gpt-4o-mini.
+ * Returns the repaired parsed result on success, or null if repair also fails.
+ */
+async function attemptSchemaRepair(
+  badJson: unknown,
+  zodError: { issues: Array<{ path: (string | number)[]; message: string }> },
+  retryNumber: number,
+): Promise<{ data: ReturnType<typeof AnalysisResponseSchema.parse> } | null> {
+  const issuesStr = zodError.issues
+    .slice(0, 6)
+    .map(i => `  ${i.path.join(".") || "<root>"}: ${i.message}`)
+    .join("\n");
+
+  const repairSystemPrompt =
+    `You are a JSON schema repair assistant. Fix ONLY structural issues (wrong field names, ` +
+    `missing required fields, wrong enum casing). ` +
+    `Do NOT change investment analysis, thesis, signals, or numeric estimates. ` +
+    `Return ONLY the corrected JSON object — no explanation, no markdown, no wrapper key.`;
+
+  const repairUserPrompt =
+    `The following JSON failed schema validation:\n` +
+    `${JSON.stringify(badJson, null, 2).slice(0, 3000)}\n\n` +
+    `VALIDATION ERRORS:\n${issuesStr}\n\n` +
+    `REQUIRED OUTPUT SCHEMA (return root-level JSON matching this exactly):\n` +
+    `${ANALYSIS_SCHEMA_DESCRIPTION}\n\n` +
+    `Return only the corrected JSON.`;
+
+  try {
+    const { result: repairRaw } = await callAi<unknown>(
+      repairSystemPrompt,
+      repairUserPrompt,
+      {
+        model: getModel("repair", "catalyst-intelligence"),
+        maxTokens: 1600,
+        temperature: 0,
+        module: "catalyst-intelligence",
+        operation: "deep-analysis-repair",
+        retryNumber: retryNumber + 1,
+      },
+    );
+    const { normalized: repairNorm } = normalizeAiResponse(repairRaw, AnalysisResponseSchema);
+    const repairParsed = AnalysisResponseSchema.safeParse(repairNorm);
+    if (repairParsed.success) {
+      console.info("[catalyst-analysis] Schema repair retry succeeded");
+      return { data: repairParsed.data };
+    }
+    console.warn(
+      "[catalyst-analysis] Schema repair retry also failed:",
+      JSON.stringify(repairParsed.error.issues.slice(0, 3)),
+    );
+    return null;
+  } catch (repairErr) {
+    console.warn(
+      "[catalyst-analysis] Schema repair retry threw:",
+      repairErr instanceof Error ? repairErr.message : String(repairErr),
+    );
+    return null;
+  }
 }

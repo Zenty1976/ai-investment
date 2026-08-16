@@ -58,6 +58,12 @@ import {
   getActivePromotions, buildPromotionsContextBlock,
 } from "../catalyst-promotion.js";
 import type { CatalystState, LeadingIndicatorSignal, CompanySpecificEvent, CatalystAnalysisResult } from "../catalyst-types.js";
+import {
+  AnalysisResponseSchema,
+  qualifiesForPromotion,
+  ANALYSIS_SCHEMA_DESCRIPTION,
+} from "../catalyst-analysis-schema.js";
+import { normalizeAiResponse } from "../ai-response-normalizer.js";
 
 // ── Test fixture helpers ──────────────────────────────────────────────────────
 
@@ -1710,5 +1716,367 @@ describe("Test H — Upcoming event without positive evidence → not top opport
       && (state.facts?.event?.daysUntilEvent ?? -1) > 0;
 
     assert.ok(!qualifies, "Earnings-only candidate (no analysis) must NOT appear in upcoming opportunities");
+  });
+});
+
+// ── Test J — Schema validation & normalizer (no paid AI calls) ─────────────────
+//
+// Spec §8 A–G: verify AnalysisResponseSchema + normalizeAiResponse + qualifiesForPromotion
+// behave correctly for all expected input patterns.
+// All tests are purely deterministic — zero OpenAI calls.
+
+/** A complete, Zod-valid catalyst analysis response. */
+const VALID_CATALYST_JSON = {
+  triggerType:               "EARNINGS",
+  catalystType:              null,
+  eventId:                   null,
+  catalystDirection:         "POSITIVE",
+  evidenceConfidence:        "Medium",
+  expectationGap:            "Positive",
+  priceAsymmetry:            "Attractive",
+  alreadyPricedIn:           "LOW",
+  catalystRisk:              "Low",
+  opportunityState:          "HighInterest",
+  temporaryVsStructural:     "LikelyStructural",
+  earningsSurpriseSignal:    null,
+  thesis:                    "Leading indicators suggest earnings beat above consensus.",
+  whatMarketMayBeMissing:    null,
+  strongestCounterargument:  "Macro headwinds may offset gains.",
+  alreadyPricedInAssessment: "Not fully priced in — upside remains.",
+  invalidationConditions:    ["Revenue misses by more than 5%"],
+  dataLimitations:           [],
+  supportingSignalIds:       [],
+  contradictingSignalIds:    [],
+  recommendedNextStep:       "Monitor",
+};
+
+describe("Test J-A — Exact valid Catalyst JSON → Zod parse succeeds", () => {
+  test("JA1: valid JSON parses successfully", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success, `Expected parse to succeed; errors: ${result.success ? "" : JSON.stringify(result.error.issues)}`);
+  });
+
+  test("JA2: parsed data has correct opportunityState", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success);
+    assert.equal(result.data.opportunityState, "HighInterest");
+  });
+
+  test("JA3: parsed data has correct catalystDirection", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success);
+    assert.equal(result.data.catalystDirection, "POSITIVE");
+  });
+
+  test("JA4: parsed data has correct evidenceConfidence", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success);
+    assert.equal(result.data.evidenceConfidence, "Medium");
+  });
+
+  test("JA5: all required array fields are present", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success);
+    assert.ok(Array.isArray(result.data.invalidationConditions));
+    assert.ok(Array.isArray(result.data.dataLimitations));
+    assert.ok(Array.isArray(result.data.supportingSignalIds));
+    assert.ok(Array.isArray(result.data.contradictingSignalIds));
+  });
+});
+
+describe("Test J-B — JSON wrapped under 'analysis' key → rejected by schema", () => {
+  test("JB1: { analysis: { ... } } top-level wrapper is rejected", () => {
+    const wrapped = { analysis: VALID_CATALYST_JSON };
+    const result = AnalysisResponseSchema.safeParse(wrapped);
+    assert.ok(!result.success, "Wrapped JSON must fail top-level schema validation");
+  });
+
+  test("JB2: { result: { ... } } top-level wrapper is rejected", () => {
+    const wrapped = { result: VALID_CATALYST_JSON };
+    const result = AnalysisResponseSchema.safeParse(wrapped);
+    assert.ok(!result.success, "result-wrapped JSON must fail top-level schema validation");
+  });
+
+  test("JB3: wrapper error is classified as SCHEMA_MISSING_CONTENT (all required fields absent)", () => {
+    const wrapped = { analysis: VALID_CATALYST_JSON };
+    const result = AnalysisResponseSchema.safeParse(wrapped);
+    assert.ok(!result.success);
+    // Every required field is missing → at least one "received: undefined" issue
+    const hasMissingRequired = result.error.issues.some(
+      i => i.code === "invalid_type" && (i as { received?: string }).received === "undefined"
+    );
+    assert.ok(hasMissingRequired, "Wrapped JSON should produce 'received: undefined' issues");
+  });
+});
+
+describe("Test J-C — Missing triggerType → validation fails", () => {
+  test("JC1: omitting triggerType causes safeParse to fail", () => {
+    const { triggerType: _, ...noTrigger } = VALID_CATALYST_JSON;
+    const result = AnalysisResponseSchema.safeParse(noTrigger);
+    assert.ok(!result.success, "Missing triggerType must fail validation");
+  });
+
+  test("JC2: failure issue path includes 'triggerType'", () => {
+    const { triggerType: _, ...noTrigger } = VALID_CATALYST_JSON;
+    const result = AnalysisResponseSchema.safeParse(noTrigger);
+    assert.ok(!result.success);
+    const hasTriggerIssue = result.error.issues.some(
+      i => Array.isArray(i.path) && i.path.includes("triggerType")
+    );
+    assert.ok(hasTriggerIssue, "Issue path must reference triggerType");
+  });
+
+  test("JC3: other fields still valid — only triggerType causes the issue", () => {
+    const { triggerType: _, ...noTrigger } = VALID_CATALYST_JSON;
+    const result = AnalysisResponseSchema.safeParse(noTrigger);
+    assert.ok(!result.success);
+    // Only triggerType should have issues
+    const paths = result.error.issues.map(i => i.path.join("."));
+    assert.ok(paths.every(p => p === "triggerType"), `Unexpected extra issues: ${paths.join(", ")}`);
+  });
+});
+
+describe("Test J-D — Invalid enum casing → normalizer repairs it", () => {
+  test("JD1: evidenceConfidence 'medium' (lowercase) → normalizer corrects to 'Medium'", () => {
+    const badCase = { ...VALID_CATALYST_JSON, evidenceConfidence: "medium" };
+    const { normalized } = normalizeAiResponse(badCase, AnalysisResponseSchema);
+    const result = AnalysisResponseSchema.safeParse(normalized);
+    assert.ok(result.success, "After normalization 'medium' should parse as 'Medium'");
+    assert.equal((result.data as { evidenceConfidence: string }).evidenceConfidence, "Medium");
+  });
+
+  test("JD2: catalystRisk 'HIGH' (uppercase) → normalizer corrects to 'High'", () => {
+    const badCase = { ...VALID_CATALYST_JSON, catalystRisk: "HIGH" };
+    const { normalized } = normalizeAiResponse(badCase, AnalysisResponseSchema);
+    const result = AnalysisResponseSchema.safeParse(normalized);
+    assert.ok(result.success, "After normalization 'HIGH' should parse as 'High'");
+    assert.equal((result.data as { catalystRisk: string }).catalystRisk, "High");
+  });
+
+  test("JD3: triggerType 'earnings' (lowercase) → normalizer corrects to 'EARNINGS'", () => {
+    const badCase = { ...VALID_CATALYST_JSON, triggerType: "earnings" };
+    const { normalized } = normalizeAiResponse(badCase, AnalysisResponseSchema);
+    const result = AnalysisResponseSchema.safeParse(normalized);
+    assert.ok(result.success, "After normalization 'earnings' should parse as 'EARNINGS'");
+    assert.equal((result.data as { triggerType: string }).triggerType, "EARNINGS");
+  });
+
+  test("JD4: completely wrong enum string still fails after normalization (no unsafe guess)", () => {
+    const badEnum = { ...VALID_CATALYST_JSON, catalystDirection: "BULLISH" };
+    const { normalized } = normalizeAiResponse(badEnum, AnalysisResponseSchema);
+    const result = AnalysisResponseSchema.safeParse(normalized);
+    assert.ok(!result.success, "Unrecognizable enum value must still fail after normalization");
+  });
+
+  test("JD5: null arrays coerced to empty arrays by normalizer", () => {
+    const nullArrays = { ...VALID_CATALYST_JSON, supportingSignalIds: null, contradictingSignalIds: null };
+    const { normalized, changes } = normalizeAiResponse(nullArrays, AnalysisResponseSchema);
+    assert.ok(changes.some(c => c.path === "supportingSignalIds" && c.rule === "null_to_empty_array"));
+    assert.ok(changes.some(c => c.path === "contradictingSignalIds" && c.rule === "null_to_empty_array"));
+    const result = AnalysisResponseSchema.safeParse(normalized);
+    assert.ok(result.success, "null arrays should be normalized to [] and parse successfully");
+  });
+});
+
+describe("Test J-E — Unknown/missing source info → UNKNOWN / null handling", () => {
+  test("JE1: expectationGap 'Unknown' is a valid enum value", () => {
+    const unknownGap = { ...VALID_CATALYST_JSON, expectationGap: "Unknown" };
+    const result = AnalysisResponseSchema.safeParse(unknownGap);
+    assert.ok(result.success, "expectationGap='Unknown' must be valid");
+    assert.equal((result.data as { expectationGap: string }).expectationGap, "Unknown");
+  });
+
+  test("JE2: alreadyPricedIn 'UNKNOWN' is a valid enum value", () => {
+    const unknownPricedIn = { ...VALID_CATALYST_JSON, alreadyPricedIn: "UNKNOWN" };
+    const result = AnalysisResponseSchema.safeParse(unknownPricedIn);
+    assert.ok(result.success, "alreadyPricedIn='UNKNOWN' must be valid");
+    assert.equal((result.data as { alreadyPricedIn: string }).alreadyPricedIn, "UNKNOWN");
+  });
+
+  test("JE3: temporaryVsStructural 'Unknown' is a valid enum value", () => {
+    const unknownTvS = { ...VALID_CATALYST_JSON, temporaryVsStructural: "Unknown" };
+    const result = AnalysisResponseSchema.safeParse(unknownTvS);
+    assert.ok(result.success, "temporaryVsStructural='Unknown' must be valid");
+  });
+
+  test("JE4: null earningsSurpriseSignal is valid for non-EARNINGS triggers", () => {
+    const nonEarnings = { ...VALID_CATALYST_JSON, triggerType: "SCHEDULED_EVENT", earningsSurpriseSignal: null };
+    const result = AnalysisResponseSchema.safeParse(nonEarnings);
+    assert.ok(result.success, "null earningsSurpriseSignal must be valid for SCHEDULED_EVENT");
+    assert.equal((result.data as { earningsSurpriseSignal: null }).earningsSurpriseSignal, null);
+  });
+
+  test("JE5: missing earningsSurpriseSignal (optional) is valid", () => {
+    const { earningsSurpriseSignal: _, ...withoutEss } = VALID_CATALYST_JSON as Record<string, unknown>;
+    const result = AnalysisResponseSchema.safeParse(withoutEss);
+    assert.ok(result.success, "Missing optional earningsSurpriseSignal must still parse");
+  });
+});
+
+describe("Test J-F — Successful analysis clears failure state", () => {
+  const TICKER = "JFTEST";
+
+  beforeEach(() => {
+    saveCatalystState(TICKER, makeSyntheticState(TICKER));
+  });
+
+  test("JF1: state with failureCount=3 is updated — failureCount resets to 0 on success", () => {
+    // Simulate a failed state
+    const failedState = makeSyntheticState(TICKER, {
+      failureCount: 3,
+      lastError: "schema validation failed",
+      retryEligibleAt: new Date(Date.now() + 7200_000).toISOString(),
+    });
+    saveCatalystState(TICKER, failedState);
+
+    // Verify failure state is stored
+    const beforeSuccess = getCatalystState(TICKER)!;
+    assert.equal(beforeSuccess.failureCount, 3);
+    assert.ok(beforeSuccess.lastError !== null);
+
+    // Simulate a successful analysis clearing the failure state
+    const parseResult = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(parseResult.success, "Valid JSON must parse successfully");
+
+    // Apply success: reset failure tracking (mirrors catalyst-analyze-service step 9 success path)
+    const successState: CatalystState = {
+      ...beforeSuccess,
+      analysis: parseResult.data as unknown as CatalystAnalysisResult,
+      failureCount: 0,
+      lastError: null,
+      retryEligibleAt: null,
+      lastAnalysedAt: NOW_ISO,
+    };
+    saveCatalystState(TICKER, successState);
+
+    const afterSuccess = getCatalystState(TICKER)!;
+    assert.equal(afterSuccess.failureCount, 0, "failureCount must be 0 after success");
+    assert.equal(afterSuccess.lastError, null, "lastError must be null after success");
+    assert.equal(afterSuccess.retryEligibleAt, null, "retryEligibleAt must be null after success");
+    assert.ok(afterSuccess.analysis !== null, "analysis must be populated after success");
+  });
+
+  test("JF2: failure state clears even when prior analysis existed", () => {
+    const priorAnalysis = makeAnalysisResult("Monitor", "NEUTRAL", "Monitor");
+    const failedState = makeSyntheticState(TICKER, {
+      analysis: priorAnalysis,
+      failureCount: 2,
+      lastError: "transient error",
+      retryEligibleAt: new Date(Date.now() + 3600_000).toISOString(),
+    });
+    saveCatalystState(TICKER, failedState);
+
+    const parseResult = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(parseResult.success);
+
+    const successState: CatalystState = {
+      ...failedState,
+      analysis: parseResult.data as unknown as CatalystAnalysisResult,
+      failureCount: 0,
+      lastError: null,
+      retryEligibleAt: null,
+    };
+    saveCatalystState(TICKER, successState);
+
+    const afterSuccess = getCatalystState(TICKER)!;
+    assert.equal(afterSuccess.failureCount, 0);
+    assert.equal(afterSuccess.lastError, null);
+  });
+});
+
+describe("Test J-G — HIGH_INTEREST analysis → qualifiesForPromotion returns true", () => {
+  test("JG1: HighInterest + POSITIVE qualifies for promotion", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    // VALID_CATALYST_JSON has opportunityState=HighInterest, catalystDirection=POSITIVE
+    assert.ok(qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "FULL_ANALYSIS" }));
+  });
+
+  test("JG2: HighInterest + STRONGLY_POSITIVE also qualifies", () => {
+    const stronglyPositive = { ...VALID_CATALYST_JSON, catalystDirection: "STRONGLY_POSITIVE" };
+    const result = AnalysisResponseSchema.safeParse(stronglyPositive);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    assert.ok(qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "FULL_ANALYSIS" }));
+  });
+
+  test("JG3: CandidateForTradeDecision + POSITIVE qualifies", () => {
+    const candidate = { ...VALID_CATALYST_JSON, opportunityState: "CandidateForTradeDecision" };
+    const result = AnalysisResponseSchema.safeParse(candidate);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    assert.ok(qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "FULL_ANALYSIS" }));
+  });
+
+  test("JG4: Monitor + POSITIVE does NOT qualify", () => {
+    const monitor = { ...VALID_CATALYST_JSON, opportunityState: "Monitor" };
+    const result = AnalysisResponseSchema.safeParse(monitor);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    assert.ok(!qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "FULL_ANALYSIS" }));
+  });
+
+  test("JG5: HighInterest + NEUTRAL direction does NOT qualify", () => {
+    const neutral = { ...VALID_CATALYST_JSON, catalystDirection: "NEUTRAL" };
+    const result = AnalysisResponseSchema.safeParse(neutral);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    assert.ok(!qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "FULL_ANALYSIS" }));
+  });
+
+  test("JG6: HighInterest + POSITIVE + NO_MATERIAL_CHANGE does NOT qualify", () => {
+    const result = AnalysisResponseSchema.safeParse(VALID_CATALYST_JSON);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    assert.ok(!qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "NO_MATERIAL_CHANGE" }));
+  });
+
+  test("JG7: NotInteresting + NEGATIVE does NOT qualify", () => {
+    const notInteresting = {
+      ...VALID_CATALYST_JSON,
+      opportunityState: "NotInteresting",
+      catalystDirection: "NEGATIVE",
+    };
+    const result = AnalysisResponseSchema.safeParse(notInteresting);
+    assert.ok(result.success);
+    const analysisResult = result.data as unknown as CatalystAnalysisResult;
+    assert.ok(!qualifiesForPromotion({ ...analysisResult, analysisUpdateType: "FULL_ANALYSIS" }));
+  });
+
+  test("JG8: ANALYSIS_SCHEMA_DESCRIPTION contains all required field names", () => {
+    // Guard: if the schema description is missing field names, prompt engineering breaks.
+    const requiredFields = [
+      "triggerType", "catalystDirection", "evidenceConfidence", "expectationGap",
+      "priceAsymmetry", "alreadyPricedIn", "catalystRisk", "opportunityState",
+      "temporaryVsStructural", "thesis", "strongestCounterargument",
+      "alreadyPricedInAssessment", "invalidationConditions", "dataLimitations",
+      "supportingSignalIds", "contradictingSignalIds", "recommendedNextStep",
+    ];
+    for (const field of requiredFields) {
+      assert.ok(
+        ANALYSIS_SCHEMA_DESCRIPTION.includes(field),
+        `ANALYSIS_SCHEMA_DESCRIPTION must contain field name "${field}"`,
+      );
+    }
+  });
+
+  test("JG9: ANALYSIS_SCHEMA_DESCRIPTION contains exact enum values from Zod schema", () => {
+    // If these exact strings are absent, the model sees wrong enum values and produces bad JSON.
+    const exactEnumValues = [
+      "SCHEDULED_EVENT", "EARNINGS", "EMERGING_SETUP",
+      "STRONGLY_NEGATIVE", "STRONGLY_POSITIVE",
+      "StrongNegative", "StrongPositive", "Unknown",  // expectationGap — PascalCase
+      "VeryAttractive",                               // priceAsymmetry
+      "LikelyTemporary", "LikelyStructural",          // temporaryVsStructural
+      "NotInteresting", "HighInterest", "CandidateForTradeDecision",  // opportunityState
+      "RunCompanyAnalysis", "PreparePosition", "ActNow", "WaitForData",  // recommendedNextStep
+    ];
+    for (const value of exactEnumValues) {
+      assert.ok(
+        ANALYSIS_SCHEMA_DESCRIPTION.includes(value),
+        `ANALYSIS_SCHEMA_DESCRIPTION must contain exact enum value "${value}"`,
+      );
+    }
   });
 });

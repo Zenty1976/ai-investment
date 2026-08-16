@@ -1,0 +1,295 @@
+CATALYST SCHEMA OUTPUT FIX — SMALL TARGETED CHANGE
+
+The latest read-only audit identified the exact remaining failure.
+
+DO NOT redesign the Catalyst pipeline.
+DO NOT change screening, budgets, promotion logic, model routing, fingerprints,
+or Opportunity Finder / Trade Decision integration.
+
+The HTTP/OpenAI call now succeeds.
+
+The ONLY current blocker is that the returned JSON does not match
+AnalysisResponseSchema.
+
+CURRENT FAILURE
+
+OpenAI returns valid JSON and real tokens.
+
+However Zod validation fails because required fields are absent at the expected
+top level, including:
+
+triggerType
+catalystDirection
+evidenceConfidence
+expectationGap
+priceAsymmetry
+alreadyPricedIn
+catalystRisk
+opportunityState
+etc.
+
+The system prompt currently says approximately:
+
+"OUTPUT: strict JSON matching the schema"
+
+but the model is never shown the actual required schema/field names.
+
+Therefore the model invents its own JSON structure.
+
+==================================================
+1. INSPECT THE EXISTING AI WRAPPER FIRST
+==================================================
+
+Before changing the prompt, inspect the existing callAi / structured-output
+infrastructure.
+
+If the application already supports passing an explicit JSON schema /
+structured response schema to OpenAI, USE THAT.
+
+Prefer:
+
+actual enforced structured output
+
+over:
+
+hoping a textual prompt example is followed.
+
+Do not create a new OpenAI client.
+
+Reuse the existing centralized AI infrastructure.
+
+
+==================================================
+2. MAKE THE REQUIRED OUTPUT STRUCTURE EXPLICIT
+==================================================
+
+Ensure the Catalyst deep-analysis call knows the exact output structure expected
+by AnalysisResponseSchema.
+
+The model must return the fields at the TOP LEVEL.
+
+Use the exact enum casing expected by the Zod schema.
+
+Conceptually the required structure is:
+
+{
+  "triggerType": "SCHEDULED_EVENT | EARNINGS | EMERGING_SETUP",
+
+  "catalystDirection":
+    "STRONGLY_NEGATIVE | NEGATIVE | NEUTRAL | POSITIVE | STRONGLY_POSITIVE",
+
+  "evidenceConfidence":
+    "Low | Medium | High",
+
+  "expectationGap":
+    "STRONG_NEGATIVE | NEGATIVE | NEUTRAL | POSITIVE | STRONG_POSITIVE | UNKNOWN",
+
+  "priceAsymmetry":
+    "POOR | WEAK | NEUTRAL | ATTRACTIVE | VERY_ATTRACTIVE",
+
+  "alreadyPricedIn":
+    "LOW | MEDIUM | HIGH | UNKNOWN",
+
+  "catalystRisk":
+    "LOW | MEDIUM | HIGH | EXTREME",
+
+  "opportunityState":
+    "NOT_INTERESTING | MONITOR | INVESTIGATE | HIGH_INTEREST | CANDIDATE_FOR_TRADE_DECISION",
+
+  "thesis": "string",
+
+  "whatMarketMayBeMissing": "string or null",
+
+  "supportingSignalIds": ["signal-id"],
+
+  "contradictingSignalIds": ["signal-id"],
+
+  "strongestCounterargument": "string",
+
+  "invalidationConditions": ["string"],
+
+  "dataLimitations": ["string"],
+
+  "recommendedNextStep": "..."
+}
+
+IMPORTANT:
+
+Do not blindly copy the conceptual structure above if the actual
+AnalysisResponseSchema in code differs.
+
+The CODE schema is authoritative.
+
+Read the exact Zod schema and mirror/enforce it exactly.
+
+
+==================================================
+3. NO WRAPPER OBJECT
+==================================================
+
+The returned JSON must NOT be:
+
+{
+  "analysis": { ... }
+}
+
+or:
+
+{
+  "result": { ... }
+}
+
+unless AnalysisResponseSchema explicitly expects that.
+
+It should match the Zod schema directly at the root.
+
+
+==================================================
+4. SIGNAL ID SAFETY
+==================================================
+
+If the schema expects supportingSignalIds / contradictingSignalIds:
+
+The model may only reference signal IDs that exist in CatalystFacts.
+
+Do not invent signal IDs.
+
+If no valid signals exist, return an empty array.
+
+
+==================================================
+5. NULL / UNKNOWN HANDLING
+==================================================
+
+Use the exact schema's allowed null/unknown behavior.
+
+Do not omit required fields simply because information is unavailable.
+
+For example, if the schema expects:
+
+expectationGap = UNKNOWN
+
+use UNKNOWN.
+
+Do not leave the field absent.
+
+
+==================================================
+6. KEEP ZOD VALIDATION
+==================================================
+
+Do NOT remove or weaken AnalysisResponseSchema validation.
+
+The validation is doing its job.
+
+The fix is to make the OpenAI response conform to it.
+
+
+==================================================
+7. OPTIONAL REPAIR RETRY
+==================================================
+
+Inspect whether the application's existing robust JSON/schema repair mechanism
+can be reused.
+
+If a response is valid JSON but fails schema validation:
+
+allow at most ONE cheap repair retry if this is consistent with the existing AI
+architecture.
+
+The repair request should contain:
+
+- validation errors
+- expected schema
+- previous JSON
+
+and request corrected JSON only.
+
+Do NOT rerun web research during repair.
+
+Do NOT create unlimited retries.
+
+If the existing architecture already has a repair helper, reuse it.
+
+
+==================================================
+8. TESTS — NO PAID CALLS
+==================================================
+
+Add/update mocked tests:
+
+A. Exact valid Catalyst JSON
+→ Zod parse succeeds
+→ analysis stored.
+
+B. JSON wrapped under "analysis"
+→ rejected or repaired according to implementation.
+
+C. Missing triggerType
+→ validation fails.
+
+D. Invalid enum casing
+→ validation fails/repair succeeds.
+
+E. Unknown/missing source information
+→ required UNKNOWN/null representation is returned correctly.
+
+F. Successful analysis
+→ failure/backoff state clears.
+
+G. Successful HIGH_INTEREST analysis
+→ existing promotion logic still executes.
+
+Do not make live OpenAI calls for automated tests.
+
+
+==================================================
+9. ONE CONTROLLED REAL TEST
+==================================================
+
+After mocked tests pass, it is acceptable to run ONE Catalyst analysis only.
+
+Do NOT Run All.
+
+Use one currently eligible ticker.
+
+Verify:
+
+OpenAI success
+→ schema validation success
+→ analysis stored
+→ opportunityState present
+→ confidence present
+→ catalystDirection present
+
+If successful, STOP.
+
+Do not analyze the remaining candidates.
+
+Report token usage for this one controlled test.
+
+
+==================================================
+10. FINAL REPORT
+==================================================
+
+Report:
+
+1. Whether structured output/schema enforcement already existed in callAi.
+2. Exact reason the previous response failed.
+3. Exact solution used:
+   - enforced JSON schema
+   - explicit prompt schema
+   - or both.
+4. Whether Zod validation remains intact.
+5. Whether a repair retry was added/reused.
+6. Mock test results.
+7. Whether one real test was performed.
+8. Ticker used.
+9. Whether analysis was successfully stored.
+10. opportunityState / confidence / catalystDirection returned.
+11. Token usage.
+12. Confirm Catalyst budgets and previous token optimizations are unchanged.
+13. Confirm whether it is now safe for me to Run All.
+
+DO NOT implement the Upcoming Opportunities frontend in this task.
