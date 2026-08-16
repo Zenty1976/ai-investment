@@ -1,0 +1,70 @@
+Before making any further changes, perform a READ-ONLY audit of the current catalyst/opportunity pipeline.
+
+DO NOT modify code.
+DO NOT make any OpenAI calls.
+DO NOT run paid web searches.
+Use only existing stored data, existing code, repositories and tests.
+
+I want to know whether the system ALREADY contains enough information to show a short "Upcoming Opportunities" section inside Command Brief.
+
+Trace the existing pipeline:
+Market Universe
+→ Event/Catalyst discovery
+→ Catalyst analysis
+→ Opportunity Finder
+→ Trade Decision
+→ Command Brief
+
+Report exactly what data currently exists for identifying stocks that may become interesting BEFORE a known upcoming event such as:
+
+- earnings
+- investor/company meetings
+- product launches
+- regulatory decisions
+- conferences
+- other scheduled company catalysts
+
+Specifically report whether the current system stores or calculates:
+
+1. Upcoming company event and date
+2. Event type
+3. Ticker/company
+4. Catalyst strength / importance
+5. Positive and negative pre-event signals
+6. Evidence/reasons behind those signals
+7. Confidence
+8. Recent price behavior (especially 5D, ~14D and 1M if available)
+9. Whether the stock has already rallied significantly before the event
+10. Opportunity score/ranking
+11. Whether the candidate reaches Opportunity Finder
+12. Whether it reaches Trade Decision
+13. Why candidates are filtered out at each stage
+
+Then inspect the CURRENT STORED DATA and tell me:
+
+- How many upcoming company catalysts currently exist?
+- How many currently have positive pre-event signals?
+- What are the current highest-ranked pre-event opportunities?
+- Are there promising candidates in stored Catalyst data that are NOT visible in Command Brief?
+- Are candidates being lost/filtered before Opportunity Finder or Trade Decision?
+
+IMPORTANT:
+Do not add functionality yet.
+Do not change thresholds.
+Do not fabricate missing information.
+Do not use current web research to fill gaps.
+
+The purpose of this task is ONLY to determine whether the intelligence needed for an "Upcoming Opportunities" section already exists.
+
+Finish with one of these conclusions:
+
+A) DATA ALREADY SUFFICIENT
+Only presentation/Command Brief changes are needed.
+
+B) PARTIALLY SUFFICIENT
+List exactly which missing fields/calculations prevent reliable pre-event opportunity ranking.
+
+C) INSUFFICIENT
+Explain exactly where the current pipeline fails to discover or evaluate these opportunities.
+
+Also estimate how large the required follow-up change would be: SMALL / MEDIUM / LARGE.
