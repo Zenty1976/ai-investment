@@ -1,0 +1,400 @@
+COMMAND BRIEF — ADD "WHAT THIS MEANS" EXPLANATION WITH ENGLISH/DANISH LANGUAGE TOGGLE
+
+IMPORTANT:
+
+This should be a SMALL, isolated extension of the existing Command Brief.
+
+Do NOT redesign Command Brief.
+Do NOT change Catalyst Intelligence.
+Do NOT change Trade Decision.
+Do NOT change Trade Review.
+Do NOT add another OpenAI call.
+Do NOT translate the rest of the application.
+Do NOT translate the existing Command Brief items.
+
+The purpose is to add one short plain-language explanation below the existing
+Command Brief so the user can easily understand what the brief actually means.
+
+
+==================================================
+1. ADD ONE NEW OUTPUT FIELD
+==================================================
+
+Extend the existing Command Brief output schema with one new field:
+
+"whatThisMeans": "string"
+
+This field should contain a short plain-language explanation of the overall
+Command Brief.
+
+It should NOT simply repeat or translate the bullet items word-for-word.
+
+It should explain what the information means for the user in simple language.
+
+Example in English:
+
+"What this means: The system is cautious right now. Holding a large amount of
+cash reduces market risk, but you may also miss potential gains. NVIDIA looks
+interesting, while Serve Robotics remains risky. Tencent has a positive setup
+ahead of earnings tomorrow, but the system wants to wait for the result before
+reassessing it. There are currently no trades requiring your approval."
+
+Example in Danish:
+
+"Hvad betyder det? Systemet er forsigtigt lige nu. Din store kontantbeholdning
+beskytter dig mod fald i markedet, men betyder også, at du kan gå glip af
+kursstigninger. NVIDIA ser interessant ud, mens Serve Robotics fortsat vurderes
+som risikabel. Tencent viser positive tegn før regnskabet i morgen, men systemet
+vil vente på regnskabet, før aktien vurderes igen. Lige nu er der ingen handler,
+du skal tage stilling til."
+
+Keep it concise.
+
+Target approximately 3–6 short sentences.
+
+
+==================================================
+2. LANGUAGE SETTING — ENGLISH OR DANISH
+==================================================
+
+Add a small language preference specifically for the "What this means" section.
+
+Supported values:
+
+ENGLISH
+DANISH
+
+Default:
+ENGLISH
+
+This preference affects ONLY:
+
+whatThisMeans
+
+It must NOT affect:
+
+headline
+items
+actionStatus
+JSON field names
+system prompts
+module names
+Trade Decision wording
+Catalyst wording
+Opportunity Finder wording
+any other UI text or AI output
+
+Everything else must remain English exactly as today.
+
+
+==================================================
+3. TWO SMALL BUTTONS IN COMMAND BRIEF UI
+==================================================
+
+In the "What this means" section add two small compact language buttons:
+
+EN
+DA
+
+or equivalent:
+
+English
+Dansk
+
+Keep them visually subtle.
+
+Do not redesign the Command Brief card.
+
+Show which language is currently selected.
+
+
+==================================================
+4. LANGUAGE CHANGE MUST NOT TRIGGER ANALYSIS
+==================================================
+
+This is important.
+
+Changing EN ↔ DA must NOT:
+
+- call OpenAI
+- rerun Command Brief
+- rerun another module
+- trigger Run All
+- perform web search
+- consume tokens
+
+The button should ONLY save the preference.
+
+The newly selected language becomes effective the NEXT time Command Brief is
+naturally updated/run.
+
+For example:
+
+Current explanation is English.
+
+User selects DA.
+
+The currently displayed explanation may remain English.
+
+No AI call occurs.
+
+Next time Command Brief runs for any normal reason:
+
+whatThisMeans is generated in Danish.
+
+Likewise when switching back to EN.
+
+
+==================================================
+5. PERSIST THE LANGUAGE PREFERENCE
+==================================================
+
+Persist the preference so it survives:
+
+page reload
+navigation
+application restart if existing settings storage supports this
+
+Use the application's existing settings/preferences storage if one already
+exists.
+
+Do not introduce a large new settings architecture just for this.
+
+Suggested setting name:
+
+commandBriefExplanationLanguage
+
+Values:
+
+"en"
+"da"
+
+
+==================================================
+6. PASS THE PREFERENCE INTO THE EXISTING COMMAND BRIEF CALL
+==================================================
+
+When Command Brief builds its existing OpenAI input, include the selected
+explanation language.
+
+For example internally:
+
+explanationLanguage: "Danish"
+
+or:
+
+explanationLanguage: "English"
+
+Then instruct the SAME existing OpenAI call:
+
+"Generate the whatThisMeans field in Danish."
+
+or
+
+"Generate the whatThisMeans field in English."
+
+IMPORTANT:
+
+The rest of the OpenAI request and output remains English.
+
+Do NOT translate the entire prompt into Danish.
+
+The system prompt can remain English.
+
+Only instruct the model that one specific output field must use the selected
+language.
+
+
+==================================================
+7. EXPLICIT PROMPT RULE
+==================================================
+
+Add a clear rule equivalent to:
+
+"All Command Brief fields must remain in English EXCEPT whatThisMeans.
+Generate whatThisMeans in the user's selected explanation language:
+{{English|Danish}}."
+
+For Danish specifically:
+
+"Use natural, easy-to-understand Danish. Explain investment terminology rather
+than translating it literally where necessary."
+
+The explanation should be understandable to someone who does not necessarily
+understand terms such as:
+
+opportunity cost
+Catalyst Intelligence
+WaitForEvent
+price asymmetry
+investment case strength
+
+Prefer explaining their meaning in ordinary language.
+
+
+==================================================
+8. TRADE DECISION / TRADE REVIEW AUTHORITY STILL APPLIES
+==================================================
+
+whatThisMeans must NOT create independent recommendations.
+
+It is explanatory only.
+
+Trade Decision remains authoritative for:
+
+WaitForEvent
+PrepareToBuy
+Review
+Hold
+etc.
+
+Trade Review remains authoritative for whether something is actionable NOW.
+
+If:
+
+readyTradeCount = 0
+
+the explanation should normally make this understandable in plain language, for
+example in Danish:
+
+"Lige nu er der ingen handler, du skal tage stilling til."
+
+Do not turn a Catalyst positive setup into a buy recommendation.
+
+
+==================================================
+9. USE THE SAME OPENAI CALL
+==================================================
+
+Do NOT create:
+
+Command Brief AI call
++
+Explanation AI call
+
+There must still be ONE Command Brief OpenAI request.
+
+That one response returns:
+
+overallStatus
+headline
+items
+actionStatus
+whatThisMeans
+generatedAt
+
+This should only add a small number of output tokens to the existing call.
+
+
+==================================================
+10. DETERMINISTIC CATALYST ENFORCEMENT MUST REMAIN INTACT
+==================================================
+
+The recently implemented deterministic Catalyst enforcement must remain unchanged.
+
+It still runs after the AI response and ensures imminent HighInterest Catalyst
+items correctly preserve the Trade Decision state.
+
+Do not remove or weaken it.
+
+The whatThisMeans text should reflect the same underlying Command Brief input and
+Trade Decision state.
+
+
+==================================================
+11. UI PLACEMENT
+==================================================
+
+Add the section below the existing Command Brief items and above or near the
+"No trades ready for approval" footer, whichever fits the current design best.
+
+Conceptually:
+
+--------------------------------
+
+WHAT THIS MEANS                         [EN] [DA]
+
+Systemet er forsigtigt lige nu...
+...
+
+--------------------------------
+
+NO TRADES READY FOR APPROVAL
+
+Keep it visually secondary to the actual Command Brief.
+
+It is an explanation layer, not another decision module.
+
+
+==================================================
+12. NO AUTOMATIC RE-TRANSLATION
+==================================================
+
+Do NOT translate an already-generated explanation locally when the user presses
+the language button.
+
+Do NOT create a translation API call.
+
+The selected language only affects future Command Brief generations.
+
+This behavior is intentional.
+
+
+==================================================
+13. TESTS
+==================================================
+
+Use mocks/deterministic tests only.
+
+No paid OpenAI calls.
+
+Test:
+
+A)
+language = en
+→ whatThisMeans expected to be English.
+
+B)
+language = da
+→ prompt explicitly requests Danish only for whatThisMeans.
+
+C)
+language = da
+→ existing headline/items/actionStatus remain English.
+
+D)
+changing language preference
+→ ZERO Command Brief analysis/API call.
+
+E)
+preference persists/reloads correctly.
+
+F)
+next normal Command Brief generation uses newly selected language.
+
+G)
+readyTradeCount = 0
+→ explanatory text is compatible with no actionable trades.
+
+H)
+existing Catalyst enforcement remains unchanged.
+
+
+==================================================
+14. FINAL REPORT
+==================================================
+
+Report only:
+
+1. Files changed.
+2. Where the language preference is stored.
+3. How the EN/DA buttons work.
+4. Confirm changing language makes ZERO OpenAI calls.
+5. Confirm the selected language only takes effect on the NEXT Command Brief run.
+6. Confirm ONLY whatThisMeans changes language.
+7. Confirm all other Command Brief fields remain English.
+8. Confirm there is still only ONE OpenAI call per Command Brief analysis.
+9. Confirm Catalyst deterministic enforcement is unchanged.
+10. Tests added/results.
+
+Do not run any paid analysis just to test this feature.

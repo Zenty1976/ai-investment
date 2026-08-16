@@ -23,6 +23,7 @@ import { getModel } from "../lib/ai-model-config.js";
 import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { getAllCatalystStates } from "../lib/catalyst-repository.js";
 import { enforceRequiredCatalystItems } from "../lib/command-brief-catalyst-enforcement.js";
+import { buildExplanationLanguageInstruction, type ExplanationLanguage } from "../lib/command-brief-language.js";
 
 const router: IRouter = Router();
 
@@ -168,13 +169,21 @@ Do not simply summarize every input module. A user should understand the importa
 
 Be concise, factual and action-oriented without creating new investment recommendations.
 
-Return a valid JSON object matching the required schema exactly. Do not include any additional fields.`;
+Return a valid JSON object matching the required schema exactly. Do not include any additional fields.
+
+All fields — overallStatus, headline, items, actionStatus — must be in English regardless of the selected explanation language. Only the "whatThisMeans" field uses the language specified in the user prompt.`;
+
 
 // ---------------------------------------------------------------------------
 // Input builder
 // ---------------------------------------------------------------------------
 
-function buildUserPrompt(input: Record<string, unknown>, nowIso: string): string {
+function buildUserPrompt(
+  input: Record<string, unknown>,
+  nowIso: string,
+  explanationLanguage: "en" | "da"
+): string {
+  const langInstruction = buildExplanationLanguageInstruction(explanationLanguage);
   return `Generate the Command Brief for the following system state.
 
 ${JSON.stringify(input)}
@@ -195,6 +204,7 @@ Return a JSON object with EXACTLY this shape — no extra fields:
     "status": "none | monitor | review | trade_ready",
     "text": "brief description of required action (or 'No trades ready for approval' when status is none)"
   },
+  "whatThisMeans": "plain-language explanation of what this brief means for the user",
   "generatedAt": "${nowIso}"
 }
 
@@ -205,7 +215,9 @@ Rules:
 - overallStatus = "normal" if everything is healthy with nothing requiring immediate attention.
 - If readyTradeCount is 0, actionStatus.status MUST be "none" and text must say no trades require approval.
 - Do not invent information not present in the supplied input.
-- Do not add extra JSON keys beyond the schema above.`;
+- Do not add extra JSON keys beyond the schema above.
+
+Language instruction: ${langInstruction}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -223,6 +235,11 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
   const startTime = Date.now();
   const nowIso = new Date().toISOString();
   let lastDebug: AiDebugInfo | undefined;
+
+  // ── Language preference ───────────────────────────────────────────────────────
+  // Only affects the "whatThisMeans" field. All other fields remain English.
+  const rawLang = (req.body as Record<string, unknown> | undefined)?.explanationLanguage;
+  const explanationLanguage: "en" | "da" = rawLang === "da" ? "da" : "en";
 
   // ── Required sources ────────────────────────────────────────────────────────
 
@@ -473,8 +490,8 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
     try {
       const { result: raw, debug } = await callAi<unknown>(
         SYSTEM_PROMPT,
-        buildUserPrompt(input, nowIso),
-        { model: getModel("brief", "command-brief"), maxTokens: 800, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
+        buildUserPrompt(input, nowIso, explanationLanguage),
+        { model: getModel("brief", "command-brief"), maxTokens: 1000, temperature: 0.1, module: "command-brief", operation: "analyze", retryNumber: attempt }
       );
       lastDebug = debug;
 

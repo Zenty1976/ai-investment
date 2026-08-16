@@ -945,17 +945,25 @@ export interface CommandBriefAnalysis {
     status: CommandBriefActionStatusCode;
     text: string;
   };
+  whatThisMeans?: string;
   generatedAt: string;
   analysisDuration?: number;
   _debug?: Record<string, unknown>;
+}
+
+export interface RunCommandBriefVariables {
+  explanationLanguage?: "en" | "da";
 }
 
 export function useRunCommandBrief(options?: {
   mutation?: Parameters<typeof useMutation>[0];
 }) {
   return useMutation({
-    mutationFn: () =>
-      customFetch<CommandBriefAnalysis>("/api/command-brief/analyze", { method: "POST" }),
+    mutationFn: (variables?: RunCommandBriefVariables) =>
+      customFetch<CommandBriefAnalysis>("/api/command-brief/analyze", {
+        method: "POST",
+        body: JSON.stringify({ explanationLanguage: variables?.explanationLanguage ?? "en" }),
+      }),
     ...(options?.mutation ?? {}),
   });
 }

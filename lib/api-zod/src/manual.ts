@@ -346,6 +346,7 @@ export const RunCommandBriefResponse = zod.object({
     status: zod.enum(["none", "monitor", "review", "trade_ready"]),
     text: zod.string(),
   }),
+  whatThisMeans: zod.string(),
   generatedAt: zod.string(),
 });
 

@@ -134,11 +134,35 @@ function BriefItemRow({ item }: { item: CommandBriefItem }) {
 // Main page
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Language preference — persisted in localStorage, affects only whatThisMeans
+// ---------------------------------------------------------------------------
+
+const LANG_KEY = "commandBriefExplanationLanguage"
+
+function readStoredLang(): "en" | "da" {
+  try {
+    const v = localStorage.getItem(LANG_KEY)
+    return v === "da" ? "da" : "en"
+  } catch {
+    return "en"
+  }
+}
+
+function storeLang(lang: "en" | "da"): void {
+  try { localStorage.setItem(LANG_KEY, lang) } catch { /* ignore */ }
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
+
 export default function CommandBrief() {
   const [debugOpen, setDebugOpen] = useState(false)
   const [lastDebug, setLastDebug] = useState<AiDebugInfo | undefined>()
   const [lastError, setLastError] = useState<unknown>(null)
   const [visibleError, setVisibleError] = useState<string | null>(null)
+  const [lang, setLang] = useState<"en" | "da">(readStoredLang)
 
   const { data: entry, isLoading: isLoadingData, refetch } = useGetRepositoryEntry("command-brief")
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -165,6 +189,12 @@ export default function CommandBrief() {
       },
     },
   })
+
+  /** Switch language preference — NO analysis call, only saves to localStorage. */
+  function handleLangChange(next: "en" | "da") {
+    setLang(next)
+    storeLang(next)
+  }
 
   const analysisDuration = (data as Record<string, unknown> | undefined)?.analysisDuration as number | undefined
 
@@ -194,7 +224,7 @@ export default function CommandBrief() {
           )}
           <Button
             size="sm"
-            onClick={() => run()}
+            onClick={() => run({ explanationLanguage: lang })}
             disabled={isRunning}
             className="h-7 gap-1.5 text-[11px]"
           >
@@ -291,6 +321,48 @@ export default function CommandBrief() {
                     <BriefItemRow key={i} item={item} />
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* What This Means — plain-language explanation */}
+          {data.whatThisMeans && (
+            <Card className="bg-card/40 border-card-border/40">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                    {lang === "da" ? "Hvad betyder det?" : "What This Means"}
+                  </p>
+                  {/* EN / DA toggle — saves preference only, no API call */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleLangChange("en")}
+                      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded transition-colors ${
+                        lang === "en"
+                          ? "bg-primary/20 text-primary"
+                          : "text-muted-foreground/50 hover:text-muted-foreground"
+                      }`}
+                      title="Show explanation in English (takes effect on next run)"
+                    >
+                      EN
+                    </button>
+                    <span className="text-muted-foreground/30 text-[10px]">|</span>
+                    <button
+                      onClick={() => handleLangChange("da")}
+                      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded transition-colors ${
+                        lang === "da"
+                          ? "bg-primary/20 text-primary"
+                          : "text-muted-foreground/50 hover:text-muted-foreground"
+                      }`}
+                      title="Vis forklaring på dansk (træder i kraft ved næste kørsel)"
+                    >
+                      DA
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {data.whatThisMeans}
+                </p>
               </CardContent>
             </Card>
           )}
