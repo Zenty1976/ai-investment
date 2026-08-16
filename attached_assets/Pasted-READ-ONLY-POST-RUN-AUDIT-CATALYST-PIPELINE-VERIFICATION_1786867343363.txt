@@ -1,0 +1,273 @@
+READ-ONLY POST-RUN AUDIT — CATALYST PIPELINE VERIFICATION
+
+IMPORTANT:
+
+I have now run one real FULL UPDATE after the latest Catalyst pipeline changes.
+
+DO NOT modify code.
+DO NOT make OpenAI calls.
+DO NOT perform paid web searches.
+DO NOT run another full update.
+
+Use only:
+- current stored production data
+- repositories
+- logs/debug state
+- existing code
+
+The purpose is to verify whether the new Catalyst pipeline actually worked end-to-end on the most recent Full Update.
+
+
+==================================================
+1. VERIFY NVIDIA FIRST
+==================================================
+
+The dashboard now shows:
+
+NVDA = PrepareToBuy / HIGH
+
+and Command Brief mentions:
+
+"NVIDIA shows strong potential supported by AI demand."
+
+I need to know whether NVDA reached this state through the NEW Catalyst pipeline or through the old Opportunity Finder path.
+
+For NVDA report:
+
+- Catalyst record exists: yes/no
+- upcoming event
+- event type
+- screening state
+- Catalyst analysis present: yes/no
+- opportunityScore
+- confidence
+- catalystDirection
+- evidence/signals available
+- priceAsymmetry
+- preEventRunup
+- analysis timestamp
+- promotedAt
+- promotion state
+- whether Opportunity Finder consumed the Catalyst promotion
+- whether Trade Decision received non-null Catalyst context
+- exact provenance path
+
+Finish with one clear line:
+
+NVDA reached Trade Decision via:
+A) Catalyst → Opportunity Finder → Trade Decision
+B) Opportunity Finder independently
+C) Mixed / both
+D) Other
+
+
+==================================================
+2. CHECK ALL PREVIOUS ELIGIBLE CANDIDATES
+==================================================
+
+Before this Full Update, the read-only audit found candidates including:
+
+KEYS
+NVDA
+SNPS
+V
+0700/Tencent
+DCI
+
+and approximately 11 eligible Catalyst candidates in total.
+
+For ALL currently eligible candidates report a compact table:
+
+Ticker
+Event
+DaysUntilEvent
+ScreeningState
+LifecycleState
+AnalysisPresent
+OpportunityScore
+Confidence
+PromotedAt
+Deferred
+Failure/SkipReason
+
+I want to know:
+
+- How many were eligible?
+- How many were deep-analyzed?
+- How many were deferred because of budget?
+- How many were skipped unchanged?
+- How many failed?
+- How many were promoted?
+
+
+==================================================
+3. VERIFY THE AUTOMATIC PIPELINE
+==================================================
+
+Confirm from actual stored state/logs whether the latest Full Update automatically executed:
+
+screening
+→ candidate eligibility
+→ deep Catalyst analysis
+→ promotion
+
+without any manual /analyze/:ticker call.
+
+Report:
+
+- Catalyst pipeline cycle started: yes/no
+- deep analyses attempted
+- deep analyses succeeded
+- deep analyses failed
+- candidates deferred
+- candidates promoted
+
+Also report the configured per-cycle deep-analysis budget and whether it was reached.
+
+
+==================================================
+4. VERIFY CATALYST → OPPORTUNITY FINDER
+==================================================
+
+Inspect current Catalyst promotions.
+
+Report:
+
+- number of active promotions
+- promoted tickers
+- whether buildPromotionsContextBlock() contains them
+- whether the most recent Opportunity Finder run actually received Catalyst promotion context
+
+For each active promotion report:
+
+ticker
+Catalyst state
+promotion time
+Opportunity Finder consumed: yes/no
+
+
+==================================================
+5. VERIFY OPPORTUNITY FINDER → TRADE DECISION
+==================================================
+
+Inspect current Trade Decision data.
+
+For each current Trade Decision candidate report whether:
+
+- Opportunity Finder context exists
+- Catalyst context exists
+- Catalyst context is null/non-null
+- trigger/provenance includes Catalyst Intelligence
+
+Especially inspect:
+
+NVDA
+NEE
+
+Do not infer from UI text.
+
+Use the actual stored context/state.
+
+
+==================================================
+6. COMMAND BRIEF UPCOMING OPPORTUNITIES
+==================================================
+
+The latest dashboard Command Brief shows NVDA and NEE as normal bullet items.
+
+However I do NOT see a clearly labeled:
+
+UPCOMING OPPORTUNITIES
+
+section.
+
+Inspect the actual Command Brief result and UI code.
+
+Report:
+
+- Does buildUpcomingOpportunities() currently return any entries?
+- How many?
+- Which tickers?
+- Does the Command Brief API include upcomingOpportunities?
+- Does the frontend receive it?
+- Does the frontend render a dedicated Upcoming Opportunities section?
+- If not visible, exactly where the chain breaks.
+
+DO NOT FIX IT YET.
+
+Just report the reason.
+
+
+==================================================
+7. CHECK WHETHER CATALYST ANALYSIS NOW CONTAINS THE DATA WE WANTED
+==================================================
+
+For analyzed candidates, determine whether the system now actually stores enough information to show:
+
+ticker
+company
+upcoming event
+days until event
+interest level
+opportunity score
+confidence
+positive evidence
+negative evidence
+price setup
+pre-event runup / already-priced-in assessment
+short thesis
+
+Report which fields are:
+
+AVAILABLE
+PARTIAL
+MISSING
+
+
+==================================================
+8. TOKEN / COST OBSERVATION
+==================================================
+
+Do not make new calls.
+
+Using existing usage/debug data from the completed Full Update only, report:
+
+- how many Catalyst deep AI calls were made
+- model used
+- total input tokens
+- total output tokens
+- estimated Catalyst cost
+- number of candidates processed without AI
+- number deferred/skipped
+
+This is only to verify the cost funnel is behaving as intended.
+
+
+==================================================
+9. FINAL CONCLUSION
+==================================================
+
+Finish with ONE of:
+
+A) PIPELINE WORKING END-TO-END
+Catalyst discovery → analysis → promotion → OF → TDE works.
+Only presentation cleanup remains.
+
+B) PIPELINE MOSTLY WORKING
+State exactly which single connection is still missing.
+
+C) PIPELINE NOT WORKING
+State exactly where candidates still stop.
+
+Also classify any required follow-up as:
+
+NONE
+SMALL
+MEDIUM
+LARGE
+
+IMPORTANT:
+
+This is an audit only.
+
+Do not change anything until I review the result.
