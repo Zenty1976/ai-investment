@@ -23,6 +23,7 @@ const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
   "investor-watch":      { w: 6, h: 4 },
   "trade-review":        { w: 6, h: 4 },
   "command-brief":       { w: 6, h: 4 },
+  "ai-chat":             { w: 6, h: 5 },
 };
 
 /** Layout 1 default: all modules. Layouts 2 & 3 start empty. */

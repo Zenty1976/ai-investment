@@ -25,3 +25,4 @@
 - [Catalyst Pipeline Activation Fixes](catalyst-pipeline-activation.md) — three root causes fixed; primary: Phase 2 AI call mixed jsonMode+webSearch; secondary: shouldAnalyze excluded SignalAssessment; orchestrator: catalyst never ran in _runFullCycle.
 - [Catalyst Schema Fix](catalyst-schema-fix.md) — schema extracted to pino-free catalyst-analysis-schema.ts; ANALYSIS_SCHEMA_DESCRIPTION must stay in sync with Zod; normalizer+repair wired into Phase 2.
 - [Saxo Authenticated Enumeration Audit](saxo-enumeration-audit.md) — Saxo CAN enumerate by ExchangeId: CSE=117, NASDAQ=1979, NYSE=2039; price depth=500+ bars; fundamentals/consensus/events all 404.
+- [AI Chat Architecture](ai-chat-architecture.md) — Responses API + previous_response_id; isolated client; read-only tools; data/chat-repository.json; test source-reading uses structural checks (testcwd is tmpdir).

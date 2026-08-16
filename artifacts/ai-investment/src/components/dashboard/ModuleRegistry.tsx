@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart2, Calendar, Newspaper, PieChart, Building2,
   Briefcase, TrendingUp, Crosshair, Scale, Bell,
-  Cpu, Activity, Users, ClipboardList, Zap,
+  Cpu, Activity, Users, ClipboardList, Zap, MessageSquare,
 } from "lucide-react";
 
 import { MarketMonitorWidget }     from "@/components/widgets/MarketMonitorWidget";
@@ -20,6 +20,7 @@ import { TradeReviewWidget }        from "@/components/widgets/TradeReviewWidget
 import { AutomationWidget }         from "@/components/widgets/AutomationWidget";
 import { InvestorWatchWidget }      from "@/components/widgets/InvestorWatchWidget";
 import { CommandBriefWidget }       from "@/components/widgets/CommandBriefWidget";
+import { AiChatWidget }             from "@/components/widgets/AiChatWidget";
 
 export interface ModuleDef {
   id: string;
@@ -134,5 +135,12 @@ export const MODULE_REGISTRY: ModuleDef[] = [
     icon: Zap,
     route: "/command-brief",
     Widget: CommandBriefWidget,
+  },
+  {
+    id: "ai-chat",
+    label: "AI Chat",
+    icon: MessageSquare,
+    route: "/ai-chat",
+    Widget: AiChatWidget,
   },
 ];

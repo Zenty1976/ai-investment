@@ -1,0 +1,960 @@
+NEW ISOLATED MODULE — AI CHAT
+
+IMPORTANT: READ THIS BEFORE MAKING ANY CHANGES.
+
+This task adds ONE NEW MODULE to the application.
+
+DO NOT refactor, migrate, replace, modify, or "modernize" ANY existing OpenAI integration.
+
+The application's existing OpenAI calls are working correctly and MUST remain exactly as they are.
+
+This includes, but is not limited to:
+
+- Command Brief
+- Catalyst Intelligence
+- Opportunity Finder
+- Trade Decision
+- Trade Review
+- Company Monitor
+- Risk Analyzer
+- Portfolio Analyzer
+- Market Monitor
+- Sector Monitor
+- Event Monitor
+- News/Alert modules
+- Automation Orchestrator
+- all existing AI model routing
+- all existing fingerprints/caching/token optimizations
+- all existing prompts
+- all existing callAi / callAiWithWebSearch infrastructure
+
+DO NOT convert existing OpenAI calls to the Responses API.
+
+DO NOT change existing Chat Completions calls merely because this new module uses a newer OpenAI interface.
+
+DO NOT perform a project-wide OpenAI migration.
+
+The Responses API + Conversations API architecture described below applies ONLY to the NEW AI Chat module.
+
+If shared OpenAI infrastructure would require changing existing modules, create isolated infrastructure for AI Chat instead.
+
+Existing behavior must remain unchanged.
+
+
+==================================================
+1. PURPOSE
+==================================================
+
+Add a new user-facing module called:
+
+AI Chat
+
+This should provide a normal conversational ChatGPT-style interface inside the
+AI Investment application.
+
+The user should be able to:
+
+- type questions
+- receive AI responses
+- continue the conversation naturally
+- see previous messages
+- close the application
+- reopen it later
+- continue the same conversation
+- create a New Chat
+- reopen previous chats
+
+Example:
+
+User:
+"Why is KEYS interesting?"
+
+AI:
+Explains the current KEYS situation.
+
+User:
+"But hasn't the stock already risen quite a lot?"
+
+AI:
+Understands that "the stock" refers to KEYS because this is the same persistent
+conversation.
+
+User:
+"Compare it with Visa."
+
+AI:
+Understands the previous context and can retrieve current Visa data.
+
+
+==================================================
+2. OPENAI ARCHITECTURE — ONLY FOR THIS NEW MODULE
+==================================================
+
+For AI Chat ONLY, use the current OpenAI architecture:
+
+OPENAI RESPONSES API
++
+OPENAI CONVERSATIONS API
+
+Do NOT use:
+
+- Assistants API
+- beta Assistants
+- Threads
+- Runs
+- the old Assistant/Thread architecture
+
+This new module should use OpenAI persistent Conversations together with Responses.
+
+Again:
+
+THIS DOES NOT MEAN EXISTING APPLICATION OPENAI CALLS SHOULD BE MIGRATED.
+
+Responses + Conversations are ONLY for AI Chat.
+
+
+==================================================
+3. PERSISTENT CONVERSATION
+==================================================
+
+When the user creates a new chat:
+
+Create an OpenAI Conversation.
+
+Store the returned OpenAI conversation ID persistently in our own repository/database.
+
+Conceptually:
+
+localChatId
+openAiConversationId
+title
+createdAt
+updatedAt
+lastMessageAt
+archived
+
+When the user sends another message in the same chat:
+
+Use the SAME OpenAI Conversation ID with the Responses API.
+
+Do not manually resend the complete historical conversation every time.
+
+OpenAI Conversation state should provide the persistent conversational context.
+
+
+==================================================
+4. MUST SURVIVE APPLICATION / SERVER RESTART
+==================================================
+
+Do not store the conversation ID only in:
+
+React state
+browser memory
+server process memory
+
+Persist it.
+
+After:
+
+- page reload
+- navigation
+- frontend restart
+- backend restart
+- application restart
+
+the user must still be able to reopen the chat and continue the conversation.
+
+
+==================================================
+5. LOCAL CHAT HISTORY
+==================================================
+
+Even though OpenAI maintains Conversation state, maintain a lightweight local
+ChatRepository for the application's UI.
+
+Store enough information to:
+
+- show the conversation list
+- render previous user/assistant messages
+- show timestamps
+- reopen chats
+- debug failures
+- give chats titles
+
+Suggested entities:
+
+ChatConversation:
+- id
+- openAiConversationId
+- title
+- createdAt
+- updatedAt
+- lastMessageAt
+- archived
+
+ChatMessage:
+- id
+- chatId
+- role
+- text
+- createdAt
+- openAiItemId if available
+- status if useful
+
+Do not store huge tool payloads as visible chat messages.
+
+
+==================================================
+6. MULTIPLE CONVERSATIONS
+==================================================
+
+Support multiple independent chats.
+
+At minimum provide:
+
+- New Chat
+- list previous chats
+- open chat
+- continue chat
+
+A simple ChatGPT-style history is sufficient.
+
+For example:
+
+AI CHAT
+
+Today
+  KEYS before earnings
+  Market outlook
+
+Yesterday
+  Novo Nordisk
+
+Older
+  Portfolio strategy
+
+
+Do not over-engineer folders, tags, search etc. in the first implementation.
+
+
+==================================================
+7. CRITICAL: DO NOT AUTOMATICALLY SEND ALL MODULE DATA TO CHAT
+==================================================
+
+Do NOT do this:
+
+Run All
+    ↓
+collect all module results
+    ↓
+push everything into AI Chat
+
+Do NOT do this after Command Brief either.
+
+Do NOT automatically append system snapshots to the OpenAI Conversation.
+
+This is intentional.
+
+Automatically pushing all module data would:
+
+- waste tokens
+- make conversations unnecessarily large
+- store irrelevant data
+- introduce stale snapshots
+- potentially cause AI to use old data instead of current data
+
+The Chat should retrieve application data ON DEMAND instead.
+
+
+==================================================
+8. READ-ONLY TOOLS FOR CURRENT APPLICATION DATA
+==================================================
+
+Give the NEW AI Chat module read-only tools/functions that allow the model to
+retrieve current stored results from the existing investment modules.
+
+The important principle is:
+
+Conversation = conversational memory
+
+Existing repositories = current factual application state
+
+Web search = current external/public information
+
+
+AI Chat should be able to retrieve relevant application state only when needed.
+
+Conceptual read-only tools could include:
+
+get_command_brief()
+
+get_portfolio()
+
+get_risk_analysis()
+
+get_portfolio_analysis()
+
+get_trade_decisions()
+
+get_trade_review()
+
+get_opportunities()
+
+get_catalyst(ticker)
+
+get_company_monitor(ticker)
+
+get_price_context(ticker)
+
+get_events()
+
+get_market_alerts()
+
+get_market_monitor()
+
+get_sector_monitor()
+
+get_news_monitor()
+
+get_system_health()
+
+
+Before implementing these, inspect the existing repositories/services and reuse
+the existing stored module results.
+
+Do NOT create duplicate analysis pipelines.
+
+
+==================================================
+9. READ CURRENT STORED RESULTS — DO NOT RUN MODULES
+==================================================
+
+This distinction is extremely important.
+
+If AI Chat calls:
+
+get_catalyst("KEYS")
+
+it should READ the latest stored Catalyst Intelligence result.
+
+It must NOT trigger Catalyst Intelligence analysis.
+
+Likewise:
+
+get_trade_decisions()
+
+must read the latest Trade Decision result.
+
+It must NOT run Trade Decision.
+
+get_command_brief()
+
+must read the latest Command Brief.
+
+It must NOT regenerate Command Brief.
+
+Opening or using AI Chat must therefore NOT accidentally trigger:
+
+Run All
+module updates
+Catalyst analysis
+Opportunity Finder
+Trade Decision
+Trade Review
+Command Brief
+
+The Chat is a consumer of existing state.
+
+
+==================================================
+10. EXAMPLE OF ON-DEMAND DATA ACCESS
+==================================================
+
+User asks:
+
+"Why are we waiting on KEYS?"
+
+The model should be able to determine that current application state is relevant.
+
+It may call:
+
+get_catalyst("KEYS")
+get_trade_decisions()
+
+Then answer using those current results.
+
+
+User then asks:
+
+"But hasn't the price already increased significantly?"
+
+Because the Conversation remembers the previous discussion, the model understands
+that the user is still talking about KEYS.
+
+It may then call:
+
+get_price_context("KEYS")
+
+and answer.
+
+
+User then asks:
+
+"Compare it with Visa."
+
+The model understands the context and may retrieve:
+
+get_catalyst("KEYS")
+get_catalyst("V")
+get_trade_decisions()
+get_price_context("KEYS")
+get_price_context("V")
+
+Only retrieve what is actually useful.
+
+
+==================================================
+11. READ-ONLY MUST REALLY MEAN READ-ONLY
+==================================================
+
+For the initial implementation, AI Chat MUST NOT have tools that can:
+
+- execute a trade
+- create an order
+- approve a Trade Review
+- modify portfolio holdings
+- modify Catalyst state
+- modify Opportunity Finder
+- modify Trade Decision
+- modify Trade Review
+- modify Command Brief
+- change settings
+- change automation
+- run modules
+- trigger Run All
+- write into investment repositories
+
+AI Chat is initially an:
+
+ANALYST
++
+EXPLANATION INTERFACE
+
+It can inspect the system.
+
+It cannot control the system.
+
+
+==================================================
+12. CURRENT STATE VS CONVERSATION MEMORY
+==================================================
+
+Do not confuse conversation memory with current investment-system state.
+
+Example:
+
+Yesterday the user asks:
+
+"Why are we waiting on KEYS?"
+
+The Conversation remembers that discussion.
+
+Today the user asks:
+
+"What does the system think about KEYS now?"
+
+The AI should NOT simply answer using yesterday's remembered module result.
+
+Because the question asks about the CURRENT state, it should retrieve the latest
+stored KEYS/Catalyst/Trade Decision data using the read-only tools.
+
+Therefore:
+
+OpenAI Conversation:
+provides conversational continuity.
+
+Application repositories:
+provide current facts.
+
+This distinction is fundamental to the design.
+
+
+==================================================
+13. COMPACT TOOL OUTPUTS
+==================================================
+
+Do not return enormous raw repository/debug objects to OpenAI unnecessarily.
+
+Create compact Chat-specific tool responses containing the useful fields.
+
+For example:
+
+get_catalyst("KEYS")
+
+might return:
+
+ticker
+company
+eventType
+eventDate
+daysUntilEvent
+opportunityState
+catalystDirection
+evidenceConfidence
+expectationGap
+priceAsymmetry
+alreadyPricedIn
+thesis
+keyRisks
+lastUpdated
+
+Likewise Trade Decision should return the useful decision fields, not every
+internal debug field.
+
+This reduces token usage.
+
+
+==================================================
+14. WEB SEARCH
+==================================================
+
+AI Chat should also be able to use OpenAI web search through the Responses API.
+
+This is separate from the application's stored module data.
+
+Example:
+
+User:
+"Catalyst Intelligence says KEYS looks positive. Has anything new happened today
+that strengthens or weakens the case?"
+
+AI Chat may:
+
+1. retrieve current stored Catalyst data
+2. retrieve current Trade Decision
+3. perform web search for current external information
+4. combine those sources in its answer
+
+The user should therefore be able to ask normal current-information questions,
+not only questions about internal module results.
+
+
+==================================================
+15. MODEL SHOULD DECIDE WHEN TO USE TOOLS
+==================================================
+
+Do not call every read-only tool on every message.
+
+The model should select relevant tools based on the user's question.
+
+Examples:
+
+"Hello"
+→ no investment tools required.
+
+"What does Trade Decision say about KEYS?"
+→ Trade Decision / Catalyst tools likely required.
+
+"What is happening with KEYS today?"
+→ internal state + potentially web search.
+
+"Explain what price asymmetry means."
+→ probably no internal tool required.
+
+"Compare KEYS and Visa based on our system."
+→ retrieve relevant current data for both.
+
+
+==================================================
+16. TOOL-CALL LOOP
+==================================================
+
+Implement the normal Responses API tool-call flow for AI Chat.
+
+Conceptually:
+
+User message
+    ↓
+Responses API
+    ↓
+Model requests read-only tool
+    ↓
+Backend executes tool
+    ↓
+Tool result returned to same response/conversation flow
+    ↓
+Model may request another tool
+    ↓
+Final assistant response
+    ↓
+Save/render response
+
+Support multiple tool calls if the model needs several pieces of information.
+
+Add a reasonable safety limit so a single user message cannot create an
+unbounded tool loop.
+
+
+==================================================
+17. WEB SEARCH VS INTERNAL DATA
+==================================================
+
+The assistant should distinguish between:
+
+OUR SYSTEM SAYS:
+information retrieved from the application's modules
+
+and
+
+CURRENT EXTERNAL INFORMATION:
+information discovered through web search.
+
+The answer should make this distinction naturally when relevant.
+
+It must not pretend web information came from Catalyst Intelligence or vice versa.
+
+
+==================================================
+18. CHAT UI
+==================================================
+
+Create a clean chat interface consistent with the existing application's visual
+design.
+
+Suggested layout:
+
+--------------------------------------------------
+AI CHAT
+
+[New Chat]
+
+Previous Chats      Current Conversation
+                    -------------------------
+KEYS analysis       Assistant message
+Market outlook
+Novo Nordisk        User message
+
+                    Assistant message
+
+                    [ Ask something... ] [Send]
+--------------------------------------------------
+
+Requirements:
+
+- user messages visually distinguishable from assistant messages
+- scrollable conversation
+- text input
+- Send button
+- Enter to send
+- sensible multiline behavior
+- loading state while AI is responding
+- errors shown gracefully
+- conversation remains visible while waiting
+
+Do not redesign the rest of the application.
+
+
+==================================================
+19. CHAT HISTORY DISPLAY
+==================================================
+
+Show a useful amount of prior conversation in the UI.
+
+Do not arbitrarily load thousands of messages into the browser at once.
+
+Use a reasonable recent-message window and pagination/load-older behavior if
+necessary.
+
+This UI optimization must NOT break the OpenAI Conversation state.
+
+The UI does not need to display every historical message simultaneously for the
+OpenAI Conversation to remember the conversation.
+
+
+==================================================
+20. NEW CHAT
+==================================================
+
+"New Chat" should:
+
+1. create a new local chat
+2. create a new OpenAI Conversation
+3. persist the mapping
+4. open the empty chat
+
+It must NOT destroy previous conversations.
+
+
+==================================================
+21. CHAT TITLES
+==================================================
+
+Keep this inexpensive.
+
+A separate AI call solely to generate chat titles is NOT necessary initially.
+
+Use a simple deterministic title derived from the first user message.
+
+Example:
+
+"Why is KEYS interesting before earnings?"
+
+could become:
+
+"Why is KEYS interesting..."
+
+This can be improved later if needed.
+
+
+==================================================
+22. TOKEN / COST CONTROL
+==================================================
+
+Cost efficiency matters.
+
+Design specifically to avoid unnecessary OpenAI usage.
+
+Therefore:
+
+- no automatic module-data dumps
+- no module refresh caused by Chat
+- no separate title-generation call
+- no separate summary-generation call
+- compact tool results
+- only use web search when relevant
+- only call internal tools when relevant
+- reuse persistent Conversation state
+- limit runaway tool-call loops
+
+Expose token usage/debug information through the application's existing debug
+mechanism if appropriate, but do not redesign the global debug architecture.
+
+
+==================================================
+23. SYSTEM PROMPT FOR AI CHAT
+==================================================
+
+Create a dedicated system/developer instruction specifically for AI Chat.
+
+It should establish that:
+
+- this assistant is the conversational analyst for the AI Investment application
+- it can explain current module results
+- it may retrieve current stored application state through read-only tools
+- it may use web search for current external information
+- it should use current tools rather than remembered old module state when the
+  user asks about the current situation
+- it must distinguish internal system conclusions from external web information
+- it must not claim a trade is actionable unless Trade Review supports that
+- Trade Decision remains authoritative for decision state
+- Trade Review remains authoritative for actionability
+- it cannot modify application state
+- it should answer naturally and conversationally rather than dumping raw JSON
+
+
+==================================================
+24. DO NOT MAKE CHAT ANOTHER DECISION ENGINE
+==================================================
+
+AI Chat must not become an independent replacement for:
+
+Catalyst Intelligence
+Opportunity Finder
+Trade Decision
+Trade Review
+
+If the user asks:
+
+"Should I buy KEYS?"
+
+the Chat can:
+
+- explain what the system currently says
+- retrieve relevant current module results
+- retrieve external information if useful
+- discuss the evidence
+
+But it must clearly distinguish its conversational analysis from the application's
+formal Trade Decision / Trade Review state.
+
+Do not silently overwrite the system's decision hierarchy.
+
+
+==================================================
+25. FAILURE HANDLING
+==================================================
+
+Handle:
+
+- OpenAI API failure
+- Conversation not found
+- tool failure
+- malformed tool arguments
+- missing ticker
+- missing module result
+- web search failure
+
+gracefully.
+
+A failed tool should not crash the Chat module.
+
+If current internal data is unavailable, the assistant should say that rather than
+inventing it.
+
+
+==================================================
+26. IMPORTANT COMPATIBILITY REQUIREMENT
+==================================================
+
+Before coding, inspect the existing architecture.
+
+The new module must be ADDITIVE.
+
+Existing modules must behave identically before and after this implementation.
+
+Specifically verify that implementing AI Chat causes ZERO behavioral changes to:
+
+- existing OpenAI requests
+- existing model selection
+- existing prompts
+- existing module routes
+- existing update behavior
+- Run All
+- caching
+- fingerprints
+- token optimization
+- Automation Orchestrator
+- Command Brief
+- Catalyst pipeline
+- Opportunity Finder
+- Trade Decision
+- Trade Review
+
+If implementation requires modifying a shared helper that could affect existing
+OpenAI calls, STOP and instead create an isolated AI Chat-specific helper/client.
+
+Do not take the opportunity to clean up or refactor unrelated OpenAI code.
+
+
+==================================================
+27. IMPLEMENTATION APPROACH
+==================================================
+
+Before making changes:
+
+Perform a short architecture inspection to identify:
+
+- existing frontend navigation/module pattern
+- existing repository/storage pattern
+- existing OpenAI client infrastructure
+- existing module repositories that can safely expose read-only data
+- current model configuration
+- current debug/token tracking pattern
+
+Then implement the smallest isolated architecture that fits the existing codebase.
+
+Do NOT perform a large refactor.
+
+
+==================================================
+28. TESTING — NO PAID AI CALLS
+==================================================
+
+Use mocks/deterministic tests.
+
+Do NOT perform real paid OpenAI calls merely to test this feature unless explicitly
+asked later.
+
+Tests should cover at minimum:
+
+A.
+New Chat creates and persists a conversation mapping.
+
+B.
+Second message uses the same OpenAI Conversation ID.
+
+C.
+Application/server restart simulation can recover the conversation.
+
+D.
+Multiple chats remain independent.
+
+E.
+Existing chat history renders correctly.
+
+F.
+Read-only tools read stored module results without triggering module analysis.
+
+G.
+get_catalyst does not run Catalyst Intelligence.
+
+H.
+get_trade_decisions does not run Trade Decision.
+
+I.
+get_command_brief does not regenerate Command Brief.
+
+J.
+Tool outputs are compact.
+
+K.
+Model can request multiple read-only tools in one conversational turn.
+
+L.
+Tool-call loop has a safety cap.
+
+M.
+Web search is available to AI Chat.
+
+N.
+No write/action tools are exposed.
+
+O.
+Existing OpenAI module calls are unchanged.
+
+P.
+Existing Command Brief tests remain unchanged/passing.
+
+Q.
+Existing Catalyst/TDE pipeline behavior remains unchanged.
+
+R.
+No automatic module data is pushed into Conversation after Run All or Command Brief.
+
+S.
+New Chat does not delete previous chats.
+
+T.
+No extra AI call is used for chat-title generation.
+
+
+==================================================
+29. FINAL REPORT
+==================================================
+
+After implementation, report:
+
+1. Exact files added.
+2. Exact existing files modified.
+3. Confirm Responses API is used ONLY by AI Chat.
+4. Confirm Conversations API is used for persistent AI Chat state.
+5. Confirm Assistants/Threads/Runs are NOT used.
+6. Confirm NO existing OpenAI integration was migrated or modified.
+7. How OpenAI conversation IDs are persisted.
+8. How chat history survives restart.
+9. Which read-only application tools were implemented.
+10. Confirm those tools read stored state and never run modules.
+11. How tool-call loops work.
+12. How web search is enabled.
+13. How internal application data is distinguished from external web information.
+14. How multiple chats/New Chat work.
+15. How chat history is rendered.
+16. Token/cost protections implemented.
+17. Tests added and results.
+18. Explicit confirmation that Run All, Command Brief, Catalyst Intelligence,
+    Opportunity Finder, Trade Decision, Trade Review and all other existing modules
+    behave exactly as before.
+
+Do not make unrelated improvements.
+Do not refactor working code.
+Do not migrate existing OpenAI calls.

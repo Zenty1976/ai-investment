@@ -26,6 +26,7 @@ import portfolioIntelligenceRouter from "./portfolio-intelligence";
 import catalystIntelligenceRouter from "./catalyst-intelligence";
 import companyEventsRouter from "./company-events";
 import dataCoverageRouter from "./data-coverage";
+import aiChatRouter from "./ai-chat";
 
 const router: IRouter = Router();
 
@@ -56,5 +57,6 @@ router.use(portfolioIntelligenceRouter);
 router.use(catalystIntelligenceRouter);
 router.use(companyEventsRouter);
 router.use(dataCoverageRouter);
+router.use(aiChatRouter);
 
 export default router;
