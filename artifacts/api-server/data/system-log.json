@@ -1,47 +1,5 @@
 [
   {
-    "id": "84407b13-8b98-4ed8-b5bb-5f7f6884acda",
-    "timestamp": "2026-08-16T08:20:29.096Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Company analysis completed for ORCL: UpdateWithChanges, rating Watch, strength 65, meaningfulChange=High"
-  },
-  {
-    "id": "43a89b80-7197-4897-8948-e2241594fd40",
-    "timestamp": "2026-08-16T08:20:29.102Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor completed via RunAllNow (37954ms, change: Medium)"
-  },
-  {
-    "id": "b2c86478-1711-4830-895d-73c8741c056c",
-    "timestamp": "2026-08-16T08:20:29.104Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "company-monitor:ORCL changed (Medium) — not a holding, investment pipeline not woken"
-  },
-  {
-    "id": "394a457a-e450-4ebb-8e63-9356318b9ad5",
-    "timestamp": "2026-08-16T08:20:29.665Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for HD (trigger: RunAllNow)"
-  },
-  {
-    "id": "186fcb85-de25-4ca8-aef0-c5df75f2ff4d",
-    "timestamp": "2026-08-16T08:20:29.893Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "catalyst-intelligence completed via Dependency (789ms, change: None)"
-  },
-  {
-    "id": "3bdbec71-0d40-4504-98c2-60389baa34c9",
-    "timestamp": "2026-08-16T08:20:34.657Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "HD: No material change detected by discovery gate — skipping full analysis"
-  },
-  {
     "id": "366fb092-e5b8-4ed8-965d-5d88c8fc03bb",
     "timestamp": "2026-08-16T08:20:34.665Z",
     "module": "AutomationOrchestrator",
@@ -3495,6 +3453,48 @@
   {
     "id": "731a4272-0e90-4dbc-9be2-a2fc2e84dd0c",
     "timestamp": "2026-08-16T14:20:54.298Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "d55e933d-6137-45df-8c1f-61b03f1bfed5",
+    "timestamp": "2026-08-16T14:36:25.019Z",
+    "module": "Command Brief",
+    "level": "user",
+    "message": "User manually started Command Brief generation"
+  },
+  {
+    "id": "d4ba8ce0-7983-4ed4-89b9-225b912b1135",
+    "timestamp": "2026-08-16T14:36:29.226Z",
+    "module": "Command Brief",
+    "level": "warning",
+    "message": "Schema validation failed (attempt 1): items.4.category: Invalid enum value. Expected 'system' | 'portfolio' | 'risk' | 'market' | 'stock' | 'event' | 'opportunity' | 'action', received 'trade' — retrying"
+  },
+  {
+    "id": "aebf0dee-bed8-4cc4-92cf-93c0f01ede1b",
+    "timestamp": "2026-08-16T14:36:32.398Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (7375ms): attention — Monitor upcoming economic events and company earnings for potential trade adjustments. | 3 upcoming opportunity(-ies)"
+  },
+  {
+    "id": "d31c9eb0-a588-4391-a984-adc5ccb9682d",
+    "timestamp": "2026-08-16T14:36:52.455Z",
+    "module": "Command Brief",
+    "level": "user",
+    "message": "User manually started Command Brief generation"
+  },
+  {
+    "id": "c78f2598-2573-4b51-899e-619c22e20f41",
+    "timestamp": "2026-08-16T14:36:56.818Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (4361ms): attention — Monitor upcoming economic events and company earnings for potential shifts. | 3 upcoming opportunity(-ies)"
+  },
+  {
+    "id": "80c04a36-697a-4cfc-993b-1bc3e3482d6b",
+    "timestamp": "2026-08-16T14:40:28.594Z",
     "module": "Settings",
     "level": "warning",
     "message": "Saxo access token refreshed"

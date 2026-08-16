@@ -1,0 +1,279 @@
+COMMAND BRIEF — IMPROVE "WHAT THIS MEANS" EXPLANATION
+
+The current implementation is technically correct, but the generated
+whatThisMeans text is not useful enough.
+
+DO NOT redesign the feature.
+DO NOT add another OpenAI call.
+DO NOT change the EN/DA language toggle.
+DO NOT change localStorage behavior.
+DO NOT change Catalyst enforcement.
+DO NOT change Trade Decision or Trade Review.
+DO NOT change the normal Command Brief items.
+
+Only improve how the existing whatThisMeans field is generated.
+
+
+PROBLEM
+
+The current prompt asks for:
+
+"3–6 short sentences"
+and
+"a plain-language explanation of what this brief means"
+
+This causes OpenAI to generate another general summary such as:
+
+"Systemet venter på vigtige økonomiske begivenheder og selskabsresultater..."
+
+That is too generic.
+
+The user can already read the Command Brief headline.
+
+The purpose of "What This Means" is different:
+
+It should HELP THE USER UNDERSTAND THE INDIVIDUAL IMPORTANT LINES
+shown in the Command Brief.
+
+
+REQUIRED BEHAVIOR
+
+whatThisMeans should act as a short explanatory walkthrough of the
+important Command Brief items.
+
+For each important item shown in the brief, explain:
+
+1. What the item actually means in ordinary language.
+2. Why the system considers it important.
+3. What the current system state means for the user.
+4. If relevant, what the system is waiting for before reassessing it.
+
+Do NOT merely restate or translate the original sentence.
+
+
+EXAMPLE
+
+Suppose the Command Brief contains:
+
+State Employment and Unemployment Report in 5 days could impact market conditions.
+
+KEYS:
+Keysight Technologies earnings in 2 days; system is waiting for event before reassessment.
+
+SERV:
+Serve Robotics faces high financial and execution risks.
+
+0700:
+Wait for Earnings in 1d before reassessment — Catalyst Intelligence sees a positive setup.
+
+
+A Danish whatThisMeans should be closer to:
+
+"Økonomiske begivenheder: Om 5 dage kommer nye amerikanske arbejdsmarkedstal.
+De kan påvirke markedet og er en af grundene til, at systemet er forsigtigt
+lige nu.
+
+Keysight: Systemet ser positive tegn før regnskabet om 2 dage. Trade Decision
+siger dog WaitForEvent, hvilket betyder, at systemet ikke vil tage stilling
+endnu. Det vil først se regnskabet og derefter vurdere aktien igen.
+
+Serve Robotics: Systemet vurderer fortsat selskabet som risikabelt på grund
+af svag økonomi og usikkerhed omkring selskabets udvikling. Det er derfor en
+position, der kræver ekstra opmærksomhed.
+
+Tencent: Tencent har regnskab i morgen. Catalyst Intelligence ser positive
+tegn, men Trade Decision siger stadig WaitForEvent. Det betyder, at Tencent
+er interessant at følge tæt, men systemet anbefaler ikke handling før
+regnskabet."
+
+
+IMPORTANT SEMANTIC RULE
+
+The explanation must preserve the hierarchy:
+
+Catalyst Intelligence:
+WHY a company/event may be interesting.
+
+Opportunity Finder:
+HOW attractive an opportunity currently appears.
+
+Trade Decision:
+WHAT the system currently intends to do about it.
+
+Trade Review:
+WHETHER there is an actionable trade NOW.
+
+Explain these relationships naturally when relevant.
+
+
+WAIT FOR EVENT
+
+This is especially important.
+
+When an item has:
+
+decision = WaitForEvent
+
+the explanation must make clear in ordinary language:
+
+- the company may still look interesting or positive,
+- but the system is intentionally waiting,
+- what event it is waiting for,
+- and that the company will be reassessed after the event.
+
+Never turn positive Catalyst sentiment into an implied recommendation.
+
+
+PREPARE TO BUY
+
+If Trade Decision says PrepareToBuy, explain that this is stronger than merely
+monitoring an opportunity, but it still does NOT mean a trade is ready now
+unless Trade Review says it is actionable.
+
+
+TRADE REVIEW
+
+If readyTradeCount = 0, the explanation should make it understandable that
+nothing currently requires approval.
+
+For Danish, natural wording could be:
+
+"Der er derfor ikke nogen handel, du skal godkende eller tage stilling til lige nu."
+
+Do not mechanically repeat this if the Action Status directly below already
+makes it obvious and it would make the explanation unnecessarily repetitive.
+
+
+FORMAT
+
+Do NOT force whatThisMeans into one generic paragraph.
+
+It may use short paragraphs separated by newline characters.
+
+Prefer one short explanatory paragraph per important Command Brief item.
+
+Use the company name or understandable subject at the beginning when helpful:
+
+"Keysight: ..."
+"Serve Robotics: ..."
+"NVIDIA: ..."
+"Økonomiske begivenheder: ..."
+
+This makes it easy for the user to connect the explanation to the lines above.
+
+Do not use JSON arrays or introduce additional schema fields.
+
+whatThisMeans remains ONE string.
+
+Use newline characters inside the string for paragraph separation.
+
+
+LENGTH
+
+Do not use the existing rigid "3–6 sentences" requirement.
+
+Instead:
+
+Explain the important items shown in the Command Brief.
+
+Normally approximately 1–2 short sentences per important item.
+
+Keep the entire explanation concise enough to scan quickly, but prioritize
+understanding over an arbitrary sentence count.
+
+
+DANISH LANGUAGE
+
+When explanationLanguage = "da":
+
+Use natural, simple Danish.
+
+Do not assume the user understands internal investment-system terminology.
+
+Translate/explain concepts by meaning rather than literally.
+
+For example:
+
+WaitForEvent:
+"systemet venter på begivenheden, før aktien vurderes igen"
+
+PrepareToBuy:
+"systemet forbereder et muligt køb, men der er endnu ikke en handel klar"
+
+Catalyst Intelligence:
+"systemets analyse af kommende begivenheder omkring selskabet"
+
+Opportunity cost of cash:
+"risikoen for at gå glip af kursstigninger, mens pengene står kontant"
+
+
+ENGLISH LANGUAGE
+
+Apply exactly the same explanatory structure when explanationLanguage = "en",
+but write the explanation in natural English.
+
+
+IMPORTANT
+
+Use the SAME existing OpenAI call.
+
+Do not add another model call.
+
+The existing Command Brief input already contains the information needed for
+this explanation.
+
+
+UI
+
+Keep the existing What This Means / Hvad betyder det? card and EN/DA buttons
+unchanged.
+
+Ensure the frontend preserves newline formatting in whatThisMeans so each
+explanation paragraph is visually separated.
+
+If necessary, render the text using whitespace preservation such as
+white-space: pre-line.
+
+Do not otherwise redesign the card.
+
+
+TESTS
+
+Update/add deterministic prompt tests verifying that:
+
+1. whatThisMeans is instructed to explain individual important Brief items,
+   not produce another generic summary.
+
+2. WaitForEvent must explain that the system waits for the event and reassesses
+   afterward.
+
+3. Positive Catalyst sentiment cannot override the Trade Decision state.
+
+4. PrepareToBuy is explained as preparation, not an actionable trade.
+
+5. Trade Review remains authoritative for actionability.
+
+6. Danish explanation instructions remain scoped only to whatThisMeans.
+
+7. Existing EN/DA behavior remains unchanged.
+
+8. No additional OpenAI call is introduced.
+
+9. Catalyst deterministic enforcement remains unchanged.
+
+10. Newline/paragraph formatting is preserved by the frontend.
+
+
+FINAL REPORT
+
+Report:
+- exact files changed
+- exact prompt changes
+- whether the rigid 3–6 sentence requirement was removed
+- how individual Brief items are now explained
+- how WaitForEvent is explained
+- how PrepareToBuy is explained
+- how Trade Review authority is preserved
+- how paragraph/newline rendering works
+- confirmation that there is still only ONE OpenAI call
+- tests/results

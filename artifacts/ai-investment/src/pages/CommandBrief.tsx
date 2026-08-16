@@ -360,7 +360,8 @@ export default function CommandBrief() {
                     </button>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                {/* white-space: pre-line preserves newline paragraph breaks from the AI */}
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                   {data.whatThisMeans}
                 </p>
               </CardContent>
