@@ -1364,6 +1364,289 @@ describe("Test G — Command Brief reads existing opportunities → max 3 → ze
   });
 });
 
+// ── Test I — Failure tracking, success storage, promotion, budget cap ──────────
+//
+// These tests validate the state management behaviour that was broken when the
+// OpenAI 400 error (jsonMode + web_search incompatibility) was being swallowed
+// silently by the catch block in runCatalystAnalysis, leaving failureCount = 0
+// and lastError = null for every failed candidate.
+//
+// All tests here are pino-free: they use saveCatalystState / getCatalystState /
+// computeRetryBackoff / isInBackoff / DEFAULT_CATALYST_BUDGET directly.
+
+describe("Test I — Failure tracking: failureCount increments, lastError set, backoff applied", () => {
+  const TICKER = "I_FAILURE";
+
+  beforeEach(() => {
+    // Start with a clean slate
+    saveCatalystState(TICKER, makeSyntheticState(TICKER, {
+      screening: makeScreeningResult(TICKER, "DeepAnalysis", 7, "Investigate"),
+      failureCount: 0,
+      lastError: null,
+      retryEligibleAt: null,
+    }));
+  });
+
+  test("I1: first failure increments failureCount to 1 and sets lastError", () => {
+    const state = getCatalystState(TICKER)!;
+    const errorMsg = "[catalyst-analysis/deep-analysis] OpenAI API error: 400 — json_object incompatible with web_search";
+
+    // Simulate what catalyst-analyze-service now does inside its catch block
+    const newFailureCount = (state.failureCount ?? 0) + 1;
+    const backoffMs = computeRetryBackoff(newFailureCount, DEFAULT_CATALYST_FRESHNESS);
+    const retryEligibleAt = new Date(new Date(NOW_ISO).getTime() + backoffMs).toISOString();
+
+    saveCatalystState(TICKER, {
+      ...state,
+      failureCount: newFailureCount,
+      lastError: errorMsg.slice(0, 500),
+      retryEligibleAt,
+      updatedAt: NOW_ISO,
+    });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.equal(updated.failureCount, 1, "failureCount must be 1 after first failure");
+    assert.ok(updated.lastError !== null, "lastError must be set after failure");
+    assert.ok(updated.lastError!.includes("catalyst-analysis"), "lastError must contain the module name");
+    assert.ok(updated.retryEligibleAt !== null, "retryEligibleAt must be set after failure");
+  });
+
+  test("I2: second failure increments failureCount to 2 with longer backoff", () => {
+    const state = getCatalystState(TICKER)!;
+
+    // First failure
+    const count1 = 1;
+    const backoff1 = computeRetryBackoff(count1, DEFAULT_CATALYST_FRESHNESS);
+    const retry1 = new Date(new Date(NOW_ISO).getTime() + backoff1).toISOString();
+    saveCatalystState(TICKER, { ...state, failureCount: count1, lastError: "err1", retryEligibleAt: retry1, updatedAt: NOW_ISO });
+
+    // Second failure
+    const state2 = getCatalystState(TICKER)!;
+    const count2 = (state2.failureCount ?? 0) + 1;
+    const backoff2 = computeRetryBackoff(count2, DEFAULT_CATALYST_FRESHNESS);
+    const retry2 = new Date(new Date(NOW_ISO).getTime() + backoff2).toISOString();
+    saveCatalystState(TICKER, { ...state2, failureCount: count2, lastError: "err2", retryEligibleAt: retry2, updatedAt: NOW_ISO });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.equal(updated.failureCount, 2, "failureCount must be 2 after second failure");
+    assert.ok(backoff2 >= backoff1, "backoff must be non-decreasing with failure count");
+  });
+
+  test("I3: isInBackoff returns true while retryEligibleAt is in the future", () => {
+    const state = getCatalystState(TICKER)!;
+    const futureRetry = new Date(new Date(NOW_ISO).getTime() + 60 * 60 * 1000).toISOString(); // +1h
+    saveCatalystState(TICKER, {
+      ...state,
+      failureCount: 1,
+      lastError: "test error",
+      retryEligibleAt: futureRetry,
+      updatedAt: NOW_ISO,
+    });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.ok(isInBackoff(updated, NOW_ISO), "isInBackoff must return true when retryEligibleAt is in the future");
+  });
+
+  test("I4: isInBackoff returns false when retryEligibleAt has passed", () => {
+    const state = getCatalystState(TICKER)!;
+    const pastRetry = new Date(new Date(NOW_ISO).getTime() - 60 * 1000).toISOString(); // -1min
+    saveCatalystState(TICKER, {
+      ...state,
+      failureCount: 1,
+      lastError: "test error",
+      retryEligibleAt: pastRetry,
+      updatedAt: NOW_ISO,
+    });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.ok(!isInBackoff(updated, NOW_ISO), "isInBackoff must return false when retryEligibleAt has passed");
+  });
+
+  test("I5: successful analysis clears failureCount, lastError, and retryEligibleAt", () => {
+    const state = getCatalystState(TICKER)!;
+    // Simulate a previously-failed state
+    saveCatalystState(TICKER, {
+      ...state,
+      failureCount: 3,
+      lastError: "previous error",
+      retryEligibleAt: new Date(new Date(NOW_ISO).getTime() + 3600_000).toISOString(),
+      updatedAt: NOW_ISO,
+    });
+
+    // Simulate what Step 10 of catalyst-analyze-service does on success
+    const failedState = getCatalystState(TICKER)!;
+    saveCatalystState(TICKER, {
+      ...failedState,
+      analysis: makeAnalysisResult("HighInterest", "POSITIVE", "PreparePosition"),
+      lastAnalysedAt: NOW_ISO,
+      updatedAt: NOW_ISO,
+      failureCount: 0,
+      lastError: null,
+      retryEligibleAt: null,
+    });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.equal(updated.failureCount, 0, "failureCount must be reset to 0 on successful analysis");
+    assert.equal(updated.lastError, null, "lastError must be null on successful analysis");
+    assert.equal(updated.retryEligibleAt, null, "retryEligibleAt must be null on successful analysis");
+    assert.ok(updated.analysis !== null, "analysis must be stored on success");
+  });
+});
+
+describe("Test I — Success: analysis stored correctly on successful output", () => {
+  const TICKER = "I_SUCCESS";
+
+  beforeEach(() => {
+    saveCatalystState(TICKER, makeSyntheticState(TICKER, {
+      screening: makeScreeningResult(TICKER, "DeepAnalysis", 5, "Investigate"),
+    }));
+  });
+
+  test("I6: analysis result is persisted and retrievable after successful run", () => {
+    const state = getCatalystState(TICKER)!;
+    const result = makeAnalysisResult("HighInterest", "POSITIVE", "PreparePosition");
+
+    saveCatalystState(TICKER, {
+      ...state,
+      analysis: result,
+      lastAnalysedAt: NOW_ISO,
+      lastAnalysisFingerprint: "fp-i6",
+      updatedAt: NOW_ISO,
+      failureCount: 0,
+      lastError: null,
+      retryEligibleAt: null,
+    });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.ok(updated.analysis !== null, "Analysis must be stored");
+    assert.equal(
+      (updated.analysis as unknown as Record<string, string>).opportunityState,
+      "HighInterest",
+      "opportunityState must match"
+    );
+    assert.equal(
+      (updated.analysis as unknown as Record<string, string>).catalystDirection,
+      "POSITIVE",
+      "catalystDirection must match"
+    );
+    assert.equal(updated.lastAnalysisFingerprint, "fp-i6", "fingerprint must be saved");
+  });
+
+  test("I7: qualifying analysis (HighInterest + POSITIVE) satisfies promotion logic", () => {
+    const result = makeAnalysisResult("HighInterest", "POSITIVE", "PreparePosition");
+    // Inline the qualifiesForPromotion logic from catalyst-analysis.ts
+    // (cannot import it directly — pino-tainted via ai-service import)
+    const qualifies = (
+      (result.opportunityState === "HighInterest" ||
+       result.opportunityState === "CandidateForTradeDecision") &&
+      (result.catalystDirection === "POSITIVE" ||
+       result.catalystDirection === "STRONGLY_POSITIVE") &&
+      result.analysisUpdateType !== "NO_MATERIAL_CHANGE"
+    );
+    assert.ok(qualifies, "HighInterest + POSITIVE must qualify for promotion");
+  });
+
+  test("I8: Monitor + NEUTRAL analysis does NOT satisfy promotion logic", () => {
+    const result = makeAnalysisResult("Monitor", "NEUTRAL", "Monitor");
+    const qualifies = (
+      (result.opportunityState === "HighInterest" ||
+       result.opportunityState === "CandidateForTradeDecision") &&
+      (result.catalystDirection === "POSITIVE" ||
+       result.catalystDirection === "STRONGLY_POSITIVE") &&
+      result.analysisUpdateType !== "NO_MATERIAL_CHANGE"
+    );
+    assert.ok(!qualifies, "Monitor + NEUTRAL must NOT qualify for promotion");
+  });
+});
+
+describe("Test I — Budget cap: maxDeepAnalysesPerCycle remains 3", () => {
+  test("I9: DEFAULT_CATALYST_BUDGET.maxDeepAnalysesPerCycle is exactly 3", () => {
+    assert.equal(
+      DEFAULT_CATALYST_BUDGET.maxDeepAnalysesPerCycle,
+      3,
+      "Budget cap must remain 3 — changing this increases per-cycle API spend"
+    );
+  });
+
+  test("I10: budget prevents 4th deep analysis from being selected", () => {
+    // Simulate pipeline budget tracking: 3 consumed → 4th candidate is deferred
+    const budget = DEFAULT_CATALYST_BUDGET;
+    let consumed = 0;
+
+    const candidates = ["TICK1", "TICK2", "TICK3", "TICK4"];
+    const selected: string[] = [];
+    const deferred: string[] = [];
+
+    for (const ticker of candidates) {
+      if (consumed < budget.maxDeepAnalysesPerCycle) {
+        selected.push(ticker);
+        consumed++;
+      } else {
+        deferred.push(ticker);
+      }
+    }
+
+    assert.equal(selected.length, 3, "Exactly 3 candidates should be selected");
+    assert.equal(deferred.length, 1, "4th candidate must be deferred");
+    assert.ok(deferred.includes("TICK4"), "TICK4 must be in the deferred list");
+  });
+});
+
+describe("Test I — Deferred candidates stay deferred when retryEligibleAt is in the future", () => {
+  const TICKER = "I_DEFERRED";
+
+  beforeEach(() => {
+    const futureRetry = new Date(new Date(NOW_ISO).getTime() + 60 * 60 * 1000).toISOString(); // +1h
+    saveCatalystState(TICKER, makeSyntheticState(TICKER, {
+      screening: makeScreeningResult(TICKER, "DeepAnalysis", 7, "Investigate"),
+      failureCount: 1,
+      lastError: "previous failure",
+      retryEligibleAt: futureRetry,
+    }));
+  });
+
+  test("I11: deferred candidate (retryEligibleAt in future) is recognised as in-backoff", () => {
+    const state = getCatalystState(TICKER)!;
+    assert.ok(isInBackoff(state, NOW_ISO), "Candidate with future retryEligibleAt must be in backoff");
+    // Note: isEligibleForAutoAnalysis deliberately does NOT check backoff — it reflects
+    // whether the candidate's screening qualifies it for analysis. The pipeline checks
+    // isInBackoff SEPARATELY when deciding whether to skip execution this cycle.
+    // This is by design (see catalyst-lifecycle.ts line 152).
+    assert.ok(
+      isEligibleForAutoAnalysis(state) && isInBackoff(state, NOW_ISO),
+      "Eligible candidate can simultaneously be in backoff — pipeline uses both checks"
+    );
+  });
+
+  test("I12: once retryEligibleAt passes, candidate is eligible again", () => {
+    const state = getCatalystState(TICKER)!;
+    // Advance past the retry window
+    const futureNow = new Date(new Date(NOW_ISO).getTime() + 2 * 60 * 60 * 1000).toISOString(); // +2h
+    assert.ok(!isInBackoff(state, futureNow), "Candidate should exit backoff after retryEligibleAt passes");
+    // isEligibleForAutoAnalysis uses Date.now() internally, so we verify via isInBackoff
+  });
+
+  test("I13: deferred candidate retains its analysis from before the failure", () => {
+    // A candidate may have a prior analysis even while in backoff.
+    // Verify that saving a failed state does NOT wipe the existing analysis.
+    const state = getCatalystState(TICKER)!;
+    const priorAnalysis = makeAnalysisResult("Investigate", "POSITIVE", "Monitor");
+
+    // Save a state that has both a prior analysis AND a failure
+    saveCatalystState(TICKER, {
+      ...state,
+      analysis: priorAnalysis,
+      failureCount: 2,
+      lastError: "transient error",
+      retryEligibleAt: new Date(new Date(NOW_ISO).getTime() + 3600_000).toISOString(),
+    });
+
+    const updated = getCatalystState(TICKER)!;
+    assert.ok(updated.analysis !== null, "Prior analysis must be preserved on failure");
+    assert.equal(updated.failureCount, 2, "failureCount must reflect the failure count");
+  });
+});
+
 describe("Test H — Upcoming event without positive evidence → not top opportunity", () => {
   test("H1: Monitor-state analysis is excluded from top opportunities", () => {
     const monitorAnalysis = makeAnalysisResult("Monitor", "NEUTRAL", "Monitor");

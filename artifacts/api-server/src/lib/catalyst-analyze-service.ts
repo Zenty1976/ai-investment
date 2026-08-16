@@ -310,16 +310,60 @@ export async function runCatalystAnalyzeService(
   let aiCalled = false;
 
   if (shouldAnalyze) {
-    analysisOutput = await runCatalystAnalysis({
-      facts,
-      triggerType,
-      eventId: null,
-      driverProfile,
-      lastFingerprint: force ? null : (state.lastAnalysisFingerprint ?? null),
-      retryNumber: 0,
-    });
-    if (analysisOutput && !analysisOutput.skipped) {
-      aiCalled = true;
+    try {
+      analysisOutput = await runCatalystAnalysis({
+        facts,
+        triggerType,
+        eventId: null,
+        driverProfile,
+        lastFingerprint: force ? null : (state.lastAnalysisFingerprint ?? null),
+        retryNumber: 0,
+      });
+      if (analysisOutput && !analysisOutput.skipped) {
+        aiCalled = true;
+      }
+    } catch (err) {
+      // Analysis threw — record the failure with backoff so the pipeline does not
+      // hammer the same broken candidate every cycle.
+      const errorMsg = (err instanceof Error ? err.message : String(err)).slice(0, 500);
+      console.error(`[catalyst-analyze-service] Deep analysis failed for ${ticker}:`, errorMsg);
+
+      const newFailureCount = (state.failureCount ?? 0) + 1;
+      const backoffMs = computeRetryBackoff(newFailureCount, DEFAULT_CATALYST_FRESHNESS);
+      const retryEligibleAt = new Date(new Date(nowIso).getTime() + backoffMs).toISOString();
+
+      // Save updated facts + failure tracking before returning
+      const failedState: CatalystState = {
+        ...state,
+        facts,
+        signalAccumulation,
+        emergingSetup: triggerType === "EMERGING_SETUP" ? emergingSetup : (state.emergingSetup ?? null),
+        triggerType,
+        updatedAt: nowIso,
+        failureCount: newFailureCount,
+        lastError: errorMsg,
+        retryEligibleAt,
+      };
+      saveCatalystState(ticker, failedState);
+
+      return {
+        ticker,
+        company: companyName,
+        triggerType,
+        pathType: hasScheduledEvent ? "PATH_A" : "PATH_B",
+        promoted: false,
+        aiCalled: false,
+        analysisUpdateType: null,
+        opportunityState: null,
+        catalystDirection: null,
+        thesis: null,
+        skipped: false,
+        skipReason: null,
+        error: errorMsg,
+        state: failedState,
+        driverProfileGenerated,
+        researchRan,
+      };
     }
   }
 
@@ -335,7 +379,7 @@ export async function runCatalystAnalyzeService(
     lastAnalysedAt: analysisOutput && !analysisOutput.skipped ? nowIso : state.lastAnalysedAt,
     lastAnalysisUpdateType: analysisOutput?.result?.analysisUpdateType ?? state.lastAnalysisUpdateType,
     updatedAt: nowIso,
-    // Clear failure state on success
+    // Clear failure state on successful completion (analysis ran or was legitimately skipped)
     failureCount: 0,
     lastError: null,
     retryEligibleAt: null,

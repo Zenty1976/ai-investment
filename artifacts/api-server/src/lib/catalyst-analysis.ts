@@ -19,7 +19,7 @@
  * Cost tracking: module="catalyst-intelligence", operation="deep-analysis"
  */
 
-import { callAiWithWebSearch, extractAiErrorDebug } from "./ai-service.js";
+import { callAi, callAiWithWebSearch, extractAiErrorDebug } from "./ai-service.js";
 import { getModel } from "./ai-model-config.js";
 import { z } from "zod";
 import type {
@@ -316,31 +316,33 @@ Assess:
 Return strict JSON.`;
 
   try {
-    // Phase 2 uses callAi (not callAiWithWebSearch) because:
-    //   - jsonMode: true is required for structured CatalystAnalysisResult output.
-    //   - OpenAI Responses API rejects json_object format when web_search is active
-    //     (incompatible constraint). See ai-service notes.
-    //   - Any web research was already performed in Phase 1 (buildDriverResearchContext).
-    const { result: raw, debug } = await callAiWithWebSearch<unknown>(
+    // Phase 2 uses callAi (Chat Completions API), NOT callAiWithWebSearch, because:
+    //   - Structured JSON output (jsonMode / response_format json_object) is required.
+    //   - OpenAI Responses API rejects text.format.json_object when web_search tools
+    //     are active — they are mutually exclusive.
+    //   - Driver research context is already injected via the driver profile summary
+    //     in buildCompactFacts(). No further web search is needed here.
+    // Using callAiWithWebSearch here (even without webSearchContextSize) would still
+    // inject tools:[{type:"web_search_preview"}] unconditionally, causing a 400 error.
+    const { result: raw, debug } = await callAi<unknown>(
       systemPrompt,
       userPrompt,
       {
         model: getModel("analysis", "catalyst-intelligence"),
         maxTokens: 1500,
         temperature: 0.1,
-        jsonMode: true,
         module: "catalyst-intelligence",
         operation: "deep-analysis",
         retryNumber,
-        // webSearchContextSize intentionally omitted — jsonMode + web_search are
-        // mutually exclusive in the Responses API. Research is handled in Phase 1.
       }
     );
 
     const parsed = AnalysisResponseSchema.safeParse(raw);
     if (!parsed.success) {
-      console.error("[catalyst-analysis] Schema validation failed:", parsed.error.issues.slice(0, 3));
-      return null;
+      const issuesSummary = JSON.stringify(parsed.error.issues.slice(0, 3));
+      console.error("[catalyst-analysis] Schema validation failed:", issuesSummary);
+      // Throw so the caller can apply failure tracking / backoff
+      throw new Error(`Catalyst analysis schema validation failed: ${issuesSummary}`);
     }
 
     const r = parsed.data;
@@ -382,8 +384,21 @@ Return strict JSON.`;
 
   } catch (err) {
     const dbg = extractAiErrorDebug(err);
-    console.error("[catalyst-analysis] AI call failed:", err instanceof Error ? err.message : String(err));
-    return null;
+    const msg = err instanceof Error ? err.message : String(err);
+    // Log full diagnostic details so the failure is visible in server logs.
+    // Does NOT log API keys, prompts, or sensitive data.
+    console.error("[catalyst-analysis] Phase 2 (deep-analysis) AI call failed:", {
+      ticker: facts.event?.ticker ?? facts.company?.sector ?? "unknown",
+      model: getModel("analysis", "catalyst-intelligence"),
+      message: msg.slice(0, 300),
+      // These come from the enriched error thrown by callAi / callAiWithWebSearch:
+      errorStage: (err as Record<string, unknown>)?._errorStage ?? "unknown",
+      durationMs: Date.now() - startMs,
+    });
+    // Throw so catalyst-analyze-service can call recordCatalystFailure + apply backoff.
+    // Without this throw, failureCount stays at 0 and the same broken candidate is
+    // retried every pipeline cycle without any backoff.
+    throw new Error(`[catalyst-analysis/deep-analysis] ${msg}`);
   }
 }
 

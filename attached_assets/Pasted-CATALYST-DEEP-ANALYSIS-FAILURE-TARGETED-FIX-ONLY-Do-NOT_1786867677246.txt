@@ -1,0 +1,170 @@
+CATALYST DEEP ANALYSIS FAILURE — TARGETED FIX ONLY
+
+Do NOT redesign anything.
+Do NOT change Catalyst scoring, screening, budgets or architecture.
+Do NOT build the Upcoming Opportunities frontend yet.
+Do NOT run Full Update.
+Do NOT make unnecessary paid OpenAI calls.
+
+The post-run audit confirmed that the Catalyst pipeline itself now works:
+
+- 11 eligible candidates found
+- top 3 correctly selected
+- remaining 8 correctly deferred
+- Stage 3.5 runs automatically
+
+But all 3 attempted deep analyses failed:
+
+KEYS
+V
+0700/Tencent
+
+Each shows:
+success: false
+0 tokens
+~600ms duration
+
+No Catalyst analysis was stored.
+
+The immediate task is ONLY to diagnose and fix this failure.
+
+
+STEP 1 — FIX ERROR VISIBILITY
+
+Inspect the Catalyst analyze service and its OpenAI call path.
+
+The current exception/error is being swallowed.
+
+Change error handling so a failed Catalyst AI call records enough information
+to diagnose the actual problem:
+
+- HTTP/status code if available
+- OpenAI error type/code
+- error message
+- which phase failed:
+  driver-profile
+  or deep-analysis
+- model
+- timestamp
+
+Do NOT log API keys, authorization headers, full prompts or sensitive data.
+
+Also ensure the normal application log contains a concise error message.
+
+
+STEP 2 — FIX FAILURE TRACKING
+
+Currently failed attempts leave:
+
+failureCount = 0
+lastError = null
+
+Fix this.
+
+A failed deep-analysis attempt must call the existing failure/backoff mechanism
+before returning.
+
+It must:
+
+- increment failureCount
+- store lastError
+- store failure timestamp
+- use existing backoff/retry behavior
+
+This prevents the same broken candidate from being retried every cycle.
+
+
+STEP 3 — DETERMINE ROOT CAUSE
+
+After error visibility is fixed, determine why the existing OpenAI request
+returns an error in ~600ms.
+
+Inspect the request itself before spending tokens.
+
+Check especially:
+
+- model name/API compatibility
+- request parameters
+- response format / structured output schema
+- unsupported parameters
+- web-search/tool configuration
+- malformed schema
+- request size
+- endpoint/API method
+
+Compare the failing Catalyst OpenAI call with OpenAI calls elsewhere in the
+application that currently work.
+
+Reuse the application's existing working OpenAI infrastructure where possible.
+
+Do NOT create another OpenAI client or parallel implementation.
+
+
+STEP 4 — FIX THE ACTUAL ERROR
+
+Once the concrete root cause is known, make the smallest possible fix.
+
+Do not weaken the Catalyst analysis.
+
+Do not remove structured output merely to hide an error unless structured
+output itself is proven to be the problem and the replacement remains robust.
+
+Preserve the existing model unless incompatibility is the actual root cause.
+
+
+STEP 5 — VALIDATION WITHOUT PAID CALLS FIRST
+
+Use mocked/deterministic tests first.
+
+Verify:
+
+1. Successful mocked OpenAI response
+   → Catalyst analysis stored.
+
+2. Failed mocked OpenAI response
+   → failureCount increments
+   → lastError populated
+   → backoff works.
+
+3. Successful analysis that qualifies
+   → promotion works.
+
+4. Existing budget remains maxDeepAnalysesPerCycle = 3.
+
+5. Deferred candidates remain deferred correctly.
+
+Do not trigger Full Update for validation.
+
+
+STEP 6 — ONE CONTROLLED REAL TEST IF NECESSARY
+
+Only if a real OpenAI request is absolutely required to prove the fix:
+
+Run ONE Catalyst deep-analysis candidate only.
+
+Do NOT run Full Update.
+Do NOT analyze all 11 candidates.
+
+Use one currently eligible candidate and report the token usage.
+
+If it succeeds, stop.
+
+I will perform the next Full Update myself.
+
+
+FINAL REPORT
+
+Tell me:
+
+1. Exact OpenAI error that caused the failures.
+2. Exact root cause.
+3. Exact code change that fixed it.
+4. Whether failureCount/lastError now work.
+5. Whether mocked tests pass.
+6. Whether a real test was performed.
+7. If yes: ticker, success/failure and token usage.
+8. Confirm maxDeepAnalysesPerCycle remains 3.
+9. Confirm previous caching/fingerprint/token optimizations are unchanged.
+10. Tell me whether it is now safe for ME to run Full Update.
+
+Do NOT work on the Upcoming Opportunities frontend in this task.

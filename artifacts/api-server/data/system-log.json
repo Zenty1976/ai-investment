@@ -1,40 +1,5 @@
 [
   {
-    "id": "9b381dcf-109e-4683-8d0f-bfa1ce3ea7fe",
-    "timestamp": "2026-08-16T06:58:26.089Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "5dd4a8d8-a8b9-4e39-8ed1-a147b0b079e3",
-    "timestamp": "2026-08-16T06:58:26.090Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision JNJ: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "291b2fff-88c9-4cb0-af3d-f9c37d775665",
-    "timestamp": "2026-08-16T06:58:26.091Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision XOM: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "b9692d6d-9619-4904-9a0f-91c5c55b5b31",
-    "timestamp": "2026-08-16T06:58:26.102Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (15ms, change: Medium)"
-  },
-  {
-    "id": "c1f0df31-68de-4b32-9e09-ba12cb09b735",
-    "timestamp": "2026-08-16T06:58:26.106Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
     "id": "9c272a10-7bd9-40a7-a902-ae8da49e3c26",
     "timestamp": "2026-08-16T06:58:26.140Z",
     "module": "AutomationOrchestrator",
@@ -3498,5 +3463,40 @@
     "module": "AutomationOrchestrator",
     "level": "info",
     "message": "Full cycle completed in 118s"
+  },
+  {
+    "id": "f37a318c-43c7-43f5-923c-1a43a13418dd",
+    "timestamp": "2026-08-16T08:12:49.480Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Scheduled run (trigger: Scheduled)"
+  },
+  {
+    "id": "c3c3a745-7b1f-4628-b7fe-657617ef8fa1",
+    "timestamp": "2026-08-16T08:12:49.487Z",
+    "module": "Market Alerts",
+    "level": "info",
+    "message": "Market Alerts checked (engine): no new material developments (2ms, aiCalls=0)"
+  },
+  {
+    "id": "e0e88d60-03c7-4a5b-860c-d2b2361d626e",
+    "timestamp": "2026-08-16T08:12:49.499Z",
+    "module": "AutomationOrchestrator",
+    "level": "internal",
+    "message": "market-alerts completed via Scheduled (29ms, change: Medium)"
+  },
+  {
+    "id": "9f605dca-87ae-458c-8497-1b5bb156a1ec",
+    "timestamp": "2026-08-16T08:12:49.645Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "78759a4f-52da-4da8-8dde-a7d73f7b36c5",
+    "timestamp": "2026-08-16T08:14:16.448Z",
+    "module": "AutomationOrchestrator",
+    "level": "info",
+    "message": "Initial run schedule established for unscheduled modules"
   }
 ]

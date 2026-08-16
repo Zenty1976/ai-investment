@@ -130,6 +130,9 @@ Provide a comprehensive driver profile that will be used to:
 Focus on: what actually moves ${company}'s financial results and stock price, quarter to quarter.`;
 
   try {
+    // NOTE: jsonMode MUST NOT be used with callAiWithWebSearch — OpenAI Responses API
+    // rejects text.format.json_object when web_search tools are active. The system
+    // prompt demands strict JSON output, so the model returns valid JSON without jsonMode.
     const { result, debug } = await callAiWithWebSearch<{
       ticker: string;
       company: string;
@@ -149,7 +152,8 @@ Focus on: what actually moves ${company}'s financial results and stock price, qu
       model: getModel("analysis", "catalyst-intelligence"),
       maxTokens: 2500,
       temperature: 0.1,
-      jsonMode: true,
+      // jsonMode intentionally omitted — incompatible with web_search_preview tool.
+      // The system prompt requires strict JSON output; the model complies without it.
       module: "catalyst-intelligence",
       operation: "driver-profile",
       retryNumber,
