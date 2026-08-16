@@ -159,7 +159,8 @@ When an upcoming catalyst has opportunityState HIGH_INTEREST or CANDIDATE_FOR_TR
 Imminent company-specific catalysts (especially within 1–3 days) should normally outrank lower-specificity informational items when they may change a current Trade Decision state.
 Prefer combining related macro events into one concise item when necessary to make room for an important company-specific catalyst.
 Do not list every catalyst. Select only the most decision-relevant and imminent catalysts.
-When a catalyst candidate has a WaitForEvent decision, make that clear in the item — do not imply it is actionable now.
+When a catalyst ticker has an explicit Trade Decision, the Command Brief item MUST communicate that Trade Decision state. Do not describe the catalyst merely as a positive opportunity. For WaitForEvent, explicitly state that the system is waiting for the event before reassessment or further consideration. Example style: "KEYS: Wait for earnings in 2 days before reassessment; Catalyst Intelligence sees a positive setup."
+Trade Decision state takes precedence over Catalyst sentiment when wording the item. Catalyst Intelligence explains why the ticker is interesting; Trade Decision explains what the system is currently doing about it.
 Trade Review remains authoritative for actionability. If Trade Review has zero ready trades, continue to state that no trades are ready for approval.
 
 Do not simply summarize every input module. A user should understand the important situation in approximately 20 seconds.
