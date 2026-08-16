@@ -143,8 +143,8 @@ export function CommandBriefWidget() {
                   <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
                     {whatThisMeansLabel}
                   </p>
-                  {/* max-h keeps the widget compact; pre-line preserves \n paragraph breaks */}
-                  <p className="text-[11px] text-muted-foreground/70 leading-relaxed whitespace-pre-line max-h-24 overflow-y-auto">
+                  {/* pre-line preserves \n paragraph breaks; no artificial height cap */}
+                  <p className="text-[11px] text-muted-foreground/70 leading-relaxed whitespace-pre-line">
                     {whatThisMeans}
                   </p>
                 </div>
