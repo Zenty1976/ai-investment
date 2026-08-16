@@ -1,0 +1,67 @@
+Read-only diagnosis first, then make only the smallest necessary code change.
+
+We have confirmed that the latest Command Brief prompt changes are present in the source code. Do NOT spend time further tuning or rewriting the prompt unless absolutely required.
+
+The remaining problem is deterministic enforcement.
+
+Current observed behavior:
+
+* Catalyst Intelligence has active HIGH_INTEREST candidates such as KEYS.
+* KEYS has an explicit Trade Decision: WaitForEvent.
+* KEYS earnings are imminent.
+* The Command Brief input correctly contains both the upcoming catalyst and the matching Trade Decision.
+* Despite this, different Command Brief runs may include KEYS, describe it without the WaitForEvent state, or omit it entirely.
+* Therefore the model is still free to choose final items despite the prompt rules.
+
+Please inspect the current Command Brief implementation and confirm this from the code before changing anything.
+
+If confirmed, implement the smallest robust fix:
+
+1. Do not change Catalyst Intelligence, Opportunity Finder, Trade Decision, Trade Review, or their existing data flow.
+
+2. Do not add another OpenAI call.
+
+3. Do not increase the maximum of 6 Command Brief items.
+
+4. Keep Trade Review authoritative for actionability.
+
+5. Before accepting the final Command Brief result, deterministically identify upcoming catalyst candidates that:
+
+   * have interestLevel HIGH_INTEREST or CANDIDATE_FOR_TRADE_DECISION,
+   * have a matching explicit Trade Decision,
+   * and are imminent, prioritizing the shortest daysUntilEvent, especially 1–3 days.
+
+6. At least the highest-priority qualifying imminent candidate must be represented in the final Command Brief items.
+
+7. Its wording/state must preserve the matching Trade Decision. For example, if KEYS has WaitForEvent and earnings in 2 days, the final brief must communicate that the system is waiting for earnings before reassessment. Catalyst sentiment may be included as secondary context, but must not replace or contradict WaitForEvent.
+
+8. If the AI response omitted this required candidate, insert/replace an item deterministically rather than making another AI call. Remove the lowest-priority generic informational item if necessary to remain at max 6 items.
+
+9. Do not hardcode KEYS or any ticker. This must work generically for future catalyst candidates.
+
+10. Avoid duplicate items if the same ticker is already represented correctly.
+
+11. Keep the existing JSON schema and UI unchanged.
+
+Please add focused deterministic tests covering at least:
+
+* imminent HIGH_INTEREST + WaitForEvent omitted by AI -> inserted
+* candidate already represented correctly -> no duplicate
+* candidate represented but wording loses WaitForEvent -> corrected
+* multiple qualifying catalysts -> nearest/highest-priority one guaranteed
+* max 6 items remains enforced
+* zero ready trades still results in no trades ready for approval
+* no qualifying catalyst -> existing behavior unchanged
+
+Do not refactor unrelated code.
+
+After implementation, report:
+
+* exact files changed
+* exact enforcement logic added
+* where in the Command Brief flow enforcement occurs
+* tests added and results
+* whether any OpenAI/token usage changed
+* one concrete KEYS example showing what the deterministic output would become from the previously observed AI response
+
+Do not run additional paid AI analyses just to verify this fix. Use deterministic/unit tests only.

@@ -22,6 +22,7 @@ import { automationOrchestrator } from "../lib/automation-orchestrator";
 import { getModel } from "../lib/ai-model-config.js";
 import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
 import { getAllCatalystStates } from "../lib/catalyst-repository.js";
+import { enforceRequiredCatalystItems } from "../lib/command-brief-catalyst-enforcement.js";
 
 const router: IRouter = Router();
 
@@ -287,6 +288,16 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       }))
     : [];
 
+  // Full (unsliced) TDE decisions for deterministic enforcement — the AI input
+  // only receives the top 6, but enforcement must see all decisions so catalyst
+  // candidates ranked below position 6 are still matched correctly.
+  const allTdeDecisionsForEnforcement = Array.isArray(tdeResult.decisions)
+    ? (tdeResult.decisions as Array<Record<string, unknown>>).map(d => ({
+        ticker: String(d.ticker || d.company || ""),
+        decision: String(d.decision || ""),
+      }))
+    : [];
+
   // ── Trade Review (count ready trades) ───────────────────────────────────────
 
   const tradeReviewResult = tradeReviewEntry.result as Record<string, unknown>;
@@ -495,20 +506,43 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       }
 
       const finalData = parsed.data;
+
+      // ── Deterministic catalyst enforcement ─────────────────────────────────
+      // Guarantee the highest-priority qualifying catalyst candidate
+      // (HIGH_INTEREST + explicit TDE decision) appears with correct wording.
+      // Zero additional AI calls — pure post-processing.
+      const {
+        items: enforcedItems,
+        inserted: catalystInserted,
+        corrected: catalystCorrected,
+        enforcedTicker,
+      } = enforceRequiredCatalystItems(
+        finalData.items,
+        upcomingOpportunities,
+        allTdeDecisionsForEnforcement
+      );
+      if (catalystInserted || catalystCorrected) {
+        req.log.info(
+          { enforcedTicker, inserted: catalystInserted, corrected: catalystCorrected },
+          "Command Brief: deterministic catalyst enforcement applied"
+        );
+      }
+      const enforcedData = { ...finalData, items: enforcedItems };
+
       const analysisDuration = Date.now() - startTime;
 
       analysisRepository.save("command-brief", {
-        ...finalData,
+        ...enforcedData,
         upcomingOpportunities,
         analysisDuration,
       });
       systemLog.logInfo(
         MODULE_NAME,
-        `Command Brief generated (${analysisDuration}ms): ${finalData.overallStatus} — ${finalData.headline}${upcomingOpportunities.length > 0 ? ` | ${upcomingOpportunities.length} upcoming opportunity(-ies)` : ""}`
+        `Command Brief generated (${analysisDuration}ms): ${enforcedData.overallStatus} — ${enforcedData.headline}${upcomingOpportunities.length > 0 ? ` | ${upcomingOpportunities.length} upcoming opportunity(-ies)` : ""}`
       );
 
       res.json({
-        ...finalData,
+        ...enforcedData,
         upcomingOpportunities,
         analysisDuration,
         _debug: lastDebug,
