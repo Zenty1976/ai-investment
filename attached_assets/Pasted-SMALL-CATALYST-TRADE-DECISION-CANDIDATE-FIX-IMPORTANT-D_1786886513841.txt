@@ -1,0 +1,228 @@
+SMALL CATALYST → TRADE DECISION CANDIDATE FIX
+
+IMPORTANT:
+
+Do NOT redesign Opportunity Finder.
+Do NOT force Catalyst candidates into Opportunity Finder's top-5.
+Do NOT change Catalyst scoring.
+Do NOT change model routing.
+Do NOT change Catalyst budgets.
+Do NOT add new modules.
+
+I reviewed the current code and the read-only audit.
+
+The root problem is confirmed:
+
+Catalyst HighInterest promotions reach Opportunity Finder correctly.
+
+Opportunity Finder is intentionally allowed to rank other opportunities higher.
+
+That behavior should REMAIN.
+
+However Trade Decision currently builds its actual opportunity decision candidates
+only from:
+
+Opportunity Finder topOpportunities.slice(0, 5)
+
+while active Catalyst promotions are included only as:
+
+"non-actionable pre-event context"
+
+This allows an important Catalyst HighInterest candidate such as KEYS to disappear
+entirely from the decision flow.
+
+Do NOT fix this by forcing KEYS/Catalyst promotions into OF's top-5.
+
+Instead fix the Trade Decision candidate construction.
+
+
+1. CATALYST PROMOTIONS AS REAL TDE CANDIDATES
+
+Extend the Trade Decision candidate universe so it contains:
+
+A) Existing portfolio/holding candidates
+
+B) Opportunity Finder top candidates
+
+C) Active Catalyst promotions where opportunityState is:
+
+- HighInterest
+OR
+- CandidateForTradeDecision
+
+These Catalyst candidates should become explicit decision subjects.
+
+They must NOT remain context-only.
+
+
+2. KEEP CATALYST CONTEXT
+
+Continue using:
+
+buildCatalystTdeContext(ticker)
+
+for the compact qualitative Catalyst context.
+
+Do not send full Catalyst analysis/debug data to TDE.
+
+For a Catalyst-promoted candidate TDE should know at minimum:
+
+ticker
+company
+triggerType
+event/date
+catalystDirection
+opportunityState
+evidenceConfidence if available
+priceAsymmetry if available
+thesis
+key risks/invalidation
+INTENTIONAL_PRE_EVENT_THESIS
+
+
+3. THIS DOES NOT MEAN AUTOMATIC BUY
+
+A Catalyst HighInterest promotion is NOT an automatic Buy.
+
+Trade Decision must independently decide whether the correct state is for example:
+
+PrepareToBuy
+WaitForEvent
+Review
+Hold / NoAction
+
+based on:
+
+Catalyst thesis
+Opportunity Finder if available
+portfolio fit
+risk
+market conditions
+price setup
+event proximity.
+
+The requirement is only:
+
+A HighInterest Catalyst candidate must receive an explicit Trade Decision
+evaluation instead of silently disappearing.
+
+
+4. DO NOT DISTORT OPPORTUNITY FINDER
+
+Keep Opportunity Finder's current approximately-5 ranking behavior.
+
+Do not require Catalyst HighInterest candidates to appear in OF topOpportunities.
+
+OF remains an independent comparative opportunity engine.
+
+Catalyst and OF are complementary discovery paths into TDE.
+
+
+5. DEDUPLICATION
+
+If a ticker appears in both:
+
+OF top opportunities
+AND
+active Catalyst promotions
+
+create ONE TDE candidate, not two.
+
+Merge/use both contexts for that ticker.
+
+
+6. COST CONTROL
+
+Do not materially increase OpenAI input size.
+
+Only include Catalyst promotions with:
+
+HighInterest
+or
+CandidateForTradeDecision
+
+as additional decision candidates.
+
+Do not add Monitor/Investigate Catalyst candidates to TDE.
+
+Use a sensible small cap if the current architecture requires one, but do not
+silently drop an imminent CandidateForTradeDecision.
+
+Preserve all existing fingerprints/recent-run guards.
+
+
+7. OUTPUT BEHAVIOR
+
+The TDE prompt should explicitly state:
+
+Every Catalyst HighInterest / CandidateForTradeDecision candidate supplied in the
+decision candidate set must receive an explicit evaluation.
+
+This does NOT require a positive recommendation.
+
+If rejected/deferred, say why.
+
+This prevents a strong Catalyst candidate from disappearing with no user-visible
+conclusion.
+
+
+8. CURRENT KEYS REGRESSION TEST
+
+Use stored/mocked data only.
+
+Scenario:
+
+KEYS:
+Catalyst opportunityState = HighInterest
+Catalyst direction = POSITIVE
+active promotion = true
+
+KEYS is NOT in Opportunity Finder top-5.
+
+Expected:
+
+KEYS still enters Trade Decision candidate set.
+
+TDE receives KEYS Catalyst context.
+
+Mocked TDE output must be able to return an explicit decision for KEYS.
+
+Do NOT require the decision to be PrepareToBuy.
+
+
+9. DEDUP TEST
+
+Scenario:
+
+NVDA exists in both OF top-5 and Catalyst HighInterest.
+
+Expected:
+
+one NVDA decision candidate with both OF + Catalyst context.
+
+
+10. NO PAID TESTS
+
+Use deterministic/mocked tests only.
+
+Do not run OpenAI.
+Do not Run All.
+
+
+11. FINAL REPORT
+
+Report:
+
+- exact files changed
+- previous TDE candidate construction
+- new TDE candidate construction
+- how Catalyst candidate eligibility works
+- dedup behavior
+- candidate cap if any
+- confirm OF behavior is unchanged
+- confirm no automatic Buy behavior was introduced
+- tests added / total test count
+- tell me whether I should run Update Trade Decision only or Run All afterwards
+
+This should be a SMALL integration correction only.
+Do not redesign surrounding modules.

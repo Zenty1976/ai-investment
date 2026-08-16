@@ -35,6 +35,7 @@ import {
   getCompanyAiContext,
 } from "../lib/downstream-ai-context.js";
 import { buildCatalystTdeContext, getActivePromotions } from "../lib/catalyst-promotion.js";
+import { buildCatalystTdeCandidates } from "../lib/tde-catalyst-candidates.js";
 import type { TradePolicyConfig } from "../lib/trade-decision-policy-config.js";
 import { recordDecisionOutcome, type RecordOutcomeInput } from "../lib/trade-decision-outcome-store.js";
 
@@ -1006,6 +1007,7 @@ INFORMATION PRIORITY (use when resolving conflicts):
 4. Market Alerts
 5. Company Monitor data (v2 fields take priority over free-text fields)
 6. Opportunity Finder
+6.5. Catalyst Intelligence (qualifying pre-event candidates — HighInterest and CandidateForTradeDecision require explicit decisions)
 7. Event Monitor
 8. Sector Monitor
 9. Market Monitor
@@ -1024,8 +1026,9 @@ CONSISTENCY RULES:
 - If blockedByEvent is true: blockingEvent must name the event; blockingEventDate must be YYYY-MM-DD or empty string if date is unverified.
 - If blockedByEvent is false: blockingEvent and blockingEventDate must be empty strings "".
 - company and ticker must be empty strings "" for Portfolio-level decisions.
-- sourceModules must list only modules that provided material evidence for that specific decision. Use exactly these values with no spaces: PortfolioManager, PortfolioAnalyzer, RiskAnalyzer, MarketAlerts, CompanyMonitor, OpportunityFinder, EventMonitor, SectorMonitor, MarketMonitor, NewsMonitor.
+- sourceModules must list only modules that provided material evidence for that specific decision. Use exactly these values with no spaces: PortfolioManager, PortfolioAnalyzer, RiskAnalyzer, MarketAlerts, CompanyMonitor, OpportunityFinder, CatalystIntelligence, EventMonitor, SectorMonitor, MarketMonitor, NewsMonitor.
 - Return 3–8 decisions, most important first.
+- Every entry in catalystTdeCandidates (from the decision profile) MUST receive an explicit decision evaluation. The decision may be any type — PrepareToBuy, WaitForEvent, Review, Hold, NoAction — but the entry must not be silently omitted. Use subjectType "Opportunity" for Catalyst candidates. Use CatalystIntelligence as a sourceModules entry when Catalyst data was material.
 - Return 3–6 readiness drivers.
 - Do not create duplicate decisions for the same subject and decision type.
 - decisionReadinessScore: integer 0–100 measuring whether evidence is sufficient to make useful decisions — not a prediction of portfolio return.
@@ -1233,6 +1236,15 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
         }))
     : [];
 
+  // Catalyst Intelligence → explicit TDE decision candidates (spec §1, §5, §6)
+  // Qualifying states: HighInterest and CandidateForTradeDecision only.
+  // Tickers already in OF top-5 are deduplicated — OF + Catalyst context covers them.
+  // This does NOT introduce automatic buys — TDE independently evaluates each candidate.
+  const catalystTdeCandidates = buildCatalystTdeCandidates(
+    rawOpportunities,
+    getActivePromotions()
+  );
+
   const riskScore     = typeof riskEntry?.result?.riskScore === "number" ? riskEntry.result.riskScore : null;
   const prevRiskScore = typeof riskEntry?.result?.previousRiskScore === "number" ? riskEntry.result.previousRiskScore : null;
 
@@ -1266,6 +1278,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     alertHeadline:   alertsEntry?.result?.headline ?? null,
     upcomingHighImportanceEvents: upcomingEvents,
     topOpportunityCandidates,
+    catalystTdeCandidates,
     positionsWithCompanyMonitorData:    positionsWithWeights.filter(p =>  p.hasCompanyMonitor).map(p => p.ticker),
     positionsMissingCompanyMonitorData: positionsWithWeights.filter(p => !p.hasCompanyMonitor).map(p => p.ticker),
     moduleDataFreshness: {
@@ -1375,9 +1388,10 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
   // §4: Market, News, Sector removed — their implications are in PA, RA, Alerts above.
   addCtx("OPPORTUNITY FINDER (priority 6)", opportunityContext, userPromptSections);
 
-  // Catalyst Intelligence — compact non-actionable context for relevant tickers
-  // Relevant = portfolio holdings + OF candidates + all actively-promoted tickers
-  // buildCatalystTdeContext returns null when no active promotion exists for the ticker.
+  // Catalyst Intelligence — qualitative context for all relevant tickers.
+  // Qualifying tickers (HighInterest/CandidateForTradeDecision) are also listed in
+  // catalystTdeCandidates inside the decision profile and require explicit decisions.
+  // Monitor/Investigate tickers remain non-actionable informational context only.
   const catalystRelevantTickers = [
     ...new Set([
       ...allPositions.map(p => p.ticker),
@@ -1389,8 +1403,12 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     .map(t => buildCatalystTdeContext(t))
     .filter((ctx): ctx is string => ctx !== null);
   if (catalystContextLines.length > 0) {
+    const qualifyingCount = catalystTdeCandidates.length;
+    const qualifyingNote = qualifyingCount > 0
+      ? `${qualifyingCount} candidate(s) in catalystTdeCandidates require explicit decisions; Monitor/Investigate are non-actionable context`
+      : `non-actionable pre-event context; INTENTIONAL_PRE_EVENT_THESIS requires manual approval`;
     userPromptSections.push(
-      `\nCATALYST INTELLIGENCE (priority 6.5 — non-actionable pre-event context; INTENTIONAL_PRE_EVENT_THESIS requires manual approval):\n` +
+      `\nCATALYST INTELLIGENCE (priority 6.5 — ${qualifyingNote}):\n` +
       catalystContextLines.join("\n\n")
     );
   }
@@ -1407,10 +1425,14 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
     );
   }
 
+  const catalystCandidateReminder = catalystTdeCandidates.length > 0
+    ? ` Every entry in catalystTdeCandidates (${catalystTdeCandidates.map(c => c.ticker).join(", ")}) must receive an explicit decision — WaitForEvent, Review, or NoAction is acceptable, but silent omission is not.`
+    : "";
   userPromptSections.push(
     `\nTask: Based on all the above, produce 3–8 cautious decision proposals for the next 1–3 months. ` +
-    `Resolve conflicts between modules. ` +
-    `Remember: PrepareToBuy and PrepareToReduce require ≥2 independent analytical sources — the backend verifies this from data, not just sourceModules claims.`
+    `Resolve conflicts between modules.` +
+    catalystCandidateReminder +
+    ` Remember: PrepareToBuy and PrepareToReduce require ≥2 independent analytical sources — the backend verifies this from data, not just sourceModules claims.`
   );
 
   const userPrompt = userPromptSections.join("\n");
