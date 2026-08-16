@@ -1,0 +1,430 @@
+AI CHAT READ-ONLY TOOLS — FIX DATA SHAPE MAPPINGS ONLY
+
+IMPORTANT:
+
+Do NOT redesign AI Chat.
+Do NOT change Responses API / conversation continuity.
+Do NOT change any existing investment module.
+Do NOT change any existing OpenAI integration.
+Do NOT change prompts or model routing unless required for this exact bug.
+Do NOT run any modules.
+
+I inspected the current code and found that the AI Chat read-only tools exist,
+but several tool executors read field names/shapes that do NOT match the actual
+stored module result structures.
+
+This is why AI Chat cannot currently see my real portfolio holdings even though
+get_portfolio() exists.
+
+Fix ONLY the read-only tool adapters in:
+
+src/lib/ai-chat-tools.ts
+
+and focused tests for them.
+
+==================================================
+1. GET_PORTFOLIO IS CURRENTLY WRONG
+==================================================
+
+The current tool reads approximately:
+
+d.totalValue
+d.cashAmount
+d.cashPercent
+d.positions
+
+But the actual Portfolio Manager stores a PortfolioSnapshot with:
+
+totalValue
+totalAvailableCash
+totalUnrealizedProfitLoss
+baseCurrency
+accounts[]
+  accountName
+  currency
+  availableCash
+  accountValue
+  positions[]
+
+The real holdings live under:
+
+accounts[].positions
+
+not:
+
+d.positions
+
+Therefore get_portfolio currently returns an empty positions array.
+
+Fix get_portfolio so it reads the ACTUAL current PortfolioSnapshot shape.
+
+Return a compact flattened holdings view such as:
+
+{
+  baseCurrency,
+  totalValue,
+  totalAvailableCash,
+  totalUnrealizedProfitLoss,
+  accounts: [
+    {
+      accountName,
+      currency,
+      availableCash
+    }
+  ],
+  positions: [
+    {
+      ticker/symbol,
+      name,
+      quantity,
+      currentPrice,
+      marketValue,
+      marketValueBaseCurrency,
+      profitLoss,
+      dayChangePercent,
+      accountName/accountKey,
+      instrumentCurrency
+    }
+  ],
+  updatedAt
+}
+
+Use the exact real field names from PortfolioSnapshot.
+Do not guess field names.
+
+Flatten accounts[].positions for chat convenience, but preserve account identity.
+
+==================================================
+2. AUDIT EVERY AI CHAT TOOL AGAINST THE REAL STORED SHAPE
+==================================================
+
+Do not assume the current adapters are correct.
+
+For EACH of the 16 read-only tools:
+
+1. Inspect the actual producer module/type/repository result.
+2. Compare it with what ai-chat-tools.ts currently reads.
+3. Correct mismatched field names and nesting.
+4. Keep the returned Chat tool payload compact.
+
+Pay particular attention to the following known mismatches.
+
+
+==================================================
+3. GET_OPPORTUNITIES
+==================================================
+
+Current AI Chat code appears to read:
+
+d.opportunities
+
+But Opportunity Finder's actual stored result uses:
+
+topOpportunities
+
+with fields such as:
+
+rank
+company
+ticker
+sector
+overallScore
+confidence
+priority
+investmentThesis
+whyNow
+mainCatalyst
+catalystDate
+mainRisk
+
+Fix get_opportunities to read topOpportunities.
+
+Return only compact useful fields.
+
+
+==================================================
+4. GET_RISK_ANALYSIS
+==================================================
+
+Current AI Chat code appears to expect:
+
+overallRiskScore
+riskLevel
+summary
+risks
+recommendations
+
+The actual Risk Analyzer uses fields such as:
+
+riskScore
+overallRiskLevel
+mainConclusion
+topRisks
+riskInteractions
+watchClosely
+
+Use the ACTUAL stored Risk Analyzer schema.
+
+Return a compact result such as:
+
+riskScore
+overallRiskLevel
+mainConclusion
+topRisks (max 5)
+watchClosely (max 5)
+updatedAt
+
+
+==================================================
+5. GET_CATALYST
+==================================================
+
+Current Catalyst repository stores CatalystState:
+
+root:
+ticker
+company
+screening
+facts
+analysis
+triggerType
+signalAccumulation
+emergingSetup
+promotedAt
+etc.
+
+The AI analysis fields are NOT necessarily on the root.
+
+They live under:
+
+state.analysis
+
+and event/price/fact data may live under:
+
+state.facts
+
+Fix get_catalyst(ticker) to correctly compose a compact result from the ACTUAL
+CatalystState.
+
+For example include where available:
+
+ticker
+company
+triggerType
+
+event:
+  type
+  date
+  daysUntilEvent
+
+screening state
+
+analysis:
+  opportunityState
+  catalystDirection
+  evidenceConfidence
+  expectationGap
+  priceAsymmetry
+  alreadyPricedIn
+  catalystRisk
+  thesis
+  strongestCounterargument
+  invalidationConditions
+  recommendedNextStep
+
+signal accumulation summary
+
+promotedAt
+lastAnalysedAt
+updatedAt
+
+Do not return null simply because the fields are nested.
+
+
+==================================================
+6. GET_COMPANY_MONITOR
+==================================================
+
+Inspect the actual current Company Monitor stored structure.
+
+Do NOT assume root fields:
+
+investmentView
+rating
+outlook
+summary
+
+if the actual module stores things like:
+
+view.rating
+view.outlook
+view.reason
+caseStrength
+materialChange
+thesisChanges
+topRisks
+topCatalysts
+valuation
+confidence
+
+Return a compact, accurate Chat view of the REAL current Company Monitor result.
+
+
+==================================================
+7. GET_PRICE_CONTEXT
+==================================================
+
+Inspect the actual current Price Context result and use its real field names.
+
+The Chat tool should expose useful current price behavior such as where available:
+
+state / priceState
+recentBehavior
+5D return
+10D/14D-ish return if available
+1M return
+3M return
+volatility
+stabilization/runup facts
+
+Do not return undefined fields because an old assumed schema was used.
+
+
+==================================================
+8. OTHER TOOLS
+==================================================
+
+Also verify the real output structure for:
+
+get_command_brief
+get_portfolio_analysis
+get_trade_decisions
+get_trade_review
+get_events
+get_market_alerts
+get_market_monitor
+get_sector_monitor
+get_news_monitor
+get_system_health
+
+Do not rewrite them if already correct.
+
+Only correct actual shape mismatches.
+
+
+==================================================
+9. IMPORTANT — READ ONLY BEHAVIOR MUST REMAIN
+==================================================
+
+All tools must continue to use:
+
+analysisRepository.get(...)
+
+or equivalent read-only repository access.
+
+They must NOT:
+
+run Portfolio Manager
+call Saxo
+run Company Monitor
+run Catalyst
+run Trade Decision
+run Opportunity Finder
+call web search themselves
+modify any repository
+
+This task is ONLY fixing how stored data is mapped into compact tool results.
+
+
+==================================================
+10. NO EXTRA OPENAI COST
+==================================================
+
+Do not run paid AI calls for validation.
+
+Test the tool executors directly against deterministic repository fixtures that
+match the ACTUAL production module shapes.
+
+
+==================================================
+11. ADD REALISTIC TOOL CONTRACT TESTS
+==================================================
+
+The existing AI Chat tests appear to prove that tools exist, but not necessarily
+that they correctly map real module structures.
+
+Add focused tests using fixtures that mirror the actual stored outputs.
+
+At minimum:
+
+A. PortfolioSnapshot with 2 accounts and positions:
+   get_portfolio returns all holdings.
+
+B. Portfolio holdings are flattened correctly while retaining account identity.
+
+C. Opportunity Finder topOpportunities:
+   get_opportunities returns them.
+
+D. Risk Analyzer actual structure:
+   risk score / level / top risks returned.
+
+E. CatalystState with nested analysis/facts:
+   get_catalyst returns the real analysis.
+
+F. Company Monitor actual current shape:
+   rating/outlook/case strength etc. returned.
+
+G. Missing module result:
+   clear error, no crash.
+
+H. No tool executor triggers any update/module route.
+
+
+==================================================
+12. OPTIONAL DEBUG ENDPOINT / TEST HELPER
+==================================================
+
+If there is already AI Chat debug support, make it possible to see:
+
+tool name
+arguments
+compact tool result
+
+for the latest Chat turn.
+
+Do not add a large new debug architecture.
+
+This would make it easy to verify:
+
+User: "What stocks are in my portfolio?"
+
+AI calls:
+get_portfolio
+
+Tool result:
+NOVOB:XCSE
+SERV:XNAS
+
+and then AI answers correctly.
+
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+Report:
+
+1. Which of the 16 tools had incorrect mappings.
+2. Exact mismatch for each broken tool.
+3. Exact mappings corrected.
+4. Confirm get_portfolio now sees the real accounts[].positions.
+5. Give an example of the compact get_portfolio result using stored/test data.
+6. Confirm Opportunity Finder reads topOpportunities.
+7. Confirm Catalyst reads nested state.analysis/state.facts correctly.
+8. Confirm no existing investment modules were modified.
+9. Confirm no existing OpenAI calls were modified.
+10. Confirm all Chat tools remain read-only.
+11. Tests added/results.
+12. Tell me exactly what I should ask AI Chat afterward to verify the fixes.
+
+Do not make unrelated changes.

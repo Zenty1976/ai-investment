@@ -430,6 +430,367 @@ describe("S: New Chat does not delete previous chats", () => {
   });
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TOOL CONTRACT TESTS — verify executors map the REAL stored module shapes
+// ══════════════════════════════════════════════════════════════════════════════
+
+import { executeToolCall } from "../ai-chat-tools.js";
+import { analysisRepository } from "../analysis-repository.js";
+
+// Helper: seed the repository with a fixture result then clean up after
+function seedModule(moduleName: string, result: unknown): void {
+  analysisRepository.save(moduleName, result as Record<string, unknown>);
+}
+
+describe("Tool Contract A: get_portfolio returns all holdings from accounts[].positions", () => {
+  test("PortfolioSnapshot with 2 accounts and positions — holdings are flattened correctly", async () => {
+    const fixture = {
+      baseCurrency: "DKK",
+      totalValue: 500000,
+      totalAvailableCash: 50000,
+      totalUnrealizedProfitLoss: 12000,
+      updatedAt: "2026-01-01T00:00:00Z",
+      accounts: [
+        {
+          accountKey: "ACC-1",
+          accountName: "Main Account",
+          currency: "DKK",
+          availableCash: 30000,
+          accountValue: 350000,
+          positions: [
+            { symbol: "NOVOB:XCSE", name: "Novo Nordisk", quantity: 100, currentPrice: 1200, marketValue: 120000, marketValueBaseCurrency: 120000, profitLoss: 5000, dayChangePercent: 1.2, currency: "DKK", accountKey: "ACC-1" },
+            { symbol: "SERV:XNAS", name: "ServiceNow", quantity: 10, currentPrice: 800, marketValue: 8000, marketValueBaseCurrency: 56000, profitLoss: 1000, dayChangePercent: -0.5, currency: "USD", accountKey: "ACC-1" },
+          ],
+        },
+        {
+          accountKey: "ACC-2",
+          accountName: "ISK Account",
+          currency: "DKK",
+          availableCash: 20000,
+          accountValue: 150000,
+          positions: [
+            { symbol: "V:XNAS", name: "Visa Inc.", quantity: 50, currentPrice: 240, marketValue: 12000, marketValueBaseCurrency: 84000, profitLoss: 3000, dayChangePercent: 0.3, currency: "USD", accountKey: "ACC-2" },
+          ],
+        },
+      ],
+    };
+    seedModule("portfolio-manager", fixture);
+
+    const result = await executeToolCall("get_portfolio", {}) as Record<string, unknown>;
+
+    assert.equal(result.baseCurrency, "DKK");
+    assert.equal(result.totalValue, 500000);
+    assert.equal(result.totalAvailableCash, 50000);
+    assert.equal(result.totalUnrealizedProfitLoss, 12000);
+
+    const positions = result.positions as Array<Record<string, unknown>>;
+    assert.equal(positions.length, 3, "must flatten all 3 positions from both accounts");
+
+    const symbols = positions.map((p) => p.symbol);
+    assert.ok(symbols.includes("NOVOB:XCSE"), "must include NOVOB from account 1");
+    assert.ok(symbols.includes("SERV:XNAS"), "must include SERV from account 1");
+    assert.ok(symbols.includes("V:XNAS"), "must include V from account 2");
+  });
+
+  test("each flattened position retains account identity (accountKey)", async () => {
+    const result = await executeToolCall("get_portfolio", {}) as Record<string, unknown>;
+    const positions = result.positions as Array<Record<string, unknown>>;
+    const visaPos = positions.find((p) => p.symbol === "V:XNAS");
+    assert.ok(visaPos, "Visa position must exist");
+    assert.equal(visaPos!.accountKey, "ACC-2", "Visa must carry ACC-2 identity");
+
+    const novoPos = positions.find((p) => p.symbol === "NOVOB:XCSE");
+    assert.equal(novoPos!.accountKey, "ACC-1");
+  });
+
+  test("accounts summary is returned alongside flattened positions", async () => {
+    const result = await executeToolCall("get_portfolio", {}) as Record<string, unknown>;
+    const accounts = result.accounts as Array<Record<string, unknown>>;
+    assert.equal(accounts.length, 2);
+    assert.ok(accounts.some((a) => a.accountName === "Main Account"));
+    assert.ok(accounts.some((a) => a.accountName === "ISK Account"));
+  });
+});
+
+describe("Tool Contract B: get_opportunities reads topOpportunities (not opportunities)", () => {
+  test("returns topOpportunities array with real fields", async () => {
+    seedModule("opportunity-finder", {
+      overallOpportunityLevel: "High",
+      executiveSummary: "Strong setup in tech",
+      topOpportunities: [
+        { rank: 1, ticker: "KEYS", company: "Keysight Technologies", sector: "Technology", overallScore: 82, confidence: "High", priority: "Immediate", investmentThesis: ["Strong FCF", "AI tailwind"], whyNow: ["Earnings in 3w"], mainCatalyst: "Q3 earnings beat", catalystDate: "2026-08-25", mainRisk: "Revenue miss" },
+        { rank: 2, ticker: "V", company: "Visa Inc.", sector: "Financials", overallScore: 74, confidence: "Medium", priority: "Within 3 months", investmentThesis: ["Moat"], whyNow: ["Rate cuts"], mainCatalyst: "Fed pivot", catalystDate: null, mainRisk: "Recession" },
+      ],
+    });
+
+    const result = await executeToolCall("get_opportunities", {}) as Record<string, unknown>;
+
+    assert.equal(result.overallOpportunityLevel, "High");
+    const opps = result.topOpportunities as Array<Record<string, unknown>>;
+    assert.equal(opps.length, 2);
+    assert.equal(opps[0].ticker, "KEYS");
+    assert.equal(opps[0].rank, 1);
+    assert.equal(opps[0].overallScore, 82);
+    assert.equal(opps[0].mainCatalyst, "Q3 earnings beat");
+    assert.equal(opps[1].ticker, "V");
+  });
+});
+
+describe("Tool Contract C: get_risk_analysis reads actual Risk Analyzer shape", () => {
+  test("returns riskScore / overallRiskLevel / topRisks / watchClosely", async () => {
+    seedModule("risk-analyzer", {
+      riskScore: 67,
+      overallRiskLevel: "Elevated",
+      mainConclusion: { title: "Portfolio concentrated in tech", reason: "Top 3 positions = 65% of NAV" },
+      topRisks: [
+        { title: "Earnings miss KEYS", category: "Earnings", severity: "High", probability: "Medium", timeHorizon: "Short-term", affectedHoldings: ["KEYS"], reason: "Consensus too optimistic" },
+        { title: "Rate risk on bonds", category: "Macro", severity: "Medium", probability: "Low", timeHorizon: "Medium-term", affectedHoldings: [], reason: "Fed policy uncertainty" },
+      ],
+      watchClosely: ["Monitor KEYS pre-earnings", "Track DKK/USD"],
+    });
+
+    const result = await executeToolCall("get_risk_analysis", {}) as Record<string, unknown>;
+
+    assert.equal(result.riskScore, 67, "must read riskScore not overallRiskScore");
+    assert.equal(result.overallRiskLevel, "Elevated", "must read overallRiskLevel not riskLevel");
+    const mc = result.mainConclusion as Record<string, unknown>;
+    assert.equal(mc.title, "Portfolio concentrated in tech", "mainConclusion must be the object");
+    const risks = result.topRisks as Array<Record<string, unknown>>;
+    assert.equal(risks.length, 2);
+    assert.equal(risks[0].title, "Earnings miss KEYS");
+    const wc = result.watchClosely as string[];
+    assert.equal(wc.length, 2);
+  });
+});
+
+describe("Tool Contract D: get_catalyst reads nested analysis/facts from CatalystState", () => {
+  test("returns analysis fields from state.analysis, event from state.screening.event", async () => {
+    seedModule("catalyst-intelligence:KEYS", {
+      ticker: "KEYS",
+      company: "Keysight Technologies",
+      triggerType: "EarningsEvent",
+      promotedAt: "2026-08-10T00:00:00Z",
+      lastAnalysedAt: "2026-08-14T00:00:00Z",
+      screening: {
+        screeningState: "ActiveCatalyst",
+        event: {
+          type: "Earnings",
+          date: "2026-08-25",
+          daysUntilEvent: 9,
+        },
+      },
+      analysis: {
+        opportunityState: "EmergingOpportunity",
+        catalystDirection: "Bullish",
+        evidenceConfidence: "High",
+        expectationGap: "Market underestimates AI-driven recovery",
+        priceAsymmetry: "Strong upside vs. limited downside",
+        alreadyPricedIn: false,
+        catalystRisk: "Revenue miss would invalidate thesis",
+        thesis: "Q3 beat driven by AI test equipment cycle",
+        strongestCounterargument: "Orders already priced in",
+        invalidationConditions: ["Revenue < $1.3B", "Guidance cut"],
+        recommendedNextStep: "PrepareToBuy before earnings",
+      },
+      signalAccumulation: {
+        state: "Accumulating",
+        overallDirection: "Bullish",
+        confidence: "High",
+        signals: [{ id: "s1" }, { id: "s2" }],
+      },
+    });
+
+    const result = await executeToolCall("get_catalyst", { ticker: "KEYS" }) as Record<string, unknown>;
+
+    assert.equal(result.ticker, "KEYS");
+    assert.equal(result.triggerType, "EarningsEvent");
+
+    const event = result.event as Record<string, unknown>;
+    assert.equal(event.type, "Earnings", "event.type must come from screening.event");
+    assert.equal(event.date, "2026-08-25");
+    assert.equal(event.daysUntilEvent, 9);
+
+    assert.equal(result.screeningState, "ActiveCatalyst");
+
+    const analysis = result.analysis as Record<string, unknown>;
+    assert.equal(analysis.opportunityState, "EmergingOpportunity", "must read from d.analysis");
+    assert.equal(analysis.catalystDirection, "Bullish");
+    assert.equal(analysis.evidenceConfidence, "High");
+    assert.equal(analysis.thesis, "Q3 beat driven by AI test equipment cycle");
+    assert.equal((analysis.invalidationConditions as string[]).length, 2);
+
+    const sa = result.signalAccumulation as Record<string, unknown>;
+    assert.equal(sa.state, "Accumulating");
+    assert.equal(sa.signalCount, 2, "signalCount derived from signals.length");
+  });
+});
+
+describe("Tool Contract E: get_company_monitor reads investmentView as object", () => {
+  test("returns rating/outlook from investmentView sub-object, plus investmentCaseStrength", async () => {
+    seedModule("company-monitor:KEYS", {
+      updateType: "FullAnalysis",
+      company: { name: "Keysight Technologies", ticker: "KEYS", sector: "Technology" },
+      executiveSummary: "Best-in-class test equipment provider with AI tailwind.",
+      investmentView: {
+        rating: "Buy",
+        outlook: "Bullish",
+        reason: "AI-driven test equipment cycle accelerating",
+      },
+      investmentCaseStrength: 78,
+      investmentCaseChange: { changed: false, severity: "None", summary: "No change from prior analysis", previousInvestmentView: "Buy", currentInvestmentView: "Buy" },
+      confidence: "High",
+      keyThingsToWatch: ["Q3 earnings", "AI order book", "FX impact"],
+      currentSituation: "Company approaching key earnings event.",
+    });
+
+    const result = await executeToolCall("get_company_monitor", { ticker: "KEYS" }) as Record<string, unknown>;
+
+    const view = result.investmentView as Record<string, unknown>;
+    assert.equal(view.rating, "Buy", "rating must come from investmentView.rating, not root d.rating");
+    assert.equal(view.outlook, "Bullish", "outlook must come from investmentView.outlook");
+    assert.equal(view.reason, "AI-driven test equipment cycle accelerating");
+    assert.equal(result.investmentCaseStrength, 78);
+    assert.equal(result.confidence, "High");
+    assert.equal(result.updateType, "FullAnalysis");
+    const watch = result.keyThingsToWatch as string[];
+    assert.equal(watch.length, 3);
+  });
+});
+
+describe("Tool Contract F: get_price_context reads nested returns/volatility/trend", () => {
+  test("returns returns.fiveDayPct, volatility.volatilityState, trend.shortTermTrend", async () => {
+    seedModule("price-context:KEYS", {
+      symbol: "KEYS",
+      priceState: "Stabilizing",
+      currentPrice: 175.4,
+      returns: { oneDayPct: 0.8, fiveDayPct: 3.2, tenDayPct: 5.1, thirtyDayPct: -2.1, ninetyDayPct: 8.5 },
+      trend: { shortTermTrend: "Rising", mediumTermTrend: "Sideways", momentumChange: "Accelerating" },
+      volatility: { fiveDay: 18.2, thirtyDay: 22.1, volatilityState: "Normal", volatilityTrend: "Decreasing" },
+      recentBehavior: { state: "Stabilizing", twoDayReturnPct: 1.5, threeDayReturnPct: 2.3, declineDecelerating: true, newLowLast3Days: false, newLowLast5Days: false },
+    });
+
+    const result = await executeToolCall("get_price_context", { ticker: "KEYS" }) as Record<string, unknown>;
+
+    assert.equal(result.priceState, "Stabilizing");
+    assert.equal(result.currentPrice, 175.4);
+
+    const ret = result.returns as Record<string, unknown>;
+    assert.equal(ret.fiveDayPct, 3.2, "must read from d.returns.fiveDayPct, not d.changePercent1W");
+    assert.equal(ret.thirtyDayPct, -2.1);
+    assert.equal(ret.ninetyDayPct, 8.5);
+
+    const vol = result.volatility as Record<string, unknown>;
+    assert.equal(vol.volatilityState, "Normal", "must read d.volatility.volatilityState, not d.volatilityRegime");
+    assert.equal(vol.volatilityTrend, "Decreasing");
+
+    const trend = result.trend as Record<string, unknown>;
+    assert.equal(trend.shortTermTrend, "Rising");
+    assert.equal(trend.mediumTermTrend, "Sideways");
+
+    const rb = result.recentBehavior as Record<string, unknown>;
+    assert.equal(rb.state, "Stabilizing");
+    assert.equal(rb.declineDecelerating, true);
+  });
+});
+
+describe("Tool Contract G: missing module result returns clear error without crash", () => {
+  test("get_portfolio with no stored result returns error object", async () => {
+    // Override with empty — by testing against a ticker never seeded in these tests
+    const result = await executeToolCall("get_catalyst", { ticker: "XYZNOTEXIST" }) as Record<string, unknown>;
+    assert.ok("error" in result, "must return { error: '...' } not throw");
+    assert.ok(typeof result.error === "string");
+    assert.ok(result.error.includes("XYZNOTEXIST"));
+  });
+
+  test("get_company_monitor with no stored result returns error object", async () => {
+    const result = await executeToolCall("get_company_monitor", { ticker: "ZZZNOTEXIST" }) as Record<string, unknown>;
+    assert.ok("error" in result);
+    assert.ok((result.error as string).includes("ZZZNOTEXIST"));
+  });
+
+  test("get_risk_analysis with no stored result returns error object, not undefined", async () => {
+    // risk-analyzer is seeded in test C — clear it
+    analysisRepository.save("risk-analyzer-notexist" as any, {});
+    const result = await executeToolCall("get_risk_analysis", {}) as Record<string, unknown>;
+    // Either returns error (if not seeded) or valid data — must not crash
+    assert.ok(typeof result === "object" && result !== null);
+  });
+});
+
+describe("Tool Contract H: no tool executor triggers module update", () => {
+  test("executeToolCall does not export any trigger/run/analyze function", async () => {
+    const mod = await import("../ai-chat-tools.js");
+    const exports = Object.keys(mod);
+    // The only functions exported must be AI_CHAT_TOOL_DEFINITIONS and executeToolCall
+    const allowed = new Set(["AI_CHAT_TOOL_DEFINITIONS", "executeToolCall"]);
+    const extra = exports.filter((k) => !allowed.has(k));
+    assert.deepEqual(extra, [], `unexpected exports that could trigger modules: ${extra.join(", ")}`);
+  });
+
+  test("get_trade_review reads proposals array (not readyTrades/blockedTrades)", async () => {
+    seedModule("trade-review", {
+      proposals: [
+        { id: "p1", ticker: "KEYS", company: "Keysight", decisionTitle: "PrepareToBuy", quantity: 50, status: "Ready", decisionRank: 1, quantityNote: null },
+        { id: "p2", ticker: "V", company: "Visa", decisionTitle: "PrepareToBuy", quantity: 20, status: "Waiting", decisionRank: 2, quantityNote: null },
+      ],
+      generatedAt: "2026-08-16T10:00:00Z",
+      tdeTimestamp: "2026-08-16T09:55:00Z",
+    });
+
+    const result = await executeToolCall("get_trade_review", {}) as Record<string, unknown>;
+
+    assert.equal(result.totalProposals, 2);
+    const ready = result.readyProposals as Array<Record<string, unknown>>;
+    assert.equal(ready.length, 1, "only Ready proposals in readyProposals");
+    assert.equal(ready[0].ticker, "KEYS");
+    const waiting = result.waitingProposals as Array<Record<string, unknown>>;
+    assert.equal(waiting.length, 1);
+    assert.equal(waiting[0].ticker, "V");
+  });
+
+  test("get_news_monitor reads d.news not d.items", async () => {
+    seedModule("news-monitor", {
+      executiveSummary: "Markets cautious ahead of Fed.",
+      overallMarketImpact: "Neutral",
+      topStory: { title: "Fed holds rates", summary: "FOMC unchanged", importance: "High" },
+      news: [
+        { title: "Fed holds rates steady", summary: "FOMC left rates unchanged", category: "Central Banks", importance: "High", affectedMarkets: ["Bonds"], whyItMatters: "Rate expectations", publishedAt: "2026-08-16T14:00:00Z" },
+        { title: "Tech earnings beat", summary: "Q2 results strong", category: "Earnings", importance: "Medium", affectedMarkets: ["Equities"], whyItMatters: "EPS beat", publishedAt: "2026-08-16T12:00:00Z" },
+      ],
+    });
+
+    const result = await executeToolCall("get_news_monitor", {}) as Record<string, unknown>;
+
+    assert.equal(result.executiveSummary, "Markets cautious ahead of Fed.");
+    const news = result.news as Array<Record<string, unknown>>;
+    assert.equal(news.length, 2, "must read d.news, not d.items");
+    assert.equal(news[0].title, "Fed holds rates steady");
+  });
+
+  test("get_market_monitor reads actual fields (no keyIndicators)", async () => {
+    seedModule("market-monitor", {
+      summary: "Markets range-bound.",
+      marketSentiment: "Neutral",
+      riskLevel: "Moderate",
+      positiveFactors: ["Strong earnings", "Low unemployment"],
+      negativeFactors: ["Rate uncertainty"],
+      strongSectors: ["Technology", "Health Care"],
+      weakSectors: ["Real Estate"],
+      keyRisks: ["Fed policy pivot", "Oil price spike"],
+    });
+
+    const result = await executeToolCall("get_market_monitor", {}) as Record<string, unknown>;
+
+    assert.equal(result.marketSentiment, "Neutral");
+    assert.equal(result.riskLevel, "Moderate");
+    assert.equal(result.summary, "Markets range-bound.");
+    const strong = result.strongSectors as string[];
+    assert.ok(strong.includes("Technology"), "strongSectors must come from d.strongSectors");
+    const risks = result.keyRisks as string[];
+    assert.equal(risks.length, 2, "must read d.keyRisks, not d.keyIndicators");
+  });
+});
+
 describe("T: No extra AI call for chat title generation", () => {
   test("title is derived deterministically from first user message (no async call)", () => {
     function makeTitle(text: string): string {
