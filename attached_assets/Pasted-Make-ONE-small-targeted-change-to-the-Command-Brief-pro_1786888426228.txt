@@ -1,0 +1,40 @@
+Make ONE small, targeted change to the Command Brief prompt only.
+
+Do not change any architecture, schemas, module outputs, Catalyst Intelligence, Opportunity Finder, Trade Decision Engine, Trade Review, or data flow.
+
+The Command Brief now receives the correct data, including upcomingCatalysts and Trade Decision decisions. The remaining issue is prioritization.
+
+Current example:
+- 0700/Tencent: HIGH_INTEREST catalyst, earnings in 1 day, TDE = WaitForEvent
+- KEYS: HIGH_INTEREST catalyst, earnings in 2 days, TDE = WaitForEvent
+- V: HIGH_INTEREST catalyst, earnings in 9 days, TDE = WaitForEvent
+- Trade Review = 0 ready trades
+
+However, the Command Brief omitted all of these catalyst-driven TDE decisions and instead used separate item slots for multiple macro events.
+
+Change only the Command Brief system/user prompt prioritization rules.
+
+Add a rule equivalent to:
+
+"When an upcoming catalyst is HIGH_INTEREST or CANDIDATE_FOR_TRADE_DECISION AND Trade Decision has an explicit decision for the same ticker, treat that combination as high-priority Command Brief information.
+
+Imminent company-specific catalysts (especially within 1-3 days) should normally outrank lower-specificity informational items when they may change a current Trade Decision state.
+
+Prefer combining related macro events into one concise item when necessary to make room for an important company-specific catalyst.
+
+Do not list every catalyst. Select only the most decision-relevant and imminent catalysts.
+
+When a catalyst candidate is currently WaitForEvent, make that clear in the item. Do not imply that it is actionable now.
+
+Trade Review remains authoritative for actionability. If Trade Review has zero ready trades, continue to state that no trades are ready for approval."
+
+Keep:
+- maximum 6 items
+- current JSON schema
+- current actionStatus logic
+- current Trade Review authority
+- current 20-second briefing goal
+
+Do not make any other changes.
+
+After the change, do not run other modules. Only tell me exactly what prompt text was changed. I will manually run Command Brief afterward.

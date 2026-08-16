@@ -154,6 +154,14 @@ Prioritize CHANGE and ATTENTION over repeating normal information. Focus on:
 - upcoming events capable of changing the outlook
 - actual trades ready for approval
 
+CATALYST PRIORITIZATION RULE:
+When an upcoming catalyst has opportunityState HIGH_INTEREST or CANDIDATE_FOR_TRADE_DECISION AND Trade Decision has an explicit decision for the same ticker, treat that combination as high-priority Command Brief information.
+Imminent company-specific catalysts (especially within 1–3 days) should normally outrank lower-specificity informational items when they may change a current Trade Decision state.
+Prefer combining related macro events into one concise item when necessary to make room for an important company-specific catalyst.
+Do not list every catalyst. Select only the most decision-relevant and imminent catalysts.
+When a catalyst candidate has a WaitForEvent decision, make that clear in the item — do not imply it is actionable now.
+Trade Review remains authoritative for actionability. If Trade Review has zero ready trades, continue to state that no trades are ready for approval.
+
 Do not simply summarize every input module. A user should understand the important situation in approximately 20 seconds.
 
 Be concise, factual and action-oriented without creating new investment recommendations.

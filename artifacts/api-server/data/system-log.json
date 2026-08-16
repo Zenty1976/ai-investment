@@ -1,103 +1,5 @@
 [
   {
-    "id": "6dcccf9e-875c-437f-9ff2-548056193f6d",
-    "timestamp": "2026-08-16T08:19:44.868Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Decision analysis completed"
-  },
-  {
-    "id": "ef57ef51-fd48-4017-958d-d43aac64205c",
-    "timestamp": "2026-08-16T08:19:44.870Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Active policy profile: Balanced"
-  },
-  {
-    "id": "342a160e-48cf-4390-b9c2-98efff96ec77",
-    "timestamp": "2026-08-16T08:19:44.872Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Posture: SelectivePreparation | Readiness: 78/100"
-  },
-  {
-    "id": "9dab6d0c-5253-498f-a7c2-82b5709932ea",
-    "timestamp": "2026-08-16T08:19:44.874Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "2 WaitingForReevaluation"
-  },
-  {
-    "id": "d22cdc58-7fed-49c1-8410-65841760edda",
-    "timestamp": "2026-08-16T08:19:44.883Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Changed: Strengthened Review Serve Robotics pending Q3 earnings and liquidity clarity"
-  },
-  {
-    "id": "02aa09d0-0967-4ea0-97f6-4440bb432654",
-    "timestamp": "2026-08-16T08:19:44.885Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Preserved Unchanged: NVDA"
-  },
-  {
-    "id": "c93d1ac0-ad9c-4a04-9d4d-d3ca21afef40",
-    "timestamp": "2026-08-16T08:19:44.887Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "Withdrawn (subject absent): NEE"
-  },
-  {
-    "id": "2db3e04e-be11-4a36-8ac1-ecd0261eb089",
-    "timestamp": "2026-08-16T08:19:44.892Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-decision-engine completed via RunAllNow (15259ms, change: High)"
-  },
-  {
-    "id": "2aa37edd-fb46-4714-9685-1c00c582e1b8",
-    "timestamp": "2026-08-16T08:19:44.898Z",
-    "module": "TradeReview",
-    "level": "info",
-    "message": "Orchestrated run (trigger: Dependency): generating fresh trade review"
-  },
-  {
-    "id": "f95a053c-2e40-45c1-a3ff-88f5ad986a5d",
-    "timestamp": "2026-08-16T08:19:44.900Z",
-    "module": "TradeReview",
-    "level": "internal",
-    "message": "Decision NVDA: WaitingForReevaluation — not converted to proposal"
-  },
-  {
-    "id": "34596143-2635-4976-b03a-1fdb985f00fc",
-    "timestamp": "2026-08-16T08:19:44.902Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "trade-review completed via Dependency (7ms, change: Medium)"
-  },
-  {
-    "id": "aa269971-f5e8-4fa0-9686-75103bcfce1d",
-    "timestamp": "2026-08-16T08:19:44.905Z",
-    "module": "Command Brief",
-    "level": "info",
-    "message": "Scheduled run (trigger: Dependency)"
-  },
-  {
-    "id": "a492de76-186b-4dba-85b1-3b5daa94cd51",
-    "timestamp": "2026-08-16T08:19:45.139Z",
-    "module": "AutomationOrchestrator",
-    "level": "info",
-    "message": "Stage 9.5: Company Monitor covering 4 ticker(s) introduced by TDE — AVGO, CSCO, ORCL, HD"
-  },
-  {
-    "id": "98e874ba-f32d-4bd3-afad-52953ede9375",
-    "timestamp": "2026-08-16T08:19:45.144Z",
-    "module": "Company Monitor",
-    "level": "info",
-    "message": "Scheduled run for AVGO (trigger: RunAllNow)"
-  },
-  {
     "id": "345006af-6127-41f1-9e6f-c723f50fce6e",
     "timestamp": "2026-08-16T08:19:47.239Z",
     "module": "Command Brief",
@@ -3498,5 +3400,103 @@
     "module": "Trade Decision Engine",
     "level": "error",
     "message": "Decision analysis failed: OpenAI returned invalid JSON: {\n  \"mainConclusion\": {\n    \"title\": \"Maintain high cash, selectively prepare for post-event equity deployment; review weak holdings and monitor macro risks\",\n    \"reason\": \"The portfolio remains full"
+  },
+  {
+    "id": "1be716ca-07cd-4745-960b-84c3c64508cb",
+    "timestamp": "2026-08-16T13:49:12.288Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "90d46dff-80ca-447b-9f80-27f607c20b10",
+    "timestamp": "2026-08-16T13:49:32.600Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "[evidence] NVDA (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
+  },
+  {
+    "id": "e4394016-c6bc-44ce-ad2a-7f4ea9cfe0d0",
+    "timestamp": "2026-08-16T13:49:32.604Z",
+    "module": "TradeDecisionOutcome",
+    "level": "internal",
+    "message": "Opportunity:NVDA: v15 created (fingerprint changed)"
+  },
+  {
+    "id": "4c46e429-2d39-42ed-b638-bc819d1513ce",
+    "timestamp": "2026-08-16T13:49:32.619Z",
+    "module": "Trade Decision Engine",
+    "level": "info",
+    "message": "Decision analysis completed"
+  },
+  {
+    "id": "9f76ba6a-8422-4913-bbb1-7317864e628b",
+    "timestamp": "2026-08-16T13:49:32.759Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Active policy profile: Balanced"
+  },
+  {
+    "id": "1fdf1ada-4561-424d-b9ad-fa6681a634b8",
+    "timestamp": "2026-08-16T13:49:32.769Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Posture: SelectivePreparation | Readiness: 72/100"
+  },
+  {
+    "id": "d5fb19ca-961c-4d86-9a32-e19a55e8d9f8",
+    "timestamp": "2026-08-16T13:49:32.810Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "6 WaitingForReevaluation"
+  },
+  {
+    "id": "73b8f07c-e6f9-4d17-ad0a-1efa59eb57d6",
+    "timestamp": "2026-08-16T13:49:32.821Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "New: Wait for Visa earnings before considering new exposure; Wait for Donaldson earnings before considering new exposure; Wait for Tencent earnings before considering new exposure; Wait for Keysight earnings before considering new exposure"
+  },
+  {
+    "id": "cfea2744-a147-4054-b0bd-99f5ddd14c9c",
+    "timestamp": "2026-08-16T13:49:32.867Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Preserved Unchanged: NVDA"
+  },
+  {
+    "id": "1ac49f97-d070-4c8d-a2be-7ecce3ee520b",
+    "timestamp": "2026-08-16T13:49:32.870Z",
+    "module": "Trade Decision Engine",
+    "level": "internal",
+    "message": "Withdrawn (subject absent): CSCO"
+  },
+  {
+    "id": "d201f737-911c-4fb9-882c-efa0275b326f",
+    "timestamp": "2026-08-16T13:51:44.686Z",
+    "module": "Command Brief",
+    "level": "user",
+    "message": "User manually started Command Brief generation"
+  },
+  {
+    "id": "5f54e036-79ce-4b3c-9fe2-60673ac89d4f",
+    "timestamp": "2026-08-16T13:51:48.171Z",
+    "module": "Command Brief",
+    "level": "info",
+    "message": "Command Brief generated (3484ms): attention — Monitor upcoming economic events and company earnings for potential market shifts. | 3 upcoming opportunity(-ies)"
+  },
+  {
+    "id": "5774b6c9-3eee-48cc-ac52-f074d2cc1143",
+    "timestamp": "2026-08-16T13:53:39.260Z",
+    "module": "Settings",
+    "level": "warning",
+    "message": "Saxo access token refreshed"
+  },
+  {
+    "id": "3aa14b9b-6f0c-4df2-ba7d-481ce003b538",
+    "timestamp": "2026-08-16T13:53:45.098Z",
+    "module": "TradeReview",
+    "level": "internal",
+    "message": "Decision NVDA: WaitingForReevaluation — not converted to proposal"
   }
 ]
