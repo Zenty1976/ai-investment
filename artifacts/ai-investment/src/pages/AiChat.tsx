@@ -49,6 +49,8 @@ function groupConversations(
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AiChat() {
+  const LAST_CHAT_KEY = "ai-chat:lastChatId";
+
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -71,6 +73,24 @@ export default function AiChat() {
     loadConversations();
   }, [loadConversations]);
 
+  // ── Restore last active chat from localStorage ────────────────────────────
+  useEffect(() => {
+    const savedId = localStorage.getItem(LAST_CHAT_KEY);
+    if (!savedId) return;
+    customFetch<{ ok: boolean; conversation: ChatConversation; messages: ChatMessage[] }>(
+      `/api/ai-chat/conversations/${savedId}`
+    ).then((res) => {
+      if (res.ok) {
+        setActiveChatId(savedId);
+        setMessages(res.messages);
+      } else {
+        localStorage.removeItem(LAST_CHAT_KEY);
+      }
+    }).catch(() => localStorage.removeItem(LAST_CHAT_KEY));
+  // Run once on mount only
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Open a conversation ───────────────────────────────────────────────────
   const openChat = useCallback(async (id: string) => {
     setLoadingChat(true);
@@ -84,6 +104,7 @@ export default function AiChat() {
     if (res.ok) {
       setActiveChatId(id);
       setMessages(res.messages);
+      localStorage.setItem(LAST_CHAT_KEY, id);
     }
   }, []);
 
@@ -98,6 +119,7 @@ export default function AiChat() {
       setActiveChatId(res.conversation.id);
       setMessages([]);
       setError(null);
+      localStorage.setItem(LAST_CHAT_KEY, res.conversation.id);
     }
   }, []);
 
