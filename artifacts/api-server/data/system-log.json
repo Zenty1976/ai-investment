@@ -1,33 +1,5 @@
 [
   {
-    "id": "33fa0247-b16e-4c49-ad1f-516385f7e151",
-    "timestamp": "2026-08-16T08:19:28.633Z",
-    "module": "AutomationOrchestrator",
-    "level": "internal",
-    "message": "opportunity-finder completed via RunAllNow (15726ms, change: Medium)"
-  },
-  {
-    "id": "a06b4228-fc6c-48bf-b693-1291fa651bcf",
-    "timestamp": "2026-08-16T08:19:29.641Z",
-    "module": "Trade Decision Engine",
-    "level": "info",
-    "message": "Scheduled run (trigger: RunAllNow)"
-  },
-  {
-    "id": "564c1b0e-8e45-47ee-9218-dddab14745f6",
-    "timestamp": "2026-08-16T08:19:44.864Z",
-    "module": "Trade Decision Engine",
-    "level": "internal",
-    "message": "[evidence] NVDA (PrepareToBuy): score=55 band=Strong supporting=[CompanyMonitor,OpportunityFinder] opposing=[]"
-  },
-  {
-    "id": "8e9ee898-89b3-48b9-af0e-7b421362f496",
-    "timestamp": "2026-08-16T08:19:44.868Z",
-    "module": "TradeDecisionOutcome",
-    "level": "internal",
-    "message": "Opportunity:NVDA: v9 created (fingerprint changed)"
-  },
-  {
     "id": "6dcccf9e-875c-437f-9ff2-548056193f6d",
     "timestamp": "2026-08-16T08:19:44.868Z",
     "module": "Trade Decision Engine",
@@ -3498,5 +3470,33 @@
     "module": "TradeReview",
     "level": "internal",
     "message": "Decision NVDA: WaitingForReevaluation — not converted to proposal"
+  },
+  {
+    "id": "16e53a09-c4a4-4a46-82db-d2b4da5ed5f1",
+    "timestamp": "2026-08-16T13:46:11.519Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "effa513c-b18b-4175-aa1b-65ac5c79cc1b",
+    "timestamp": "2026-08-16T13:46:56.030Z",
+    "module": "Trade Decision Engine",
+    "level": "error",
+    "message": "Decision analysis failed: OpenAI returned invalid JSON: {\n  \"mainConclusion\": {\n    \"title\": \"Maintain Cautious Stance; Selective Preparation for High-Conviction Opportunities Post-Key Events\",\n    \"reason\": \"The portfolio remains fully in cash amid elevat"
+  },
+  {
+    "id": "d2b213a4-4329-42b2-977b-bb76f9383846",
+    "timestamp": "2026-08-16T13:47:06.654Z",
+    "module": "Trade Decision Engine",
+    "level": "user",
+    "message": "User manually started decision analysis"
+  },
+  {
+    "id": "f6ce9619-fdb3-4cc3-88e7-ebfceb87fb9e",
+    "timestamp": "2026-08-16T13:47:52.842Z",
+    "module": "Trade Decision Engine",
+    "level": "error",
+    "message": "Decision analysis failed: OpenAI returned invalid JSON: {\n  \"mainConclusion\": {\n    \"title\": \"Maintain high cash, selectively prepare for post-event equity deployment; review weak holdings and monitor macro risks\",\n    \"reason\": \"The portfolio remains full"
   }
 ]

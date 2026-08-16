@@ -1445,7 +1445,7 @@ router.post("/trade-decision-engine/analyze", async (req, res): Promise<void> =>
       const { result, debug } = await callAi(
         SYSTEM_PROMPT,
         userPrompt,
-        { model: getModel("decision", "trade-decision-engine"), maxTokens: 3500, temperature: 0.1, module: "trade-decision-engine", operation: "analyze", retryNumber: attempt }
+        { model: getModel("decision", "trade-decision-engine"), maxTokens: 5000, temperature: 0.1, module: "trade-decision-engine", operation: "analyze", retryNumber: attempt }
       );
 
       if (res.headersSent) { clearTimeout(routeTimeoutHandle); return; }
