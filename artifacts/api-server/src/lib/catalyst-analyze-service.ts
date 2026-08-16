@@ -235,7 +235,24 @@ export async function runCatalystAnalyzeService(
     : "EMERGING_SETUP";
 
   // ── Step 6: Eligibility check ────────────────────────────────────────────────
-  const isDeepAnalysis = state.screening?.screeningLevel === "DeepAnalysis";
+  // A candidate should receive deep analysis when:
+  //   a) screeningLevel is DeepAnalysis or SignalAssessment (path A — close event), OR
+  //   b) screening.eligible=true AND the current event is within 14 days regardless of
+  //      stored screeningLevel (handles stale screenings — e.g. BasicMonitor assigned
+  //      when the event was > 21 days away; now it's closer and should be analyzed), OR
+  //   c) PATH B: no scheduled event but emerging setup warrants analysis.
+  const currentDaysUntilEvent =
+    facts.event?.daysUntilEvent ?? state.screening?.daysUntilEvent ?? null;
+
+  const isDeepAnalysis =
+    state.screening?.screeningLevel === "DeepAnalysis" ||
+    state.screening?.screeningLevel === "SignalAssessment" ||
+    // Stale screening guard: eligible candidate whose event has moved into the
+    // deep-analysis window but screening hasn't been refreshed yet.
+    (state.screening?.eligible === true &&
+      currentDaysUntilEvent !== null &&
+      currentDaysUntilEvent <= 14);
+
   const pathBEligible =
     triggerType === "EMERGING_SETUP" && emergingSetupWarrantsAnalysis(emergingSetup);
 

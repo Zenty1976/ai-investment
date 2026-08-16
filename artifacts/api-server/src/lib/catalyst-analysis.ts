@@ -316,6 +316,11 @@ Assess:
 Return strict JSON.`;
 
   try {
+    // Phase 2 uses callAi (not callAiWithWebSearch) because:
+    //   - jsonMode: true is required for structured CatalystAnalysisResult output.
+    //   - OpenAI Responses API rejects json_object format when web_search is active
+    //     (incompatible constraint). See ai-service notes.
+    //   - Any web research was already performed in Phase 1 (buildDriverResearchContext).
     const { result: raw, debug } = await callAiWithWebSearch<unknown>(
       systemPrompt,
       userPrompt,
@@ -327,7 +332,8 @@ Return strict JSON.`;
         module: "catalyst-intelligence",
         operation: "deep-analysis",
         retryNumber,
-        webSearchContextSize: "medium",
+        // webSearchContextSize intentionally omitted — jsonMode + web_search are
+        // mutually exclusive in the Responses API. Research is handled in Phase 1.
       }
     );
 

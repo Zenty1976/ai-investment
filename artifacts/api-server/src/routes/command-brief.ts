@@ -21,11 +21,111 @@ import { analysisRepository } from "../lib/analysis-repository";
 import { automationOrchestrator } from "../lib/automation-orchestrator";
 import { getModel } from "../lib/ai-model-config.js";
 import { normalizeAiResponse, classifyRetryReason } from "../lib/ai-response-normalizer.js";
+import { getAllCatalystStates } from "../lib/catalyst-repository.js";
 
 const router: IRouter = Router();
 
 const MODULE_NAME = "Command Brief";
 const MAX_ATTEMPTS = 2;
+
+// ── Upcoming Opportunities builder (no AI calls) ─────────────────────────────
+
+export interface UpcomingOpportunity {
+  ticker: string;
+  company: string;
+  event: string;
+  daysUntilEvent: number;
+  interestLevel: "HIGH_INTEREST" | "INVESTIGATE" | "MONITOR";
+  opportunityScore: number | null;
+  oneLineReason: string;
+  promotedAt: string | null;
+  priceRunup: number | null; // pre-event runup % (negative signal if high)
+}
+
+/**
+ * Deterministically selects up to 3 upcoming catalyst opportunities from already-
+ * computed Catalyst Intelligence data.
+ *
+ * Selection criteria:
+ *   1. Must have a future event (daysUntilEvent > 0)
+ *   2. Must have a completed analysis (not null)
+ *   3. Must have a positive opportunityState (HighInterest, CandidateForTradeDecision,
+ *      or Investigate — Monitor is excluded from the top section)
+ *   4. Negative for stocks with extreme pre-event runup (price already extended)
+ *
+ * Ranking (descending):
+ *   - HighInterest/CandidateForTradeDecision > Investigate
+ *   - Promoted candidates first within each tier
+ *   - Closer event (fewer days) ranks higher within the same tier
+ *
+ * ZERO AI calls — pure deterministic computation.
+ */
+export function buildUpcomingOpportunities(maxCount = 3): UpcomingOpportunity[] {
+  const allStates = getAllCatalystStates();
+  const now = new Date();
+
+  // Filter to candidates that meet the criteria
+  const candidates = allStates
+    .filter(state => {
+      if (!state.analysis) return false;
+      const oppState = state.analysis.opportunityState as string | undefined;
+      if (!oppState) return false;
+      // Must be at least Investigate to appear as an "opportunity"
+      const isInteresting = ["HighInterest", "CandidateForTradeDecision", "Investigate"].includes(oppState);
+      if (!isInteresting) return false;
+      // Must have a future event
+      const daysUntilEvent = state.facts?.event?.daysUntilEvent ?? state.screening?.daysUntilEvent ?? null;
+      if (daysUntilEvent === null || daysUntilEvent <= 0) return false;
+      return true;
+    })
+    .map(state => {
+      const oppState = state.analysis!.opportunityState as string;
+      const daysUntilEvent = state.facts?.event?.daysUntilEvent ?? state.screening?.daysUntilEvent ?? 0;
+      const eventType = state.facts?.event?.eventType ?? "Event";
+      const priceAsymmetryFacts = state.facts?.price?.priceAsymmetryFacts as Record<string, unknown> | undefined;
+      const runupPct = priceAsymmetryFacts?.preEventRunupPct as number | null ?? null;
+
+      // Tier: 0=CandidateForTD/HighInterest, 1=Investigate
+      const tier = ["HighInterest", "CandidateForTradeDecision"].includes(oppState) ? 0 : 1;
+
+      // Interest level label
+      const interestLevel: UpcomingOpportunity["interestLevel"] =
+        tier === 0 ? "HIGH_INTEREST" : "INVESTIGATE";
+
+      // Build one-line reason from analysis
+      const thesis = state.analysis!.thesis as string | undefined;
+      const priceAsymmetry = state.analysis!.priceAsymmetry ?? (state.screening?.priceAsymmetry ?? null);
+      const runupNote = runupPct !== null && runupPct > 12
+        ? ` (⚠ +${runupPct.toFixed(0)}% pre-event runup)`
+        : "";
+      const oneLineReason = thesis
+        ? thesis.slice(0, 100) + (thesis.length > 100 ? "…" : "") + runupNote
+        : `${eventType} in ${daysUntilEvent}d · ${oppState}${runupNote}`;
+
+      // Opportunity score from analysis (may not be in schema but check anyway)
+      const analysisRecord = state.analysis as unknown as Record<string, unknown>;
+      const opportunityScore = (analysisRecord.opportunityScore as number | null) ?? null;
+
+      return {
+        ticker: state.ticker,
+        company: state.company,
+        event: `${eventType} in ${daysUntilEvent}d`,
+        daysUntilEvent,
+        interestLevel,
+        opportunityScore,
+        oneLineReason,
+        promotedAt: state.promotedAt ?? null,
+        priceRunup: runupPct,
+        // Sorting key: tier (asc), promoted (desc), days (asc)
+        _sortKey: tier * 10_000 + (state.promotedAt ? 0 : 1000) + daysUntilEvent,
+      };
+    })
+    .sort((a, b) => a._sortKey - b._sortKey)
+    .slice(0, maxCount)
+    .map(({ _sortKey: _k, ...rest }) => rest);
+
+  return candidates as UpcomingOpportunity[];
+}
 
 // ---------------------------------------------------------------------------
 // System prompt
@@ -326,6 +426,25 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       : [];
   }
 
+  // ── Upcoming Opportunities — deterministic from Catalyst Intelligence ─────────
+  // ZERO additional AI calls. Reads already-computed catalyst analysis results.
+  // Selects up to 3 candidates with: future event + positive evidence + sufficient analysis.
+  // Does NOT re-analyze stocks — purely presentation of already-stored results.
+
+  const upcomingOpportunities = buildUpcomingOpportunities();
+  // Also inject into AI input so the model can reference them in items if relevant.
+  if (upcomingOpportunities.length > 0) {
+    input.upcomingCatalysts = upcomingOpportunities.map(o => ({
+      ticker: o.ticker,
+      company: o.company,
+      event: o.event,
+      daysUntilEvent: o.daysUntilEvent,
+      interestLevel: o.interestLevel,
+      opportunityScore: o.opportunityScore,
+      oneLineReason: o.oneLineReason,
+    }));
+  }
+
   // ── AI call with retry ───────────────────────────────────────────────────────
 
   let attempt = 0;
@@ -369,13 +488,22 @@ router.post("/command-brief/analyze", async (req, res): Promise<void> => {
       const finalData = parsed.data;
       const analysisDuration = Date.now() - startTime;
 
-      analysisRepository.save("command-brief", { ...finalData, analysisDuration });
+      analysisRepository.save("command-brief", {
+        ...finalData,
+        upcomingOpportunities,
+        analysisDuration,
+      });
       systemLog.logInfo(
         MODULE_NAME,
-        `Command Brief generated (${analysisDuration}ms): ${finalData.overallStatus} — ${finalData.headline}`
+        `Command Brief generated (${analysisDuration}ms): ${finalData.overallStatus} — ${finalData.headline}${upcomingOpportunities.length > 0 ? ` | ${upcomingOpportunities.length} upcoming opportunity(-ies)` : ""}`
       );
 
-      res.json({ ...finalData, analysisDuration, _debug: lastDebug });
+      res.json({
+        ...finalData,
+        upcomingOpportunities,
+        analysisDuration,
+        _debug: lastDebug,
+      });
       return;
     } catch (err) {
       const aiDebug = extractAiErrorDebug(err);

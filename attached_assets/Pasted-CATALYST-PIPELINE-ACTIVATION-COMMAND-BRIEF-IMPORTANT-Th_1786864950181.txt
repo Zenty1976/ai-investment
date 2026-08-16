@@ -1,0 +1,567 @@
+CATALYST PIPELINE ACTIVATION + COMMAND BRIEF
+
+IMPORTANT
+
+This is NOT a redesign.
+
+The read-only audit showed that the required Catalyst infrastructure already
+exists, but the production pipeline stops after screening.
+
+Do NOT create a new analysis engine.
+Do NOT redesign Catalyst Intelligence.
+Do NOT change existing investment philosophy/scoring unless required to fix an
+actual bug.
+Do NOT add another data provider.
+
+The purpose of this task is simply:
+
+1. Make the EXISTING Catalyst pipeline actually progress eligible candidates.
+2. Verify Catalyst → Opportunity Finder → Trade Decision works.
+3. Then expose the best upcoming opportunities compactly in Command Brief.
+
+
+==================================================
+1. CURRENT VERIFIED PROBLEM
+==================================================
+
+The read-only audit found:
+
+- 4,160 Catalyst Intelligence records
+- 34 upcoming company catalysts
+- 11 currently screening-eligible candidates
+- 7 records with signalAccumulation
+- 6 upcoming candidates with positive pre-event signals
+
+Examples currently include:
+
+KEYS
+NVDA
+SNPS
+V
+0700/Tencent
+DCI
+
+However:
+
+analysis = null for ALL upcoming candidates
+opportunityScore = null
+confidence = null
+promotedAt = null for all 4,160 records
+Catalyst promotions reaching OF = 0
+catalystContext in all current TDE decisions = null
+
+Therefore the system discovers candidates correctly but does not progress them
+through the already-built deep Catalyst pipeline.
+
+
+==================================================
+2. FIND THE ACTUAL ROOT CAUSE FIRST
+==================================================
+
+Before changing code, trace the production execution path.
+
+Determine exactly why eligible:
+
+Monitor
+and
+Investigate
+
+candidates do not progress to the existing full Catalyst analysis.
+
+Inspect:
+
+catalyst-pipeline.ts
+catalyst-analyze-service.ts
+catalyst-lifecycle.ts
+screen route
+Automation Orchestrator
+budget/deferred logic
+fingerprints
+recent-run guards
+failure/backoff logic
+
+Do NOT work around the problem by creating another pipeline.
+
+Fix the existing pipeline.
+
+
+==================================================
+3. AUTOMATIC PROGRESSION
+==================================================
+
+A normal Catalyst cycle must conceptually perform:
+
+Market Universe
+→ cheap screening
+→ eligible candidate
+→ existing driver/signal research when required
+→ existing full Catalyst Analysis
+→ score/confidence/evidence
+→ promotion when warranted
+→ Opportunity Finder
+
+No manual:
+
+POST /analyze/:ticker
+
+should be necessary.
+
+Keep that endpoint for manual/debug use if useful.
+
+
+==================================================
+4. DO NOT DEEP-ANALYZE THE WHOLE UNIVERSE
+==================================================
+
+This is critical for OpenAI cost.
+
+We have ~4,135 Saxo equities.
+
+DO NOT send all of them to OpenAI.
+
+The existing cheap screening funnel must remain.
+
+Only sufficiently interesting candidates should become eligible for expensive
+research/deep analysis.
+
+The current audit found approximately 11 eligible candidates.
+
+That is the kind of scale expected for deep processing, NOT thousands.
+
+
+==================================================
+5. USE EXISTING BUDGETS
+==================================================
+
+Preserve the existing Catalyst per-cycle budgets.
+
+If more candidates qualify than the allowed deep-analysis budget:
+
+rank/prioritize them
+process the strongest first
+mark remaining candidates DEFERRED
+process them on later cycles
+
+Do NOT discard them.
+
+Do NOT increase budgets simply to make tests pass.
+
+
+==================================================
+6. PRIORITIZATION
+==================================================
+
+Use the existing prioritization logic where possible.
+
+Candidates closer to a meaningful event and/or with stronger accumulated
+evidence should normally be processed before weak candidates.
+
+Relevant existing information may include:
+
+event proximity
+screening state
+signal accumulation
+price asymmetry
+price runup
+evidence strength
+confidence where already available
+portfolio relevance
+staleness
+
+Do not create arbitrary ticker-specific rules.
+
+
+==================================================
+7. FULL CATALYST ANALYSIS
+==================================================
+
+For eligible candidates, invoke the EXISTING Catalyst analysis service.
+
+The resulting stored Catalyst record should contain the fields already designed
+for this purpose, including where applicable:
+
+analysis
+opportunityScore
+confidence
+direction
+signals/evidence
+thesis
+risks
+price asymmetry
+event information
+recommendation/promotion state
+
+Do not duplicate calculations already performed deterministically by backend
+services.
+
+
+==================================================
+8. PROMOTION TO OPPORTUNITY FINDER
+==================================================
+
+After successful Catalyst analysis:
+
+If the existing promotion rules say the candidate warrants Opportunity Finder
+evaluation:
+
+set/update the promotion correctly.
+
+The existing Catalyst promotion infrastructure must be used.
+
+Then verify that:
+
+buildPromotionsContextBlock()
+
+actually exposes the promoted candidate to Opportunity Finder.
+
+Catalyst HIGH_INTEREST does NOT automatically mean BUY.
+
+Opportunity Finder still evaluates and compares the candidate.
+
+
+==================================================
+9. OPPORTUNITY FINDER → TRADE DECISION
+==================================================
+
+Verify the existing downstream path:
+
+Catalyst promotion
+→ Opportunity Finder
+→ material OF result
+→ Trade Decision eligibility
+
+For a relevant candidate, Trade Decision must receive the existing compact
+Catalyst context.
+
+Verify:
+
+buildCatalystTdeContext(ticker)
+
+or the current equivalent is actually populated.
+
+Do not send full Catalyst research/debug objects to TDE.
+
+Preserve token optimization.
+
+
+==================================================
+10. COMMAND BRIEF — ONLY AFTER PIPELINE WORKS
+==================================================
+
+Once the production Catalyst pipeline is confirmed working, make a SMALL
+presentation change to Command Brief.
+
+Add a compact section:
+
+UPCOMING OPPORTUNITIES
+
+Show maximum 3 candidates.
+
+Example conceptually:
+
+UPCOMING OPPORTUNITIES
+
+KEYS — HIGH INTEREST
+Earnings in 3 days
+Score 82 · positive signals · limited pre-event runup
+
+V — MEDIUM INTEREST
+Earnings in 10 days
+Score 71 · improving signals · price not extended
+
+The exact wording may follow the existing UI style.
+
+
+==================================================
+11. COMMAND BRIEF DATA SOURCE
+==================================================
+
+Do NOT create a new OpenAI call for Upcoming Opportunities.
+
+Do NOT web-search from Command Brief.
+
+Do NOT independently re-analyze the stocks.
+
+Command Brief must only summarize ALREADY COMPUTED information from:
+
+Catalyst Intelligence
+and/or
+Opportunity Finder
+
+Use the strongest existing final state.
+
+The Command Brief is presentation, not another intelligence engine.
+
+
+==================================================
+12. WHAT SHOULD APPEAR
+==================================================
+
+Upcoming Opportunities should focus on:
+
+stocks with a future catalyst
+AND
+meaningful positive evidence
+AND
+sufficient analysis/confidence.
+
+Prefer candidates already promoted/evaluated by Catalyst/OF.
+
+Display useful compact information such as:
+
+ticker
+company if available
+event
+days until event
+interest level
+opportunity score if available
+one short reason
+pre-event runup/price positioning when important
+
+Do not display a candidate as attractive merely because it has an upcoming
+earnings date.
+
+
+==================================================
+13. IMPORTANT NEGATIVE SIGNAL
+==================================================
+
+Price runup matters.
+
+Example:
+
+Strong positive catalyst signals
+BUT
+stock already +20% shortly before event
+
+should NOT be presented the same way as:
+
+Strong positive catalyst signals
+AND
+stock remains depressed/has limited runup.
+
+Use the existing PriceAsymmetryFacts.
+
+Do not invent a new scoring model unless the current Catalyst analysis already
+requires fixing.
+
+
+==================================================
+14. NO HARDCODED TICKERS
+==================================================
+
+KEYS, NVDA, V, SNPS, DCI and Tencent are examples from the current audit.
+
+DO NOT hardcode these.
+
+Everything must work dynamically for any company discovered through the Saxo
+Market Universe.
+
+
+==================================================
+15. COST SAFETY
+==================================================
+
+This fix must preserve all previous token optimizations:
+
+fingerprints
+recent-run guards
+materiality
+caching
+deferred processing
+AI budgets
+compact prompts
+backend deterministic calculations
+
+Do not make Catalyst run deep AI again if the relevant state has not materially
+changed.
+
+Opening/reloading the dashboard must NOT trigger deep Catalyst analysis.
+
+Command Brief must cause ZERO additional AI calls merely to display Upcoming
+Opportunities.
+
+
+==================================================
+16. DEBUG VISIBILITY
+==================================================
+
+For Catalyst cycle debug, make it easy to verify:
+
+number screened
+number eligible
+number deep-analyzed
+number deferred
+number skipped unchanged
+number failed/backoff
+number promoted
+
+For each eligible candidate expose:
+
+ticker
+screening state
+next lifecycle action
+deepAnalysisCalled true/false
+skip/defer reason
+promotion result
+
+This is debug information only.
+
+
+==================================================
+17. VERIFY USING THE CURRENT STORED SITUATION
+==================================================
+
+After fixing the pipeline, verify against the current stored data.
+
+We currently know the audit found candidates such as:
+
+KEYS
+NVDA
+SNPS
+V
+0700
+DCI
+
+Do NOT require these specific stocks to become HIGH_INTEREST.
+
+The analysis must be allowed to reject them.
+
+What matters is that eligible candidates are ACTUALLY ANALYZED.
+
+For example:
+
+KEYS may become HIGH_INTEREST
+or MONITOR
+or REJECT
+
+All are valid.
+
+analysis = null simply because the pipeline never ran is NOT valid.
+
+
+==================================================
+18. TESTS
+==================================================
+
+Tests must use mocked AI/web responses.
+
+Do NOT spend paid OpenAI tokens for automated tests.
+
+Test A:
+
+eligible Catalyst candidate
+→ automatic deep analysis
+→ analysis stored.
+
+Test B:
+
+candidate qualifies for promotion
+→ promotedAt set
+→ Opportunity Finder receives candidate.
+
+Test C:
+
+candidate does not qualify
+→ no promotion.
+
+Test D:
+
+more eligible candidates than budget
+→ strongest processed
+→ remainder DEFERRED.
+
+Test E:
+
+unchanged already-analyzed candidate
+→ no unnecessary repeat AI call.
+
+Test F:
+
+promoted candidate
+→ OF evaluation
+→ TDE receives compact Catalyst context when relevant.
+
+Test G:
+
+Command Brief receives existing analyzed opportunities
+→ displays maximum 3
+→ ZERO additional AI calls.
+
+Test H:
+
+candidate with upcoming event but no positive evidence
+→ not incorrectly shown as top opportunity.
+
+
+==================================================
+19. DO NOT RUN ALL JUST TO PROVE IT
+==================================================
+
+Use deterministic/mocked tests first.
+
+Do not trigger expensive production OpenAI calls merely for validation.
+
+After tests pass, tell me exactly what needs to be run manually in the UI to
+populate real current candidates.
+
+I will decide whether to run it.
+
+
+==================================================
+20. FINAL REPORT
+==================================================
+
+Report:
+
+1. Exact root cause of why eligible candidates previously stopped after screening.
+
+2. Files changed.
+
+3. Whether normal Catalyst cycles now automatically deep-analyze eligible
+   candidates.
+
+4. Existing deep-analysis budget per cycle.
+
+5. How deferred candidates are handled.
+
+6. Whether promotion now reaches Opportunity Finder.
+
+7. Whether relevant Catalyst context reaches Trade Decision.
+
+8. Whether Command Brief now displays Upcoming Opportunities.
+
+9. Confirm Command Brief causes no additional AI calls.
+
+10. Confirm no hardcoded tickers were added.
+
+11. Confirm previous token/caching/fingerprint optimizations remain intact.
+
+12. Tests added and total test pass count.
+
+13. Whether any known architectural problem remains.
+
+14. Exact manual action I should perform, if any, to populate the current real
+    opportunities.
+
+
+==================================================
+SUCCESS CRITERION
+==================================================
+
+The task is complete when the EXISTING architecture can demonstrate:
+
+BROAD SAXO UNIVERSE
+→ CHEAP SCREENING
+→ SMALL NUMBER OF ELIGIBLE CANDIDATES
+→ AUTOMATIC DEEP CATALYST ANALYSIS
+→ SCORE / CONFIDENCE / EVIDENCE
+→ PROMOTION WHEN WARRANTED
+→ OPPORTUNITY FINDER
+→ TRADE DECISION WHEN RELEVANT
+→ TOP UPCOMING OPPORTUNITIES IN COMMAND BRIEF
+
+without manual per-ticker analysis and without causing an OpenAI call merely
+because the dashboard is opened.
+
+Do not redesign anything that already works.

@@ -558,16 +558,117 @@ router.get("/catalyst-intelligence/status", (_req, res) => {
     lastAnalysedAt: s.lastAnalysedAt,
     eventPassed: s.eventPassed,
     hasAnalysis: !!s.analysis,
+    opportunityState: s.analysis?.opportunityState ?? null,
     discoverySource: s.discoverySource ?? null,
     triggerType: s.triggerType ?? null,
+    promotedAt: s.promotedAt ?? null,
   }));
 
   return res.status(200).json({
     ok: true,
     tracked: allStates.length,
     eligible: summary.filter(s => s.eligible).length,
+    withAnalysis: summary.filter(s => s.hasAnalysis).length,
+    promoted: summary.filter(s => s.promotedAt).length,
     states: summary,
     _debug: { module: MODULE },
+  });
+});
+
+/**
+ * GET /api/catalyst-intelligence/pipeline
+ *
+ * Returns the last pipeline run result and a per-candidate debug summary
+ * for the current eligible candidates. Use this to verify that:
+ *   - how many candidates were screened/eligible/analyzed/deferred/skipped
+ *   - which candidates were deep-analyzed this cycle
+ *   - why any candidate was skipped or deferred
+ *   - whether any promotions were produced
+ */
+router.get("/catalyst-intelligence/pipeline", (_req, res) => {
+  const lastRun = getLastPipelineRun();
+  const allStates = getAllCatalystStates();
+  const nowIso = new Date().toISOString();
+
+  // Per-candidate debug summary for all eligible candidates
+  const { deriveLifecycleState: _derive, isEligibleForAutoAnalysis: _eligible } =
+    require("../lib/catalyst-lifecycle.js") as typeof import("../lib/catalyst-lifecycle.js");
+
+  const eligibleDebug = allStates
+    .filter(s => s.screening?.eligible === true)
+    .map(s => {
+      const lifecycle = _derive(s, nowIso);
+      const eligible = _eligible(s, nowIso);
+      const ext = s as unknown as Record<string, unknown>;
+      return {
+        ticker: s.ticker,
+        company: s.company,
+        screeningLevel: s.screening?.screeningLevel ?? "Excluded",
+        screeningState: s.screening?.preliminaryState ?? "NotInteresting",
+        daysUntilEvent: s.facts?.event?.daysUntilEvent ?? s.screening?.daysUntilEvent ?? null,
+        eventType: s.facts?.event?.eventType ?? null,
+        lifecycleState: lifecycle,
+        eligibleForAutoAnalysis: eligible,
+        deepAnalysisCalled: !!s.lastAnalysedAt,
+        hasAnalysis: !!s.analysis,
+        opportunityState: s.analysis?.opportunityState ?? null,
+        promotedAt: s.promotedAt ?? null,
+        lastAnalysedAt: s.lastAnalysedAt,
+        skipReason: (!eligible
+          ? lifecycle === "DEFERRED" ? `Deferred until ${String(ext.deferredUntil ?? "?")}` : lifecycle
+          : null),
+        deferredUntil: ext.deferredUntil as string | null ?? null,
+        failureCount: ext.failureCount as number ?? 0,
+        lastError: ext.lastError as string | null ?? null,
+      };
+    })
+    .sort((a, b) => {
+      // Sort: analyzed first, then by days until event
+      if (a.hasAnalysis !== b.hasAnalysis) return a.hasAnalysis ? -1 : 1;
+      const da = a.daysUntilEvent ?? 999;
+      const db = b.daysUntilEvent ?? 999;
+      return da - db;
+    });
+
+  // Cycle summary
+  const cycleStats = {
+    screened: allStates.filter(s => s.lastScreenedAt).length,
+    eligible: allStates.filter(s => s.screening?.eligible === true).length,
+    deepAnalyzed: allStates.filter(s => s.lastAnalysedAt).length,
+    withAnalysis: allStates.filter(s => !!s.analysis).length,
+    promoted: allStates.filter(s => !!s.promotedAt).length,
+    deferred: allStates.filter(s => {
+      const ext = s as unknown as Record<string, unknown>;
+      return ext.deferredUntil && new Date(String(ext.deferredUntil)).getTime() > Date.now();
+    }).length,
+    failed: allStates.filter(s => {
+      const ext = s as unknown as Record<string, unknown>;
+      const fc = ext.failureCount as number ?? 0;
+      return fc >= 3;
+    }).length,
+  };
+
+  return res.status(200).json({
+    ok: true,
+    lastPipelineRun: lastRun
+      ? {
+          startedAt: lastRun.startedAt,
+          completedAt: lastRun.completedAt,
+          candidatesConsidered: lastRun.candidatesConsidered,
+          analyzed: lastRun.analyzed.length,
+          deferred: lastRun.deferred.length,
+          failed: lastRun.failed.length,
+          newPromotions: lastRun.newPromotions,
+          budgetUsed: lastRun.budgetUsed,
+          budgetLimits: lastRun.budgetLimits,
+          analyzedDetail: lastRun.analyzed,
+          deferredDetail: lastRun.deferred,
+          failedDetail: lastRun.failed,
+        }
+      : null,
+    cycleStats,
+    eligibleCandidates: eligibleDebug,
+    _debug: { module: MODULE, generatedAt: nowIso },
   });
 });
 

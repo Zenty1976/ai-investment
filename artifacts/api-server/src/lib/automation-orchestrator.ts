@@ -1654,6 +1654,17 @@ class AutomationOrchestratorService {
       completeStage("sector-monitor");
     });
 
+    // Stage 3.5: Catalyst Intelligence — screen + fire autonomous pipeline in background.
+    // Runs after market/news/event monitors (catalyst depends on their data) and before
+    // Company Monitor so that catalyst screening benefits from the freshest market signals.
+    // The screen response returns immediately; the pipeline runs async and may complete
+    // during or after the remainder of the cycle. Subsequent cycles pick up any work
+    // the budget did not cover this cycle.
+    await runIsolated("catalyst-intelligence", async () => {
+      await this._runStage(["catalyst-intelligence"], corrId, "RunAllNow", forceAI);
+      completeStage("catalyst-intelligence");
+    });
+
     // Stage 4: Company Monitor — per-ticker fault isolation, always continue
     await runIsolated("company-monitor", async () => {
       const tickers = this._getTargetTickers(5);
