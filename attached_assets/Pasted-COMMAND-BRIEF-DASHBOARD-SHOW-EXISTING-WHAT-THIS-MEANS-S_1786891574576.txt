@@ -1,0 +1,181 @@
+COMMAND BRIEF DASHBOARD — SHOW EXISTING "WHAT THIS MEANS" SUMMARY
+
+This should be a SMALL UI-only change.
+
+Do NOT change Command Brief generation.
+Do NOT change OpenAI prompts.
+Do NOT add another OpenAI call.
+Do NOT change the language logic.
+Do NOT change Catalyst enforcement.
+Do NOT change Trade Decision or Trade Review.
+
+The full Command Brief page now correctly shows the generated:
+
+whatThisMeans
+
+field with the EN/DA explanation behavior.
+
+However, the Command Brief widget/card on the main Dashboard does NOT show this new explanation.
+
+Please update the Dashboard Command Brief component so it also displays the existing stored `whatThisMeans` field from the latest Command Brief result.
+
+
+REQUIREMENTS
+
+1. USE EXISTING DATA ONLY
+
+The Dashboard must read the already-generated:
+
+whatThisMeans
+
+field from the current Command Brief analysis result.
+
+Do NOT regenerate it.
+Do NOT call OpenAI.
+Do NOT call the Command Brief analysis endpoint just because the Dashboard opens.
+
+
+2. LANGUAGE
+
+Display whatever language is already stored in the current Command Brief result.
+
+Example:
+
+If the last Command Brief analysis generated `whatThisMeans` in Danish,
+the Dashboard displays that Danish text.
+
+If it was generated in English,
+the Dashboard displays the English text.
+
+Do NOT add separate EN/DA buttons to the Dashboard.
+
+Language selection remains on the full Command Brief page only.
+
+
+3. PLACEMENT
+
+Add the explanation inside the existing Dashboard Command Brief card.
+
+Suggested structure:
+
+COMMAND BRIEF
+
+[headline]
+
+existing brief items...
+
+--------------------------------
+
+HVAD BETYDER DET?
+or
+WHAT THIS MEANS
+
+[whatThisMeans text]
+
+--------------------------------
+
+NO TRADES READY FOR APPROVAL
+
+The explanation should be visually secondary to the main Command Brief items.
+
+Do not redesign the entire Dashboard card.
+
+
+4. HEADING LANGUAGE
+
+Use a simple rule based on the stored explanation language if that metadata is already available.
+
+If current explanation language = da:
+"Hvad betyder det?"
+
+If current explanation language = en:
+"What this means"
+
+If the stored Command Brief result does not currently persist the explanation language, do NOT add a large new architecture.
+
+In that case use a neutral heading:
+
+"What this means"
+
+or reuse the same existing UI helper/preference if easily available.
+
+Prefer minimal change.
+
+
+5. FORMATTING
+
+Preserve the paragraph/newline formatting of `whatThisMeans`.
+
+The full Command Brief page already supports this.
+
+Use equivalent rendering on Dashboard, for example:
+
+white-space: pre-line
+
+so the explanation remains readable.
+
+
+6. EMPTY / OLD DATA SAFETY
+
+Older stored Command Brief results may not contain `whatThisMeans`.
+
+If the field is missing or empty:
+
+do not show an empty explanation section.
+
+The Dashboard should continue working exactly as before.
+
+
+7. NO EXTRA TOKEN COST
+
+Confirm:
+
+Opening Dashboard = ZERO new OpenAI calls.
+
+Refreshing Dashboard = ZERO new OpenAI calls.
+
+The Dashboard only displays the latest stored Command Brief result.
+
+
+8. KEEP DASHBOARD COMPACT
+
+The Dashboard should remain an executive overview.
+
+If `whatThisMeans` is long, do not let it dominate the whole Dashboard.
+
+Use the existing card width and readable text.
+
+If necessary, visually limit the explanation to a sensible height with an
+"open Command Brief" / existing expand behavior rather than changing the generated text.
+
+Do NOT truncate the stored data itself.
+
+
+9. TESTS
+
+Use deterministic/UI tests only.
+
+Verify:
+
+- stored whatThisMeans is displayed
+- Danish text renders correctly
+- English text renders correctly
+- newline formatting is preserved
+- missing whatThisMeans hides the section
+- Dashboard opening causes no analysis/API generation call
+- existing Command Brief items and Action Status remain unchanged
+
+
+FINAL REPORT
+
+Report only:
+
+1. Exact files changed.
+2. Where the Dashboard reads `whatThisMeans` from.
+3. Where the new section is rendered.
+4. How missing/old data is handled.
+5. How multiline formatting is preserved.
+6. Confirm no new OpenAI/API analysis call was added.
+7. Tests/results.
+
+Do not run paid analysis to test this.

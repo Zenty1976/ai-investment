@@ -38,6 +38,16 @@ function actionColor(status: ActionStatusCode): string {
   return "text-red-400";
 }
 
+const LANG_KEY = "commandBriefExplanationLanguage";
+
+function readStoredLang(): "en" | "da" {
+  try {
+    return localStorage.getItem(LANG_KEY) === "da" ? "da" : "en";
+  } catch {
+    return "en";
+  }
+}
+
 export function CommandBriefWidget() {
   const ref = useRef<HTMLDivElement>(null);
   const size = useTileSize(ref);
@@ -53,6 +63,12 @@ export function CommandBriefWidget() {
   const items: any[] = d?.items ?? [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const actionStatus: { status: ActionStatusCode; text: string } | undefined = d?.actionStatus;
+
+  // Read from stored result — zero OpenAI calls, purely display
+  const whatThisMeans: string | undefined = d?.whatThisMeans || undefined;
+  // Heading uses the same localStorage preference already used on the full page
+  const explLang = readStoredLang();
+  const whatThisMeansLabel = explLang === "da" ? "Hvad betyder det?" : "What this means";
 
   const osColor = overallStatusColor(overallStatus);
 
@@ -120,6 +136,19 @@ export function CommandBriefWidget() {
                   </div>
                 ))}
               </div>
+
+              {/* What This Means — only shown when field is present in stored result */}
+              {whatThisMeans && (
+                <div className="shrink-0 border-t border-border/20 pt-1.5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-1">
+                    {whatThisMeansLabel}
+                  </p>
+                  {/* max-h keeps the widget compact; pre-line preserves \n paragraph breaks */}
+                  <p className="text-[11px] text-muted-foreground/70 leading-relaxed whitespace-pre-line max-h-24 overflow-y-auto">
+                    {whatThisMeans}
+                  </p>
+                </div>
+              )}
 
               {/* Action status — prominent footer */}
               {actionStatus && (
